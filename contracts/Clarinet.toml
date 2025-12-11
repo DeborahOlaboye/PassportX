@@ -1,0 +1,34 @@
+[project]
+name = "passportx"
+description = "PassportX Achievement Passport Smart Contracts"
+authors = ["PassportX Team"]
+telemetry = false
+cache_dir = "./.clarinet"
+
+[contracts.passport-nft]
+path = "contracts/passport-nft.clar"
+clarity_version = 2
+
+[contracts.badge-issuer]
+path = "contracts/badge-issuer.clar"
+clarity_version = 2
+
+[contracts.badge-reader]
+path = "contracts/badge-reader.clar"
+clarity_version = 2
+
+[contracts.community-manager]
+path = "contracts/community-manager.clar"
+clarity_version = 2
+
+[[project.requirements]]
+contract_id = "SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait"
+
+[repl.analysis]
+passes = ["check_checker"]
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
