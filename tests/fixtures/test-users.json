@@ -1,0 +1,34 @@
+{
+  "users": [
+    {
+      "address": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
+      "name": "Alice Developer",
+      "badges": [1, 2],
+      "communities": [1, 2]
+    },
+    {
+      "address": "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5",
+      "name": "Bob Designer", 
+      "badges": [1, 3],
+      "communities": [1]
+    },
+    {
+      "address": "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG",
+      "name": "Carol Manager",
+      "badges": [2],
+      "communities": [2, 3]
+    }
+  ],
+  "communities": [
+    {
+      "id": 1,
+      "name": "Dev Community",
+      "owner": "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"
+    },
+    {
+      "id": 2,
+      "name": "Design Guild",
+      "owner": "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+    }
+  ]
+}
