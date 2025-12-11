@@ -1,0 +1,38 @@
+{
+  "templates": [
+    {
+      "id": 1,
+      "name": "Python Beginner",
+      "description": "Completed Python basics course",
+      "category": 1,
+      "level": 1,
+      "metadata": {
+        "skill": "programming",
+        "language": "python",
+        "difficulty": "beginner"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Community Contributor",
+      "description": "Made significant contributions to the community",
+      "category": 2,
+      "level": 3,
+      "metadata": {
+        "type": "contribution",
+        "impact": "high"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Event Participant",
+      "description": "Participated in community event",
+      "category": 3,
+      "level": 1,
+      "metadata": {
+        "type": "participation",
+        "event": "hackathon"
+      }
+    }
+  ]
+}
