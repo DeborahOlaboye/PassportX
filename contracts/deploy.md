@@ -2,8 +2,9 @@
 
 ## Contract Overview
 
-The PassportX system consists of 7 core smart contracts:
+The PassportX system consists of 9 smart contracts (7 core contracts + 2 trait contracts):
 
+### Core Contracts
 1. **passport-nft.clar** - SIP-12 compliant non-transferable NFT
 2. **badge-metadata.clar** - Typed maps for badge metadata storage
 3. **badge-issuer.clar** - Badge creation and minting functionality
@@ -11,6 +12,10 @@ The PassportX system consists of 7 core smart contracts:
 5. **community-manager.clar** - Community management and organization
 6. **access-control.clar** - Comprehensive permission system
 7. **passport-core.clar** - Main integration contract
+
+### Trait Contracts
+8. **badge-issuer-trait.clar** - Interface definition for badge issuance
+9. **badge-reader-trait.clar** - Interface definition for badge reading
 
 ## Deployment Order
 
