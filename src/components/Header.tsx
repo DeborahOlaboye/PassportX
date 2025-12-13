@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import WalletConnect from './WalletConnect'
+import MobileMenu from './MobileMenu'
 
 export default function Header() {
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-white shadow-sm border-b relative">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
@@ -23,6 +24,16 @@ export default function Header() {
             </Link>
           </nav>
           
+          <div className="flex items-center space-x-4">
+            <div className="hidden sm:block">
+              <WalletConnect />
+            </div>
+            <MobileMenu />
+          </div>
+        </div>
+        
+        {/* Mobile wallet connect */}
+        <div className="sm:hidden mt-4 pt-4 border-t">
           <WalletConnect />
         </div>
       </div>
