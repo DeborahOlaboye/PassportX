@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/passportx
+      - JWT_SECRET=${JWT_SECRET}
+      - STACKS_NETWORK=${STACKS_NETWORK}
+      - STACKS_API_URL=${STACKS_API_URL}
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - passportx-network
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    networks:
+      - passportx-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - passportx-network
+
+volumes:
+  mongo-data:
+
+networks:
+  passportx-network:
+    driver: bridge
