@@ -14,7 +14,7 @@ export default function HomePage() {
         </p>
       </header>
 
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
         <div className="card text-center">
           <Award className="w-12 h-12 text-primary-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">For Users</h3>
@@ -40,7 +40,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="text-center space-x-4">
+      <div className="text-center space-y-4 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center">
         <Link href="/passport" className="btn-primary">
           View My Passport
         </Link>
