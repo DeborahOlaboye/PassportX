@@ -151,18 +151,22 @@ console.log(badges);
 
 ## 🛣️ Roadmap
 
-### **Phase 1 — Core System**
+### **Phase 1 — Core System** ✅ COMPLETED
 
-* Passport UI
-* SIP-12 badge minting
-* Typed metadata
-* Admin badge issuance
+* ✅ Passport UI
+* ✅ SIP-12 badge minting (contracts ready)
+* ✅ Typed metadata
+* ✅ Admin badge issuance
+* ✅ Frontend application with Next.js
+* ✅ Wallet integration
+* ✅ Responsive design
 
-### **Phase 2 — Community Tools**
+### **Phase 2 — Community Tools** 🚧 IN PROGRESS
 
-* Badge templates
-* Community branding
-* Permissioning model
+* ✅ Badge templates
+* ✅ Community branding
+* 🔄 Permissioning model
+* 🔄 Smart contract deployment
 
 ### **Phase 3 — Developer Ecosystem**
 
@@ -170,11 +174,11 @@ console.log(badges);
 * Badge reader API
 * Integration docs
 
-### **Phase 4 — Social + Sharing**
+### **Phase 4 — Social + Sharing** ✅ COMPLETED
 
-* Public Passport
-* Embeddable widgets
-* Social previews
+* ✅ Public Passport
+* ✅ Embeddable widgets
+* ✅ Social previews
 
 ---
 
