@@ -9,6 +9,7 @@ import authRoutes from './routes/auth'
 import userRoutes from './routes/users'
 import communityRoutes from './routes/communities'
 import badgeRoutes from './routes/badges'
+import blockchainRoutes from './routes/blockchain'
 
 dotenv.config()
 
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/communities', communityRoutes)
 app.use('/api/badges', badgeRoutes)
+app.use('/api/blockchain', blockchainRoutes)
 
 // Error handling
 app.use(errorHandler)
