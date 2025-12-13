@@ -5,11 +5,13 @@ import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 import { connectDB } from './utils/database'
 import { errorHandler } from './middleware/errorHandler'
+import { requestLogger } from './middleware/monitoring'
 import authRoutes from './routes/auth'
 import userRoutes from './routes/users'
 import communityRoutes from './routes/communities'
 import badgeRoutes from './routes/badges'
 import blockchainRoutes from './routes/blockchain'
+import healthRoutes from './routes/health'
 
 dotenv.config()
 
@@ -34,10 +36,11 @@ app.use(limiter)
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() })
-})
+// Request monitoring
+app.use(requestLogger)
+
+// Health routes
+app.use('/health', healthRoutes)
 
 // API routes
 app.use('/api/auth', authRoutes)
