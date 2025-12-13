@@ -34,8 +34,11 @@
 )
 
 ;; Transfer function - DISABLED for non-transferable NFTs
-(define-public (transfer (token-id uint) (sender principal) (recipient principal))
-  (err err-transfer-disabled)
+(define-public (transfer (id uint) (sender principal) (recipient principal))
+  (begin
+    (asserts! false err-transfer-disabled)
+    (ok true)
+  )
 )
 
 ;; Mint function - only contract owner can mint
