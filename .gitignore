@@ -105,3 +105,6 @@ playwright-report/
 # Blockchain
 .clarinet/
 contracts/.clarinet/requirements/
+
+
+Mainnet.toml
