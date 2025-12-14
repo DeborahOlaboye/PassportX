@@ -193,3 +193,50 @@ export const removeMember = async (req: Request, res: Response) => {
     handleError(res, error, 'Error removing member from community:')
   }
 }
+
+// Add admin to community
+export const addAdmin = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { adminAddress } = req.body
+    const currentAdmin = req.user?.stacksAddress
+
+    if (!currentAdmin) {
+      return res.status(401).json({ success: false, message: 'Authentication required' })
+    }
+
+    if (!adminAddress) {
+      return res.status(400).json({ success: false, message: 'Admin address is required' })
+    }
+
+    const result = await communityService.addCommunityAdmin(id, adminAddress, currentAdmin)
+
+    res.json({
+      success: true,
+      message: result.message
+    })
+  } catch (error) {
+    handleError(res, error, 'Error adding admin to community:')
+  }
+}
+
+// Remove admin from community
+export const removeAdmin = async (req: Request, res: Response) => {
+  try {
+    const { id, adminAddress } = req.params
+    const currentAdmin = req.user?.stacksAddress
+
+    if (!currentAdmin) {
+      return res.status(401).json({ success: false, message: 'Authentication required' })
+    }
+
+    const result = await communityService.removeCommunityAdmin(id, adminAddress, currentAdmin)
+
+    res.json({
+      success: true,
+      message: result.message
+    })
+  } catch (error) {
+    handleError(res, error, 'Error removing admin from community:')
+  }
+}
