@@ -240,3 +240,36 @@ export const removeAdmin = async (req: Request, res: Response) => {
     handleError(res, error, 'Error removing admin from community:')
   }
 }
+
+// Get community analytics
+export const getAnalytics = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+
+    const analytics = await communityService.getCommunityAnalytics(id)
+
+    res.json({
+      success: true,
+      data: analytics
+    })
+  } catch (error) {
+    handleError(res, error, 'Error fetching community analytics:')
+  }
+}
+
+// Get community leaderboard
+export const getLeaderboard = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { limit = '10' } = req.query
+
+    const leaderboard = await communityService.getCommunityLeaderboard(id, parseInt(limit as string, 10))
+
+    res.json({
+      success: true,
+      data: leaderboard
+    })
+  } catch (error) {
+    handleError(res, error, 'Error fetching community leaderboard:')
+  }
+}
