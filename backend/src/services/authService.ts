@@ -3,6 +3,8 @@ import { verifyMessageSignatureRsv } from '@stacks/transactions'
 import { StacksTestnet, StacksMainnet } from '@stacks/network'
 import User from '../models/User'
 import { createError } from '../middleware/errorHandler'
+import { Response } from 'express'
+import { setSessionCookie, clearSessionCookie } from '../utils/sessionManager'
 
 const network = process.env.STACKS_NETWORK === 'mainnet' ? new StacksMainnet() : new StacksTestnet()
 
@@ -38,7 +40,8 @@ export const generateToken = (stacksAddress: string, userId: string): string => 
 export const authenticateUser = async (
   stacksAddress: string,
   message: string,
-  signature: string
+  signature: string,
+  res?: Response
 ) => {
   // Verify signature
   const isValidSignature = await verifySignature(message, signature, stacksAddress)
@@ -51,6 +54,7 @@ export const authenticateUser = async (
   if (!user) {
     user = new User({
       stacksAddress,
+      isPublic: true,
       joinDate: new Date(),
       lastActive: new Date()
     })
@@ -63,6 +67,11 @@ export const authenticateUser = async (
   // Generate token
   const token = generateToken(stacksAddress, user._id.toString())
 
+  // Set session cookie if response object provided
+  if (res) {
+    setSessionCookie(res, token)
+  }
+
   return {
     token,
     user: {
@@ -71,8 +80,19 @@ export const authenticateUser = async (
       name: user.name,
       bio: user.bio,
       avatar: user.avatar,
+      email: user.email,
       isPublic: user.isPublic,
-      joinDate: user.joinDate
+      joinDate: user.joinDate,
+      hasPassport: !!(user as any).passportId,
+      communities: user.communities,
+      adminCommunities: user.adminCommunities
     }
   }
+}
+
+/**
+ * Logout user and clear session cookie
+ */
+export const logoutUser = (res: Response) => {
+  clearSessionCookie(res)
 }
