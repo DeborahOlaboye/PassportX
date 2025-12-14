@@ -9,6 +9,8 @@ export interface IUser extends Document {
   isPublic: boolean
   joinDate: Date
   lastActive: Date
+  communities: string[]
+  adminCommunities: string[]
 }
 
 export interface ICommunityTheme {
