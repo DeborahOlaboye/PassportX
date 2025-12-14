@@ -1,4 +1,5 @@
 import { Document } from 'mongoose'
+import { Request } from 'express'
 
 export interface IUser extends Document {
   stacksAddress: string
@@ -9,20 +10,60 @@ export interface IUser extends Document {
   isPublic: boolean
   joinDate: Date
   lastActive: Date
+  communities: string[]
+  adminCommunities: string[]
+}
+
+export interface ICommunityTheme {
+  primaryColor: string
+  secondaryColor: string
+  backgroundColor: string
+  textColor: string
+  borderRadius: string
+  logo?: {
+    url: string
+    width?: number
+    height?: number
+  }
+  bannerImage?: {
+    url: string
+    width?: number
+    height?: number
+  }
+}
+
+export interface ICommunitySettings {
+  allowMemberInvites: boolean
+  requireApproval: boolean
+  allowBadgeIssuance: boolean
+  allowCustomBadges: boolean
+}
+
+export interface ISocialLinks {
+  twitter?: string
+  discord?: string
+  telegram?: string
+  github?: string
+  linkedin?: string
 }
 
 export interface ICommunity extends Document {
   name: string
+  slug: string
   description: string
-  admin: string // Stacks address
-  theme: {
-    primaryColor: string
-    logo?: string
-  }
+  about?: string
+  website?: string
+  admins: string[] // Array of Stacks addresses
+  theme: ICommunityTheme
+  socialLinks?: ISocialLinks
   memberCount: number
   badgeTemplates: string[] // Badge template IDs
+  isPublic: boolean
   isActive: boolean
+  settings: ICommunitySettings
+  tags: string[]
   createdAt: Date
+  updatedAt: Date
 }
 
 export interface IBadgeTemplate extends Document {
