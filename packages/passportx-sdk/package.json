@@ -1,0 +1,64 @@
+{
+  "name": "@passportx/sdk",
+  "version": "1.0.0",
+  "description": "Official JavaScript SDK for PassportX - Achievement badges on Stacks blockchain",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --module commonjs --outDir dist",
+    "build:esm": "tsc --module esnext --outDir dist/esm",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "keywords": [
+    "passportx",
+    "badges",
+    "achievements",
+    "stacks",
+    "blockchain",
+    "nft",
+    "web3",
+    "sdk",
+    "typescript"
+  ],
+  "author": "PassportX Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DeborahOlaboye/PassportX.git",
+    "directory": "packages/passportx-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/DeborahOlaboye/PassportX/issues"
+  },
+  "homepage": "https://github.com/DeborahOlaboye/PassportX/tree/main/packages/passportx-sdk#readme",
+  "peerDependencies": {
+    "@stacks/transactions": "^6.0.0",
+    "@stacks/network": "^6.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  }
+}
