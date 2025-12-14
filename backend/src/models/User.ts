@@ -36,7 +36,15 @@ const userSchema = new Schema<IUser>({
   lastActive: {
     type: Date,
     default: Date.now
-  }
+  },
+  communities: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Community'
+  }],
+  adminCommunities: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Community'
+  }]
 }, {
   timestamps: true
 })
