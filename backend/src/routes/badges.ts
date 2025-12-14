@@ -23,7 +23,7 @@ router.post('/templates', authenticateToken, async (req: AuthRequest, res, next)
       throw createError('Community not found', 404)
     }
 
-    if (community.admin !== req.user!.stacksAddress) {
+    if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can create badge templates', 403)
     }
 
@@ -101,7 +101,7 @@ router.post('/issue', authenticateToken, async (req: AuthRequest, res, next) => 
     }
 
     const community = template.community as any
-    if (community.admin !== req.user!.stacksAddress) {
+    if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can issue badges', 403)
     }
 
@@ -190,7 +190,7 @@ router.put('/templates/:id', authenticateToken, async (req: AuthRequest, res, ne
     }
 
     const community = template.community as any
-    if (community.admin !== req.user!.stacksAddress) {
+    if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can update badge templates', 403)
     }
 
@@ -229,7 +229,7 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => 
     }
 
     const community = badge.community as any
-    if (community.admin !== req.user!.stacksAddress) {
+    if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can revoke badges', 403)
     }
 
