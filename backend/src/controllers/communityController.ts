@@ -151,3 +151,45 @@ export const listCommunities = async (req: Request, res: Response) => {
     handleError(res, error, 'Error listing communities:')
   }
 }
+
+// Add member to community
+export const addMember = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const userAddress = req.user?.stacksAddress
+
+    if (!userAddress) {
+      return res.status(401).json({ success: false, message: 'Authentication required' })
+    }
+
+    const result = await communityService.addCommunityMember(id, userAddress)
+
+    res.json({
+      success: true,
+      message: result.message
+    })
+  } catch (error) {
+    handleError(res, error, 'Error adding member to community:')
+  }
+}
+
+// Remove member from community
+export const removeMember = async (req: Request, res: Response) => {
+  try {
+    const { id, userAddress } = req.params
+    const adminAddress = req.user?.stacksAddress
+
+    if (!adminAddress) {
+      return res.status(401).json({ success: false, message: 'Authentication required' })
+    }
+
+    const result = await communityService.removeCommunityMember(id, userAddress, adminAddress)
+
+    res.json({
+      success: true,
+      message: result.message
+    })
+  } catch (error) {
+    handleError(res, error, 'Error removing member from community:')
+  }
+}
