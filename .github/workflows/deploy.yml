@@ -1,0 +1,148 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.passportx.app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_STACKS_NETWORK: testnet
+          NEXT_PUBLIC_API_URL: ${{ secrets.STAGING_API_URL }}
+
+      - name: Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_REGISTRY }}/passportx-backend:staging
+            ${{ secrets.DOCKER_REGISTRY }}/passportx-backend:${{ github.sha }}
+          build-args: |
+            NODE_ENV=staging
+
+      - name: Deploy backend to staging server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /opt/passportx
+            docker-compose pull backend
+            docker-compose up -d backend
+            docker-compose exec backend npm run db:migrate
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://passportx.app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_STACKS_NETWORK: mainnet
+          NEXT_PUBLIC_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_REGISTRY }}/passportx-backend:latest
+            ${{ secrets.DOCKER_REGISTRY }}/passportx-backend:${{ github.sha }}
+          build-args: |
+            NODE_ENV=production
+
+      - name: Deploy backend to production servers
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            cd /opt/passportx
+            docker-compose pull backend
+            docker-compose up -d backend
+            docker-compose exec backend npm run db:migrate
+
+      - name: Deploy smart contracts to mainnet
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd contracts
+          clarinet deploy --network mainnet
+        env:
+          STACKS_PRIVATE_KEY: ${{ secrets.MAINNET_DEPLOYER_KEY }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: |
+            Automated production deployment
+            Commit: ${{ github.sha }}
+          draft: false
+          prerelease: false
