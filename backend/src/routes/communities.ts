@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import * as communityController from '../controllers/communityController'
-import { authenticate } from '../middleware/auth'
+import { authenticateToken } from '../middleware/auth'
 
 const router = Router()
 
@@ -9,8 +9,8 @@ router.get('/', communityController.listCommunities)
 router.get('/:id', communityController.getCommunity)
 
 // Protected routes (require authentication)
-router.post('/', authenticate, communityController.createCommunity)
-router.put('/:id', authenticate, communityController.updateCommunity)
-router.delete('/:id', authenticate, communityController.deleteCommunity)
+router.post('/', authenticateToken, communityController.createCommunity)
+router.put('/:id', authenticateToken, communityController.updateCommunity)
+router.delete('/:id', authenticateToken, communityController.deleteCommunity)
 
 export default router
