@@ -273,3 +273,24 @@ export const getLeaderboard = async (req: Request, res: Response) => {
     handleError(res, error, 'Error fetching community leaderboard:')
   }
 }
+
+// Get community members
+export const getMembers = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { limit = '50', offset = '0' } = req.query
+
+    const result = await communityService.getCommunityMembers(
+      id,
+      parseInt(limit as string, 10),
+      parseInt(offset as string, 10)
+    )
+
+    res.json({
+      success: true,
+      ...result
+    })
+  } catch (error) {
+    handleError(res, error, 'Error fetching community members:')
+  }
+}
