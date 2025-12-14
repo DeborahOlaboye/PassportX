@@ -468,3 +468,46 @@ export const getTrendingCommunities = async (limit: number = 10) => {
     theme: community.theme
   }))
 }
+
+export const getCommunityMembers = async (communityId: string, limit: number = 50, offset: number = 0) => {
+  try {
+    // Get unique badge owners for this community
+    const badges = await Badge.find({ community: communityId })
+      .distinct('owner')
+
+    // Paginate the results
+    const paginatedOwners = badges.slice(offset, offset + limit)
+
+    // Get user details
+    const members = await Promise.all(
+      paginatedOwners.map(async (address) => {
+        const user = await User.findOne({ stacksAddress: address })
+        const badgeCount = await Badge.countDocuments({
+          community: communityId,
+          owner: address
+        })
+
+        return {
+          stacksAddress: address,
+          name: user?.name || 'Anonymous',
+          avatar: user?.avatar,
+          badgeCount,
+          joinDate: user?.joinDate
+        }
+      })
+    )
+
+    return {
+      data: members,
+      pagination: {
+        total: badges.length,
+        limit,
+        offset,
+        hasMore: offset + members.length < badges.length
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching community members:', error)
+    throw error
+  }
+}
