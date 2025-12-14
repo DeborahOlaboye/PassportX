@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import { generateAuthMessage, authenticateUser, logoutUser } from '../services/authService'
 import { createError } from '../middleware/errorHandler'
 import { verifySessionToken, getSessionToken } from '../utils/sessionManager'
@@ -7,7 +7,7 @@ import User from '../models/User'
 const router = Router()
 
 // Generate authentication message
-router.post('/message', async (req, res, next) => {
+router.post('/message', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { stacksAddress } = req.body
 
@@ -23,7 +23,7 @@ router.post('/message', async (req, res, next) => {
 })
 
 // Authenticate with signature
-router.post('/login', async (req, res, next) => {
+router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { stacksAddress, message, signature } = req.body
 
@@ -39,7 +39,7 @@ router.post('/login', async (req, res, next) => {
 })
 
 // Logout user
-router.post('/logout', async (req, res, next) => {
+router.post('/logout', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     logoutUser(res)
     res.json({
@@ -52,7 +52,7 @@ router.post('/logout', async (req, res, next) => {
 })
 
 // Verify current session
-router.get('/verify', async (req, res, next) => {
+router.get('/verify', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = getSessionToken(req)
 
