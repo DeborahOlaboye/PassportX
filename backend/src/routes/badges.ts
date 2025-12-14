@@ -219,6 +219,86 @@ router.put('/templates/:id', authenticateToken, async (req: AuthRequest, res, ne
   }
 })
 
+// Batch issue badges to multiple users
+router.post('/issue/batch', authenticateToken, async (req: AuthRequest, res, next) => {
+  try {
+    const { templateId, recipientAddresses, transactionId } = req.body
+
+    if (!templateId || !recipientAddresses || !Array.isArray(recipientAddresses)) {
+      throw createError('Template ID and recipient addresses array are required', 400)
+    }
+
+    const template = await BadgeTemplate.findById(templateId).populate('community')
+    if (!template || !template.isActive) {
+      throw createError('Badge template not found', 404)
+    }
+
+    const community = template.community as any
+    if (!community.admins.includes(req.user!.stacksAddress)) {
+      throw createError('Only community admin can issue badges', 403)
+    }
+
+    const results = []
+    const errors = []
+
+    for (const recipientAddress of recipientAddresses) {
+      try {
+        // Check if badge already issued to this user
+        const existingBadge = await Badge.findOne({
+          templateId,
+          owner: recipientAddress
+        })
+
+        if (existingBadge) {
+          errors.push({
+            recipientAddress,
+            error: 'Badge already issued to this user'
+          })
+          continue
+        }
+
+        const badge = new Badge({
+          templateId,
+          owner: recipientAddress,
+          issuer: req.user!.stacksAddress,
+          community: community._id,
+          transactionId,
+          metadata: {
+            level: template.level,
+            category: template.category,
+            timestamp: Math.floor(Date.now() / 1000)
+          }
+        })
+
+        await badge.save()
+        results.push({
+          recipientAddress,
+          badgeId: badge._id,
+          success: true
+        })
+      } catch (error: any) {
+        errors.push({
+          recipientAddress,
+          error: error.message || 'Failed to issue badge'
+        })
+      }
+    }
+
+    // Update community member count
+    await updateMemberCount(community._id)
+
+    res.status(201).json({
+      success: true,
+      issued: results.length,
+      failed: errors.length,
+      results,
+      errors
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
 // Revoke badge
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
