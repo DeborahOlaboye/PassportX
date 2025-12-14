@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Response, NextFunction } from 'express'
 import User from '../models/User'
 import Badge from '../models/Badge'
 import { authenticateToken, optionalAuth } from '../middleware/auth'
@@ -130,6 +130,116 @@ router.get('/stats/:address', optionalAuth, async (req: AuthRequest, res, next) 
       communities: communities.size,
       highestLevel: maxLevel,
       joinDate: user.joinDate
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Update user privacy settings
+router.put('/settings/:address', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { address } = req.params
+    const { isPublic, showEmail, showBadges, showCommunities } = req.body
+
+    // Verify user is updating their own settings
+    if (req.user!.stacksAddress !== address) {
+      throw createError('Unauthorized to update these settings', 403)
+    }
+
+    const user = await User.findOne({ stacksAddress: address })
+
+    if (!user) {
+      throw createError('User not found', 404)
+    }
+
+    // Update settings
+    if (isPublic !== undefined) user.isPublic = isPublic
+
+    // Store additional privacy settings in a settings object
+    const settings = {
+      showEmail: showEmail ?? false,
+      showBadges: showBadges ?? true,
+      showCommunities: showCommunities ?? true
+    };
+
+    (user as any).settings = settings
+    user.lastActive = new Date()
+
+    await user.save()
+
+    res.json({
+      success: true,
+      data: {
+        isPublic: user.isPublic,
+        settings
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Initialize user passport
+router.post('/passport/initialize', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const stacksAddress = req.user!.stacksAddress
+
+    let user = await User.findOne({ stacksAddress })
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = new User({
+        stacksAddress,
+        isPublic: true,
+        joinDate: new Date(),
+        lastActive: new Date()
+      })
+    }
+
+    // Generate passport ID (in real implementation, this would mint an NFT)
+    const passportId = `passport_${stacksAddress}_${Date.now()}`;
+    (user as any).passportId = passportId
+    user.lastActive = new Date()
+
+    await user.save()
+
+    res.json({
+      success: true,
+      data: {
+        passportId,
+        stacksAddress: user.stacksAddress
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Get user's communities
+router.get('/communities/:address', optionalAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { address } = req.params
+
+    const user = await User.findOne({ stacksAddress: address })
+      .populate('communities')
+      .populate('adminCommunities')
+
+    if (!user) {
+      throw createError('User not found', 404)
+    }
+
+    // Check if profile is public or user is viewing their own communities
+    if (!user.isPublic && (!req.user || req.user.stacksAddress !== address)) {
+      throw createError('Profile is private', 403)
+    }
+
+    res.json({
+      success: true,
+      data: {
+        communities: user.communities || [],
+        adminCommunities: user.adminCommunities || []
+      }
     })
   } catch (error) {
     next(error)
