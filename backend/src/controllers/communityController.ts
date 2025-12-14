@@ -71,3 +71,83 @@ export const getCommunity = async (req: Request, res: Response) => {
     handleError(res, error, 'Error fetching community:')
   }
 }
+
+// Update community
+export const updateCommunity = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const updates = req.body
+    const userAddress = req.user?.stacksAddress
+
+    if (!userAddress) {
+      return res.status(401).json({ success: false, message: 'Authentication required' })
+    }
+
+    const updatedCommunity = await communityService.updateCommunity(id, updates, userAddress)
+    
+    if (!updatedCommunity) {
+      return res.status(404).json({
+        success: false,
+        message: 'Community not found or update failed'
+      })
+    }
+
+    res.json({
+      success: true,
+      data: updatedCommunity
+    })
+  } catch (error) {
+    handleError(res, error, 'Error updating community:')
+  }
+}
+
+// Delete community (soft delete)
+export const deleteCommunity = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const userAddress = req.user?.stacksAddress
+
+    if (!userAddress) {
+      return res.status(401).json({ success: false, message: 'Authentication required' })
+    }
+
+    const result = await communityService.deleteCommunity(id, userAddress)
+    
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message || 'Failed to delete community'
+      })
+    }
+
+    res.json({
+      success: true,
+      message: 'Community deleted successfully'
+    })
+  } catch (error) {
+    handleError(res, error, 'Error deleting community:')
+  }
+}
+
+// List communities with filters
+export const listCommunities = async (req: Request, res: Response) => {
+  try {
+    const { search, tags, admin, isPublic, limit = '10', offset = '0' } = req.query
+
+    const result = await communityService.listCommunities({
+      search: search as string,
+      tags: tags ? (tags as string).split(',') : undefined,
+      admin: admin as string,
+      isPublic: isPublic ? isPublic === 'true' : undefined,
+      limit: parseInt(limit as string, 10),
+      offset: parseInt(offset as string, 10)
+    })
+
+    res.json({
+      success: true,
+      ...result
+    })
+  } catch (error) {
+    handleError(res, error, 'Error listing communities:')
+  }
+}
