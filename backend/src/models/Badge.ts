@@ -54,9 +54,21 @@ const badgeSchema = new Schema<IBadge>({
   timestamps: true
 })
 
+// Existing indexes
 badgeSchema.index({ owner: 1, issuedAt: -1 })
 badgeSchema.index({ community: 1, issuedAt: -1 })
 badgeSchema.index({ templateId: 1 })
 badgeSchema.index({ tokenId: 1 }, { sparse: true })
+
+// Search and filter indexes
+badgeSchema.index({ 'metadata.level': 1, issuedAt: -1 })
+badgeSchema.index({ 'metadata.category': 1, issuedAt: -1 })
+badgeSchema.index({ issuer: 1, issuedAt: -1 })
+badgeSchema.index({ issuedAt: -1 })
+
+// Compound indexes for common queries
+badgeSchema.index({ 'metadata.level': 1, 'metadata.category': 1, issuedAt: -1 })
+badgeSchema.index({ community: 1, 'metadata.level': 1, issuedAt: -1 })
+badgeSchema.index({ owner: 1, 'metadata.category': 1, issuedAt: -1 })
 
 export default mongoose.model<IBadge>('Badge', badgeSchema)
