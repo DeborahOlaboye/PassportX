@@ -127,3 +127,42 @@ export interface IVerificationResponse {
   error?: string
   message?: string
 }
+
+export interface IBadgeSearchQuery {
+  search?: string
+  level?: number | number[]
+  category?: string | string[]
+  issuer?: string
+  community?: string
+  startDate?: Date
+  endDate?: Date
+  page?: number
+  limit?: number
+  sortBy?: 'newest' | 'oldest' | 'level-high' | 'level-low' | 'name-asc' | 'name-desc'
+}
+
+export interface IBadgeSearchResult {
+  badges: IBadge[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  hasMore: boolean
+}
+
+export interface IBadgeFilters {
+  levels: number[]
+  categories: string[]
+  communities: string[]
+  dateRange?: {
+    start: Date
+    end: Date
+  }
+}
+
+export interface IBadgeSortOption {
+  value: string
+  label: string
+  field: string
+  order: 'asc' | 'desc'
+}
