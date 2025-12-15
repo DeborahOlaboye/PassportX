@@ -10,6 +10,7 @@ import authRoutes from './routes/auth'
 import userRoutes from './routes/users'
 import communityRoutes from './routes/communities'
 import badgeRoutes from './routes/badges'
+import badgeSearchRoutes from './routes/badgeSearch'
 import blockchainRoutes from './routes/blockchain'
 import healthRoutes from './routes/health'
 import verificationRoutes from './routes/verification'
@@ -48,6 +49,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/communities', communityRoutes)
 app.use('/api/badges', badgeRoutes)
+app.use('/api/badges', badgeSearchRoutes)
 app.use('/api/blockchain', blockchainRoutes)
 app.use('/api/verify', verificationRoutes)
 
