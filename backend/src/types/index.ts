@@ -100,3 +100,30 @@ export interface AuthRequest extends Request {
     userId: string
   }
 }
+
+export interface IBadgeVerification {
+  badgeId: string
+  verified: boolean
+  active: boolean
+  owner: string
+  issuer: string
+  level: number
+  category: string
+  timestamp: number
+  templateName?: string
+  templateDescription?: string
+  communityName?: string
+  verifiedAt: Date
+}
+
+export interface IVerificationRequest {
+  badgeId: string
+  claimedOwner?: string
+}
+
+export interface IVerificationResponse {
+  success: boolean
+  verification?: IBadgeVerification
+  error?: string
+  message?: string
+}
