@@ -1,3 +1,5 @@
+note: using existing deployments/default.mainnet-plan.yaml
+The following deployment plan will be applied:
 ---
 id: 0
 name: Mainnet deployment
@@ -72,3 +74,14 @@ plan:
             anchor-block-only: true
             clarity-version: 2
       epoch: "2.5"
+
+
+Total cost:	0.234690 STX
+Duration:	1 blocks
+
+
+Continue [Y/n]?
+
+thread 'main' panicked at components/clarinet-cli/src/deployments/ui/mod.rs:22:23:
+unable to setup user interface: Os { code: 6, kind: Uncategorized, message: "Device not configured" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
