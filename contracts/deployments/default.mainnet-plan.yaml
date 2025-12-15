@@ -53,7 +53,7 @@ plan:
         - contract-publish:
             contract-name: badge-reader
             expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
-            cost: 29660
+            cost: 43280
             path: badge-reader.clar
             anchor-block-only: true
             clarity-version: 2
