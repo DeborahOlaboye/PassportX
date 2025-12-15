@@ -101,3 +101,43 @@
     false
   )
 )
+
+;; Verify badge ownership and authenticity
+(define-read-only (verify-badge-ownership (badge-id uint) (claimed-owner principal))
+  (match (contract-call? .passport-nft get-owner badge-id)
+    actual-owner (ok (is-eq actual-owner claimed-owner))
+    (err err-not-found)
+  )
+)
+
+;; Verify badge is authentic and not revoked
+(define-read-only (verify-badge-authenticity (badge-id uint))
+  (match (contract-call? .badge-metadata get-badge-metadata badge-id)
+    metadata (ok {
+      exists: true,
+      active: (get active metadata),
+      issuer: (get issuer metadata),
+      timestamp: (get timestamp metadata)
+    })
+    (err err-not-found)
+  )
+)
+
+;; Get complete verification status for a badge
+(define-read-only (get-verification-status (badge-id uint))
+  (match (contract-call? .badge-metadata get-badge-metadata badge-id)
+    metadata (match (contract-call? .passport-nft get-owner badge-id)
+      owner (ok {
+        verified: true,
+        active: (get active metadata),
+        owner: owner,
+        issuer: (get issuer metadata),
+        level: (get level metadata),
+        category: (get category metadata),
+        timestamp: (get timestamp metadata)
+      })
+      (err err-not-found)
+    )
+    (err err-not-found)
+  )
+)
