@@ -104,9 +104,12 @@
 
 ;; Verify badge ownership and authenticity
 (define-read-only (verify-badge-ownership (badge-id uint) (claimed-owner principal))
-  (match (contract-call? .passport-nft get-owner badge-id)
-    actual-owner (ok (is-eq actual-owner claimed-owner))
-    (err err-not-found)
+  (let
+    (
+      (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
+      (actual-owner (unwrap! owner-response err-not-found))
+    )
+    (ok (is-eq actual-owner claimed-owner))
   )
 )
 
@@ -125,19 +128,20 @@
 
 ;; Get complete verification status for a badge
 (define-read-only (get-verification-status (badge-id uint))
-  (match (contract-call? .badge-metadata get-badge-metadata badge-id)
-    metadata (match (contract-call? .passport-nft get-owner badge-id)
-      owner (ok {
-        verified: true,
-        active: (get active metadata),
-        owner: owner,
-        issuer: (get issuer metadata),
-        level: (get level metadata),
-        category: (get category metadata),
-        timestamp: (get timestamp metadata)
-      })
-      (err err-not-found)
+  (let
+    (
+      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-not-found))
+      (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
+      (owner (unwrap! owner-response err-not-found))
     )
-    (err err-not-found)
+    (ok {
+      verified: true,
+      active: (get active metadata),
+      owner: owner,
+      issuer: (get issuer metadata),
+      level: (get level metadata),
+      category: (get category metadata),
+      timestamp: (get timestamp metadata)
+    })
   )
 )
