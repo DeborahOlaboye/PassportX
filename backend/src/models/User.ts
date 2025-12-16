@@ -25,6 +25,31 @@ const userSchema = new Schema<IUser>({
   avatar: {
     type: String
   },
+  customUrl: {
+    type: String,
+    unique: true,
+    sparse: true,
+    lowercase: true,
+    trim: true,
+    match: /^[a-z0-9-]+$/,
+    minlength: 3,
+    maxlength: 30
+  },
+  socialLinks: {
+    twitter: { type: String, trim: true },
+    github: { type: String, trim: true },
+    linkedin: { type: String, trim: true },
+    discord: { type: String, trim: true },
+    website: { type: String, trim: true }
+  },
+  themePreferences: {
+    mode: {
+      type: String,
+      enum: ['light', 'dark', 'system'],
+      default: 'system'
+    },
+    accentColor: { type: String, trim: true }
+  },
   isPublic: {
     type: Boolean,
     default: true
@@ -51,5 +76,6 @@ const userSchema = new Schema<IUser>({
 
 userSchema.index({ stacksAddress: 1 })
 userSchema.index({ isPublic: 1 })
+userSchema.index({ customUrl: 1 })
 
 export default mongoose.model<IUser>('User', userSchema)
