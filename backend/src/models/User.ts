@@ -50,6 +50,16 @@ const userSchema = new Schema<IUser>({
     },
     accentColor: { type: String, trim: true }
   },
+  notificationPreferences: {
+    badgeReceived: { type: Boolean, default: true },
+    communityUpdates: { type: Boolean, default: true },
+    systemAnnouncements: { type: Boolean, default: true },
+    badgeIssued: { type: Boolean, default: true },
+    communityInvite: { type: Boolean, default: true },
+    badgeVerified: { type: Boolean, default: true },
+    emailNotifications: { type: Boolean, default: false },
+    pushNotifications: { type: Boolean, default: true }
+  },
   isPublic: {
     type: Boolean,
     default: true
