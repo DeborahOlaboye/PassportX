@@ -27,6 +27,7 @@ export default function SearchBar({
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [showSuggestions, setShowSuggestionsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
   // Debounce search
@@ -57,15 +58,25 @@ export default function SearchBar({
   const fetchSuggestions = async (searchQuery: string) => {
     try {
       setIsLoading(true)
+      setError(null)
       const response = await fetch(`/api/badges/suggestions?q=${encodeURIComponent(searchQuery)}`)
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch suggestions: ${response.statusText}`)
+      }
+
       const data = await response.json()
 
       if (data.success) {
         setSuggestions(data.data)
         setShowSuggestionsVisible(true)
+      } else {
+        throw new Error(data.error || 'Failed to fetch suggestions')
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load suggestions')
+      setSuggestions([])
     } finally {
       setIsLoading(false)
     }
@@ -105,6 +116,12 @@ export default function SearchBar({
 
         <input
           type="text"
+          role="searchbox"
+          aria-label="Search badges"
+          aria-describedby="search-description"
+          aria-autocomplete="list"
+          aria-controls={showSuggestionsVisible && suggestions.length > 0 ? 'search-suggestions' : undefined}
+          aria-expanded={showSuggestionsVisible && suggestions.length > 0}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyPress}
@@ -112,6 +129,9 @@ export default function SearchBar({
           placeholder={placeholder}
           className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
+        <span id="search-description" className="sr-only">
+          Search for badges by name, description, or issuer. Use arrow keys to navigate suggestions.
+        </span>
 
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
           {query && (
@@ -128,18 +148,24 @@ export default function SearchBar({
 
       {/* Search Suggestions */}
       {showSuggestionsVisible && suggestions.length > 0 && (
-        <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto">
+        <div
+          id="search-suggestions"
+          role="listbox"
+          aria-label="Search suggestions"
+          className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto"
+        >
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center text-gray-500" role="status" aria-live="polite">
               Loading suggestions...
             </div>
           ) : (
             <ul className="py-2">
-              {suggestions.map((suggestion) => (
-                <li key={suggestion.id}>
+              {suggestions.map((suggestion, index) => (
+                <li key={suggestion.id} role="option" aria-selected={false}>
                   <button
                     onClick={() => handleSuggestionClick(suggestion)}
                     className="w-full px-4 py-3 hover:bg-gray-50 text-left transition-colors"
+                    aria-label={`Select ${suggestion.name} in ${suggestion.category} category`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -161,9 +187,16 @@ export default function SearchBar({
       )}
 
       {/* No results */}
-      {showSuggestionsVisible && query.length >= 2 && suggestions.length === 0 && !isLoading && (
+      {showSuggestionsVisible && query.length >= 2 && suggestions.length === 0 && !isLoading && !error && (
         <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-4">
           <p className="text-gray-500 text-center">No badges found matching "{query}"</p>
+        </div>
+      )}
+
+      {/* Error message */}
+      {error && showSuggestionsVisible && (
+        <div className="absolute z-10 mt-2 w-full bg-red-50 rounded-lg shadow-lg border border-red-200 p-4">
+          <p className="text-red-600 text-center text-sm">{error}</p>
         </div>
       )}
     </div>
