@@ -25,6 +25,8 @@ interface FilterPanelProps {
 export default function FilterPanel({ onFilterChange, className = '' }: FilterPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [filterOptions, setFilterOptions] = useState<FilterOption | null>(null)
+  const [isLoadingFilters, setIsLoadingFilters] = useState(false)
+  const [filterError, setFilterError] = useState<string | null>(null)
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     levels: [],
     categories: [],
@@ -46,14 +48,26 @@ export default function FilterPanel({ onFilterChange, className = '' }: FilterPa
 
   const fetchFilterOptions = async () => {
     try {
+      setIsLoadingFilters(true)
+      setFilterError(null)
       const response = await fetch('/api/badges/filters')
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch filters: ${response.statusText}`)
+      }
+
       const data = await response.json()
 
       if (data.success) {
         setFilterOptions(data.data)
+      } else {
+        throw new Error(data.error || 'Failed to load filter options')
       }
     } catch (error) {
       console.error('Error fetching filter options:', error)
+      setFilterError(error instanceof Error ? error.message : 'Failed to load filters')
+    } finally {
+      setIsLoadingFilters(false)
     }
   }
 
@@ -161,6 +175,30 @@ export default function FilterPanel({ onFilterChange, className = '' }: FilterPa
 
           {/* Filter Content */}
           <div className="max-h-96 overflow-y-auto">
+            {/* Loading State */}
+            {isLoadingFilters && (
+              <div className="p-8 text-center">
+                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-2 text-sm text-gray-600">Loading filters...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {filterError && (
+              <div className="p-4 m-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{filterError}</p>
+                <button
+                  onClick={fetchFilterOptions}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-700 underline"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {/* Filters */}
+            {!isLoadingFilters && !filterError && (
+              <>
             {/* Level Filter */}
             <div className="border-b border-gray-200">
               <button
@@ -293,6 +331,8 @@ export default function FilterPanel({ onFilterChange, className = '' }: FilterPa
                 </div>
               )}
             </div>
+              </>
+            )}
           </div>
         </div>
       )}

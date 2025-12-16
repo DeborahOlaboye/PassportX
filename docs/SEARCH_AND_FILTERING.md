@@ -56,6 +56,38 @@ The Badge Search and Filtering feature allows users to quickly find specific bad
 - Results info (showing X-Y of Z badges)
 - Scroll to top on page change
 
+## Architecture
+
+The search and filtering feature uses a Next.js frontend with API routes that proxy requests to an Express backend:
+
+```
+Next.js Frontend (Port 3000)
+    ↓
+Next.js API Routes (/api/badges/*)
+    ↓
+Express Backend (Port 3001)
+    ↓
+MongoDB Database
+```
+
+### Next.js API Routes
+
+All badge search endpoints are proxied through Next.js API routes to enable seamless communication between the frontend and backend:
+
+- `/api/badges/search` - Proxies search requests
+- `/api/badges/filters` - Proxies filter options (with caching)
+- `/api/badges/suggestions` - Proxies autocomplete suggestions
+- `/api/badges/trending` - Proxies trending badges (with caching)
+- `/api/badges/issuer/[address]` - Proxies issuer search
+
+### Environment Configuration
+
+The `BACKEND_URL` environment variable must be set in `.env` to configure the backend server location:
+
+```env
+BACKEND_URL=http://localhost:3001
+```
+
 ## API Endpoints
 
 ### Search Badges
@@ -261,6 +293,29 @@ The following indexes are automatically created for optimal search performance:
 4. **Lean Queries**: MongoDB `.lean()` used for faster read operations
 5. **Compound Indexes**: Multi-field queries use compound indexes
 6. **Text Indexes**: Full-text search on template names and descriptions
+7. **API Response Caching**: Filter options cached for 60s, trending badges cached for 5 minutes
+8. **Next.js Revalidation**: Static data revalidated using Next.js ISR
+
+## Accessibility Features
+
+The search interface includes comprehensive accessibility improvements:
+
+1. **ARIA Labels**: All interactive elements have proper ARIA labels
+2. **Keyboard Navigation**: Full keyboard support for search and filters
+3. **Screen Reader Support**: Hidden descriptions for screen readers
+4. **Focus Management**: Proper focus indicators and management
+5. **Semantic HTML**: Proper use of semantic HTML5 elements
+6. **ARIA Roles**: Search box, listbox, and option roles for autocomplete
+
+## Responsive Design
+
+The search interface is fully responsive with:
+
+1. **Mobile-First Design**: Optimized for mobile devices first
+2. **Flexible Layouts**: Uses flexbox and grid for responsive layouts
+3. **Responsive Typography**: Font sizes adjust based on screen size
+4. **Stacked Controls**: Filter and sort controls stack on small screens
+5. **Touch-Friendly**: Large touch targets for mobile devices
 
 ## Usage Examples
 
