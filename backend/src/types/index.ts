@@ -1,12 +1,28 @@
 import { Document } from 'mongoose'
 import { Request } from 'express'
 
+export interface IUserSocialLinks {
+  twitter?: string
+  github?: string
+  linkedin?: string
+  discord?: string
+  website?: string
+}
+
+export interface IUserThemePreferences {
+  mode: 'light' | 'dark' | 'system'
+  accentColor?: string
+}
+
 export interface IUser extends Document {
   stacksAddress: string
   email?: string
   name?: string
   bio?: string
   avatar?: string
+  customUrl?: string
+  socialLinks?: IUserSocialLinks
+  themePreferences?: IUserThemePreferences
   isPublic: boolean
   joinDate: Date
   lastActive: Date
