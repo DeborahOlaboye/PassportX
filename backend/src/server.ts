@@ -1,4 +1,5 @@
 import express from 'express'
+import { createServer } from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
@@ -6,6 +7,7 @@ import dotenv from 'dotenv'
 import { connectDB } from './utils/database'
 import { errorHandler } from './middleware/errorHandler'
 import { requestLogger } from './middleware/monitoring'
+import { initializeSocket, setSocketInstance } from './config/socket'
 import authRoutes from './routes/auth'
 import userRoutes from './routes/users'
 import communityRoutes from './routes/communities'
@@ -14,10 +16,12 @@ import badgeSearchRoutes from './routes/badgeSearch'
 import blockchainRoutes from './routes/blockchain'
 import healthRoutes from './routes/health'
 import verificationRoutes from './routes/verification'
+import notificationRoutes from './routes/notifications'
 
 dotenv.config()
 
 const app = express()
+const httpServer = createServer(app)
 const PORT = process.env.PORT || 3001
 
 // Security middleware
@@ -52,6 +56,7 @@ app.use('/api/badges', badgeRoutes)
 app.use('/api/badges', badgeSearchRoutes)
 app.use('/api/blockchain', blockchainRoutes)
 app.use('/api/verify', verificationRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 // Error handling
 app.use(errorHandler)
@@ -61,12 +66,17 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' })
 })
 
+// Initialize Socket.IO
+const io = initializeSocket(httpServer)
+setSocketInstance(io)
+
 // Start server
 const startServer = async () => {
   try {
     await connectDB()
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`🚀 PassportX Backend running on port ${PORT}`)
+      console.log(`🔌 WebSocket server ready`)
     })
   } catch (error) {
     console.error('Failed to start server:', error)

@@ -14,6 +14,17 @@ export interface IUserThemePreferences {
   accentColor?: string
 }
 
+export interface INotificationPreferences {
+  badgeReceived: boolean
+  communityUpdates: boolean
+  systemAnnouncements: boolean
+  badgeIssued: boolean
+  communityInvite: boolean
+  badgeVerified: boolean
+  emailNotifications: boolean
+  pushNotifications: boolean
+}
+
 export interface IUser extends Document {
   stacksAddress: string
   email?: string
@@ -23,6 +34,7 @@ export interface IUser extends Document {
   customUrl?: string
   socialLinks?: IUserSocialLinks
   themePreferences?: IUserThemePreferences
+  notificationPreferences?: INotificationPreferences
   isPublic: boolean
   joinDate: Date
   lastActive: Date
@@ -181,4 +193,43 @@ export interface IBadgeSortOption {
   label: string
   field: string
   order: 'asc' | 'desc'
+}
+
+export type NotificationType = 'badge_received' | 'community_update' | 'system_announcement' | 'badge_issued' | 'community_invite' | 'badge_verified'
+
+export interface INotification extends Document {
+  userId: string // User's Stacks address
+  type: NotificationType
+  title: string
+  message: string
+  data?: {
+    badgeId?: string
+    communityId?: string
+    templateId?: string
+    issuer?: string
+    url?: string
+    [key: string]: any
+  }
+  read: boolean
+  createdAt: Date
+  expiresAt?: Date
+}
+
+export interface INotificationQuery {
+  userId: string
+  type?: NotificationType | NotificationType[]
+  read?: boolean
+  page?: number
+  limit?: number
+  sortBy?: 'newest' | 'oldest'
+}
+
+export interface INotificationResult {
+  notifications: INotification[]
+  total: number
+  unreadCount: number
+  page: number
+  limit: number
+  totalPages: number
+  hasMore: boolean
 }
