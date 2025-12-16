@@ -16,6 +16,7 @@ import badgeSearchRoutes from './routes/badgeSearch'
 import blockchainRoutes from './routes/blockchain'
 import healthRoutes from './routes/health'
 import verificationRoutes from './routes/verification'
+import notificationRoutes from './routes/notifications'
 
 dotenv.config()
 
@@ -55,6 +56,7 @@ app.use('/api/badges', badgeRoutes)
 app.use('/api/badges', badgeSearchRoutes)
 app.use('/api/blockchain', blockchainRoutes)
 app.use('/api/verify', verificationRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 // Error handling
 app.use(errorHandler)
