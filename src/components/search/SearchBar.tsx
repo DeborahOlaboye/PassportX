@@ -27,6 +27,7 @@ export default function SearchBar({
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [showSuggestions, setShowSuggestionsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
   // Debounce search
@@ -57,15 +58,25 @@ export default function SearchBar({
   const fetchSuggestions = async (searchQuery: string) => {
     try {
       setIsLoading(true)
+      setError(null)
       const response = await fetch(`/api/badges/suggestions?q=${encodeURIComponent(searchQuery)}`)
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch suggestions: ${response.statusText}`)
+      }
+
       const data = await response.json()
 
       if (data.success) {
         setSuggestions(data.data)
         setShowSuggestionsVisible(true)
+      } else {
+        throw new Error(data.error || 'Failed to fetch suggestions')
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load suggestions')
+      setSuggestions([])
     } finally {
       setIsLoading(false)
     }
@@ -161,9 +172,16 @@ export default function SearchBar({
       )}
 
       {/* No results */}
-      {showSuggestionsVisible && query.length >= 2 && suggestions.length === 0 && !isLoading && (
+      {showSuggestionsVisible && query.length >= 2 && suggestions.length === 0 && !isLoading && !error && (
         <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-4">
           <p className="text-gray-500 text-center">No badges found matching "{query}"</p>
+        </div>
+      )}
+
+      {/* Error message */}
+      {error && showSuggestionsVisible && (
+        <div className="absolute z-10 mt-2 w-full bg-red-50 rounded-lg shadow-lg border border-red-200 p-4">
+          <p className="text-red-600 text-center text-sm">{error}</p>
         </div>
       )}
     </div>
