@@ -17,12 +17,14 @@
     "test:e2e:open": "cypress open",
     "test:performance": "k6 run tests/performance/load-test.js",
     "test:all": "npm run lint && npm run test:coverage && npm run test:e2e",
+    "test:chainhook": "npx tsx scripts/test-chainhook-config.ts",
     "lint": "eslint . --ext .js,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.ts,.tsx --fix",
     "format": "prettier --write .",
     "quality:check": "sonar-scanner"
   },
   "dependencies": {
+    "@hirosystems/chainhook-client": "^2.4.0",
     "@stacks/connect": "^7.0.0",
     "@stacks/network": "^6.0.0",
     "@stacks/transactions": "^6.0.0",
