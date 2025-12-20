@@ -47,11 +47,13 @@ export class CommunityCreationService {
       });
 
       // Validate event data
-      if (!event.communityName || !event.ownerAddress) {
+      const validation = this.validateCommunityEvent(event);
+      if (!validation.valid) {
+        this.logger.warn('Invalid community creation event', { errors: validation.errors });
         return {
           success: false,
-          message: 'Invalid community creation event: missing required fields',
-          error: 'Missing communityName or ownerAddress'
+          message: 'Invalid community creation event: ' + validation.errors.join(', '),
+          error: 'Validation failed'
         };
       }
 
@@ -261,6 +263,85 @@ export class CommunityCreationService {
       .trim()
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
+  }
+
+  private validateCommunityEvent(event: CommunityCreationEvent): { valid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (!event) {
+      errors.push('Event is null or undefined');
+      return { valid: false, errors };
+    }
+
+    if (!event.communityName || typeof event.communityName !== 'string' || event.communityName.trim().length === 0) {
+      errors.push('Community name is required and must be a non-empty string');
+    }
+
+    if (!event.ownerAddress || typeof event.ownerAddress !== 'string' || event.ownerAddress.trim().length === 0) {
+      errors.push('Owner address is required and must be a non-empty string');
+    }
+
+    if (!event.contractAddress || typeof event.contractAddress !== 'string' || event.contractAddress.trim().length === 0) {
+      errors.push('Contract address is required and must be a non-empty string');
+    }
+
+    if (!event.transactionHash || typeof event.transactionHash !== 'string' || event.transactionHash.trim().length === 0) {
+      errors.push('Transaction hash is required and must be a non-empty string');
+    }
+
+    if (event.communityName && event.communityName.length > 64) {
+      errors.push('Community name must be 64 characters or less');
+    }
+
+    if (event.description && event.description.length > 256) {
+      errors.push('Description must be 256 characters or less');
+    }
+
+    if (typeof event.blockHeight !== 'number' || event.blockHeight < 0) {
+      errors.push('Block height must be a non-negative number');
+    }
+
+    if (typeof event.timestamp !== 'number' || event.timestamp < 0) {
+      errors.push('Timestamp must be a non-negative number');
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
+  private validateCommunityName(name: string): { valid: boolean; error?: string } {
+    if (!name || name.trim().length === 0) {
+      return { valid: false, error: 'Community name cannot be empty' };
+    }
+
+    if (name.length < 3) {
+      return { valid: false, error: 'Community name must be at least 3 characters' };
+    }
+
+    if (name.length > 64) {
+      return { valid: false, error: 'Community name cannot exceed 64 characters' };
+    }
+
+    if (!/^[a-zA-Z0-9\s\-_&.]{3,64}$/.test(name)) {
+      return { valid: false, error: 'Community name contains invalid characters' };
+    }
+
+    return { valid: true };
+  }
+
+  private validateStacksAddress(address: string): { valid: boolean; error?: string } {
+    if (!address || typeof address !== 'string') {
+      return { valid: false, error: 'Address must be a non-empty string' };
+    }
+
+    if (!address.startsWith('SP') && !address.startsWith('ST')) {
+      return { valid: false, error: 'Invalid Stacks address format' };
+    }
+
+    if (address.length < 30 || address.length > 42) {
+      return { valid: false, error: 'Stacks address has invalid length' };
+    }
+
+    return { valid: true };
   }
 }
 
