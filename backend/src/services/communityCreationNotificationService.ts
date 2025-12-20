@@ -26,33 +26,53 @@ export class CommunityCreationNotificationService {
     event: CommunityCreationEvent,
     options: WelcomeNotificationOptions = {}
   ): NotificationPayload {
-    const { includeInstructions = true, includeDashboardLink = true } = options;
-
-    const message = this.buildWelcomeMessage(
-      event.communityName,
-      includeInstructions,
-      includeDashboardLink
-    );
-
-    return {
-      userId: event.ownerAddress,
-      type: 'community_created',
-      title: `🎉 ${event.communityName} Community Created`,
-      message,
-      data: {
-        eventType: 'community-creation',
-        communityId: event.communityId,
-        communityName: event.communityName,
-        description: event.description,
-        ownerAddress: event.ownerAddress,
-        contractAddress: event.contractAddress,
-        transactionHash: event.transactionHash,
-        blockHeight: event.blockHeight,
-        timestamp: event.timestamp,
-        dashboardUrl: `/communities/${event.communityId}`,
-        settingsUrl: `/communities/${event.communityId}/settings`
+    try {
+      if (!event) {
+        throw new Error('Event is required for notification creation');
       }
-    };
+
+      if (!event.ownerAddress) {
+        throw new Error('Owner address is required for notification');
+      }
+
+      const { includeInstructions = true, includeDashboardLink = true } = options;
+
+      const message = this.buildWelcomeMessage(
+        event.communityName || 'Your Community',
+        includeInstructions,
+        includeDashboardLink
+      );
+
+      const notification: NotificationPayload = {
+        userId: event.ownerAddress,
+        type: 'community_created',
+        title: `🎉 ${event.communityName || 'Community'} Created`,
+        message,
+        data: {
+          eventType: 'community-creation',
+          communityId: event.communityId || '',
+          communityName: event.communityName || '',
+          description: event.description || '',
+          ownerAddress: event.ownerAddress,
+          contractAddress: event.contractAddress || '',
+          transactionHash: event.transactionHash || '',
+          blockHeight: event.blockHeight || 0,
+          timestamp: event.timestamp || Date.now(),
+          dashboardUrl: event.communityId ? `/communities/${event.communityId}` : '',
+          settingsUrl: event.communityId ? `/communities/${event.communityId}/settings` : ''
+        }
+      };
+
+      this.logger.info('Created welcome notification', {
+        communityId: event.communityId,
+        userId: event.ownerAddress
+      });
+
+      return notification;
+    } catch (error) {
+      this.logger.error('Error creating welcome notification:', error);
+      throw error;
+    }
   }
 
   private buildWelcomeMessage(
@@ -114,36 +134,60 @@ export class CommunityCreationNotificationService {
     options: WelcomeNotificationOptions = {}
   ): Promise<NotificationPayload[]> {
     try {
+      if (!event) {
+        throw new Error('Event is required for building notification batch');
+      }
+
+      if (!Array.isArray(adminAddresses) || adminAddresses.length === 0) {
+        this.logger.warn('No admin addresses provided for notification batch', {
+          communityId: event.communityId
+        });
+        return [];
+      }
+
       const notifications: NotificationPayload[] = [];
 
       // Primary admin welcome notification
-      if (adminAddresses.length > 0) {
+      try {
         const primaryAdmin = adminAddresses[0];
-        const welcomeNotification = this.createWelcomeNotification(event, options);
-        notifications.push(welcomeNotification);
+        if (primaryAdmin && typeof primaryAdmin === 'string') {
+          const welcomeNotification = this.createWelcomeNotification(event, options);
+          notifications.push(welcomeNotification);
+          this.logger.debug('Added primary admin welcome notification', { adminAddress: primaryAdmin });
+        }
+      } catch (primaryError) {
+        this.logger.error('Failed to create primary admin notification', primaryError);
+      }
 
-        // Additional admin confirmations
-        for (let i = 1; i < adminAddresses.length; i++) {
+      // Additional admin confirmations
+      for (let i = 1; i < adminAddresses.length; i++) {
+        try {
           const adminAddress = adminAddresses[i];
-          const confirmationNotification = this.createAdminConfirmationNotification(
-            event.communityId,
-            event.communityName,
-            adminAddress,
-            `/communities/${event.communityId}`
-          );
-          notifications.push(confirmationNotification);
+          if (adminAddress && typeof adminAddress === 'string') {
+            const confirmationNotification = this.createAdminConfirmationNotification(
+              event.communityId || '',
+              event.communityName || 'Community',
+              adminAddress,
+              event.communityId ? `/communities/${event.communityId}` : ''
+            );
+            notifications.push(confirmationNotification);
+            this.logger.debug('Added secondary admin confirmation notification', { adminAddress });
+          }
+        } catch (adminError) {
+          this.logger.error('Failed to create admin confirmation notification for admin ' + i, adminError);
         }
       }
 
       this.logger.info('Built notification batch for community creation', {
         communityId: event.communityId,
-        notificationCount: notifications.length
+        notificationCount: notifications.length,
+        adminCount: adminAddresses.length
       });
 
       return notifications;
     } catch (error) {
       this.logger.error('Failed to build notification batch', error);
-      throw error;
+      return [];
     }
   }
 
