@@ -52,17 +52,18 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
 
             if (method === 'create-community') {
               const args = op.contract_call.args || [];
+              const ownerAddress = this.extractOwnerAddress(op.contract_call, tx);
 
               const communityEvent: CommunityCreationEvent = {
                 communityId: this.extractCommunityId(args),
                 communityName: this.extractCommunityName(args),
                 description: this.extractDescription(args),
-                ownerAddress: tx.transaction_index.toString(),
+                ownerAddress,
                 createdAtBlockHeight: event.block_identifier.index,
                 contractAddress: op.contract_call.contract,
                 transactionHash: tx.transaction_hash,
                 blockHeight: event.block_identifier.index,
-                timestamp: event.metadata?.pox_cycle_position || Date.now()
+                timestamp: this.extractTimestamp(event)
               };
 
               if (communityEvent.communityId && communityEvent.communityName) {
@@ -80,7 +81,7 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
                   contractAddress: evt.contract_address,
                   transactionHash: tx.transaction_hash,
                   blockHeight: event.block_identifier.index,
-                  timestamp: event.metadata?.pox_cycle_position || Date.now()
+                  timestamp: this.extractTimestamp(event)
                 });
 
                 if (communityEvent && communityEvent.communityId) {
@@ -117,6 +118,20 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
   private extractDescription(args: any[]): string {
     if (!args || args.length < 3) return '';
     return args[2]?.value || args[2] || '';
+  }
+
+  private extractOwnerAddress(contractCall: any, tx: any): string {
+    if (contractCall?.args && contractCall.args.length > 3) {
+      return contractCall.args[3]?.value || contractCall.args[3] || '';
+    }
+    return tx.transaction_sender || '';
+  }
+
+  private extractTimestamp(event: ChainhookEventPayload): number {
+    if (event.metadata?.pox_cycle_position) {
+      return event.metadata.pox_cycle_position;
+    }
+    return Date.now();
   }
 
   private createNotification(communityEvent: CommunityCreationEvent): NotificationPayload {
