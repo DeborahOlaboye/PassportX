@@ -161,32 +161,112 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
   }
 
   private extractCommunityId(args: any[]): string {
-    if (!args || args.length === 0) return '';
-    return args[0]?.value || args[0] || '';
+    try {
+      if (!args || !Array.isArray(args) || args.length === 0) {
+        this.logger.debug('No community ID found in args');
+        return '';
+      }
+      const id = args[0]?.value || args[0] || '';
+      if (id && typeof id === 'string') {
+        this.logger.debug('Extracted community ID', { id });
+        return id;
+      }
+      return '';
+    } catch (error) {
+      this.logger.error('Error extracting community ID:', error);
+      return '';
+    }
   }
 
   private extractCommunityName(args: any[]): string {
-    if (!args || args.length < 2) return '';
-    return args[1]?.value || args[1] || '';
+    try {
+      if (!args || !Array.isArray(args) || args.length < 2) {
+        this.logger.debug('No community name found in args');
+        return '';
+      }
+      const name = args[1]?.value || args[1] || '';
+      if (name && typeof name === 'string') {
+        this.logger.debug('Extracted community name', { name });
+        return name;
+      }
+      return '';
+    } catch (error) {
+      this.logger.error('Error extracting community name:', error);
+      return '';
+    }
   }
 
   private extractDescription(args: any[]): string {
-    if (!args || args.length < 3) return '';
-    return args[2]?.value || args[2] || '';
+    try {
+      if (!args || !Array.isArray(args) || args.length < 3) {
+        this.logger.debug('No description found in args');
+        return '';
+      }
+      const description = args[2]?.value || args[2] || '';
+      if (description && typeof description === 'string') {
+        this.logger.debug('Extracted description');
+        return description;
+      }
+      return '';
+    } catch (error) {
+      this.logger.error('Error extracting description:', error);
+      return '';
+    }
   }
 
   private extractOwnerAddress(contractCall: any, tx: any): string {
-    if (contractCall?.args && contractCall.args.length > 3) {
-      return contractCall.args[3]?.value || contractCall.args[3] || '';
+    try {
+      if (contractCall?.args && Array.isArray(contractCall.args) && contractCall.args.length > 3) {
+        const arg = contractCall.args[3];
+        const ownerFromArgs = arg?.value || arg;
+        if (typeof ownerFromArgs === 'string' && ownerFromArgs.trim().length > 0) {
+          this.logger.debug('Extracted owner address from contract args', { address: ownerFromArgs });
+          return ownerFromArgs;
+        }
+      }
+
+      if (tx?.transaction_sender && typeof tx.transaction_sender === 'string') {
+        this.logger.debug('Using transaction sender as owner address', { address: tx.transaction_sender });
+        return tx.transaction_sender;
+      }
+
+      if (tx?.sender && typeof tx.sender === 'string') {
+        this.logger.debug('Using tx.sender as owner address', { address: tx.sender });
+        return tx.sender;
+      }
+
+      if (tx?.tx_sender && typeof tx.tx_sender === 'string') {
+        this.logger.debug('Using tx.tx_sender as owner address', { address: tx.tx_sender });
+        return tx.tx_sender;
+      }
+
+      this.logger.warn('Unable to extract owner address from contract call or transaction');
+      return '';
+    } catch (error) {
+      this.logger.error('Error extracting owner address:', error);
+      return '';
     }
-    return tx.transaction_sender || '';
   }
 
   private extractTimestamp(event: ChainhookEventPayload): number {
-    if (event.metadata?.pox_cycle_position) {
-      return event.metadata.pox_cycle_position;
+    try {
+      if (event?.metadata?.pox_cycle_position && typeof event.metadata.pox_cycle_position === 'number') {
+        this.logger.debug('Using pox_cycle_position as timestamp', { timestamp: event.metadata.pox_cycle_position });
+        return event.metadata.pox_cycle_position;
+      }
+
+      if (event?.timestamp && typeof event.timestamp === 'number') {
+        this.logger.debug('Using event timestamp', { timestamp: event.timestamp });
+        return event.timestamp;
+      }
+
+      const now = Date.now();
+      this.logger.debug('Using current timestamp', { timestamp: now });
+      return now;
+    } catch (error) {
+      this.logger.error('Error extracting timestamp:', error);
+      return Date.now();
     }
-    return Date.now();
   }
 
   private validateCommunityEvent(event: CommunityCreationEvent): boolean {
