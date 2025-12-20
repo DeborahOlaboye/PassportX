@@ -4,6 +4,8 @@ import { getContracts } from './contracts';
 export interface PredicateConfig {
   communityCreation: Predicate;
   communityCreationEvent?: Predicate;
+  badgeMint?: Predicate;
+  badgeMintEvent?: Predicate;
   [key: string]: Predicate | undefined;
 }
 
@@ -89,6 +91,65 @@ function buildCommunityCreationEventPredicate(network: 'mainnet' | 'testnet' | '
   };
 }
 
+function getBadgeNftContractId(): string {
+  const contracts = getContracts();
+  return `${contracts.passportNft.address}.${contracts.passportNft.name}`;
+}
+
+function buildBadgeMintPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+  const contractId = getBadgeNftContractId();
+  const webhookUrl = process.env.BADGE_MINT_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/mint';
+  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+
+  return {
+    uuid: 'pred_badge_mint_call',
+    name: 'Badge Mint - Contract Call',
+    type: 'stacks-contract-call',
+    network,
+    if_this: {
+      scope: 'contract',
+      contract_identifier: contractId,
+      method: 'mint'
+    },
+    then_that: {
+      http_post: {
+        url: webhookUrl,
+        authorization_header: authToken
+      }
+    },
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
+function buildBadgeMintEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+  const contractId = getBadgeNftContractId();
+  const webhookUrl = process.env.BADGE_MINT_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/mint';
+  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+
+  return {
+    uuid: 'pred_badge_mint_event',
+    name: 'Badge Mint - Contract Event',
+    type: 'stacks-print',
+    network,
+    if_this: {
+      scope: 'contract',
+      contract_identifier: contractId,
+      print_event_type: 'badge-minted'
+    },
+    then_that: {
+      http_post: {
+        url: webhookUrl,
+        authorization_header: authToken
+      }
+    },
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
 export function getPredicateConfigs(enableEventPredicate: boolean = false): PredicateConfig {
   const network = (process.env.STACKS_NETWORK || 'devnet') as 'mainnet' | 'testnet' | 'devnet';
 
@@ -98,6 +159,14 @@ export function getPredicateConfigs(enableEventPredicate: boolean = false): Pred
 
   if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_EVENT_PREDICATE === 'true') {
     config.communityCreationEvent = buildCommunityCreationEventPredicate(network);
+  }
+
+  if (process.env.CHAINHOOK_ENABLE_BADGE_MINT === 'true') {
+    config.badgeMint = buildBadgeMintPredicate(network);
+  }
+
+  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_MINT_EVENT === 'true') {
+    config.badgeMintEvent = buildBadgeMintEventPredicate(network);
   }
 
   return config;
