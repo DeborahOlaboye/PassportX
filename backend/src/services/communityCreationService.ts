@@ -21,8 +21,22 @@ export interface CommunityCreationResult {
   error?: string;
 }
 
+export interface AuditLog {
+  timestamp: Date;
+  eventType: string;
+  communityId: string;
+  communityName: string;
+  ownerAddress: string;
+  contractAddress: string;
+  transactionHash: string;
+  blockHeight: number;
+  status: 'success' | 'failure';
+  errorMessage?: string;
+}
+
 export class CommunityCreationService {
   private logger: any;
+  private auditLogs: AuditLog[] = [];
 
   constructor(logger?: any) {
     this.logger = logger || this.getDefaultLogger();
@@ -35,6 +49,49 @@ export class CommunityCreationService {
       warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCreationService] ${msg}`, ...args),
       error: (msg: string, ...args: any[]) => console.error(`[CommunityCreationService] ${msg}`, ...args)
     };
+  }
+
+  private logAudit(log: AuditLog): void {
+    try {
+      this.auditLogs.push(log);
+
+      const logMessage = `[AUDIT] Community ${log.status === 'success' ? 'created' : 'creation failed'}: ${log.communityName} (${log.communityId}) by ${log.ownerAddress}`;
+      
+      if (log.status === 'success') {
+        this.logger.info(logMessage, {
+          communityId: log.communityId,
+          communityName: log.communityName,
+          ownerAddress: log.ownerAddress,
+          transactionHash: log.transactionHash,
+          blockHeight: log.blockHeight
+        });
+      } else {
+        this.logger.error(logMessage, {
+          communityId: log.communityId,
+          communityName: log.communityName,
+          ownerAddress: log.ownerAddress,
+          error: log.errorMessage
+        });
+      }
+
+      if (this.auditLogs.length > 10000) {
+        this.auditLogs = this.auditLogs.slice(-5000);
+      }
+    } catch (error) {
+      this.logger.error('Error writing audit log:', error);
+    }
+  }
+
+  getAuditLogs(): AuditLog[] {
+    return [...this.auditLogs];
+  }
+
+  getAuditLogsByOwner(ownerAddress: string): AuditLog[] {
+    return this.auditLogs.filter(log => log.ownerAddress === ownerAddress);
+  }
+
+  getAuditLogsByCommunity(communityId: string): AuditLog[] {
+    return this.auditLogs.filter(log => log.communityId === communityId);
   }
 
   async processCommunityCreationEvent(event: CommunityCreationEvent): Promise<CommunityCreationResult> {
@@ -50,6 +107,20 @@ export class CommunityCreationService {
       const validation = this.validateCommunityEvent(event);
       if (!validation.valid) {
         this.logger.warn('Invalid community creation event', { errors: validation.errors });
+
+        this.logAudit({
+          timestamp: new Date(),
+          eventType: 'community_created',
+          communityId: event?.communityId || 'unknown',
+          communityName: event?.communityName || 'unknown',
+          ownerAddress: event?.ownerAddress || 'unknown',
+          contractAddress: event?.contractAddress || 'unknown',
+          transactionHash: event?.transactionHash || 'unknown',
+          blockHeight: event?.blockHeight || 0,
+          status: 'failure',
+          errorMessage: 'Validation failed: ' + validation.errors.join(', ')
+        });
+
         return {
           success: false,
           message: 'Invalid community creation event: ' + validation.errors.join(', '),
@@ -209,6 +280,18 @@ export class CommunityCreationService {
         };
       }
 
+      this.logAudit({
+        timestamp: new Date(),
+        eventType: 'community_created',
+        communityId: event.communityId,
+        communityName: event.communityName,
+        ownerAddress: event.ownerAddress,
+        contractAddress: event.contractAddress,
+        transactionHash: event.transactionHash,
+        blockHeight: event.blockHeight,
+        status: 'success'
+      });
+
       return {
         success: true,
         communityId: community._id?.toString(),
@@ -217,6 +300,19 @@ export class CommunityCreationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Failed to process community creation event', error);
+
+      this.logAudit({
+        timestamp: new Date(),
+        eventType: 'community_created',
+        communityId: event.communityId,
+        communityName: event.communityName,
+        ownerAddress: event.ownerAddress,
+        contractAddress: event.contractAddress,
+        transactionHash: event.transactionHash,
+        blockHeight: event.blockHeight,
+        status: 'failure',
+        errorMessage
+      });
 
       return {
         success: false,
