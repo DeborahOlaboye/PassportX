@@ -4,6 +4,7 @@ import CommunityCreationNotificationService from '../services/communityCreationN
 import CommunityCacheService from '../services/communityCacheService';
 import { CommunityCreationEvent } from '../services/communityCreationService';
 import { authenticateToken } from '../middleware/auth';
+import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation';
 
 const router = Router();
 
@@ -60,7 +61,7 @@ function validateCommunityCreationEvent(event: any): { valid: boolean; errors: s
   return { valid: errors.length === 0, errors };
 }
 
-router.post('/webhook/events', async (req: Request, res: Response) => {
+router.post('/webhook/events', validateWebhookSignature(getWebhookValidationConfig()), async (req: Request, res: Response) => {
   try {
     if (!communityCreationService || !notificationService || !cacheService) {
       console.error('Community creation services not initialized');
