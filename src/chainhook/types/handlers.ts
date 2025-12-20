@@ -3,6 +3,7 @@ export type NotificationType =
   | 'badge_issued' 
   | 'badge_verified' 
   | 'community_update' 
+  | 'community_created'
   | 'community_invite' 
   | 'system_announcement';
 
@@ -80,6 +81,18 @@ export interface CommunityUpdateEvent {
   updateType: 'member_joined' | 'member_left' | 'announcement' | 'event';
   affectedUsers: string[];
   data: any;
+  contractAddress: string;
+  transactionHash: string;
+  blockHeight: number;
+  timestamp: number;
+}
+
+export interface CommunityCreationEvent {
+  communityId: string;
+  communityName: string;
+  description: string;
+  ownerAddress: string;
+  createdAtBlockHeight: number;
   contractAddress: string;
   transactionHash: string;
   blockHeight: number;

@@ -75,6 +75,14 @@ export interface ISocialLinks {
   linkedin?: string
 }
 
+export interface ICommunityMetadata {
+  blockchainId?: string
+  contractAddress?: string
+  createdAtBlockHeight?: number
+  createdAtTransactionHash?: string
+  createdAtTimestamp?: Date
+}
+
 export interface ICommunity extends Document {
   name: string
   slug: string
@@ -90,6 +98,7 @@ export interface ICommunity extends Document {
   isActive: boolean
   settings: ICommunitySettings
   tags: string[]
+  metadata?: ICommunityMetadata
   createdAt: Date
   updatedAt: Date
 }
@@ -195,7 +204,21 @@ export interface IBadgeSortOption {
   order: 'asc' | 'desc'
 }
 
-export type NotificationType = 'badge_received' | 'community_update' | 'system_announcement' | 'badge_issued' | 'community_invite' | 'badge_verified'
+export type NotificationType = 'badge_received' | 'community_update' | 'community_created' | 'system_announcement' | 'badge_issued' | 'community_invite' | 'badge_verified'
+
+export interface NotificationPayload {
+  userId: string
+  type: NotificationType
+  title: string
+  message: string
+  data: {
+    eventType: string
+    transactionHash: string
+    blockHeight: number
+    timestamp: number
+    [key: string]: any
+  }
+}
 
 export interface INotification extends Document {
   userId: string // User's Stacks address
