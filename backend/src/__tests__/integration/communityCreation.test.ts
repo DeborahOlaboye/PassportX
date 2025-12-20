@@ -258,5 +258,102 @@ describe('Community Creation Integration', () => {
       cacheService.onCommunityCreated(event);
       expect(cacheService.getStats().cacheSize).toBe(0);
     });
+
+    it('should handle empty admin addresses gracefully', async () => {
+      const event: CommunityCreationEvent = {
+        communityId: 'test-1',
+        communityName: 'Test',
+        description: 'Test',
+        ownerAddress: 'SP111111111111111111111111111111111',
+        createdAtBlockHeight: 100,
+        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        transactionHash: 'tx1',
+        blockHeight: 100,
+        timestamp: Date.now()
+      };
+
+      const notifications = await notificationService.buildNotificationBatch(event, []);
+      expect(notifications).toEqual([]);
+    });
+
+    it('should handle null event gracefully', async () => {
+      const notifications = await notificationService.buildNotificationBatch(null as any, ['SP111111111111111111111111111111111']);
+      expect(notifications).toEqual([]);
+    });
+
+    it('should validate community event data thoroughly', async () => {
+      const invalidEvent = {
+        communityId: 'test-123',
+        communityName: 'Test',
+        description: 'Test',
+        ownerAddress: '',
+        createdAtBlockHeight: 100,
+        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        transactionHash: 'tx1',
+        blockHeight: 100,
+        timestamp: Date.now()
+      } as CommunityCreationEvent;
+
+      const result = await communityService.processCommunityCreationEvent(invalidEvent);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Owner address');
+    });
+
+    it('should handle missing required fields', async () => {
+      const invalidEvent = {
+        communityId: '',
+        communityName: 'Test',
+        description: 'Test',
+        ownerAddress: 'SP111111111111111111111111111111111',
+        createdAtBlockHeight: 100,
+        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        transactionHash: 'tx1',
+        blockHeight: 100,
+        timestamp: Date.now()
+      } as CommunityCreationEvent;
+
+      const result = await communityService.processCommunityCreationEvent(invalidEvent);
+      expect(result.success).toBe(false);
+    });
+
+    it('should get audit logs', async () => {
+      const event: CommunityCreationEvent = {
+        communityId: 'audit-test-1',
+        communityName: 'Audit Test',
+        description: 'Test',
+        ownerAddress: 'SP111111111111111111111111111111111',
+        createdAtBlockHeight: 100,
+        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        transactionHash: 'tx1',
+        blockHeight: 100,
+        timestamp: Date.now()
+      };
+
+      await communityService.processCommunityCreationEvent(event);
+
+      const logs = communityService.getAuditLogs();
+      expect(logs.length).toBeGreaterThan(0);
+      expect(logs[0].communityName).toBe('Audit Test');
+    });
+
+    it('should filter audit logs by owner', async () => {
+      const event1: CommunityCreationEvent = {
+        communityId: 'log-test-1',
+        communityName: 'Log Test 1',
+        description: 'Test',
+        ownerAddress: 'SP111111111111111111111111111111111',
+        createdAtBlockHeight: 100,
+        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        transactionHash: 'tx1',
+        blockHeight: 100,
+        timestamp: Date.now()
+      };
+
+      await communityService.processCommunityCreationEvent(event1);
+
+      const logs = communityService.getAuditLogsByOwner('SP111111111111111111111111111111111');
+      expect(logs.length).toBeGreaterThan(0);
+      expect(logs[0].ownerAddress).toBe('SP111111111111111111111111111111111');
+    });
   });
 });

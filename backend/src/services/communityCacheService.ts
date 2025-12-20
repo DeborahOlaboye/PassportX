@@ -120,30 +120,82 @@ export class CommunityCacheService {
   }
 
   onCommunityCreated(event: CommunityCreationEvent): void {
-    if (!this.config.enabled) {
-      return;
+    try {
+      if (!this.config.enabled) {
+        this.logger.debug('Cache is disabled, skipping invalidation');
+        return;
+      }
+
+      if (!event || !event.communityId) {
+        this.logger.warn('Invalid community creation event for cache invalidation');
+        return;
+      }
+
+      this.logger.info('Invalidating cache due to community creation', {
+        communityId: event.communityId,
+        communityName: event.communityName,
+        ownerAddress: event.ownerAddress
+      });
+
+      const invalidatedCount = this.invalidateMultiple([
+        '^communities:list:.*',
+        '^communities:search:.*',
+        '^communities:tag:.*',
+        '^communities:admin:.*',
+        'communities:count',
+        event.ownerAddress ? `communities:admin:${event.ownerAddress}:count` : null,
+        event.communityId ? `community:${event.communityId}` : null,
+        event.communityName ? `community:slug:${this.generateSlug(event.communityName)}` : null
+      ].filter(key => key !== null) as string[]);
+
+      this.logger.info('Community cache invalidation complete', {
+        communityId: event.communityId,
+        invalidatedPatterns: invalidatedCount
+      });
+    } catch (error) {
+      this.logger.error('Error during cache invalidation for community creation', error);
+    }
+  }
+
+  private invalidateMultiple(keys: string[]): number {
+    let totalInvalidated = 0;
+
+    for (const key of keys) {
+      if (key.includes('*') || key.includes('^')) {
+        totalInvalidated += this.countInvalidatedByPattern(key);
+      } else {
+        const deleted = this.cache.delete(key);
+        if (deleted) {
+          totalInvalidated++;
+          this.logger.debug(`Cache invalidated: ${key}`);
+        }
+      }
     }
 
-    this.logger.info('Invalidating cache due to community creation', {
-      communityId: event.communityId,
-      communityName: event.communityName
-    });
+    return totalInvalidated;
+  }
 
-    // Invalidate community list caches
-    this.invalidatePattern('^communities:list:.*');
-    this.invalidatePattern('^communities:search:.*');
-    this.invalidatePattern('^communities:tag:.*');
-    this.invalidatePattern('^communities:admin:.*');
+  private countInvalidatedByPattern(pattern: string): number {
+    try {
+      const regex = new RegExp(pattern);
+      let count = 0;
 
-    // Invalidate community count caches
-    this.invalidate('communities:count');
-    this.invalidate(`communities:admin:${event.ownerAddress}:count`);
+      for (const key of this.cache.keys()) {
+        if (regex.test(key)) {
+          this.cache.delete(key);
+          count++;
+        }
+      }
 
-    // Invalidate specific community cache
-    this.invalidate(`community:${event.communityId}`);
-    this.invalidate(`community:slug:${this.generateSlug(event.communityName)}`);
+      if (count > 0) {
+        this.logger.debug(`Cache invalidated ${count} entries matching pattern: ${pattern}`);
+      }
 
-    this.logger.debug('Community cache invalidation complete');
+      return count;
+    } catch (error) {
+      this.logger.error(`Error invalidating pattern ${pattern}:`, error);
+      return 0;
+    }
   }
 
   private generateSlug(name: string): string {

@@ -4,6 +4,7 @@ import CommunityCreationNotificationService from '../services/communityCreationN
 import CommunityCacheService from '../services/communityCacheService';
 import { CommunityCreationEvent } from '../services/communityCreationService';
 import { authenticateToken } from '../middleware/auth';
+import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation';
 
 const router = Router();
 
@@ -21,19 +22,73 @@ export function initializeCommunityCreationRoutes(
   cacheService = _cacheService;
 }
 
-router.post('/webhook/events', async (req: Request, res: Response) => {
+function validateCommunityCreationEvent(event: any): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (!event || typeof event !== 'object') {
+    errors.push('Event must be a valid object');
+    return { valid: false, errors };
+  }
+
+  if (!event.communityId || typeof event.communityId !== 'string') {
+    errors.push('communityId is required and must be a string');
+  }
+
+  if (!event.communityName || typeof event.communityName !== 'string') {
+    errors.push('communityName is required and must be a string');
+  }
+
+  if (!event.ownerAddress || typeof event.ownerAddress !== 'string') {
+    errors.push('ownerAddress is required and must be a string');
+  }
+
+  if (!event.contractAddress || typeof event.contractAddress !== 'string') {
+    errors.push('contractAddress is required and must be a string');
+  }
+
+  if (!event.transactionHash || typeof event.transactionHash !== 'string') {
+    errors.push('transactionHash is required and must be a string');
+  }
+
+  if (typeof event.blockHeight !== 'number' || event.blockHeight < 0) {
+    errors.push('blockHeight must be a non-negative number');
+  }
+
+  if (typeof event.timestamp !== 'number' || event.timestamp < 0) {
+    errors.push('timestamp must be a non-negative number');
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+router.post('/webhook/events', validateWebhookSignature(getWebhookValidationConfig()), async (req: Request, res: Response) => {
   try {
     if (!communityCreationService || !notificationService || !cacheService) {
+      console.error('Community creation services not initialized');
       return res.status(503).json({
-        error: 'Community creation services not initialized'
+        success: false,
+        error: 'Community creation services not initialized',
+        code: 'SERVICE_NOT_INITIALIZED'
       });
     }
 
     const event: CommunityCreationEvent = req.body;
 
-    if (!event.communityId || !event.communityName || !event.ownerAddress) {
+    if (!event) {
       return res.status(400).json({
-        error: 'Invalid community creation event: missing required fields'
+        success: false,
+        error: 'Request body is required',
+        code: 'MISSING_REQUEST_BODY'
+      });
+    }
+
+    const validation = validateCommunityCreationEvent(event);
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid community creation event',
+        details: validation.errors,
+        code: 'VALIDATION_ERROR'
       });
     }
 
@@ -41,30 +96,47 @@ router.post('/webhook/events', async (req: Request, res: Response) => {
 
     if (!result.success) {
       return res.status(400).json({
+        success: false,
         error: result.message,
-        details: result.error
+        details: result.error,
+        code: 'PROCESSING_ERROR'
       });
     }
 
-    const notifications = notificationService.buildNotificationBatch(
-      event,
-      [event.ownerAddress],
-      { includeInstructions: true, includeDashboardLink: true }
-    );
+    try {
+      const notifications = await notificationService.buildNotificationBatch(
+        event,
+        [event.ownerAddress],
+        { includeInstructions: true, includeDashboardLink: true }
+      );
 
-    cacheService.onCommunityCreated(event);
+      cacheService.onCommunityCreated(event);
 
-    res.status(201).json({
-      success: true,
-      communityId: result.communityId,
-      message: result.message,
-      notificationsSent: (await notifications).length
-    });
+      res.status(201).json({
+        success: true,
+        communityId: result.communityId,
+        message: result.message,
+        notificationsSent: notifications.length,
+        code: 'COMMUNITY_CREATED'
+      });
+    } catch (notificationError) {
+      console.error('Error sending notifications:', notificationError);
+      res.status(201).json({
+        success: true,
+        communityId: result.communityId,
+        message: result.message,
+        notificationsSent: 0,
+        warning: 'Community created but notification delivery failed',
+        code: 'COMMUNITY_CREATED_NOTIFICATION_ERROR'
+      });
+    }
   } catch (error) {
     console.error('Error processing community creation webhook:', error);
     res.status(500).json({
+      success: false,
       error: 'Failed to process community creation event',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: 'INTERNAL_SERVER_ERROR'
     });
   }
 });
