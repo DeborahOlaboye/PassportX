@@ -256,3 +256,49 @@ export interface INotificationResult {
   totalPages: number
   hasMore: boolean
 }
+
+export interface IChainhookEventLog extends Document {
+  eventId: string
+  eventType: string
+  status: 'received' | 'processing' | 'completed' | 'failed'
+  payload: any
+  processingTime?: number
+  errorMessage?: string
+  handler?: string
+  receivedAt: Date
+  processedAt?: Date
+  transactionHash?: string
+  blockHeight?: number
+}
+
+export interface IEventMetrics extends Document {
+  timestamp: Date
+  eventsReceived: number
+  eventsProcessed: number
+  eventsFailed: number
+  averageProcessingTime: number
+  minProcessingTime: number
+  maxProcessingTime: number
+  connectionStatus: 'connected' | 'disconnected'
+  lastConnectionCheck: Date
+}
+
+export interface IHealthStatus extends Document {
+  nodeUrl: string
+  isConnected: boolean
+  lastCheckTime: Date
+  uptime: number
+  failedAttempts: number
+  successfulAttempts: number
+  averageResponseTime: number
+}
+
+export interface IAlert extends Document {
+  type: 'performance' | 'connection' | 'failed_event' | 'anomaly'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  message: string
+  details?: any
+  resolved: boolean
+  createdAt: Date
+  resolvedAt?: Date
+}
