@@ -92,23 +92,42 @@ export class CommunityCreationService {
       }
 
       // Ensure owner user exists
-      let ownerUser = await User.findOne({ stacksAddress: event.ownerAddress });
+      let ownerUser: any;
+      try {
+        ownerUser = await User.findOne({ stacksAddress: event.ownerAddress });
 
-      if (!ownerUser) {
-        ownerUser = await User.create({
-          stacksAddress: event.ownerAddress,
-          email: '',
-          communities: [],
-          adminCommunities: [],
-          notifications: [],
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
+        if (!ownerUser) {
+          try {
+            ownerUser = await User.create({
+              stacksAddress: event.ownerAddress,
+              email: '',
+              communities: [],
+              adminCommunities: [],
+              notifications: [],
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
 
-        this.logger.info('Created new user from community creation event', {
-          stacksAddress: event.ownerAddress,
-          userId: ownerUser._id
-        });
+            this.logger.info('Created new user from community creation event', {
+              stacksAddress: event.ownerAddress,
+              userId: ownerUser._id
+            });
+          } catch (userError) {
+            this.logger.error('Failed to create user for community creator', userError);
+            return {
+              success: false,
+              message: 'Failed to create user record for community creator',
+              error: userError instanceof Error ? userError.message : 'Unknown error'
+            };
+          }
+        }
+      } catch (userLookupError) {
+        this.logger.error('Failed to look up owner user', userLookupError);
+        return {
+          success: false,
+          message: 'Failed to look up owner user',
+          error: userLookupError instanceof Error ? userLookupError.message : 'Unknown error'
+        };
       }
 
       // Create community
@@ -144,26 +163,51 @@ export class CommunityCreationService {
         }
       };
 
-      const community = await Community.create(communityData);
+      let community: any;
+      try {
+        community = await Community.create(communityData);
 
-      this.logger.info('Community created from blockchain event', {
-        communityId: community._id,
-        blockchainId: event.communityId,
-        name: event.communityName,
-        owner: event.ownerAddress
-      });
+        this.logger.info('Community created from blockchain event', {
+          communityId: community._id,
+          blockchainId: event.communityId,
+          name: event.communityName,
+          owner: event.ownerAddress
+        });
+      } catch (communityError) {
+        this.logger.error('Failed to create community in database', communityError);
+        return {
+          success: false,
+          message: 'Failed to create community in database',
+          error: communityError instanceof Error ? communityError.message : 'Unknown error'
+        };
+      }
 
       // Update user to include this community
-      await User.findByIdAndUpdate(
-        ownerUser._id,
-        {
-          $addToSet: {
-            communities: community._id,
-            adminCommunities: community._id
-          }
-        },
-        { new: true }
-      );
+      try {
+        await User.findByIdAndUpdate(
+          ownerUser._id,
+          {
+            $addToSet: {
+              communities: community._id,
+              adminCommunities: community._id
+            }
+          },
+          { new: true }
+        );
+
+        this.logger.info('User updated with new community', {
+          userId: ownerUser._id,
+          communityId: community._id
+        });
+      } catch (updateError) {
+        this.logger.error('Failed to update user with community', updateError);
+        return {
+          success: false,
+          message: 'Community created but failed to link to user',
+          error: updateError instanceof Error ? updateError.message : 'Unknown error',
+          communityId: community._id?.toString()
+        };
+      }
 
       return {
         success: true,
