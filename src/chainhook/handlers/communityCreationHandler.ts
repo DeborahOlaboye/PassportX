@@ -7,96 +7,151 @@ import {
 import { EventMapper } from '../utils/eventMapper';
 
 export class CommunityCreationHandler implements ChainhookEventHandler {
+  private logger: any;
+
+  constructor(logger?: any) {
+    this.logger = logger || this.getDefaultLogger();
+  }
+
+  private getDefaultLogger() {
+    return {
+      debug: (msg: string, ...args: any[]) => console.debug(`[CommunityCreationHandler] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) => console.info(`[CommunityCreationHandler] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCreationHandler] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) => console.error(`[CommunityCreationHandler] ${msg}`, ...args)
+    };
+  }
+
   canHandle(event: ChainhookEventPayload): boolean {
-    if (!event.transactions || event.transactions.length === 0) {
-      return false;
-    }
+    try {
+      if (!event || !event.transactions || event.transactions.length === 0) {
+        return false;
+      }
 
-    for (const tx of event.transactions) {
-      if (!tx.operations) continue;
+      for (const tx of event.transactions) {
+        if (!tx || !tx.operations) continue;
 
-      for (const op of tx.operations) {
-        if (op.type === 'contract_call' && op.contract_call) {
-          if (op.contract_call.method === 'create-community') {
-            return true;
-          }
-        }
+        for (const op of tx.operations) {
+          if (!op) continue;
 
-        if (op.events) {
-          for (const evt of op.events) {
-            if (evt.topic && evt.topic.includes('community') && evt.topic.includes('created')) {
+          if (op.type === 'contract_call' && op.contract_call) {
+            if (op.contract_call.method === 'create-community') {
+              this.logger.debug('Detected create-community contract call');
               return true;
+            }
+          }
+
+          if (op.events && Array.isArray(op.events)) {
+            for (const evt of op.events) {
+              if (evt && evt.topic && evt.topic.includes('community') && evt.topic.includes('created')) {
+                this.logger.debug('Detected community-created event');
+                return true;
+              }
             }
           }
         }
       }
-    }
 
-    return false;
+      return false;
+    } catch (error) {
+      this.logger.error('Error in canHandle method:', error);
+      return false;
+    }
   }
 
   async handle(event: ChainhookEventPayload): Promise<NotificationPayload[]> {
     try {
+      if (!event) {
+        this.logger.warn('Received null or undefined event');
+        return [];
+      }
+
       const notifications: NotificationPayload[] = [];
 
       if (!event.transactions || event.transactions.length === 0) {
+        this.logger.debug('No transactions in event');
         return notifications;
       }
 
       for (const tx of event.transactions) {
-        if (!tx.operations) continue;
+        if (!tx || !tx.operations) continue;
 
         for (const op of tx.operations) {
-          if (op.type === 'contract_call' && op.contract_call) {
-            const method = op.contract_call.method;
+          if (!op) continue;
 
-            if (method === 'create-community') {
-              const args = op.contract_call.args || [];
-              const ownerAddress = this.extractOwnerAddress(op.contract_call, tx);
+          try {
+            if (op.type === 'contract_call' && op.contract_call) {
+              const method = op.contract_call.method;
 
-              const communityEvent: CommunityCreationEvent = {
-                communityId: this.extractCommunityId(args),
-                communityName: this.extractCommunityName(args),
-                description: this.extractDescription(args),
-                ownerAddress,
-                createdAtBlockHeight: event.block_identifier.index,
-                contractAddress: op.contract_call.contract,
-                transactionHash: tx.transaction_hash,
-                blockHeight: event.block_identifier.index,
-                timestamp: this.extractTimestamp(event)
-              };
+              if (method === 'create-community') {
+                const args = op.contract_call.args || [];
+                const ownerAddress = this.extractOwnerAddress(op.contract_call, tx);
 
-              if (communityEvent.communityId && communityEvent.communityName) {
+                if (!ownerAddress) {
+                  this.logger.warn('Failed to extract ownerAddress from contract call');
+                  continue;
+                }
+
+                const communityEvent: CommunityCreationEvent = {
+                  communityId: this.extractCommunityId(args),
+                  communityName: this.extractCommunityName(args),
+                  description: this.extractDescription(args),
+                  ownerAddress,
+                  createdAtBlockHeight: event.block_identifier?.index || 0,
+                  contractAddress: op.contract_call.contract,
+                  transactionHash: tx.transaction_hash,
+                  blockHeight: event.block_identifier?.index || 0,
+                  timestamp: this.extractTimestamp(event)
+                };
+
+                if (!this.validateCommunityEvent(communityEvent)) {
+                  this.logger.warn('Invalid community event data', communityEvent);
+                  continue;
+                }
+
                 const notification = this.createNotification(communityEvent);
                 notifications.push(notification);
+                this.logger.info('Created community creation notification', {
+                  communityId: communityEvent.communityId,
+                  communityName: communityEvent.communityName
+                });
               }
             }
-          }
 
-          if (op.events) {
-            for (const evt of op.events) {
-              if (evt.topic && evt.topic.includes('community') && evt.topic.includes('created')) {
-                const communityEvent = EventMapper.mapCommunityCreationEvent({
-                  ...evt.value,
-                  contractAddress: evt.contract_address,
-                  transactionHash: tx.transaction_hash,
-                  blockHeight: event.block_identifier.index,
-                  timestamp: this.extractTimestamp(event)
-                });
+            if (op.events && Array.isArray(op.events)) {
+              for (const evt of op.events) {
+                if (!evt || !evt.topic) continue;
 
-                if (communityEvent && communityEvent.communityId) {
-                  const notification = this.createNotification(communityEvent);
-                  notifications.push(notification);
+                if (evt.topic.includes('community') && evt.topic.includes('created')) {
+                  const communityEvent = EventMapper.mapCommunityCreationEvent({
+                    ...evt.value,
+                    contractAddress: evt.contract_address,
+                    transactionHash: tx.transaction_hash,
+                    blockHeight: event.block_identifier?.index || 0,
+                    timestamp: this.extractTimestamp(event)
+                  });
+
+                  if (communityEvent && this.validateCommunityEvent(communityEvent)) {
+                    const notification = this.createNotification(communityEvent);
+                    notifications.push(notification);
+                    this.logger.info('Created event-based community creation notification', {
+                      communityId: communityEvent.communityId,
+                      communityName: communityEvent.communityName
+                    });
+                  }
                 }
               }
             }
+          } catch (opError) {
+            this.logger.error('Error processing operation:', opError);
+            continue;
           }
         }
       }
 
       return notifications;
     } catch (error) {
-      console.error('Error in CommunityCreationHandler:', error);
+      this.logger.error('Error in CommunityCreationHandler.handle:', error);
       return [];
     }
   }
@@ -132,6 +187,16 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
       return event.metadata.pox_cycle_position;
     }
     return Date.now();
+  }
+
+  private validateCommunityEvent(event: CommunityCreationEvent): boolean {
+    return !!(
+      event.communityId &&
+      event.communityName &&
+      event.ownerAddress &&
+      event.contractAddress &&
+      event.transactionHash
+    );
   }
 
   private createNotification(communityEvent: CommunityCreationEvent): NotificationPayload {
