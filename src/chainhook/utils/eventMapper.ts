@@ -3,7 +3,8 @@ import {
   NotificationType,
   BadgeMintEvent,
   BadgeVerificationEvent,
-  CommunityUpdateEvent
+  CommunityUpdateEvent,
+  CommunityCreationEvent
 } from '../types/handlers';
 
 export class EventMapper {
@@ -47,6 +48,20 @@ export class EventMapper {
     };
   }
 
+  static mapCommunityCreationEvent(payload: any): CommunityCreationEvent {
+    return {
+      communityId: payload.communityId || payload.community_id || '',
+      communityName: payload.communityName || payload.community_name || '',
+      description: payload.description || '',
+      ownerAddress: payload.ownerAddress || payload.owner_address || '',
+      createdAtBlockHeight: payload.createdAtBlockHeight || payload.created_at_block_height || 0,
+      contractAddress: payload.contractAddress || payload.contract_address || '',
+      transactionHash: payload.transactionHash || payload.tx_hash || '',
+      blockHeight: payload.blockHeight || payload.block_height || 0,
+      timestamp: payload.timestamp || Date.now()
+    };
+  }
+
   static getNotificationTypeFromEvent(eventType: string): NotificationType {
     const typeMap: Record<string, NotificationType> = {
       'badge-mint': 'badge_received',
@@ -59,6 +74,10 @@ export class EventMapper {
       'badge_verified': 'badge_verified',
       'community-update': 'community_update',
       'community_update': 'community_update',
+      'community-created': 'community_created',
+      'community_created': 'community_created',
+      'community-creation': 'community_created',
+      'community_creation': 'community_created',
       'community-invite': 'community_invite',
       'community_invite': 'community_invite',
       'system-announcement': 'system_announcement',
@@ -91,6 +110,10 @@ export class EventMapper {
           if (method === 'issue-badge') {
             return 'badge-issued';
           }
+
+          if (method === 'create-community') {
+            return 'community-creation';
+          }
         }
 
         if (op.events) {
@@ -105,6 +128,10 @@ export class EventMapper {
               if (event.topic.includes('issue')) {
                 return 'badge-issued';
               }
+            }
+
+            if (event.topic && event.topic.includes('community') && event.topic.includes('created')) {
+              return 'community-creation';
             }
           }
         }
