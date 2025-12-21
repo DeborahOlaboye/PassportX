@@ -3,6 +3,7 @@ import {
   NotificationType,
   BadgeMintEvent,
   BadgeVerificationEvent,
+  BadgeMetadataUpdateEvent,
   CommunityUpdateEvent,
   CommunityCreationEvent
 } from '../types/handlers';
@@ -53,6 +54,35 @@ export class EventMapper {
       return event;
     } catch (error) {
       this.logger.error('Error mapping badge verification event:', error);
+      throw error;
+    }
+  }
+
+  static mapBadgeMetadataUpdateEvent(payload: any): BadgeMetadataUpdateEvent {
+    try {
+      const event: BadgeMetadataUpdateEvent = {
+        badgeId: payload.badgeId || payload.badge_id || '',
+        badgeName: payload.badgeName || payload.badge_name || '',
+        level: payload.level || payload.badge_level || undefined,
+        category: payload.category || payload.badge_category || undefined,
+        description: payload.description || payload.badge_description || undefined,
+        previousLevel: payload.previousLevel || payload.previous_level || undefined,
+        previousCategory: payload.previousCategory || payload.previous_category || undefined,
+        previousDescription: payload.previousDescription || payload.previous_description || undefined,
+        contractAddress: payload.contractAddress || payload.contract_address || '',
+        transactionHash: payload.transactionHash || payload.tx_hash || '',
+        blockHeight: payload.blockHeight || payload.block_height || 0,
+        timestamp: payload.timestamp || Date.now()
+      };
+      
+      this.logger.debug('Mapped badge metadata update event', {
+        badgeId: event.badgeId,
+        level: event.level,
+        category: event.category
+      });
+      return event;
+    } catch (error) {
+      this.logger.error('Error mapping badge metadata update event:', error);
       throw error;
     }
   }
@@ -115,6 +145,10 @@ export class EventMapper {
       'badge_verify': 'badge_verified',
       'badge-verified': 'badge_verified',
       'badge_verified': 'badge_verified',
+      'badge-metadata-update': 'badge_metadata_updated',
+      'badge_metadata_update': 'badge_metadata_updated',
+      'badge-metadata-updated': 'badge_metadata_updated',
+      'badge_metadata_updated': 'badge_metadata_updated',
       'community-update': 'community_update',
       'community_update': 'community_update',
       'community-created': 'community_created',
@@ -163,6 +197,11 @@ export class EventMapper {
               return 'badge-issued';
             }
 
+            if (method === 'update-metadata' || method === 'set-metadata' || method === 'metadata-update') {
+              this.logger.debug('Detected badge-metadata-update event');
+              return 'badge-metadata-update';
+            }
+
             if (method === 'create-community') {
               this.logger.debug('Detected community-creation event');
               return 'community-creation';
@@ -185,6 +224,10 @@ export class EventMapper {
                 if (event.topic.includes('issue')) {
                   this.logger.debug('Detected badge-issued event from topic');
                   return 'badge-issued';
+                }
+                if (event.topic.includes('metadata')) {
+                  this.logger.debug('Detected badge-metadata-update event from topic');
+                  return 'badge-metadata-update';
                 }
               }
 
