@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import BadgeTemplate from '../models/BadgeTemplate'
 import Badge from '../models/Badge'
 import Community from '../models/Community'
@@ -6,8 +6,23 @@ import { authenticateToken, optionalAuth } from '../middleware/auth'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
 import { updateMemberCount } from '../services/communityService'
+import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalidator'
+import BadgeUIRefreshService from '../services/badgeUIRefreshService'
+import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers'
+import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation'
 
 const router = Router()
+
+let cacheInvalidator: BadgeMetadataCacheInvalidator | null = null
+let uiRefreshService: BadgeUIRefreshService | null = null
+
+export function initializeBadgeMetadataRoutes(
+  _cacheInvalidator: BadgeMetadataCacheInvalidator,
+  _uiRefreshService: BadgeUIRefreshService
+) {
+  cacheInvalidator = _cacheInvalidator
+  uiRefreshService = _uiRefreshService
+}
 
 // Create badge template
 router.post('/templates', authenticateToken, async (req: AuthRequest, res, next) => {
@@ -323,5 +338,69 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => 
     next(error)
   }
 })
+
+// Webhook: Handle badge metadata updates
+router.post('/webhook/metadata', validateWebhookSignature(getWebhookValidationConfig()), async (req: Request, res: Response) => {
+  try {
+    if (!cacheInvalidator || !uiRefreshService) {
+      console.error('Badge metadata services not initialized');
+      return res.status(503).json({
+        success: false,
+        error: 'Badge metadata services not initialized',
+        code: 'SERVICE_NOT_INITIALIZED'
+      });
+    }
+
+    const event: BadgeMetadataUpdateEvent = req.body;
+
+    if (!event) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body is required',
+        code: 'MISSING_REQUEST_BODY'
+      });
+    }
+
+    if (!event.badgeId || !event.transactionHash) {
+      return res.status(400).json({
+        success: false,
+        error: 'badgeId and transactionHash are required',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    await cacheInvalidator.invalidateBadgeCache({
+      badgeId: event.badgeId,
+      changedFields: [],
+      timestamp: event.timestamp || Date.now(),
+      transactionHash: event.transactionHash,
+      blockHeight: event.blockHeight || 0
+    });
+
+    await uiRefreshService.notifyBadgeMetadataUpdate(
+      event.badgeId,
+      event.category ? ['category'] : [],
+      {
+        transactionHash: event.transactionHash,
+        blockHeight: event.blockHeight
+      }
+    );
+
+    res.json({
+      success: true,
+      message: 'Badge metadata update processed successfully',
+      badgeId: event.badgeId,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    console.error('Error processing badge metadata webhook:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process badge metadata update',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: 'PROCESSING_ERROR'
+    });
+  }
+});
 
 export default router
