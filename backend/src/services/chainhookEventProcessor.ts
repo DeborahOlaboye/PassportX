@@ -1,4 +1,6 @@
 import ChainhookEventValidator from './chainhookEventValidator'
+import ChainhookEventCache from './chainhookEventCache'
+import ChainhookPerformanceProfiler from './chainhookPerformanceProfiler'
 
 export interface ProcessedEvent {
   id: string
@@ -18,12 +20,17 @@ export class ChainhookEventProcessor {
   private validator: ChainhookEventValidator
   private processedEvents: Map<string, ProcessedEvent> = new Map()
   private eventIdCounter = 0
+  private cache: ChainhookEventCache
+  private profiler: ChainhookPerformanceProfiler
   private logger: any
   private maxProcessedEventsInMemory = 10000
+  private processingBatch: Map<string, ProcessedEvent> = new Map()
 
   constructor(logger?: any) {
     this.validator = new ChainhookEventValidator(logger)
     this.logger = logger || this.getDefaultLogger()
+    this.cache = new ChainhookEventCache({ maxSize: 5000, ttlMs: 300000 }, this.logger)
+    this.profiler = new ChainhookPerformanceProfiler(this.logger)
   }
 
   private getDefaultLogger() {
@@ -36,10 +43,17 @@ export class ChainhookEventProcessor {
   }
 
   async processEvent(chainhookEvent: any): Promise<ProcessedEvent[]> {
+    this.profiler.startMeasurement('processEvent')
     const processedEvents: ProcessedEvent[] = []
 
     try {
-      // Validate event
+      if (this.cache.has(chainhookEvent)) {
+        const cached = this.cache.get(chainhookEvent)
+        this.logger.debug('Cache hit for event', { blockHeight: chainhookEvent.block_identifier?.index })
+        this.profiler.endMeasurement('processEvent')
+        return cached || []
+      }
+
       const validation = this.validator.validateEventSchema(chainhookEvent)
 
       if (!validation.valid) {
@@ -48,10 +62,10 @@ export class ChainhookEventProcessor {
           blockHeight: chainhookEvent.block_identifier?.index
         })
 
+        this.profiler.endMeasurement('processEvent')
         return []
       }
 
-      // Process transactions
       if (chainhookEvent.transactions && Array.isArray(chainhookEvent.transactions)) {
         for (const transaction of chainhookEvent.transactions) {
           const txProcessed = await this.processTransaction(chainhookEvent, transaction)
@@ -59,15 +73,21 @@ export class ChainhookEventProcessor {
         }
       }
 
+      this.cache.set(chainhookEvent, processedEvents)
+
       this.logger.info('Event processed successfully', {
         blockHeight: chainhookEvent.block_identifier.index,
         transactionCount: chainhookEvent.transactions?.length || 0,
         processedEventCount: processedEvents.length
       })
 
+      this.profiler.recordEventProcessed('chainhook-event')
+      this.profiler.endMeasurement('processEvent')
+
       return processedEvents
     } catch (error) {
       this.logger.error('Error processing event', error as Error)
+      this.profiler.endMeasurement('processEvent')
       return []
     }
   }
@@ -100,9 +120,11 @@ export class ChainhookEventProcessor {
     transaction: any,
     operation: any
   ): ProcessedEvent | null {
+    this.profiler.startMeasurement('processOperation')
+
     try {
       if (operation.type === 'contract_call' && operation.contract_call) {
-        return {
+        const result = {
           id: this.generateEventId(),
           originalEvent: { transaction, operation },
           eventType: this.extractEventType(operation),
@@ -112,14 +134,16 @@ export class ChainhookEventProcessor {
           blockHeight: chainhookEvent.block_identifier.index,
           timestamp: chainhookEvent.timestamp || Date.now(),
           processedAt: new Date(),
-          status: 'processed'
+          status: 'processed' as const
         }
+        this.profiler.endMeasurement('processOperation')
+        return result
       }
 
       if (operation.events && Array.isArray(operation.events)) {
         for (const event of operation.events) {
           if (event.type === 'contract_event') {
-            return {
+            const result = {
               id: this.generateEventId(),
               originalEvent: event,
               eventType: this.extractEventTypeFromContractEvent(event),
@@ -128,8 +152,10 @@ export class ChainhookEventProcessor {
               blockHeight: chainhookEvent.block_identifier.index,
               timestamp: chainhookEvent.timestamp || Date.now(),
               processedAt: new Date(),
-              status: 'processed'
+              status: 'processed' as const
             }
+            this.profiler.endMeasurement('processOperation')
+            return result
           }
         }
       }
@@ -137,6 +163,7 @@ export class ChainhookEventProcessor {
       this.logger.error('Error processing operation', error as Error)
     }
 
+    this.profiler.endMeasurement('processOperation')
     return null
   }
 
@@ -237,6 +264,27 @@ export class ChainhookEventProcessor {
     }
 
     return deletedCount
+  }
+
+  getCacheMetrics(): any {
+    return this.cache.getMetrics()
+  }
+
+  getProfilerMetrics(): any {
+    return this.profiler.getAllMetrics()
+  }
+
+  getPerformanceSnapshot(): any {
+    return this.profiler.getSnapshot()
+  }
+
+  resetProfilerMetrics(): void {
+    this.profiler.reset()
+    this.logger.info('Profiler metrics reset')
+  }
+
+  destroyCache(): void {
+    this.cache.destroy()
   }
 }
 
