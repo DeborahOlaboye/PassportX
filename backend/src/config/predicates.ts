@@ -8,6 +8,8 @@ export interface PredicateConfig {
   badgeMintEvent?: Predicate;
   badgeMetadataUpdate?: Predicate;
   badgeMetadataUpdateEvent?: Predicate;
+  badgeRevocation?: Predicate;
+  badgeRevocationEvent?: Predicate;
   [key: string]: Predicate | undefined;
 }
 
@@ -211,6 +213,65 @@ function buildBadgeMetadataUpdateEventPredicate(network: 'mainnet' | 'testnet' |
   };
 }
 
+function getBadgeIssuerContractId(): string {
+  const contracts = getContracts();
+  return `${contracts.badgeIssuer.address}.${contracts.badgeIssuer.name}`;
+}
+
+function buildBadgeRevocationPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+  const contractId = getBadgeIssuerContractId();
+  const webhookUrl = process.env.BADGE_REVOCATION_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/revocation';
+  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+
+  return {
+    uuid: 'pred_badge_revocation_call',
+    name: 'Badge Revocation - Contract Call',
+    type: 'stacks-contract-call',
+    network,
+    if_this: {
+      scope: 'contract',
+      contract_identifier: contractId,
+      method: 'revoke-badge'
+    },
+    then_that: {
+      http_post: {
+        url: webhookUrl,
+        authorization_header: authToken
+      }
+    },
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
+function buildBadgeRevocationEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+  const contractId = getBadgeIssuerContractId();
+  const webhookUrl = process.env.BADGE_REVOCATION_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/revocation';
+  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+
+  return {
+    uuid: 'pred_badge_revocation_event',
+    name: 'Badge Revocation - Contract Event',
+    type: 'stacks-print',
+    network,
+    if_this: {
+      scope: 'contract',
+      contract_identifier: contractId,
+      print_event_type: 'badge-revoked'
+    },
+    then_that: {
+      http_post: {
+        url: webhookUrl,
+        authorization_header: authToken
+      }
+    },
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
 export function getPredicateConfigs(enableEventPredicate: boolean = false): PredicateConfig {
   const network = (process.env.STACKS_NETWORK || 'devnet') as 'mainnet' | 'testnet' | 'devnet';
 
@@ -236,6 +297,14 @@ export function getPredicateConfigs(enableEventPredicate: boolean = false): Pred
 
   if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE_EVENT === 'true') {
     config.badgeMetadataUpdateEvent = buildBadgeMetadataUpdateEventPredicate(network);
+  }
+
+  if (process.env.CHAINHOOK_ENABLE_BADGE_REVOCATION === 'true') {
+    config.badgeRevocation = buildBadgeRevocationPredicate(network);
+  }
+
+  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_REVOCATION_EVENT === 'true') {
+    config.badgeRevocationEvent = buildBadgeRevocationEventPredicate(network);
   }
 
   return config;
