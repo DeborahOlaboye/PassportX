@@ -2,6 +2,7 @@ export type NotificationType =
   | 'badge_received' 
   | 'badge_issued' 
   | 'badge_verified' 
+  | 'badge_metadata_updated'
   | 'community_update' 
   | 'community_created'
   | 'community_invite' 
@@ -93,6 +94,21 @@ export interface CommunityCreationEvent {
   description: string;
   ownerAddress: string;
   createdAtBlockHeight: number;
+  contractAddress: string;
+  transactionHash: string;
+  blockHeight: number;
+  timestamp: number;
+}
+
+export interface BadgeMetadataUpdateEvent {
+  badgeId: string;
+  badgeName: string;
+  level?: number;
+  category?: string;
+  description?: string;
+  previousLevel?: number;
+  previousCategory?: string;
+  previousDescription?: string;
   contractAddress: string;
   transactionHash: string;
   blockHeight: number;
