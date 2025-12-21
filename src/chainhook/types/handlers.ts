@@ -3,6 +3,7 @@ export type NotificationType =
   | 'badge_issued' 
   | 'badge_verified' 
   | 'badge_metadata_updated'
+  | 'badge_revoked'
   | 'community_update' 
   | 'community_created'
   | 'community_invite' 
@@ -113,6 +114,20 @@ export interface BadgeMetadataUpdateEvent {
   transactionHash: string;
   blockHeight: number;
   timestamp: number;
+}
+
+export interface BadgeRevocationEvent {
+  userId: string;
+  badgeId: string;
+  badgeName: string;
+  revocationType: 'soft' | 'hard';
+  reason?: string;
+  issuerId: string;
+  contractAddress: string;
+  transactionHash: string;
+  blockHeight: number;
+  timestamp: number;
+  previousActive: boolean;
 }
 
 export interface NotificationPayload {
