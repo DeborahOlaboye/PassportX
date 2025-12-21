@@ -8,9 +8,18 @@ import { EventMapper } from '../utils/eventMapper';
 
 export class CommunityCreationHandler implements ChainhookEventHandler {
   private logger: any;
+  private readonly SUPPORTED_METHODS = ['create-community', 'create-comm'];
+  private readonly SUPPORTED_TOPICS = ['community-created', 'community-creation'];
+  private compiledMethodFilter: Set<string>;
+  private compiledTopicFilter: Set<string>;
+  private lastHitTime = 0;
+  private hitCache: Map<string, boolean> = new Map();
+  private readonly CACHE_TTL_MS = 5000;
 
   constructor(logger?: any) {
     this.logger = logger || this.getDefaultLogger();
+    this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
+    this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
   }
 
   private getDefaultLogger() {
@@ -22,11 +31,29 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
     };
   }
 
+  private getCacheKey(event: ChainhookEventPayload): string {
+    return `${event.block_identifier?.index}:${event.transactions?.[0]?.transaction_hash || ''}`;
+  }
+
+  private isCacheValid(cachedTime: number): boolean {
+    return Date.now() - cachedTime < this.CACHE_TTL_MS;
+  }
+
   canHandle(event: ChainhookEventPayload): boolean {
     try {
       if (!event || !event.transactions || event.transactions.length === 0) {
         return false;
       }
+
+      const cacheKey = this.getCacheKey(event);
+      const cachedResult = this.hitCache.get(cacheKey);
+
+      if (cachedResult !== undefined && this.isCacheValid(this.lastHitTime)) {
+        this.logger.debug('Cache hit for event canHandle check');
+        return cachedResult;
+      }
+
+      let result = false;
 
       for (const tx of event.transactions) {
         if (!tx || !tx.operations) continue;
@@ -35,24 +62,44 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
           if (!op) continue;
 
           if (op.type === 'contract_call' && op.contract_call) {
-            if (op.contract_call.method === 'create-community') {
+            const method = op.contract_call.method;
+            if (this.compiledMethodFilter.has(method)) {
               this.logger.debug('Detected create-community contract call');
-              return true;
+              result = true;
+              break;
             }
           }
 
-          if (op.events && Array.isArray(op.events)) {
+          if (!result && op.events && Array.isArray(op.events)) {
             for (const evt of op.events) {
-              if (evt && evt.topic && evt.topic.includes('community') && evt.topic.includes('created')) {
-                this.logger.debug('Detected community-created event');
-                return true;
+              if (evt && evt.topic) {
+                for (const topic of this.compiledTopicFilter) {
+                  if (evt.topic.includes(topic)) {
+                    this.logger.debug('Detected community-created event');
+                    result = true;
+                    break;
+                  }
+                }
               }
+              if (result) break;
             }
           }
+
+          if (result) break;
         }
+
+        if (result) break;
       }
 
-      return false;
+      this.lastHitTime = Date.now();
+      this.hitCache.set(cacheKey, result);
+
+      if (this.hitCache.size > 1000) {
+        const oldestKey = this.hitCache.keys().next().value;
+        this.hitCache.delete(oldestKey);
+      }
+
+      return result;
     } catch (error) {
       this.logger.error('Error in canHandle method:', error);
       return false;
