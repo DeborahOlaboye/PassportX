@@ -17,6 +17,9 @@ import blockchainRoutes from './routes/blockchain'
 import healthRoutes from './routes/health'
 import verificationRoutes from './routes/verification'
 import notificationRoutes from './routes/notifications'
+import analyticsRoutes, { setAnalyticsAggregator } from './routes/analytics'
+import AnalyticsAggregator from './services/analyticsAggregator'
+import AnalyticsEventProcessor from './services/analyticsEventProcessor'
 
 dotenv.config()
 
@@ -57,6 +60,7 @@ app.use('/api/badges', badgeSearchRoutes)
 app.use('/api/blockchain', blockchainRoutes)
 app.use('/api/verify', verificationRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/analytics', analyticsRoutes)
 
 // Error handling
 app.use(errorHandler)
@@ -74,9 +78,28 @@ setSocketInstance(io)
 const startServer = async () => {
   try {
     await connectDB()
+
+    // Initialize analytics
+    const analyticsAggregator = new AnalyticsAggregator()
+    setAnalyticsAggregator(analyticsAggregator)
+
+    const analyticsEventProcessor = new AnalyticsEventProcessor(analyticsAggregator)
+
+    // Optional: Record daily snapshots (can be set up via cron jobs)
+    // For now, snapshots can be triggered via POST /api/analytics/snapshot
+
     httpServer.listen(PORT, () => {
       console.log(`🚀 PassportX Backend running on port ${PORT}`)
       console.log(`🔌 WebSocket server ready`)
+      console.log(`📊 Analytics aggregator initialized`)
+    })
+
+    // Graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('Shutting down gracefully...')
+      await analyticsEventProcessor.cleanup()
+      await analyticsAggregator.cleanup()
+      process.exit(0)
     })
   } catch (error) {
     console.error('Failed to start server:', error)
