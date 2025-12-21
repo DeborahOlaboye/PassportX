@@ -5,9 +5,11 @@ import {
   BadgeMetadataUpdateEvent
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
+import BadgeMetadataChangeDetector from '../utils/badgeMetadataChangeDetector';
 
 export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
   private logger: any;
+  private changeDetector: BadgeMetadataChangeDetector;
   private readonly SUPPORTED_METHODS = ['update-metadata', 'set-metadata', 'metadata-update'];
   private readonly SUPPORTED_TOPICS = ['metadata-updated', 'badge-metadata-updated'];
   private compiledMethodFilter: Set<string>;
@@ -18,6 +20,7 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
 
   constructor(logger?: any) {
     this.logger = logger || this.getDefaultLogger();
+    this.changeDetector = new BadgeMetadataChangeDetector(this.logger);
     this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
     this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
   }
@@ -263,14 +266,15 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
   }
 
   private createNotification(metadataEvent: BadgeMetadataUpdateEvent): NotificationPayload {
-    const changedFields = this.getChangedFields(metadataEvent);
-    const changesSummary = changedFields.join(', ');
+    const changeResult = this.changeDetector.detectChanges(metadataEvent);
+    const impactLevel = this.changeDetector.getImpactLevel(changeResult);
+    const changesSummary = this.changeDetector.generateSummary(changeResult);
 
     return {
       userId: '',
       type: 'badge_metadata_updated',
       title: `Badge Updated: ${metadataEvent.badgeName}`,
-      message: `The badge metadata has been updated. Changed fields: ${changesSummary}`,
+      message: `The badge metadata has been updated. ${changesSummary}`,
       data: {
         eventType: 'badge-metadata-update',
         badgeId: metadataEvent.badgeId,
@@ -285,26 +289,11 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
         transactionHash: metadataEvent.transactionHash,
         blockHeight: metadataEvent.blockHeight,
         timestamp: metadataEvent.timestamp,
-        changedFields
+        changedFields: changeResult.changedFields,
+        changes: changeResult.changes,
+        impactLevel,
+        changeCount: changeResult.changeCount
       }
     };
-  }
-
-  private getChangedFields(event: BadgeMetadataUpdateEvent): string[] {
-    const changes: string[] = [];
-
-    if (event.level !== event.previousLevel) {
-      changes.push(`Level: ${event.previousLevel} → ${event.level}`);
-    }
-
-    if (event.category !== event.previousCategory) {
-      changes.push(`Category: ${event.previousCategory} → ${event.category}`);
-    }
-
-    if (event.description !== event.previousDescription) {
-      changes.push(`Description`);
-    }
-
-    return changes;
   }
 }
