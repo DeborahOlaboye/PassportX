@@ -114,3 +114,23 @@ export const broadcastSystemAnnouncement = (notification: any) => {
     socketInstance.emit('notification:system', notification)
   }
 }
+
+// Utility function to broadcast analytics update to all connected clients
+export const broadcastAnalyticsUpdate = (data: any) => {
+  if (socketInstance) {
+    socketInstance.emit('analytics:update', {
+      timestamp: Date.now(),
+      ...data
+    })
+  }
+}
+
+// Utility function to broadcast analytics event to all connected clients
+export const broadcastAnalyticsEvent = (event: string, data: any) => {
+  if (socketInstance) {
+    socketInstance.emit(`analytics:${event}`, {
+      timestamp: Date.now(),
+      ...data
+    })
+  }
+}
