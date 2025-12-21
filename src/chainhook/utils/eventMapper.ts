@@ -4,6 +4,7 @@ import {
   BadgeMintEvent,
   BadgeVerificationEvent,
   BadgeMetadataUpdateEvent,
+  BadgeRevocationEvent,
   CommunityUpdateEvent,
   CommunityCreationEvent
 } from '../types/handlers';
@@ -87,6 +88,34 @@ export class EventMapper {
     }
   }
 
+  static mapBadgeRevocationEvent(payload: any): BadgeRevocationEvent {
+    try {
+      const event: BadgeRevocationEvent = {
+        userId: payload.userId || payload.user_id || '',
+        badgeId: payload.badgeId || payload.badge_id || '',
+        badgeName: payload.badgeName || payload.badge_name || '',
+        revocationType: payload.revocationType || payload.revocation_type || 'soft',
+        reason: payload.reason || undefined,
+        issuerId: payload.issuerId || payload.issuer_id || '',
+        contractAddress: payload.contractAddress || payload.contract_address || '',
+        transactionHash: payload.transactionHash || payload.tx_hash || '',
+        blockHeight: payload.blockHeight || payload.block_height || 0,
+        timestamp: payload.timestamp || Date.now(),
+        previousActive: payload.previousActive !== undefined ? payload.previousActive : true
+      };
+      
+      this.logger.debug('Mapped badge revocation event', {
+        badgeId: event.badgeId,
+        userId: event.userId,
+        revocationType: event.revocationType
+      });
+      return event;
+    } catch (error) {
+      this.logger.error('Error mapping badge revocation event:', error);
+      throw error;
+    }
+  }
+
   static mapCommunityUpdateEvent(payload: any): CommunityUpdateEvent {
     try {
       const event: CommunityUpdateEvent = {
@@ -149,6 +178,10 @@ export class EventMapper {
       'badge_metadata_update': 'badge_metadata_updated',
       'badge-metadata-updated': 'badge_metadata_updated',
       'badge_metadata_updated': 'badge_metadata_updated',
+      'badge-revocation': 'badge_revoked',
+      'badge_revocation': 'badge_revoked',
+      'badge-revoked': 'badge_revoked',
+      'badge_revoked': 'badge_revoked',
       'community-update': 'community_update',
       'community_update': 'community_update',
       'community-created': 'community_created',
