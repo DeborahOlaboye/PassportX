@@ -2,6 +2,8 @@ import { ChainhookEventObserver as HiroChainhookEventObserver, ServerOptions, Ch
 import express, { Express, Request, Response } from 'express'
 import { createServer, Server as HTTPServer } from 'http'
 import { EventEmitter } from 'events'
+import ChainhookEventBatcher from './chainhookEventBatcher'
+import ChainhookPerformanceProfiler from './chainhookPerformanceProfiler'
 
 interface ChainhookObserverConfig {
   serverHost: string
@@ -38,12 +40,17 @@ export class ChainhookEventObserverService extends EventEmitter {
   private reconnectDelay = 1000
   private eventQueue: ChainhookEvent[] = []
   private isProcessingQueue = false
+  private batcher: ChainhookEventBatcher
+  private profiler: ChainhookPerformanceProfiler
   private logger: any
 
   constructor(config: ChainhookObserverConfig, logger?: any) {
     super()
     this.config = config
     this.logger = logger || this.getDefaultLogger()
+    this.batcher = new ChainhookEventBatcher({ batchSize: 50, batchTimeoutMs: 1000 }, this.logger)
+    this.profiler = new ChainhookPerformanceProfiler(this.logger)
+    this.setupBatchCallback()
   }
 
   private getDefaultLogger() {
@@ -121,7 +128,7 @@ export class ChainhookEventObserverService extends EventEmitter {
         this.logger.debug('Received Chainhook event:', event.block_identifier)
 
         this.validateEvent(event)
-        this.eventQueue.push(event)
+        this.batcher.addEvent(event)
 
         res.status(200).json({ success: true, message: 'Event queued' })
         this.emit('event:received', event)
@@ -165,6 +172,25 @@ export class ChainhookEventObserverService extends EventEmitter {
         this.logger.error('Server error:', error)
         reject(error)
       })
+    })
+  }
+
+  private setupBatchCallback(): void {
+    this.batcher.registerBatchCallback(async (batch: any[]) => {
+      this.profiler.startMeasurement('processBatch')
+
+      try {
+        for (const event of batch) {
+          this.emit('event:process', event)
+          this.profiler.recordEventProcessed('batched-event')
+        }
+
+        this.logger.debug(`Processed batch of ${batch.length} events`)
+      } catch (error) {
+        this.logger.error('Error processing batch:', error)
+      } finally {
+        this.profiler.endMeasurement('processBatch')
+      }
     })
   }
 
@@ -249,6 +275,9 @@ export class ChainhookEventObserverService extends EventEmitter {
 
       this.isRunning = false
 
+      await this.batcher.flush()
+      this.batcher.destroy()
+
       if (this.server) {
         await new Promise<void>((resolve) => {
           this.server!.close(() => {
@@ -322,6 +351,22 @@ export class ChainhookEventObserverService extends EventEmitter {
   clearEventQueue(): void {
     this.logger.warn('Clearing event queue')
     this.eventQueue = []
+  }
+
+  getBatcherMetrics(): any {
+    return this.batcher.getMetrics()
+  }
+
+  getProfilerMetrics(): any {
+    return this.profiler.getAllMetrics()
+  }
+
+  getPerformanceSnapshot(): any {
+    return this.profiler.getSnapshot()
+  }
+
+  printPerformanceReport(): void {
+    this.profiler.printReport()
   }
 
   private generateAuthToken(): string {
