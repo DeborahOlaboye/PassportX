@@ -1,3 +1,5 @@
+import ChainhookPredicateOptimizer from './chainhookPredicateOptimizer'
+
 export interface Predicate {
   uuid: string
   name: string
@@ -22,10 +24,12 @@ export interface Predicate {
 export class ChainhookPredicateManager {
   private predicates: Map<string, Predicate> = new Map()
   private predicateIdCounter = 0
+  private optimizer: ChainhookPredicateOptimizer
   private logger: any
 
   constructor(logger?: any) {
     this.logger = logger || this.getDefaultLogger()
+    this.optimizer = new ChainhookPredicateOptimizer(this.logger)
   }
 
   private getDefaultLogger() {
@@ -265,6 +269,56 @@ export class ChainhookPredicateManager {
 
   private generatePredicateUUID(): string {
     return `pred_${Date.now()}_${++this.predicateIdCounter}`
+  }
+
+  filterEventAgainstPredicate(predicateUuid: string, event: any): boolean {
+    const predicate = this.predicates.get(predicateUuid)
+
+    if (!predicate || !predicate.active) {
+      return false
+    }
+
+    return this.optimizer.filterEvent(predicateUuid, event)
+  }
+
+  compilePredicateFilters(predicateUuid: string): void {
+    const predicate = this.predicates.get(predicateUuid)
+
+    if (!predicate) {
+      this.logger.warn(`Cannot compile filter for non-existent predicate: ${predicateUuid}`)
+      return
+    }
+
+    const filter = this.extractFilterFromPredicate(predicate)
+    this.optimizer.compileFilter(predicateUuid, filter)
+  }
+
+  private extractFilterFromPredicate(predicate: Predicate): any {
+    const if_this = predicate.if_this || {}
+
+    return {
+      contractAddress: if_this.contract_identifier?.address,
+      method: if_this.method,
+      topic: if_this.topic,
+      eventType: if_this.event_type
+    }
+  }
+
+  compileAllPredicateFilters(): void {
+    for (const predicate of this.predicates.values()) {
+      this.compilePredicateFilters(predicate.uuid)
+    }
+
+    this.logger.info('All predicate filters compiled')
+  }
+
+  getOptimizerMetrics(): any {
+    return this.optimizer.getMetrics()
+  }
+
+  resetOptimizerMetrics(): void {
+    this.optimizer.resetMetrics()
+    this.logger.info('Optimizer metrics reset')
   }
 }
 

@@ -7,9 +7,84 @@ import {
 import { EventMapper } from '../utils/eventMapper';
 
 export class BadgeVerificationHandler implements ChainhookEventHandler {
+  private readonly SUPPORTED_METHODS = ['verify', 'verify-badge'];
+  private readonly SUPPORTED_TOPICS = ['verify', 'badge-verify'];
+  private compiledMethodFilter: Set<string>;
+  private compiledTopicFilter: Set<string>;
+  private lastHitTime = 0;
+  private hitCache: Map<string, boolean> = new Map();
+  private readonly CACHE_TTL_MS = 5000;
+
+  constructor() {
+    this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
+    this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
+  }
+
+  private getCacheKey(event: ChainhookEventPayload): string {
+    return `${event.block_identifier?.index}:${event.transactions?.[0]?.transaction_hash || ''}`;
+  }
+
+  private isCacheValid(cachedTime: number): boolean {
+    return Date.now() - cachedTime < this.CACHE_TTL_MS;
+  }
+
   canHandle(event: ChainhookEventPayload): boolean {
-    const eventType = EventMapper.extractEventType(event);
-    return eventType === 'badge-verify';
+    if (!event || !event.transactions || event.transactions.length === 0) {
+      return false;
+    }
+
+    const cacheKey = this.getCacheKey(event);
+    const cachedResult = this.hitCache.get(cacheKey);
+
+    if (cachedResult !== undefined && this.isCacheValid(this.lastHitTime)) {
+      return cachedResult;
+    }
+
+    let result = false;
+
+    for (const tx of event.transactions) {
+      if (!tx || !tx.operations) continue;
+
+      for (const op of tx.operations) {
+        if (!op) continue;
+
+        if (op.type === 'contract_call' && op.contract_call) {
+          const method = op.contract_call.method;
+          if (this.compiledMethodFilter.has(method)) {
+            result = true;
+            break;
+          }
+        }
+
+        if (!result && op.events && Array.isArray(op.events)) {
+          for (const evt of op.events) {
+            if (evt && evt.topic) {
+              for (const topic of this.compiledTopicFilter) {
+                if (evt.topic.includes(topic)) {
+                  result = true;
+                  break;
+                }
+              }
+            }
+            if (result) break;
+          }
+        }
+
+        if (result) break;
+      }
+
+      if (result) break;
+    }
+
+    this.lastHitTime = Date.now();
+    this.hitCache.set(cacheKey, result);
+
+    if (this.hitCache.size > 1000) {
+      const oldestKey = this.hitCache.keys().next().value;
+      this.hitCache.delete(oldestKey);
+    }
+
+    return result;
   }
 
   async handle(event: ChainhookEventPayload): Promise<NotificationPayload[]> {
