@@ -6,6 +6,8 @@ export interface PredicateConfig {
   communityCreationEvent?: Predicate;
   badgeMint?: Predicate;
   badgeMintEvent?: Predicate;
+  badgeMetadataUpdate?: Predicate;
+  badgeMetadataUpdateEvent?: Predicate;
   [key: string]: Predicate | undefined;
 }
 
@@ -150,6 +152,65 @@ function buildBadgeMintEventPredicate(network: 'mainnet' | 'testnet' | 'devnet')
   };
 }
 
+function getBadgeMetadataContractId(): string {
+  const contracts = getContracts();
+  return 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata';
+}
+
+function buildBadgeMetadataUpdatePredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+  const contractId = getBadgeMetadataContractId();
+  const webhookUrl = process.env.BADGE_METADATA_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/metadata';
+  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+
+  return {
+    uuid: 'pred_badge_metadata_update_call',
+    name: 'Badge Metadata Update - Contract Call',
+    type: 'stacks-contract-call',
+    network,
+    if_this: {
+      scope: 'contract',
+      contract_identifier: contractId,
+      method: 'update-metadata'
+    },
+    then_that: {
+      http_post: {
+        url: webhookUrl,
+        authorization_header: authToken
+      }
+    },
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
+function buildBadgeMetadataUpdateEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+  const contractId = getBadgeMetadataContractId();
+  const webhookUrl = process.env.BADGE_METADATA_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/metadata';
+  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+
+  return {
+    uuid: 'pred_badge_metadata_update_event',
+    name: 'Badge Metadata Update - Contract Event',
+    type: 'stacks-print',
+    network,
+    if_this: {
+      scope: 'contract',
+      contract_identifier: contractId,
+      print_event_type: 'metadata-updated'
+    },
+    then_that: {
+      http_post: {
+        url: webhookUrl,
+        authorization_header: authToken
+      }
+    },
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+}
+
 export function getPredicateConfigs(enableEventPredicate: boolean = false): PredicateConfig {
   const network = (process.env.STACKS_NETWORK || 'devnet') as 'mainnet' | 'testnet' | 'devnet';
 
@@ -167,6 +228,14 @@ export function getPredicateConfigs(enableEventPredicate: boolean = false): Pred
 
   if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_MINT_EVENT === 'true') {
     config.badgeMintEvent = buildBadgeMintEventPredicate(network);
+  }
+
+  if (process.env.CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE === 'true') {
+    config.badgeMetadataUpdate = buildBadgeMetadataUpdatePredicate(network);
+  }
+
+  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE_EVENT === 'true') {
+    config.badgeMetadataUpdateEvent = buildBadgeMetadataUpdateEventPredicate(network);
   }
 
   return config;
