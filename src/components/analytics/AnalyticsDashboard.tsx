@@ -13,12 +13,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wifi, WifiOff } from 'lucide-react';
 import { 
   fetchAnalyticsData, 
   AnalyticsData, 
   TimeRange 
 } from '@/lib/api/analytics';
+import { useAnalyticsUpdates } from '@/hooks/useAnalyticsUpdates';
 import { 
   BadgeDistributionChart, 
   EngagementMetrics, 
@@ -37,6 +38,7 @@ export function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isConnected } = useAnalyticsUpdates();
 
   useEffect(() => {
     const loadData = async () => {
@@ -91,7 +93,22 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <h2 className="text-lg font-medium">Analytics Overview</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-medium">Analytics Overview</h2>
+          <div className="flex items-center gap-1 text-sm">
+            {isConnected ? (
+              <>
+                <Wifi className="h-4 w-4 text-green-600" />
+                <span className="text-green-600">Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-400">Offline</span>
+              </>
+            )}
+          </div>
+        </div>
         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0">
           <DateRangePicker
             dateRange={dateRange}
