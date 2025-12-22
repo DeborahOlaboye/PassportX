@@ -18,8 +18,10 @@ import healthRoutes from './routes/health'
 import verificationRoutes from './routes/verification'
 import notificationRoutes from './routes/notifications'
 import analyticsRoutes, { setAnalyticsAggregator } from './routes/analytics'
+import activityRoutes, { setUserActivityService } from './routes/activity'
 import AnalyticsAggregator from './services/analyticsAggregator'
 import AnalyticsEventProcessor from './services/analyticsEventProcessor'
+import UserActivityService from './services/userActivityService'
 
 dotenv.config()
 
@@ -61,6 +63,7 @@ app.use('/api/blockchain', blockchainRoutes)
 app.use('/api/verify', verificationRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
+app.use('/api/activity', activityRoutes)
 
 // Error handling
 app.use(errorHandler)
@@ -85,6 +88,10 @@ const startServer = async () => {
 
     const analyticsEventProcessor = new AnalyticsEventProcessor(analyticsAggregator)
 
+    // Initialize user activity service
+    const userActivityService = new UserActivityService()
+    setUserActivityService(userActivityService)
+
     // Optional: Record daily snapshots (can be set up via cron jobs)
     // For now, snapshots can be triggered via POST /api/analytics/snapshot
 
@@ -92,6 +99,7 @@ const startServer = async () => {
       console.log(`🚀 PassportX Backend running on port ${PORT}`)
       console.log(`🔌 WebSocket server ready`)
       console.log(`📊 Analytics aggregator initialized`)
+      console.log(`📝 User activity service initialized`)
     })
 
     // Graceful shutdown
