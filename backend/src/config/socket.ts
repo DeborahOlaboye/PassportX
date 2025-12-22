@@ -125,6 +125,38 @@ export const broadcastAnalyticsUpdate = (data: any) => {
   }
 }
 
+// Utility function to broadcast activity event to a specific user
+export const broadcastActivityEvent = (userId: string, activity: any) => {
+  if (socketInstance) {
+    socketInstance.to(`user:${userId}`).emit('activity:new', {
+      timestamp: Date.now(),
+      activity
+    })
+  }
+}
+
+// Utility function to broadcast activity event to multiple users
+export const broadcastActivityEventToUsers = (userIds: string[], activity: any) => {
+  if (socketInstance) {
+    userIds.forEach(userId => {
+      socketInstance!.to(`user:${userId}`).emit('activity:new', {
+        timestamp: Date.now(),
+        activity
+      })
+    })
+  }
+}
+
+// Utility function to broadcast activity feed update (mark as read, etc)
+export const broadcastActivityUpdate = (userId: string, event: string, data: any) => {
+  if (socketInstance) {
+    socketInstance.to(`user:${userId}`).emit(`activity:${event}`, {
+      timestamp: Date.now(),
+      ...data
+    })
+  }
+}
+
 // Utility function to broadcast analytics event to all connected clients
 export const broadcastAnalyticsEvent = (event: string, data: any) => {
   if (socketInstance) {
