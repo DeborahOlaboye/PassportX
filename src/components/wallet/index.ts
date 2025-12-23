@@ -7,3 +7,4 @@ export { default as WalletErrorBoundary } from './WalletErrorBoundary';
 export { default as WalletProvider } from './WalletProvider';
 export { default as ProviderInitializer } from './ProviderInitializer';
 export { default as EnhancedWalletProvider } from './EnhancedWalletProvider';
+export { default as ConfigurationStatus } from './ConfigurationStatus';
