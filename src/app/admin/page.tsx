@@ -1,49 +1,62 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import CommunityCard from '@/components/CommunityCard'
-import { Plus, BarChart3, Users, Award } from 'lucide-react'
+import { Plus, BarChart3, Users, Award, Loader } from 'lucide-react'
 import Link from 'next/link'
 
-// Mock data
-const mockCommunities = [
-  {
-    id: 'open-code-guild',
-    name: 'Open Code Guild',
-    description: 'Learn programming through hands-on projects',
-    memberCount: 1250,
-    badgeCount: 15,
-    theme: {
-      primaryColor: '#3b82f6',
-    }
-  },
-  {
-    id: 'web3-events',
-    name: 'Web3 Events',
-    description: 'Blockchain and cryptocurrency event community',
-    memberCount: 890,
-    badgeCount: 8,
-    theme: {
-      primaryColor: '#8b5cf6',
-    }
-  },
-  {
-    id: 'devdao',
-    name: 'DevDAO',
-    description: 'Decentralized developer community',
-    memberCount: 2100,
-    badgeCount: 22,
-    theme: {
-      primaryColor: '#10b981',
-    }
-  }
-]
-
 export default function AdminDashboard() {
-  const [communities] = useState(mockCommunities)
+  const { user } = useAuth()
+  const [communities, setCommunities] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      if (!user?.stacksAddress) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        const response = await fetch(
+          `/api/communities?admin=${encodeURIComponent(user.stacksAddress)}`
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+          setCommunities(data.data || [])
+        } else {
+          console.error('Failed to fetch communities')
+          setCommunities([])
+        }
+      } catch (err) {
+        console.error('Error fetching communities:', err)
+        setError('Failed to load communities')
+        setCommunities([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCommunities()
+  }, [user?.stacksAddress])
   
   const totalMembers = communities.reduce((sum, community) => sum + community.memberCount, 0)
   const totalBadges = communities.reduce((sum, community) => sum + community.badgeCount, 0)
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader className="w-8 h-8 animate-spin text-primary-600 mr-3" />
+          <p className="text-gray-600">Loading your communities...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -58,6 +71,12 @@ export default function AdminDashboard() {
           <span>Create Community</span>
         </Link>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="card text-center">
@@ -108,7 +127,7 @@ export default function AdminDashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {communities.map(community => (
-              <CommunityCard key={community.id} community={community} />
+              <CommunityCard key={community._id || community.id} community={community} />
             ))}
           </div>
         )}
