@@ -21,25 +21,35 @@
     "lint": "eslint . --ext .js,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.ts,.tsx --fix",
     "format": "prettier --write .",
-    "quality:check": "sonar-scanner"
+    "quality:check": "sonar-scanner",
+    "verify-deps": "npx tsx scripts/verify-dependencies.ts"
   },
   "dependencies": {
     "@hirosystems/chainhook-client": "^2.4.0",
+    "@metamask/eth-sig-util": "^8.2.0",
+    "@reown/walletkit": "^1.4.1",
     "@stacks/connect": "^7.0.0",
     "@stacks/network": "^6.0.0",
     "@stacks/transactions": "^6.0.0",
+    "@walletconnect/core": "^2.23.1",
+    "@walletconnect/utils": "^2.23.1",
+    "axios": "^1.13.2",
     "clsx": "^2.0.0",
     "date-fns": "^4.1.0",
+    "eth-sig-util": "^3.0.1",
     "lucide-react": "^0.300.0",
     "next": "^14.0.0",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.8.1",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
