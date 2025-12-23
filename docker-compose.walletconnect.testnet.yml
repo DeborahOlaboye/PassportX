@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  walletconnect-testnet:
+    image: passportx-walletconnect:testnet
+    container_name: passportx-walletconnect-testnet
+    environment:
+      NODE_ENV: testnet
+      WALLETCONNECT_PROJECT_ID: ${TESTNET_WALLETCONNECT_PROJECT_ID}
+      WALLETCONNECT_RELAY_URL: wss://relay.walletconnect.org
+      NEXT_PUBLIC_WALLETCONNECT_ENABLED: "true"
+      NEXT_PUBLIC_WALLETCONNECT_NETWORK: testnet
+      NEXT_PUBLIC_CHAIN_ID: "5"
+      NEXT_PUBLIC_RPC_URL: https://goerli.infura.io/v3/${INFURA_KEY}
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      WALLETCONNECT_TEST_MODE: "true"
+      WALLETCONNECT_LOG_LEVEL: debug
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+    depends_on:
+      - walletconnect-testnet-db
+    networks:
+      - walletconnect-testnet-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  walletconnect-testnet-db:
+    image: postgres:15-alpine
+    container_name: passportx-walletconnect-testnet-db
+    environment:
+      POSTGRES_USER: walletconnect_testnet
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: walletconnect_testnet
+    volumes:
+      - walletconnect-testnet-db-data:/var/lib/postgresql/data
+    networks:
+      - walletconnect-testnet-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U walletconnect_testnet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  walletconnect-testnet-redis:
+    image: redis:7-alpine
+    container_name: passportx-walletconnect-testnet-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - walletconnect-testnet-redis-data:/data
+    networks:
+      - walletconnect-testnet-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  walletconnect-testnet-db-data:
+    driver: local
+  walletconnect-testnet-redis-data:
+    driver: local
+
+networks:
+  walletconnect-testnet-network:
+    driver: bridge

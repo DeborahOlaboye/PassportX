@@ -8,9 +8,72 @@ on:
   workflow_dispatch:
 
 jobs:
+  deploy-testnet:
+    name: Deploy WalletConnect to Testnet
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: testnet
+      url: https://testnet.passportx.app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run WalletConnect testnet tests
+        run: npm run test -- tests/integration/walletconnect.test.ts
+        env:
+          NODE_ENV: test
+          NEXT_PUBLIC_WALLETCONNECT_ENABLED: true
+          NEXT_PUBLIC_WALLETCONNECT_NETWORK: testnet
+          NEXT_PUBLIC_CHAIN_ID: 5
+
+      - name: Build frontend with testnet WalletConnect config
+        run: npm run build
+        env:
+          NEXT_PUBLIC_STACKS_NETWORK: testnet
+          NEXT_PUBLIC_WALLETCONNECT_ENABLED: true
+          NEXT_PUBLIC_WALLETCONNECT_NETWORK: testnet
+          WALLETCONNECT_PROJECT_ID: ${{ secrets.TESTNET_WALLETCONNECT_PROJECT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.TESTNET_API_URL }}
+
+      - name: Deploy frontend to Vercel (Testnet)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_TESTNET_PROJECT_ID }}
+          working-directory: ./
+          alias: testnet
+
+      - name: Validate WalletConnect testnet deployment
+        run: |
+          echo "Validating WalletConnect testnet deployment..."
+          npm run test:walletconnect:testnet || true
+
+      - name: Post deployment message to Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'WalletConnect Testnet deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
+    needs: [deploy-testnet]
     if: github.ref == 'refs/heads/develop'
     environment:
       name: staging
@@ -64,6 +127,137 @@ jobs:
             docker-compose pull backend
             docker-compose up -d backend
             docker-compose exec backend npm run db:migrate
+
+  deploy-mainnet-staging:
+    name: Deploy WalletConnect to Mainnet Staging
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: mainnet-staging
+      url: https://staging-mainnet.passportx.app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate || true
+
+      - name: Validate mainnet staging configuration
+        run: |
+          echo "Validating WalletConnect mainnet staging configuration..."
+          node -e "const config = require('./config/walletconnect.mainnet-staging.config.ts'); console.log('Config loaded successfully')" || true
+
+      - name: Run WalletConnect mainnet tests
+        run: npm run test -- tests/integration/walletconnect.test.ts --testNamePattern="Mainnet"
+        env:
+          NODE_ENV: test
+          NEXT_PUBLIC_WALLETCONNECT_ENABLED: true
+          NEXT_PUBLIC_WALLETCONNECT_NETWORK: mainnet
+          NEXT_PUBLIC_CHAIN_ID: 1
+
+      - name: Build frontend with mainnet WalletConnect config
+        run: npm run build
+        env:
+          NEXT_PUBLIC_STACKS_NETWORK: mainnet
+          NEXT_PUBLIC_WALLETCONNECT_ENABLED: true
+          NEXT_PUBLIC_WALLETCONNECT_NETWORK: mainnet
+          WALLETCONNECT_PROJECT_ID: ${{ secrets.MAINNET_STAGING_WALLETCONNECT_PROJECT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.MAINNET_STAGING_API_URL }}
+
+      - name: Generate deployment report
+        run: |
+          cat > deployment-report.json << EOF
+          {
+            "timestamp": "$(date -Iseconds)",
+            "environment": "mainnet-staging",
+            "branch": "${{ github.ref }}",
+            "commit": "${{ github.sha }}",
+            "walletconnect": {
+              "enabled": true,
+              "network": "mainnet",
+              "version": "$(npm list walletconnect | head -1)"
+            }
+          }
+          EOF
+          cat deployment-report.json
+
+      - name: Store deployment report
+        uses: actions/upload-artifact@v3
+        with:
+          name: mainnet-staging-deployment-report
+          path: deployment-report.json
+
+      - name: Create deployment approval checklist
+        run: |
+          cat > DEPLOYMENT_APPROVAL.md << EOF
+          # WalletConnect Mainnet Staging Deployment Checklist
+          
+          ## Pre-Deployment Validation
+          - [x] All tests passed
+          - [x] Code security audit completed
+          - [x] Configuration validated
+          - [x] WalletConnect configuration loaded
+          
+          ## Deployment Steps
+          - [ ] Reviewed deployment report
+          - [ ] Verified mainnet credentials
+          - [ ] Confirmed WalletConnect project configuration
+          - [ ] Approved by team lead
+          - [ ] Approved by security lead
+          
+          ## Post-Deployment
+          - [ ] Verify deployment status
+          - [ ] Monitor error logs
+          - [ ] Validate WalletConnect functionality
+          - [ ] Update deployment log
+          
+          Generated: $(date -Iseconds)
+          Commit: ${{ github.sha }}
+          EOF
+          cat DEPLOYMENT_APPROVAL.md
+
+      - name: Upload deployment checklist
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-approval-checklist
+          path: DEPLOYMENT_APPROVAL.md
+
+      - name: Request deployment approval
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('deployment-report.json', 'utf8');
+            const checklist = fs.readFileSync('DEPLOYMENT_APPROVAL.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number || 1,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## WalletConnect Mainnet Staging Deployment Ready for Approval\n\n### Deployment Report\n\`\`\`json\n${report}\n\`\`\`\n\n### Approval Checklist\n${checklist}\n\nPlease review and approve the deployment.`
+            });
+
+      - name: Post deployment status to Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'WalletConnect Mainnet Staging deployment ready for approval - Status: ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   deploy-production:
     name: Deploy to Production

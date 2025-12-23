@@ -16,6 +16,20 @@ export const mockStacksApi = {
   broadcastTransaction: jest.fn()
 };
 
+// Mock WalletConnect responses
+export const mockWalletConnect = {
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+  sendTransaction: jest.fn(),
+  signTransaction: jest.fn(),
+  signMessage: jest.fn(),
+  signTypedData: jest.fn(),
+  getSession: jest.fn(),
+  on: jest.fn(),
+  off: jest.fn(),
+  once: jest.fn()
+};
+
 // Test utilities
 export const createMockUser = (address: string) => ({
   address,
@@ -34,3 +48,33 @@ export const createMockBadge = (id: number, templateId: number) => ({
     active: true
   }
 });
+
+// WalletConnect test utilities
+export const createMockWalletConnectSession = (network: 'testnet' | 'mainnet') => {
+  const fixtures = loadFixture('walletconnect-session.json');
+  return fixtures[network];
+};
+
+export const createMockWalletConnectTransaction = (network: 'testnet' | 'mainnet', type: string) => {
+  const fixtures = loadFixture('walletconnect-transactions.json');
+  return fixtures[network][type];
+};
+
+export const mockWalletConnectProvider = (network: 'testnet' | 'mainnet' = 'testnet') => {
+  const session = createMockWalletConnectSession(network);
+  return {
+    connect: jest.fn().mockResolvedValue([session.address]),
+    disconnect: jest.fn().mockResolvedValue(undefined),
+    isConnected: true,
+    isAuthorized: true,
+    accounts: [session.address],
+    chainId: session.chainId,
+    request: jest.fn().mockResolvedValue('0x'),
+    on: jest.fn(),
+    off: jest.fn(),
+    once: jest.fn(),
+    removeListener: jest.fn(),
+    removeAllListeners: jest.fn(),
+    session: session.session
+  };
+};
