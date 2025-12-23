@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { WalletConnectProviderConfig, InitializationState } from '@/types/walletconnect-config';
 import { buildWalletConnectConfig, validateConfig } from '@/config/walletconnect';
+import { validateWalletConnectEnv, logEnvironmentValidation } from '@/utils/env-validation';
 
 interface WalletConnectConfigContextType {
   config: WalletConnectProviderConfig | null;
@@ -37,6 +38,13 @@ export function WalletConnectConfigProvider({
         error: undefined,
       }));
 
+      // Validate environment variables
+      const envValidation = validateWalletConnectEnv();
+      if (!envValidation.isValid) {
+        const errorMessage = envValidation.errors.join(', ');
+        throw new Error(`Environment validation failed: ${errorMessage}`);
+      }
+
       const config = buildWalletConnectConfig();
 
       const validation = validateConfig(config);
@@ -46,6 +54,7 @@ export function WalletConnectConfigProvider({
       }
 
       if (process.env.NODE_ENV === 'development') {
+        logEnvironmentValidation();
         console.log('WalletConnect Config Initialized:', config);
       }
 
