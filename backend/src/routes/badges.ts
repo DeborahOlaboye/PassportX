@@ -6,6 +6,13 @@ import { authenticateToken, optionalAuth } from '../middleware/auth'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
 import { updateMemberCount } from '../services/communityService'
+import {
+  registerBadgeIssuance,
+  revokeBadge,
+  getBadgesIssuedByUser,
+  getBadgesReceivedByUser,
+  getCommunitybadgeStatistics
+} from '../services/badgeTransactionService'
 
 const router = Router()
 
@@ -319,6 +326,139 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => 
     await updateMemberCount(community._id)
 
     res.json({ message: 'Badge revoked successfully' })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Register badge issuance from blockchain transaction
+router.post('/issuance', async (req, res, next) => {
+  try {
+    const {
+      txId,
+      recipientAddress,
+      templateId,
+      communityId,
+      issuerAddress,
+      recipientName,
+      recipientEmail,
+      network,
+      createdAt
+    } = req.body
+
+    if (!txId || !recipientAddress || !templateId || !issuerAddress) {
+      throw createError('Missing required fields', 400)
+    }
+
+    const result = await registerBadgeIssuance({
+      txId,
+      recipientAddress,
+      templateId,
+      communityId,
+      issuerAddress,
+      recipientName,
+      recipientEmail,
+      network,
+      createdAt
+    })
+
+    res.status(201).json(result)
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Get badges issued by a user
+router.get('/issued-by/:issuer', async (req, res, next) => {
+  try {
+    const { issuer } = req.params
+
+    const badges = await getBadgesIssuedByUser(issuer)
+
+    res.json({
+      issuer,
+      count: badges.length,
+      badges
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Get badges received by a user
+router.get('/received-by/:recipient', async (req, res, next) => {
+  try {
+    const { recipient } = req.params
+
+    const badges = await getBadgesReceivedByUser(recipient)
+
+    res.json({
+      recipient,
+      count: badges.length,
+      badges
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Get community badge statistics
+router.get('/community/:communityId/stats', async (req, res, next) => {
+  try {
+    const { communityId } = req.params
+
+    const stats = await getCommunitybadgeStatistics(communityId)
+
+    res.json(stats)
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Get badge templates for issuer
+router.get('/templates', authenticateToken, async (req: AuthRequest, res, next) => {
+  try {
+    const { issuer } = req.query
+    const issuerAddress = issuer as string || req.user!.stacksAddress
+
+    const templates = await BadgeTemplate.find({
+      creator: issuerAddress,
+      isActive: true
+    })
+      .populate('community')
+      .sort({ createdAt: -1 })
+
+    res.json(templates.map(template => ({
+      id: template._id,
+      name: template.name,
+      description: template.description,
+      category: template.category,
+      level: template.level,
+      icon: template.icon,
+      community: {
+        id: (template.community as any)._id,
+        name: (template.community as any).name
+      },
+      createdAt: template.createdAt
+    })))
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Revoke badge via transaction service
+router.post('/revoke/:badgeId', authenticateToken, async (req: AuthRequest, res, next) => {
+  try {
+    const { badgeId } = req.params
+    const { reason } = req.body
+
+    const result = await revokeBadge({
+      badgeId,
+      issuerAddress: req.user!.stacksAddress,
+      reason
+    })
+
+    res.json(result)
   } catch (error) {
     next(error)
   }
