@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import WalletConnect from './WalletConnect'
 import MobileMenu from './MobileMenu'
+import { NetworkSelector } from './NetworkSelector'
 
 export default function Header() {
   return (
@@ -31,6 +32,7 @@ export default function Header() {
           </nav>
           
           <div className="flex items-center space-x-4">
+            <NetworkSelector variant="minimal" />
             <div className="hidden sm:block">
               <WalletConnect />
             </div>
