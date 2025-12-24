@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import WalletConnect from './WalletConnect'
 import MobileMenu from './MobileMenu'
+import { NetworkSelector } from './NetworkSelector'
 
 export default function Header() {
   return (
@@ -22,6 +23,9 @@ export default function Header() {
             <Link href="/sign" className="text-gray-600 hover:text-gray-900">
               Sign Transactions
             </Link>
+            <Link href="/network" className="text-gray-600 hover:text-gray-900">
+              Network
+            </Link>
             <Link href="/admin" className="text-gray-600 hover:text-gray-900">
               Admin
             </Link>
@@ -31,6 +35,7 @@ export default function Header() {
           </nav>
           
           <div className="flex items-center space-x-4">
+            <NetworkSelector variant="minimal" />
             <div className="hidden sm:block">
               <WalletConnect />
             </div>
