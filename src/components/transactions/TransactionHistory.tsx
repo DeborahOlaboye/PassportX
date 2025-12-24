@@ -74,29 +74,34 @@ export function TransactionHistory() {
     return `${gasCost.toFixed(6)} ETH`;
   };
 
-  const getStatusColor = (status: Transaction['status']) => {
-    switch (status) {
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'confirmed':
-        return 'text-green-600 bg-green-100';
-      case 'failed':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
+  const exportHistory = () => {
+    const dataStr = JSON.stringify(filteredTransactions, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = `transaction-history-${new Date().toISOString().split('T')[0]}.json`;
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Transaction History</h2>
-        <button
-          onClick={clearHistory}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-        >
-          Clear History
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={exportHistory}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Export
+          </button>
+          <button
+            onClick={clearHistory}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            Clear History
+          </button>
+        </div>
       </div>
 
       {/* Filters and Search */}
