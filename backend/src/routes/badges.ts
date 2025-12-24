@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import BadgeTemplate from '../models/BadgeTemplate'
 import Badge from '../models/Badge'
 import Community from '../models/Community'
@@ -6,15 +6,23 @@ import { authenticateToken, optionalAuth } from '../middleware/auth'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
 import { updateMemberCount } from '../services/communityService'
-import {
-  registerBadgeIssuance,
-  revokeBadge,
-  getBadgesIssuedByUser,
-  getBadgesReceivedByUser,
-  getCommunitybadgeStatistics
-} from '../services/badgeTransactionService'
+import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalidator'
+import BadgeUIRefreshService from '../services/badgeUIRefreshService'
+import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers'
+import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation'
 
 const router = Router()
+
+let cacheInvalidator: BadgeMetadataCacheInvalidator | null = null
+let uiRefreshService: BadgeUIRefreshService | null = null
+
+export function initializeBadgeMetadataRoutes(
+  _cacheInvalidator: BadgeMetadataCacheInvalidator,
+  _uiRefreshService: BadgeUIRefreshService
+) {
+  cacheInvalidator = _cacheInvalidator
+  uiRefreshService = _uiRefreshService
+}
 
 // Create badge template
 router.post('/templates', authenticateToken, async (req: AuthRequest, res, next) => {
@@ -331,137 +339,68 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => 
   }
 })
 
-// Register badge issuance from blockchain transaction
-router.post('/issuance', async (req, res, next) => {
+// Webhook: Handle badge metadata updates
+router.post('/webhook/metadata', validateWebhookSignature(getWebhookValidationConfig()), async (req: Request, res: Response) => {
   try {
-    const {
-      txId,
-      recipientAddress,
-      templateId,
-      communityId,
-      issuerAddress,
-      recipientName,
-      recipientEmail,
-      network,
-      createdAt
-    } = req.body
-
-    if (!txId || !recipientAddress || !templateId || !issuerAddress) {
-      throw createError('Missing required fields', 400)
+    if (!cacheInvalidator || !uiRefreshService) {
+      console.error('Badge metadata services not initialized');
+      return res.status(503).json({
+        success: false,
+        error: 'Badge metadata services not initialized',
+        code: 'SERVICE_NOT_INITIALIZED'
+      });
     }
 
-    const result = await registerBadgeIssuance({
-      txId,
-      recipientAddress,
-      templateId,
-      communityId,
-      issuerAddress,
-      recipientName,
-      recipientEmail,
-      network,
-      createdAt
-    })
+    const event: BadgeMetadataUpdateEvent = req.body;
 
-    res.status(201).json(result)
-  } catch (error) {
-    next(error)
-  }
-})
+    if (!event) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body is required',
+        code: 'MISSING_REQUEST_BODY'
+      });
+    }
 
-// Get badges issued by a user
-router.get('/issued-by/:issuer', async (req, res, next) => {
-  try {
-    const { issuer } = req.params
+    if (!event.badgeId || !event.transactionHash) {
+      return res.status(400).json({
+        success: false,
+        error: 'badgeId and transactionHash are required',
+        code: 'VALIDATION_ERROR'
+      });
+    }
 
-    const badges = await getBadgesIssuedByUser(issuer)
+    await cacheInvalidator.invalidateBadgeCache({
+      badgeId: event.badgeId,
+      changedFields: [],
+      timestamp: event.timestamp || Date.now(),
+      transactionHash: event.transactionHash,
+      blockHeight: event.blockHeight || 0
+    });
 
-    res.json({
-      issuer,
-      count: badges.length,
-      badges
-    })
-  } catch (error) {
-    next(error)
-  }
-})
-
-// Get badges received by a user
-router.get('/received-by/:recipient', async (req, res, next) => {
-  try {
-    const { recipient } = req.params
-
-    const badges = await getBadgesReceivedByUser(recipient)
+    await uiRefreshService.notifyBadgeMetadataUpdate(
+      event.badgeId,
+      event.category ? ['category'] : [],
+      {
+        transactionHash: event.transactionHash,
+        blockHeight: event.blockHeight
+      }
+    );
 
     res.json({
-      recipient,
-      count: badges.length,
-      badges
-    })
+      success: true,
+      message: 'Badge metadata update processed successfully',
+      badgeId: event.badgeId,
+      timestamp: Date.now()
+    });
   } catch (error) {
-    next(error)
+    console.error('Error processing badge metadata webhook:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process badge metadata update',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: 'PROCESSING_ERROR'
+    });
   }
-})
-
-// Get community badge statistics
-router.get('/community/:communityId/stats', async (req, res, next) => {
-  try {
-    const { communityId } = req.params
-
-    const stats = await getCommunitybadgeStatistics(communityId)
-
-    res.json(stats)
-  } catch (error) {
-    next(error)
-  }
-})
-
-// Get badge templates for issuer
-router.get('/templates', authenticateToken, async (req: AuthRequest, res, next) => {
-  try {
-    const { issuer } = req.query
-    const issuerAddress = issuer as string || req.user!.stacksAddress
-
-    const templates = await BadgeTemplate.find({
-      creator: issuerAddress,
-      isActive: true
-    })
-      .populate('community')
-      .sort({ createdAt: -1 })
-
-    res.json(templates.map(template => ({
-      id: template._id,
-      name: template.name,
-      description: template.description,
-      category: template.category,
-      level: template.level,
-      icon: template.icon,
-      community: {
-        id: (template.community as any)._id,
-        name: (template.community as any).name
-      },
-      createdAt: template.createdAt
-    })))
-  } catch (error) {
-    next(error)
-  }
-})
-
-// Revoke badge via transaction service
-router.post('/revoke/:badgeId', authenticateToken, async (req: AuthRequest, res, next) => {
-  try {
-    const { badgeId } = req.params
-    const { reason } = req.body
-
-    const result = await revokeBadge({
-      badgeId,
-      issuerAddress: req.user!.stacksAddress,
-      reason
-    })
-
-    res.json(result)
-  } catch (error) {
-    next(error)
-  }
-})
+});
 
 export default router
