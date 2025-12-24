@@ -259,7 +259,7 @@ export const getCommunityApprovalStatus = async (communityId: string) => {
   }
 }
 
-export const getPendingCommunities = async (limit: number = 20, offset: number = 0) => {
+export const getPendingCommunities = async (limit = 20, offset = 0) => {
   try {
     const [communities, total] = await Promise.all([
       Community.find({ 'metadata.approvalStatus': 'pending' })
@@ -286,7 +286,7 @@ export const getPendingCommunities = async (limit: number = 20, offset: number =
   }
 }
 
-export const getUnderReviewCommunities = async (limit: number = 20, offset: number = 0) => {
+export const getUnderReviewCommunities = async (limit = 20, offset = 0) => {
   try {
     const [communities, total] = await Promise.all([
       Community.find({ 'metadata.approvalStatus': 'under_review' })

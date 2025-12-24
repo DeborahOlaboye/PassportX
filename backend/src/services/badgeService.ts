@@ -33,7 +33,7 @@ export const validateBadgeIssuance = async (
   return { template, community }
 }
 
-export const getBadgesByCategory = async (category: string, limit: number = 20) => {
+export const getBadgesByCategory = async (category: string, limit = 20) => {
   const badges = await Badge.find({ 'metadata.category': category })
     .populate('templateId')
     .populate('community')
@@ -52,7 +52,7 @@ export const getBadgesByCategory = async (category: string, limit: number = 20) 
   }))
 }
 
-export const getBadgesByLevel = async (level: number, limit: number = 20) => {
+export const getBadgesByLevel = async (level: number, limit = 20) => {
   const badges = await Badge.find({ 'metadata.level': level })
     .populate('templateId')
     .populate('community')
@@ -71,7 +71,7 @@ export const getBadgesByLevel = async (level: number, limit: number = 20) => {
   }))
 }
 
-export const getRecentBadges = async (limit: number = 20) => {
+export const getRecentBadges = async (limit = 20) => {
   const badges = await Badge.find()
     .populate('templateId')
     .populate('community')
