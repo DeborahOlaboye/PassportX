@@ -5,7 +5,7 @@ import { useTransactionHistory } from '@/contexts/TransactionContext';
 import { Transaction } from '@/types/transaction';
 
 export function TransactionHistory() {
-  const { transactions } = useTransactionHistory();
+  const { transactions, clearHistory } = useTransactionHistory();
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'failed'>('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'timestamp' | 'method' | 'status'>('timestamp');
@@ -89,7 +89,15 @@ export function TransactionHistory() {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">Transaction History</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Transaction History</h2>
+        <button
+          onClick={clearHistory}
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          Clear History
+        </button>
+      </div>
 
       {/* Filters and Search */}
       <div className="mb-4 flex flex-wrap gap-4">
