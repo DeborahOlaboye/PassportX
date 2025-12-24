@@ -25,7 +25,7 @@ export const errorHandler = (
   })
 }
 
-export const createError = (message: string, statusCode: number = 500): AppError => {
+export const createError = (message: string, statusCode = 500): AppError => {
   const error = new Error(message) as AppError
   error.statusCode = statusCode
   error.isOperational = true

@@ -176,7 +176,7 @@ export class StacksService {
     }
   }
 
-  async getAccountTransactions(address: string, limit: number = 20) {
+  async getAccountTransactions(address: string, limit = 20) {
     try {
       const response = await axios.get(
         `${STACKS_API_URL}/extended/v1/address/${address}/transactions?limit=${limit}`

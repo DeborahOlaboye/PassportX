@@ -3,7 +3,7 @@ import BadgeTemplate from '../models/BadgeTemplate'
 import Community from '../models/Community'
 import User from '../models/User'
 
-export const getPublicPassports = async (limit: number = 10, skip: number = 0) => {
+export const getPublicPassports = async (limit = 10, skip = 0) => {
   const users = await User.find({ isPublic: true })
     .sort({ lastActive: -1 })
     .limit(limit)
@@ -35,7 +35,7 @@ export const getPublicPassports = async (limit: number = 10, skip: number = 0) =
   return passports.filter(passport => passport.badgeCount > 0)
 }
 
-export const searchPassports = async (query: string, limit: number = 10) => {
+export const searchPassports = async (query: string, limit = 10) => {
   const users = await User.find({
     isPublic: true,
     $or: [

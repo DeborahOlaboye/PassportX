@@ -36,7 +36,7 @@ export interface CreateCommunityParams {
 
 export class CommunityContractManager {
   private contractAddress: string;
-  private contractName: string = 'community-manager';
+  private contractName = 'community-manager';
   private userSession: UserSession;
   private network: 'testnet' | 'mainnet';
 
