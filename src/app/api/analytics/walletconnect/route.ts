@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+// Configure route behavior
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
 type TimeRange = '24h' | '7d' | '30d' | '90d' | 'all';
 
 export async function GET(request: Request) {

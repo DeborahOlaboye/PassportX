@@ -3,11 +3,9 @@ import { connectToDatabase } from '@/lib/mongodb';
 
 // Disable body parsing for this route
 // This is needed to get the raw body for signature verification
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
