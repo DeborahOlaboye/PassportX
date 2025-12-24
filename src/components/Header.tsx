@@ -16,6 +16,9 @@ export default function Header() {
             <Link href="/passport" className="text-gray-600 hover:text-gray-900">
               My Passport
             </Link>
+            <Link href="/transactions" className="text-gray-600 hover:text-gray-900">
+              Transactions
+            </Link>
             <Link href="/admin" className="text-gray-600 hover:text-gray-900">
               Admin
             </Link>
