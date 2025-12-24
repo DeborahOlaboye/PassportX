@@ -43,7 +43,7 @@ export const stxUtils = {
     return amount;
   },
 
-  formatStx(stx: number, decimals: number = 2): string {
+  formatStx(stx: number, decimals = 2): string {
     return stx.toFixed(decimals);
   },
 
@@ -84,8 +84,8 @@ export const createPaymentPostCondition = (
 };
 
 export const calculateNetworkFees = (
-  baseFeeRate: number = 100,
-  transactionSize: number = 200
+  baseFeeRate = 100,
+  transactionSize = 200
 ): TransactionFee => {
   const baseFee = baseFeeRate * transactionSize;
   const baseStx = stxUtils.microStxToStx(BigInt(baseFee));
@@ -99,8 +99,8 @@ export const calculateNetworkFees = (
 
 export const estimateTransactionCost = (
   paymentAmount: number,
-  feeRate: number = 100,
-  transactionSize: number = 200
+  feeRate = 100,
+  transactionSize = 200
 ): { payment: number; fee: number; total: number } => {
   const networkFee = (feeRate * transactionSize) / STX_TO_MICROSTX;
 
