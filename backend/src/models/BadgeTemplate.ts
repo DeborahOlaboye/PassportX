@@ -51,8 +51,16 @@ const badgeTemplateSchema = new Schema<IBadgeTemplate>({
   timestamps: true
 })
 
+// Existing indexes
 badgeTemplateSchema.index({ community: 1, isActive: 1 })
 badgeTemplateSchema.index({ creator: 1 })
 badgeTemplateSchema.index({ category: 1, level: 1 })
+
+// Text search indexes for name and description
+badgeTemplateSchema.index({ name: 'text', description: 'text' })
+
+// Additional search indexes
+badgeTemplateSchema.index({ name: 1 })
+badgeTemplateSchema.index({ isActive: 1, category: 1 })
 
 export default mongoose.model<IBadgeTemplate>('BadgeTemplate', badgeTemplateSchema)
