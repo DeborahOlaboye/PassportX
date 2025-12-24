@@ -62,7 +62,13 @@ export function TransactionHistory() {
     return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredTransactions, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const totalTransactions = filteredTransactions.length;
+  const confirmedTransactions = filteredTransactions.filter(tx => tx.status === 'confirmed').length;
+  const pendingTransactions = filteredTransactions.filter(tx => tx.status === 'pending').length;
+  const failedTransactions = filteredTransactions.filter(tx => tx.status === 'failed').length;
+  const totalGasCost = filteredTransactions
+    .filter(tx => tx.gasUsed && tx.gasPrice)
+    .reduce((sum, tx) => sum + (parseInt(tx.gasUsed!) * parseInt(tx.gasPrice!)) / 1e18, 0);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
@@ -232,6 +238,33 @@ export function TransactionHistory() {
             </div>
           ))
         )}
+      </div>
+
+      {/* Summary Statistics */}
+      <div className="mt-6 bg-gray-50 rounded-lg p-4">
+        <h3 className="text-lg font-semibold mb-3">Summary</h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+          <div>
+            <p className="text-gray-500">Total</p>
+            <p className="text-2xl font-bold">{totalTransactions}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Confirmed</p>
+            <p className="text-2xl font-bold text-green-600">{confirmedTransactions}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Pending</p>
+            <p className="text-2xl font-bold text-yellow-600">{pendingTransactions}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Failed</p>
+            <p className="text-2xl font-bold text-red-600">{failedTransactions}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Total Gas Cost</p>
+            <p className="text-lg font-bold">{totalGasCost.toFixed(4)} ETH</p>
+          </div>
+        </div>
       </div>
 
       {/* Pagination */}
