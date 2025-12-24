@@ -9,6 +9,8 @@ export function TransactionHistory() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'failed'>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
@@ -55,8 +57,12 @@ export function TransactionHistory() {
       }
     });
 
-    return filtered;
-  }, [transactions, filter, search, sortBy, sortOrder, dateFrom, dateTo]);
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredTransactions, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
@@ -176,10 +182,10 @@ export function TransactionHistory() {
 
       {/* Transaction List */}
       <div className="space-y-4">
-        {filteredTransactions.length === 0 ? (
+        {paginatedTransactions.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No transactions found</p>
         ) : (
-          filteredTransactions.map((tx) => (
+          paginatedTransactions.map((tx) => (
             <div key={tx.id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -227,6 +233,29 @@ export function TransactionHistory() {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-6">
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
