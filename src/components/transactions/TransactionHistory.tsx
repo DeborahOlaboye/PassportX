@@ -7,9 +7,8 @@ import { Transaction } from '@/types/transaction';
 export function TransactionHistory() {
   const { transactions, clearHistory } = useTransactionHistory();
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'failed'>('all');
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'timestamp' | 'method' | 'status'>('timestamp');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
@@ -19,14 +18,14 @@ export function TransactionHistory() {
       filtered = filtered.filter(tx => tx.status === filter);
     }
 
-    // Filter by search
-    if (search) {
-      filtered = filtered.filter(tx =>
-        tx.hash.toLowerCase().includes(search.toLowerCase()) ||
-        tx.method.toLowerCase().includes(search.toLowerCase()) ||
-        (tx.to && tx.to.toLowerCase().includes(search.toLowerCase())) ||
-        (tx.from && tx.from.toLowerCase().includes(search.toLowerCase()))
-      );
+    // Filter by date range
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom).getTime();
+      filtered = filtered.filter(tx => tx.timestamp >= fromDate);
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo).getTime() + 24 * 60 * 60 * 1000; // End of day
+      filtered = filtered.filter(tx => tx.timestamp <= toDate);
     }
 
     // Sort
@@ -57,7 +56,7 @@ export function TransactionHistory() {
     });
 
     return filtered;
-  }, [transactions, filter, search, sortBy, sortOrder]);
+  }, [transactions, filter, search, sortBy, sortOrder, dateFrom, dateTo]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
@@ -152,16 +151,26 @@ export function TransactionHistory() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Order
+            From Date
           </label>
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
             className="border border-gray-300 rounded-md px-3 py-2"
-          >
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
-          </select>
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            To Date
+          </label>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="border border-gray-300 rounded-md px-3 py-2"
+          />
         </div>
       </div>
 
