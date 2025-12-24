@@ -79,6 +79,15 @@ export interface IBadgeTemplate extends Document {
   createdAt: Date
 }
 
+export interface IBadgeMetadata {
+  level: number
+  category: string
+  timestamp: number
+  active?: boolean
+  revokedAt?: number
+  revocationReason?: string
+}
+
 export interface IBadge extends Document {
   templateId: string // Badge template ID
   owner: string // Stacks address
@@ -87,11 +96,7 @@ export interface IBadge extends Document {
   tokenId?: number // NFT token ID on blockchain
   transactionId?: string // Stacks transaction ID
   issuedAt: Date
-  metadata: {
-    level: number
-    category: string
-    timestamp: number
-  }
+  metadata: IBadgeMetadata
 }
 
 export interface AuthRequest extends Request {
@@ -126,4 +131,32 @@ export interface IVerificationResponse {
   verification?: IBadgeVerification
   error?: string
   message?: string
+}
+
+export interface IBadgeIssuanceRequest {
+  txId: string
+  recipientAddress: string
+  templateId: number
+  communityId: number
+  issuerAddress: string
+  recipientName?: string
+  recipientEmail?: string
+  network: 'testnet' | 'mainnet'
+  createdAt: string
+}
+
+export interface IBadgeIssuanceResponse {
+  id: string
+  txId: string
+  recipient: string
+  template: string
+  status: 'issued' | 'pending'
+  issuedAt: Date
+}
+
+export interface IBadgeActivity {
+  badgeId: string
+  action: 'issued' | 'received' | 'revoked'
+  date: Date
+  reason?: string
 }
