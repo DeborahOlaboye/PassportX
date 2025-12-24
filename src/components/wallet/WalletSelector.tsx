@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useWalletConnect, ConnectedWallet } from '@/contexts/WalletConnectContext';
 import QRCodeDisplay from './QRCodeDisplay';
+import MobileWalletSelector from './MobileWalletSelector';
 
 interface WalletSelectorProps {
   onClose: () => void;
@@ -34,6 +35,22 @@ export default function WalletSelector({ onClose }: WalletSelectorProps) {
   const { connectWallet, isConnecting } = useWalletConnect();
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [showQR, setShowQR] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect mobile device
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      setIsMobile(/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent));
+    };
+
+    checkMobile();
+  }, []);
+
+  // Use mobile-optimized selector for mobile devices
+  if (isMobile) {
+    return <MobileWalletSelector onClose={onClose} />;
+  }
 
   const handleWalletSelect = async (walletId: string) => {
     setSelectedWallet(walletId);
