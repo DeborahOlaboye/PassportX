@@ -22,7 +22,7 @@ export interface BadgeIssuerResponse {
 
 export class BadgeIssuerManager {
   private contractAddress: string
-  private contractName: string = 'badge-issuer'
+  private contractName = 'badge-issuer'
   private userSession: UserSession
   private network: 'testnet' | 'mainnet'
 
