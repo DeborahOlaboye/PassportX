@@ -64,12 +64,6 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
       console.error('Failed to generate QR code:', error);
     }
   };
-      });
-    } catch (error) {
-      console.error('QR code generation error:', error);
-      return '';
-    }
-  };
 
   const handleCopy = async () => {
     try {
