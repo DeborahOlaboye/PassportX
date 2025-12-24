@@ -10,6 +10,7 @@ export function TransactionHistory() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 10;
 
   const filteredTransactions = useMemo(() => {
@@ -85,14 +86,19 @@ export function TransactionHistory() {
     return `${gasCost.toFixed(6)} ETH`;
   };
 
-  const exportHistory = () => {
-    const dataStr = JSON.stringify(filteredTransactions, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `transaction-history-${new Date().toISOString().split('T')[0]}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  const exportHistory = async () => {
+    setIsLoading(true);
+    try {
+      const dataStr = JSON.stringify(filteredTransactions, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = `transaction-history-${new Date().toISOString().split('T')[0]}.json`;
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -102,9 +108,10 @@ export function TransactionHistory() {
         <div className="flex space-x-2">
           <button
             onClick={exportHistory}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Export
+            {isLoading ? 'Exporting...' : 'Export'}
           </button>
           <button
             onClick={clearHistory}
