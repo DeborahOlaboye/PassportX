@@ -114,12 +114,14 @@ export function TransactionHistory() {
             onClick={exportHistory}
             disabled={isLoading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Export transaction history as JSON file"
           >
             {isLoading ? 'Exporting...' : 'Export'}
           </button>
           <button
             onClick={clearHistory}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            aria-label="Clear all transaction history"
           >
             Clear History
           </button>
