@@ -1,45 +1,45 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Smartphone, ExternalLink } from 'lucide-react';
+import { createStacksWalletConfig, createWalletConnectUri, getMobileWalletDeepLinks, openMobileWallet } from '@/utils/stacksWalletConnect';
 
 interface QRCodeDisplayProps {
   onBack: () => void;
   onClose: () => void;
+  preferredWallet?: 'xverse' | 'hiro' | 'leather';
 }
 
-export default function QRCodeDisplay({ onBack, onClose }: QRCodeDisplayProps) {
+export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCodeDisplayProps) {
   const [qrCode, setQrCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [sessionUri, setSessionUri] = useState('');
+  const [sessionTopic, setSessionTopic] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState<'xverse' | 'hiro' | 'leather' | null>(preferredWallet || null);
 
   useEffect(() => {
+    // Detect if user is on mobile
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      setIsMobile(/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent));
+    };
+
+    checkMobile();
     generateQRCode();
   }, []);
 
   const generateQRCode = async () => {
     try {
-      const uri = generateWalletConnectUri();
+      const config = createStacksWalletConfig();
+      const topic = `stacks_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setSessionTopic(topic);
+
+      const uri = createWalletConnectUri(topic, config);
       setSessionUri(uri);
 
-      const qrCanvas = await generateQRCodeImage(uri);
-      setQrCode(qrCanvas);
-    } catch (error) {
-      console.error('Failed to generate QR code:', error);
-    }
-  };
-
-  const generateWalletConnectUri = (): string => {
-    const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default_project_id';
-    const sessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    return `wc:${sessionId}@2?bridge=https://bridge.walletconnect.org&key=placeholder_key&projectId=${projectId}`;
-  };
-
-  const generateQRCodeImage = async (text: string): Promise<string> => {
-    try {
       const qrCode = require('qrcode');
-      return await qrCode.toDataURL(text, {
+      const qrDataUrl = await qrCode.toDataURL(uri, {
         errorCorrectionLevel: 'H',
         type: 'image/png',
         width: 300,
@@ -48,6 +48,13 @@ export default function QRCodeDisplay({ onBack, onClose }: QRCodeDisplayProps) {
           dark: '#000000',
           light: '#ffffff',
         },
+      });
+
+      setQrCode(qrDataUrl);
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+    }
+  };
       });
     } catch (error) {
       console.error('QR code generation error:', error);
@@ -65,8 +72,19 @@ export default function QRCodeDisplay({ onBack, onClose }: QRCodeDisplayProps) {
     }
   };
 
+  const handleWalletSelect = (wallet: 'xverse' | 'hiro' | 'leather') => {
+    setSelectedWallet(wallet);
+    openMobileWallet(wallet, sessionUri);
+  };
+
+  const wallets = [
+    { id: 'xverse' as const, name: 'Xverse', icon: '🔷', description: 'Popular Stacks wallet' },
+    { id: 'hiro' as const, name: 'Hiro Wallet', icon: '🔶', description: 'Official Stacks wallet' },
+    { id: 'leather' as const, name: 'Leather', icon: '🟫', description: 'Bitcoin-native wallet' },
+  ];
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center gap-2">
         <button
           onClick={onBack}
@@ -75,9 +93,10 @@ export default function QRCodeDisplay({ onBack, onClose }: QRCodeDisplayProps) {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h3 className="font-semibold">Scan with Mobile Wallet</h3>
+        <h3 className="font-semibold text-lg">Connect Mobile Wallet</h3>
       </div>
 
+      {/* QR Code Section */}
       <div className="bg-gray-50 p-6 rounded-lg flex flex-col items-center space-y-4">
         {qrCode ? (
           <img
@@ -91,11 +110,40 @@ export default function QRCodeDisplay({ onBack, onClose }: QRCodeDisplayProps) {
           </div>
         )}
 
-        <p className="text-sm text-gray-600 text-center">
-          Use your mobile wallet to scan this QR code
+        <p className="text-sm text-gray-600 text-center max-w-xs">
+          Scan this QR code with your mobile wallet to connect securely
         </p>
       </div>
 
+      {/* Mobile Wallet Buttons */}
+      {isMobile && (
+        <div className="space-y-3">
+          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+            <Smartphone className="w-4 h-4" />
+            Open in Wallet App
+          </h4>
+          <div className="grid grid-cols-1 gap-2">
+            {wallets.map((wallet) => (
+              <button
+                key={wallet.id}
+                onClick={() => handleWalletSelect(wallet.id)}
+                className="w-full p-3 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 rounded-lg transition-all text-left disabled:opacity-50"
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{wallet.icon}</span>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">{wallet.name}</p>
+                    <p className="text-sm text-gray-500">{wallet.description}</p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Connection URI Section */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">Connection URI</label>
         <div className="flex items-center space-x-2">
@@ -117,6 +165,20 @@ export default function QRCodeDisplay({ onBack, onClose }: QRCodeDisplayProps) {
             )}
           </button>
         </div>
+        <p className="text-xs text-gray-500">
+          Copy this URI if you prefer to paste it manually into your wallet
+        </p>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h5 className="font-medium text-blue-900 mb-2">How to connect:</h5>
+        <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+          <li>Open your mobile wallet app</li>
+          <li>Look for the WalletConnect option</li>
+          <li>Scan the QR code or paste the URI</li>
+          <li>Approve the connection in your wallet</li>
+        </ol>
       </div>
 
       <button
