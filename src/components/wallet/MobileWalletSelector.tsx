@@ -5,6 +5,7 @@ import { X, Smartphone, Monitor, Copy, Check } from 'lucide-react';
 import QRCodeDisplay from './QRCodeDisplay';
 import { initiateMobileWalletConnection, waitForMobileWalletResponse, MobileWalletResponse } from '@/utils/mobileWalletResponseHandler';
 import { openMobileWallet } from '@/utils/stacksWalletConnect';
+import { trackMobileWalletConnectionAttempt, trackMobileWalletConnectionSuccess, trackMobileWalletConnectionFailure } from '@/utils/mobileWalletAnalytics';
 import { useWalletConnect } from '@/contexts/WalletConnectContext';
 
 interface MobileWalletSelectorProps {
@@ -62,7 +63,12 @@ export default function MobileWalletSelector({ onClose }: MobileWalletSelectorPr
     setConnectionStatus('connecting');
     setErrorMessage('');
 
+    const sessionId = `mobile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     try {
+      // Track connection attempt
+      trackMobileWalletConnectionAttempt(walletId as 'xverse' | 'hiro' | 'leather', sessionId);
+
       const wallet = MOBILE_WALLETS.find(w => w.id === walletId);
       if (!wallet) throw new Error('Wallet not found');
 
@@ -99,6 +105,9 @@ export default function MobileWalletSelector({ onClose }: MobileWalletSelectorPr
         const response = await waitForMobileWalletResponse(requestId, 60000); // 60 second timeout
 
         if (response.success && response.data) {
+          // Track success
+          trackMobileWalletConnectionSuccess(walletId as 'xverse' | 'hiro' | 'leather', sessionId);
+
           // Connect to the app
           const connectedWallet = {
             address: response.data.address || '0x' + '0'.repeat(40),
@@ -118,6 +127,13 @@ export default function MobileWalletSelector({ onClose }: MobileWalletSelectorPr
         setShowQR(true);
       }
     } catch (error) {
+      // Track failure
+      trackMobileWalletConnectionFailure(
+        walletId as 'xverse' | 'hiro' | 'leather',
+        sessionId,
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+
       console.error('Wallet connection failed:', error);
       setConnectionStatus('error');
       setErrorMessage(error instanceof Error ? error.message : 'Connection failed');
