@@ -71,6 +71,12 @@ export function TransactionHistory() {
     .filter(tx => tx.gasUsed && tx.gasPrice)
     .reduce((sum, tx) => sum + (parseInt(tx.gasUsed!) * parseInt(tx.gasPrice!)) / 1e18, 0);
 
+  const refreshTransactions = () => {
+    // This would trigger a refresh of transaction statuses
+    // For now, just reset pagination
+    setCurrentPage(1);
+  };
+
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
   };
@@ -110,6 +116,13 @@ export function TransactionHistory() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Transaction History</h2>
         <div className="flex space-x-2">
+          <button
+            onClick={refreshTransactions}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            aria-label="Refresh transaction statuses"
+          >
+            Refresh
+          </button>
           <button
             onClick={exportHistory}
             disabled={isLoading}
