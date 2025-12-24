@@ -289,7 +289,7 @@ export class PassportX {
    */
   async getCommunityLeaderboard(
     communityId: string,
-    limit: number = 10
+    limit = 10
   ): Promise<any[]> {
     const response = await this.client.get<ApiResponse<any[]>>(
       `/api/communities/${communityId}/leaderboard?limit=${limit}`
