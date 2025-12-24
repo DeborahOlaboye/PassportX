@@ -19,6 +19,9 @@ export default function Header() {
             <Link href="/transactions" className="text-gray-600 hover:text-gray-900">
               Transactions
             </Link>
+            <Link href="/sign" className="text-gray-600 hover:text-gray-900">
+              Sign Transactions
+            </Link>
             <Link href="/admin" className="text-gray-600 hover:text-gray-900">
               Admin
             </Link>
