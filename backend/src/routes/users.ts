@@ -4,6 +4,8 @@ import Badge from '../models/Badge'
 import { authenticateToken, optionalAuth } from '../middleware/auth'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
+import { uploadAvatar, deleteOldAvatar } from '../middleware/upload'
+import path from 'path'
 
 const router = Router()
 
@@ -28,6 +30,9 @@ router.get('/profile/:address', optionalAuth, async (req: AuthRequest, res, next
       name: user.name,
       bio: user.bio,
       avatar: user.avatar,
+      customUrl: user.customUrl,
+      socialLinks: user.socialLinks,
+      themePreferences: user.themePreferences,
       isPublic: user.isPublic,
       joinDate: user.joinDate
     })
@@ -39,18 +44,54 @@ router.get('/profile/:address', optionalAuth, async (req: AuthRequest, res, next
 // Update user profile
 router.put('/profile', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
-    const { name, bio, avatar, isPublic } = req.body
-    
+    const { name, bio, avatar, isPublic, customUrl, socialLinks, themePreferences } = req.body
+
     const user = await User.findOne({ stacksAddress: req.user!.stacksAddress })
     if (!user) {
       throw createError('User not found', 404)
     }
 
+    // Update basic fields
     if (name !== undefined) user.name = name
     if (bio !== undefined) user.bio = bio
     if (avatar !== undefined) user.avatar = avatar
     if (isPublic !== undefined) user.isPublic = isPublic
 
+    // Update custom URL with validation
+    if (customUrl !== undefined) {
+      if (customUrl) {
+        // Check if custom URL is already taken by another user
+        const existingUser = await User.findOne({
+          customUrl,
+          stacksAddress: { $ne: user.stacksAddress }
+        })
+        if (existingUser) {
+          throw createError('Custom URL is already taken', 400)
+        }
+      }
+      user.customUrl = customUrl
+    }
+
+    // Update social links
+    if (socialLinks !== undefined) {
+      user.socialLinks = {
+        twitter: socialLinks.twitter || undefined,
+        github: socialLinks.github || undefined,
+        linkedin: socialLinks.linkedin || undefined,
+        discord: socialLinks.discord || undefined,
+        website: socialLinks.website || undefined
+      }
+    }
+
+    // Update theme preferences
+    if (themePreferences !== undefined) {
+      user.themePreferences = {
+        mode: themePreferences.mode || 'system',
+        accentColor: themePreferences.accentColor || undefined
+      }
+    }
+
+    user.lastActive = new Date()
     await user.save()
 
     res.json({
@@ -59,6 +100,97 @@ router.put('/profile', authenticateToken, async (req: AuthRequest, res, next) =>
       name: user.name,
       bio: user.bio,
       avatar: user.avatar,
+      customUrl: user.customUrl,
+      socialLinks: user.socialLinks,
+      themePreferences: user.themePreferences,
+      isPublic: user.isPublic,
+      joinDate: user.joinDate
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Upload profile picture
+router.post('/profile/avatar', authenticateToken, uploadAvatar.single('avatar'), async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.file) {
+      throw createError('No file uploaded', 400)
+    }
+
+    const user = await User.findOne({ stacksAddress: req.user!.stacksAddress })
+    if (!user) {
+      throw createError('User not found', 404)
+    }
+
+    // Delete old avatar if it exists
+    if (user.avatar) {
+      deleteOldAvatar(user.avatar)
+    }
+
+    // Save new avatar path
+    user.avatar = `/uploads/avatars/${req.file.filename}`
+    user.lastActive = new Date()
+    await user.save()
+
+    res.json({
+      success: true,
+      avatar: user.avatar
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Check if custom URL is available
+router.get('/profile/check-url/:customUrl', async (req, res, next) => {
+  try {
+    const { customUrl } = req.params
+
+    // Validate format
+    const urlRegex = /^[a-z0-9-]+$/
+    if (!urlRegex.test(customUrl) || customUrl.length < 3 || customUrl.length > 30) {
+      return res.json({
+        available: false,
+        message: 'Custom URL must be 3-30 characters long and contain only lowercase letters, numbers, and hyphens'
+      })
+    }
+
+    const existingUser = await User.findOne({ customUrl })
+
+    res.json({
+      available: !existingUser,
+      message: existingUser ? 'Custom URL is already taken' : 'Custom URL is available'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Get user profile by custom URL
+router.get('/profile/u/:customUrl', optionalAuth, async (req: AuthRequest, res, next) => {
+  try {
+    const { customUrl } = req.params
+    const user = await User.findOne({ customUrl })
+
+    if (!user) {
+      throw createError('User not found', 404)
+    }
+
+    // Check if profile is public or user is viewing their own profile
+    if (!user.isPublic && (!req.user || req.user.stacksAddress !== user.stacksAddress)) {
+      throw createError('Profile is private', 403)
+    }
+
+    res.json({
+      id: user._id,
+      stacksAddress: user.stacksAddress,
+      name: user.name,
+      bio: user.bio,
+      avatar: user.avatar,
+      customUrl: user.customUrl,
+      socialLinks: user.socialLinks,
+      themePreferences: user.themePreferences,
       isPublic: user.isPublic,
       joinDate: user.joinDate
     })

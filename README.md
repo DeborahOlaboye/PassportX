@@ -232,6 +232,102 @@ SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.access-control
 
 ---
 
+## 🔗 Hiro Chainhooks Integration
+
+PassportX integrates with **Hiro Chainhooks** for real-time blockchain event monitoring and indexing.
+
+### What is Chainhooks?
+
+Chainhooks is a reorg-aware transaction indexing engine that provides reliable blockchain data regardless of forks and reorgs. PassportX uses Chainhooks to:
+
+- 🎯 Monitor badge minting events in real-time
+- 📊 Track badge metadata updates
+- 👥 Listen for community creation events
+- 🔔 Trigger instant notifications for users
+- 📈 Power analytics and metrics dashboards
+- ♻️ Handle blockchain reorganizations gracefully
+
+### Quick Start
+
+1. **Install Dependencies**
+   ```bash
+   npm install @hirosystems/chainhook-client
+   ```
+
+2. **Configure Environment Variables**
+   ```bash
+   # Copy example files
+   cp .env.example .env
+   cp .env.local.example .env.local
+
+   # Configure Chainhook node connection
+   CHAINHOOK_NODE_URL=http://localhost:20456
+   CHAINHOOK_SERVER_PORT=3010
+   NEXT_PUBLIC_CHAINHOOK_ENABLED=true
+   ```
+
+3. **Start Using Chainhooks**
+   ```typescript
+   import { getChainhookConfig } from '@/config/chainhook';
+
+   const config = getChainhookConfig('development', 'mainnet');
+   ```
+
+### Configuration Files
+
+All Chainhook configuration is located in `src/config/chainhook/`:
+
+- **`types/chainhook.ts`** - TypeScript type definitions
+- **`server.config.ts`** - Local event server configuration
+- **`node.config.ts`** - Remote Chainhook node configuration
+- **`index.ts`** - Main configuration module
+- **`constants.ts`** - Constants and defaults
+- **`utils.ts`** - Utility functions
+- **`README.md`** - Detailed documentation
+
+### Environment Variables Reference
+
+**Server Configuration:**
+- `CHAINHOOK_SERVER_HOST` - Local server hostname (default: localhost)
+- `CHAINHOOK_SERVER_PORT` - Local server port (default: 3010)
+- `CHAINHOOK_SERVER_EXTERNAL_URL` - External URL for webhooks
+- `CHAINHOOK_SERVER_HTTPS` - Enable HTTPS (true/false)
+
+**Node Configuration:**
+- `CHAINHOOK_NODE_URL` - Chainhook node base URL
+- `CHAINHOOK_NODE_API_KEY` - API key for authentication
+- `CHAINHOOK_NODE_TIMEOUT` - Request timeout in milliseconds
+- `CHAINHOOK_NODE_MAX_RETRIES` - Maximum retry attempts
+
+**Feature Flags:**
+- `NEXT_PUBLIC_CHAINHOOK_ENABLED` - Enable/disable Chainhooks
+- `NEXT_PUBLIC_CHAINHOOK_DEBUG` - Enable debug logging
+
+### Monitored Events
+
+PassportX monitors the following contract events:
+
+- **Badge Minting** - `passport-nft` contract
+- **Metadata Updates** - `badge-metadata` contract
+- **Community Creation** - `community-manager` contract
+- **Access Control Changes** - `access-control` contract
+- **Badge Revocations** - `badge-issuer` contract
+
+### Resources
+
+- 📚 [Chainhook Configuration Documentation](./src/config/chainhook/README.md)
+- 🔗 [Hiro Chainhooks Docs](https://docs.hiro.so/chainhook/overview)
+- 📦 [Chainhook Client NPM](https://www.npmjs.com/package/@hirosystems/chainhook-client)
+- 💻 [Chainhook GitHub](https://github.com/hirosystems/chainhook)
+
+### Related Issues
+
+- [#31 - Set up Hiro Chainhooks infrastructure](https://github.com/DeborahOlaboye/PassportX/issues/31)
+- [#32 - Create ChainhookEventObserver service](https://github.com/DeborahOlaboye/PassportX/issues/32)
+- [#33 - Implement predicate for badge minting events](https://github.com/DeborahOlaboye/PassportX/issues/33)
+
+---
+
 ## 🤝 Contributing
 
 PassportX welcomes contributions across UI, smart contracts, and documentation.

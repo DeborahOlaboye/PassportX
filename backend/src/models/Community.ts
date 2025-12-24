@@ -112,7 +112,14 @@ const communitySchema = new Schema<ICommunity>({
     type: String,
     trim: true,
     lowercase: true
-  }]
+  }],
+  metadata: {
+    blockchainId: String,
+    contractAddress: String,
+    createdAtBlockHeight: Number,
+    createdAtTransactionHash: String,
+    createdAtTimestamp: Date
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -122,5 +129,6 @@ const communitySchema = new Schema<ICommunity>({
 communitySchema.index({ admin: 1 })
 communitySchema.index({ isActive: 1 })
 communitySchema.index({ name: 'text', description: 'text' })
+communitySchema.index({ 'metadata.blockchainId': 1, 'metadata.contractAddress': 1 })
 
 export default mongoose.model<ICommunity>('Community', communitySchema)
