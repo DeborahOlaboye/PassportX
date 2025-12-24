@@ -2,6 +2,7 @@
 
 import { Component, ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { analyticsService } from '@/lib/analytics/analytics.service'
 
 interface Props {
   children: ReactNode
@@ -20,11 +21,19 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
+    // Log error to analytics
+    analyticsService.trackError(error, { component: 'ErrorBoundary' })
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by ErrorBoundary:', error, errorInfo)
+    // Additional error context
+    analyticsService.trackError(error, {
+      component: 'ErrorBoundary',
+      componentStack: errorInfo.componentStack,
+      timestamp: new Date().toISOString(),
+    })
   }
 
   render() {
