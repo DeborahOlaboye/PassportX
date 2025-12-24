@@ -116,6 +116,15 @@ export interface IBadgeTemplate extends Document {
   createdAt: Date
 }
 
+export interface IBadgeMetadata {
+  level: number
+  category: string
+  timestamp: number
+  active?: boolean
+  revokedAt?: number
+  revocationReason?: string
+}
+
 export interface IBadge extends Document {
   templateId: string // Badge template ID
   owner: string // Stacks address
@@ -124,11 +133,7 @@ export interface IBadge extends Document {
   tokenId?: number // NFT token ID on blockchain
   transactionId?: string // Stacks transaction ID
   issuedAt: Date
-  metadata: {
-    level: number
-    category: string
-    timestamp: number
-  }
+  metadata: IBadgeMetadata
 }
 
 export interface AuthRequest extends Request {
