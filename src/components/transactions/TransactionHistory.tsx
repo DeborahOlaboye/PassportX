@@ -10,7 +10,7 @@ export function TransactionHistory() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 10;
 
   const filteredTransactions = useMemo(() => {
@@ -88,6 +88,7 @@ export function TransactionHistory() {
 
   const exportHistory = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const dataStr = JSON.stringify(filteredTransactions, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -96,6 +97,9 @@ export function TransactionHistory() {
       linkElement.setAttribute('href', dataUri);
       linkElement.setAttribute('download', exportFileDefaultName);
       linkElement.click();
+    } catch (err) {
+      setError('Failed to export transaction history');
+      console.error('Export error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -246,6 +250,12 @@ export function TransactionHistory() {
           ))
         )}
       </div>
+
+      {error && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
 
       {/* Summary Statistics */}
       <div className="mt-6 bg-gray-50 rounded-lg p-4">
