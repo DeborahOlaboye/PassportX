@@ -24,7 +24,7 @@ class WalletConnectDeploymentValidator {
   private environment: string;
   private results: ValidationResult[] = [];
 
-  constructor(environment: string = 'testnet') {
+  constructor(environment = 'testnet') {
     this.environment = environment;
   }
 

@@ -388,7 +388,7 @@ export const updateMemberCount = async (communityId: string) => {
   }
 }
 
-export const getCommunityLeaderboard = async (communityId: string, limit: number = 10) => {
+export const getCommunityLeaderboard = async (communityId: string, limit = 10) => {
   const pipeline = [
     { $match: { community: communityId } },
     { $group: { 
@@ -454,7 +454,7 @@ export const getCommunityAnalytics = async (communityId: string) => {
   }
 }
 
-export const getTrendingCommunities = async (limit: number = 10) => {
+export const getTrendingCommunities = async (limit = 10) => {
   const communities = await Community.find({ isActive: true })
     .sort({ memberCount: -1, createdAt: -1 })
     .limit(limit)
@@ -469,7 +469,7 @@ export const getTrendingCommunities = async (limit: number = 10) => {
   }))
 }
 
-export const getCommunityMembers = async (communityId: string, limit: number = 50, offset: number = 0) => {
+export const getCommunityMembers = async (communityId: string, limit = 50, offset = 0) => {
   try {
     // Get unique badge owners for this community
     const badges = await Badge.find({ community: communityId })
