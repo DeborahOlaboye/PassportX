@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Copy, Check, Smartphone, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { ArrowLeft, Copy, Check, Smartphone, ExternalLink, Share2 } from 'lucide-react';
 import { createStacksWalletConfig, createWalletConnectUri, getMobileWalletDeepLinks, openMobileWallet } from '@/utils/stacksWalletConnect';
+import { optimizeQRCodeForMobile, shareWalletConnection, vibrateDevice } from '@/utils/mobileUXOptimizer';
 
 interface QRCodeDisplayProps {
   onBack: () => void;
@@ -17,6 +18,7 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
   const [sessionTopic, setSessionTopic] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<'xverse' | 'hiro' | 'leather' | null>(preferredWallet || null);
+  const qrCodeRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     // Detect if user is on mobile
@@ -28,6 +30,13 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
     checkMobile();
     generateQRCode();
   }, []);
+
+  useEffect(() => {
+    // Optimize QR code for mobile when it's rendered
+    if (qrCodeRef.current && qrCode) {
+      optimizeQRCodeForMobile(qrCodeRef.current);
+    }
+  }, [qrCode]);
 
   const generateQRCode = async () => {
     try {
@@ -74,7 +83,18 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
 
   const handleWalletSelect = (wallet: 'xverse' | 'hiro' | 'leather') => {
     setSelectedWallet(wallet);
+    vibrateDevice(50); // Haptic feedback
     openMobileWallet(wallet, sessionUri);
+  };
+
+  const handleShare = async () => {
+    try {
+      await shareWalletConnection(sessionUri);
+      vibrateDevice([50, 50, 50]); // Success vibration pattern
+    } catch (error) {
+      // Fallback: copy to clipboard
+      await handleCopy();
+    }
   };
 
   const wallets = [
@@ -100,6 +120,7 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
       <div className="bg-gray-50 p-6 rounded-lg flex flex-col items-center space-y-4">
         {qrCode ? (
           <img
+            ref={qrCodeRef}
             src={qrCode}
             alt="WalletConnect QR Code"
             className="w-72 h-72 border-4 border-white rounded-lg shadow-sm"
@@ -113,6 +134,16 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
         <p className="text-sm text-gray-600 text-center max-w-xs">
           Scan this QR code with your mobile wallet to connect securely
         </p>
+
+        {isMobile && (
+          <button
+            onClick={handleShare}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            Share Connection
+          </button>
+        )}
       </div>
 
       {/* Mobile Wallet Buttons */}
