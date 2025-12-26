@@ -21,11 +21,10 @@ export class WebhookService {
 
   async registerWebhook(url: string, events: string[], secret?: string): Promise<IWebhook> {
     // Validate URL
-    try {
-      new URL(url)
-    } catch {
-      throw new Error('Invalid webhook URL')
-    }
+    this.validateWebhookUrl(url)
+
+    // Validate events
+    this.validateEvents(events)
 
     // Generate secret if not provided
     const webhookSecret = secret || crypto.randomBytes(32).toString('hex')
@@ -118,6 +117,39 @@ export class WebhookService {
 
     // For now, just log - in production, implement retry queue
     console.log(`Found ${failedWebhooks.length} webhooks to retry`)
+  }
+
+  private validateWebhookUrl(url: string): void {
+    try {
+      const parsedUrl = new URL(url)
+
+      if (parsedUrl.protocol !== 'https:') {
+        throw new Error('Webhook URL must use HTTPS')
+      }
+
+      if (!parsedUrl.hostname || parsedUrl.hostname.length === 0) {
+        throw new Error('Invalid hostname in webhook URL')
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Invalid webhook URL: ${error.message}`)
+      }
+      throw new Error('Invalid webhook URL')
+    }
+  }
+
+  private validateEvents(events: string[]): void {
+    const validEvents = ['badge_mint', 'badge_verification', 'community_update', 'test']
+
+    for (const event of events) {
+      if (!validEvents.includes(event)) {
+        throw new Error(`Invalid event type: ${event}. Valid events: ${validEvents.join(', ')}`)
+      }
+    }
+
+    if (events.length === 0) {
+      throw new Error('At least one event type must be specified')
+    }
   }
 }
 
