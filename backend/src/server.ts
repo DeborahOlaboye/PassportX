@@ -23,6 +23,7 @@ import webhooksRoutes from './routes/webhooks'
 import AnalyticsAggregator from './services/analyticsAggregator'
 import AnalyticsEventProcessor from './services/analyticsEventProcessor'
 import UserActivityService from './services/userActivityService'
+import WebhookService from './services/WebhookService'
 
 dotenv.config()
 
@@ -103,6 +104,16 @@ const startServer = async () => {
       console.log(`📊 Analytics aggregator initialized`)
       console.log(`📝 User activity service initialized`)
     })
+
+    // Initialize webhook retry scheduler
+    const webhookService = WebhookService.getInstance()
+    setInterval(async () => {
+      try {
+        await webhookService.retryFailedWebhooks()
+      } catch (error) {
+        console.error('Error in webhook retry scheduler:', error)
+      }
+    }, 5 * 60 * 1000) // Retry every 5 minutes
 
     // Graceful shutdown
     process.on('SIGINT', async () => {
