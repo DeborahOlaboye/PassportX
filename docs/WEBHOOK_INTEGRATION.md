@@ -4,6 +4,14 @@
 
 PassportX provides webhook endpoints that forward Chainhook events to external services, enabling integrations with Discord, Slack, and other platforms.
 
+## Features
+
+- Secure webhook registration
+- Event filtering by type
+- Automatic retry on failure
+- HMAC signature verification
+- Comprehensive documentation
+
 ## Webhook Registration
 
 ### Register a Webhook
