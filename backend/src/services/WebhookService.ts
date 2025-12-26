@@ -26,6 +26,8 @@ export class WebhookService {
     // Validate events
     this.validateEvents(events)
 
+    console.log(`Registering webhook for URL: ${url} with events: ${events.join(', ')}`)
+
     // Generate secret if not provided
     const webhookSecret = secret || crypto.randomBytes(32).toString('hex')
 
@@ -36,7 +38,10 @@ export class WebhookService {
       isActive: true
     })
 
-    return await webhook.save()
+    const savedWebhook = await webhook.save()
+    console.log(`Webhook registered successfully with ID: ${savedWebhook._id}`)
+
+    return savedWebhook
   }
 
   async getActiveWebhooks(event?: string): Promise<IWebhook[]> {
