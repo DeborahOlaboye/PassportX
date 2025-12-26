@@ -19,6 +19,7 @@ import verificationRoutes from './routes/verification'
 import notificationRoutes from './routes/notifications'
 import analyticsRoutes, { setAnalyticsAggregator } from './routes/analytics'
 import activityRoutes, { setUserActivityService } from './routes/activity'
+import webhooksRoutes from './routes/webhooks'
 import AnalyticsAggregator from './services/analyticsAggregator'
 import AnalyticsEventProcessor from './services/analyticsEventProcessor'
 import UserActivityService from './services/userActivityService'
@@ -64,6 +65,7 @@ app.use('/api/verify', verificationRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/activity', activityRoutes)
+app.use('/api/webhooks', webhooksRoutes)
 
 // Error handling
 app.use(errorHandler)
