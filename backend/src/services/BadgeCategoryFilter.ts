@@ -33,6 +33,8 @@ export interface FilteredBadgeEvent {
 export class BadgeCategoryFilter {
   private static instance: BadgeCategoryFilter;
 
+  // Mapping configurations for badge filtering
+
   // Map numeric levels to string levels
   private static LEVEL_MAP: Record<number, BadgeLevel> = {
     1: 'beginner',
