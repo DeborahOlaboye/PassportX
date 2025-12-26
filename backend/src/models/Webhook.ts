@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
+// Interface for webhook document
 export interface IWebhook extends Document {
   url: string
   secret: string
