@@ -40,3 +40,58 @@ graph TD
 3.  **`WalletSelector`**: A modal component that allows users to choose their preferred Stacks wallet or scan a QR code.
 4.  **`WalletConnectAnalytics`**: Tracks connection success rates, common errors, and wallet popularity.
 
+## Setup Guide
+
+### 1. Prerequisites
+
+Before you begin, ensure you have:
+- A WalletConnect Project ID from the [WalletConnect Cloud](https://cloud.walletconnect.com/).
+- Stacks wallets (Xverse, Hiro, or Leather) installed on your device or browser.
+
+### 2. Environment Configuration
+
+Add the following environment variables to your `.env.local` file:
+
+```env
+# Required: Your WalletConnect Project ID
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id_here
+
+# Optional: Custom Relay URL (defaults to wss://relay.walletconnect.org)
+NEXT_PUBLIC_WALLETCONNECT_RELAY_URL=wss://relay.walletconnect.org
+
+# Optional: App metadata for WalletConnect modal
+NEXT_PUBLIC_APP_NAME="PassportX"
+NEXT_PUBLIC_APP_DESCRIPTION="Decentralized Identity on Stacks"
+NEXT_PUBLIC_APP_URL="https://passportx.xyz"
+NEXT_PUBLIC_APP_ICON="https://passportx.xyz/logo.png"
+```
+
+### 3. Installation
+
+Ensure all required dependencies are installed:
+
+```bash
+npm install @reown/walletkit @walletconnect/core @walletconnect/utils qrcode
+```
+
+### 4. Provider Integration
+
+Wrap your application with the `WalletConnectProvider` in `src/app/layout.tsx`:
+
+```tsx
+import { WalletConnectProvider } from '@/contexts/WalletConnectContext';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <WalletConnectProvider>
+          {children}
+        </WalletConnectProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+
