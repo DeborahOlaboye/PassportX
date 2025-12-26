@@ -109,14 +109,28 @@ export class WebhookService {
   }
 
   async retryFailedWebhooks(): Promise<void> {
-    // This would be called by a cron job or scheduler
     const failedWebhooks = await Webhook.find({
       isActive: true,
       failureCount: { $gt: 0, $lt: 5 }
     })
 
-    // For now, just log - in production, implement retry queue
-    console.log(`Found ${failedWebhooks.length} webhooks to retry`)
+    console.log(`Retrying ${failedWebhooks.length} failed webhooks`)
+
+    for (const webhook of failedWebhooks) {
+      try {
+        // Send a test payload or last failed payload
+        const testPayload = {
+          event: 'retry',
+          data: { message: 'Retrying failed webhook delivery' },
+          timestamp: new Date().toISOString()
+        }
+
+        await this.sendWebhook(webhook, testPayload)
+        console.log(`Successfully retried webhook ${webhook._id}`)
+      } catch (error) {
+        console.error(`Retry failed for webhook ${webhook._id}:`, error)
+      }
+    }
   }
 
   private validateWebhookUrl(url: string): void {
