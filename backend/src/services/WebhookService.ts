@@ -169,6 +169,44 @@ export class WebhookService {
     }
   }
 
+  /**
+   * Broadcast reorg event to all registered webhooks
+   */
+  async broadcastReorgEvent(reorgEvent: any): Promise<void> {
+    const webhooks = await this.getActiveWebhooks()
+
+    const payload: WebhookPayload = {
+      event: 'blockchain_reorg',
+      data: reorgEvent,
+      timestamp: new Date().toISOString()
+    }
+
+    console.log(`Broadcasting reorg event to ${webhooks.length} webhooks`)
+
+    for (const webhook of webhooks) {
+      try {
+        await this.sendWebhook(webhook, payload)
+      } catch (error) {
+        console.error(`Failed to send reorg event to webhook ${webhook._id}:`, error)
+      }
+    }
+  }
+
+  /**
+   * Mark webhook as invalid due to reorg
+   */
+  async markWebhookInvalid(transactionHash: string, reason: string): Promise<void> {
+    // Find webhooks that might have delivered events for this transaction
+    // This is a simplified implementation - in practice, you'd track
+    // which webhooks received which transaction events
+    console.log(`Marking webhooks invalid for transaction ${transactionHash} due to ${reason}`)
+
+    // For now, just log the intent. In a full implementation, you'd:
+    // 1. Find webhooks that received events for this transaction
+    // 2. Mark their deliveries as potentially invalid
+    // 3. Send correction webhooks if needed
+  }
+
   private validateWebhookUrl(url: string): void {
     try {
       const parsedUrl = new URL(url)
