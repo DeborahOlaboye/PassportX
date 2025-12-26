@@ -69,6 +69,8 @@ export class WebhookService {
       signature
     }
 
+    console.log(`Sending webhook to ${webhook.url} for event ${payload.event}`)
+
     try {
       const response: AxiosResponse = await axios.post(webhook.url, signedPayload, {
         headers: {
@@ -80,6 +82,7 @@ export class WebhookService {
       })
 
       if (response.status >= 200 && response.status < 300) {
+        console.log(`Webhook delivered successfully to ${webhook.url}`)
         await this.updateWebhook(webhook._id.toString(), {
           lastDeliveredAt: new Date(),
           failureCount: 0
@@ -88,6 +91,7 @@ export class WebhookService {
         throw new Error(`HTTP ${response.status}`)
       }
     } catch (error) {
+      console.error(`Webhook delivery failed to ${webhook.url}:`, error)
       await this.handleWebhookFailure(webhook, error)
       throw error
     }
