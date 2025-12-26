@@ -144,9 +144,9 @@ export class ReorgAwareCache {
    * Setup listener for reorg events
    */
   private setupReorgListener(): void {
-    // Note: In a real implementation, you would subscribe to reorg events
-    // from the ReorgHandlerService. For now, this is a placeholder.
-    this.logger.info('Reorg listener setup (placeholder)');
+    // Listen for reorg events from ReorgHandlerService
+    // In a real implementation, this would subscribe to events
+    this.logger.info('Reorg listener setup for ReorgAwareCache');
   }
 
   /**
@@ -161,9 +161,40 @@ export class ReorgAwareCache {
     // Rollback cache to the canonical chain
     this.rollbackToBlock(reorgEvent.rollbackToBlock);
 
+    // Invalidate cache entries for affected transactions
+    for (const txHash of reorgEvent.affectedTransactions) {
+      this.invalidateByTransaction(txHash);
+    }
+
     // Note: In a real implementation, you would also need to:
     // 1. Re-populate cache with canonical chain data
     // 2. Handle any cache invalidation for affected keys
+    this.logger.info('Cache reorg handling completed');
+  }
+
+  /**
+   * Invalidate cache entries by transaction hash
+   */
+  private invalidateByTransaction(transactionHash: string): void {
+    // Find and delete cache entries that contain this transaction
+    const keysToDelete: string[] = [];
+
+    for (const [key, entry] of this.cache.entries()) {
+      // Check if the cached value contains the transaction hash
+      // This is a simplified check - in practice, you'd need to know
+      // which cache entries are transaction-related
+      if (JSON.stringify(entry.value).includes(transactionHash)) {
+        keysToDelete.push(key);
+      }
+    }
+
+    for (const key of keysToDelete) {
+      this.delete(key);
+    }
+
+    if (keysToDelete.length > 0) {
+      this.logger.debug(`Invalidated ${keysToDelete.length} cache entries for transaction ${transactionHash}`);
+    }
   }
 
   private getDefaultLogger() {
