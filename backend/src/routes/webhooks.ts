@@ -5,6 +5,8 @@ import { authMiddleware } from '../middleware/auth'
 const router = Router()
 const webhookService = WebhookService.getInstance()
 
+// Webhook management routes
+
 // Register a new webhook
 router.post('/register', authMiddleware, async (req: Request, res: Response) => {
   try {
