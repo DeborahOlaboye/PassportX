@@ -94,4 +94,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
+## API Reference
+
+### Frontend Context (`useWalletConnect`)
+
+The `useWalletConnect` hook provides access to the connection state and methods.
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `isConnected` | `boolean` | True if a wallet is currently connected. |
+| `isConnecting` | `boolean` | True if a connection attempt is in progress. |
+| `address` | `string \| null` | The connected Stacks address. |
+| `walletType` | `string \| null` | The type of connected wallet (e.g., 'Xverse'). |
+| `connect` | `() => Promise<void>` | Opens the connection modal. |
+| `disconnect` | `() => Promise<void>` | Terminates the current session. |
+| `signTransaction` | `(tx: any) => Promise<string>` | Requests the wallet to sign a transaction. |
+
+### Backend/Internal Endpoints
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/analytics/walletconnect` | `POST` | Records WalletConnect events (connect, disconnect, errors). |
+| `/api/walletconnect/status` | `GET` | Health check for WalletConnect relay connectivity. |
+
+#### Analytics Payload Example:
+
+```json
+{
+  "event": "connect",
+  "wallet": "Xverse",
+  "address": "SP...",
+  "timestamp": "2024-03-20T12:00:00Z"
+}
+```
+
+
 
