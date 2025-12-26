@@ -5,6 +5,7 @@ import WebhookService from './WebhookService'
 import BadgeCategoryFilter, { FilteredBadgeEvent } from './BadgeCategoryFilter'
 import CategoryHandlerManager from './CategoryHandlerManager'
 import ReorgHandlerService from './ReorgHandlerService'
+import ReorgAwareDatabase from './ReorgAwareDatabase'
 
 export interface ProcessedEvent {
   id: string
@@ -29,12 +30,14 @@ export class ChainhookEventProcessor {
   private logger: any
   private maxProcessedEventsInMemory = 10000
   private processingBatch: Map<string, ProcessedEvent> = new Map()
+  private reorgDatabase: ReorgAwareDatabase
 
   constructor(logger?: any) {
     this.validator = new ChainhookEventValidator(logger)
     this.logger = logger || this.getDefaultLogger()
     this.cache = new ChainhookEventCache({ maxSize: 5000, ttlMs: 300000 }, this.logger)
     this.profiler = new ChainhookPerformanceProfiler(this.logger)
+    this.reorgDatabase = new ReorgAwareDatabase(ReorgHandlerService.getInstance(this.logger), this.logger)
   }
 
   private getDefaultLogger() {
@@ -53,7 +56,16 @@ export class ChainhookEventProcessor {
     try {
       // Handle reorg events first
       const reorgHandler = ReorgHandlerService.getInstance(this.logger);
-      await reorgHandler.handleReorgEvent(chainhookEvent);
+      const reorgEvent = await reorgHandler.handleReorgEvent(chainhookEvent);
+
+      // If a reorg was detected, handle database rollback
+      if (reorgEvent) {
+        await this.reorgDatabase.handleReorg(reorgEvent);
+        this.logger.info('Database rollback completed for reorg', {
+          rollbackToBlock: reorgEvent.rollbackToBlock,
+          affectedTransactions: reorgEvent.affectedTransactions.length
+        });
+      }
 
       if (this.cache.has(chainhookEvent)) {
         const cached = this.cache.get(chainhookEvent)
