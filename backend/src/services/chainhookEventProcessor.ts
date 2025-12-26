@@ -2,6 +2,8 @@ import ChainhookEventValidator from './chainhookEventValidator'
 import ChainhookEventCache from './chainhookEventCache'
 import ChainhookPerformanceProfiler from './chainhookPerformanceProfiler'
 import WebhookService from './WebhookService'
+import BadgeCategoryFilter, { FilteredBadgeEvent } from './BadgeCategoryFilter'
+import CategoryHandlerManager from './CategoryHandlerManager'
 
 export interface ProcessedEvent {
   id: string
@@ -294,39 +296,95 @@ export class ChainhookEventProcessor {
   private async forwardToWebhooks(chainhookEvent: any, processedEvents: ProcessedEvent[]): Promise<void> {
     try {
       const webhookService = WebhookService.getInstance()
+      const categoryFilter = BadgeCategoryFilter.getInstance()
+      const handlerManager = CategoryHandlerManager.getInstance()
 
       for (const processedEvent of processedEvents) {
-        const webhooks = await webhookService.getActiveWebhooks(processedEvent.eventType)
+        // Apply category filtering for badge events
+        if (processedEvent.eventType.includes('badge') || processedEvent.eventType.includes('mint')) {
+          const filteredEvent = categoryFilter.filterEvent(
+            processedEvent.eventType,
+            processedEvent.originalEvent
+          )
 
-        if (webhooks.length === 0) {
-          continue
+          if (filteredEvent) {
+            // Process with category-specific handler
+            await handlerManager.processEvent(filteredEvent)
+
+            // Forward to webhooks with category information
+            await this.sendCategoryFilteredWebhooks(webhookService, filteredEvent)
+          }
+        } else {
+          // For non-badge events, send as before
+          const webhooks = await webhookService.getActiveWebhooks(processedEvent.eventType)
+
+          if (webhooks.length === 0) {
+            continue
+          }
+
+          const payload = {
+            event: processedEvent.eventType,
+            data: {
+              id: processedEvent.id,
+              contractAddress: processedEvent.contractAddress,
+              method: processedEvent.method,
+              transactionHash: processedEvent.transactionHash,
+              blockHeight: processedEvent.blockHeight,
+              timestamp: processedEvent.timestamp,
+              originalEvent: processedEvent.originalEvent
+            },
+            timestamp: new Date().toISOString()
+          }
+
+          const webhookPromises = webhooks.map(webhook =>
+            webhookService.sendWebhook(webhook, payload).catch(error => {
+              this.logger.error(`Failed to send webhook to ${webhook.url}`, error)
+            })
+          )
+
+          await Promise.allSettled(webhookPromises)
         }
-
-        const payload = {
-          event: processedEvent.eventType,
-          data: {
-            id: processedEvent.id,
-            contractAddress: processedEvent.contractAddress,
-            method: processedEvent.method,
-            transactionHash: processedEvent.transactionHash,
-            blockHeight: processedEvent.blockHeight,
-            timestamp: processedEvent.timestamp,
-            originalEvent: processedEvent.originalEvent
-          },
-          timestamp: new Date().toISOString()
-        }
-
-        const webhookPromises = webhooks.map(webhook =>
-          webhookService.sendWebhook(webhook, payload).catch(error => {
-            this.logger.error(`Failed to send webhook to ${webhook.url}`, error)
-          })
-        )
-
-        await Promise.allSettled(webhookPromises)
       }
     } catch (error) {
       this.logger.error('Error forwarding events to webhooks', error)
     }
+  }
+
+  private async sendCategoryFilteredWebhooks(
+    webhookService: WebhookService,
+    filteredEvent: FilteredBadgeEvent
+  ): Promise<void> {
+    // Get webhooks that subscribe to this category
+    const webhooks = await webhookService.getActiveWebhooks()
+
+    // Filter webhooks that want this category (this would need webhook subscription management)
+    // For now, send to all active webhooks
+    const categoryWebhooks = webhooks.filter(webhook => {
+      // TODO: Implement webhook category subscriptions
+      return true // Send to all for now
+    })
+
+    if (categoryWebhooks.length === 0) {
+      return
+    }
+
+    const payload = {
+      event: `badge_${filteredEvent.category.replace(/\s+/g, '_')}`,
+      data: {
+        ...filteredEvent,
+        category: filteredEvent.category,
+        level: filteredEvent.level
+      },
+      timestamp: new Date().toISOString()
+    }
+
+    const webhookPromises = categoryWebhooks.map(webhook =>
+      webhookService.sendWebhook(webhook, payload).catch(error => {
+        this.logger.error(`Failed to send category webhook to ${webhook.url}`, error)
+      })
+    )
+
+    await Promise.allSettled(webhookPromises)
   }
 }
 
