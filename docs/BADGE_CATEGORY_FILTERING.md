@@ -4,6 +4,14 @@
 
 PassportX implements advanced event filtering for badge categories and levels, enabling targeted notifications and analytics for specific types of badge achievements.
 
+## Features
+
+- Category-based event filtering
+- Level-based event filtering
+- Category-specific handlers
+- Webhook subscriptions by category
+- Comprehensive documentation
+
 ## Badge Categories
 
 The system supports the following badge categories:
