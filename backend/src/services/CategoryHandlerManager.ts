@@ -11,6 +11,8 @@ export class CategoryHandlerManager {
   private handlers: Map<BadgeCategory, CategoryHandler> = new Map();
   private logger: any;
 
+  // Manages category-specific event handlers
+
   constructor(logger?: any) {
     this.logger = logger || this.getDefaultLogger();
     this.initializeHandlers();
