@@ -14,11 +14,16 @@ router.get('/status', authMiddleware, (req: Request, res: Response) => {
     const reorgHandler = ReorgHandlerService.getInstance()
     const reorgMonitor = ReorgMonitoringService.getInstance()
 
+    const handlerStats = reorgHandler.getReorgStats()
+    const monitorMetrics = reorgMonitor.getMetrics()
+
     const status = {
       isReorgInProgress: false, // This would be tracked in a real implementation
-      lastReorgBlock: 0,
-      totalReorgs: reorgMonitor.getMetrics().totalReorgs,
-      lastReorgTimestamp: reorgMonitor.getMetrics().lastReorgTimestamp,
+      lastReorgBlock: monitorMetrics.lastReorgTimestamp > 0 ? monitorMetrics.maxRollbackDepth : 0,
+      totalReorgs: monitorMetrics.totalReorgs,
+      lastReorgTimestamp: monitorMetrics.lastReorgTimestamp,
+      handlerStats,
+      monitorMetrics,
       timestamp: new Date().toISOString()
     }
 
