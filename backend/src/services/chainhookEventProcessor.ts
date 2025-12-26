@@ -354,14 +354,22 @@ export class ChainhookEventProcessor {
     webhookService: WebhookService,
     filteredEvent: FilteredBadgeEvent
   ): Promise<void> {
-    // Get webhooks that subscribe to this category
+    // Get webhooks that subscribe to this category and level
     const webhooks = await webhookService.getActiveWebhooks()
 
-    // Filter webhooks that want this category (this would need webhook subscription management)
-    // For now, send to all active webhooks
+    // Filter webhooks that want this category and level
     const categoryWebhooks = webhooks.filter(webhook => {
-      // TODO: Implement webhook category subscriptions
-      return true // Send to all for now
+      // Check if webhook subscribes to this category
+      const hasCategory = !webhook.categories ||
+        webhook.categories.length === 0 ||
+        webhook.categories.includes(filteredEvent.category)
+
+      // Check if webhook subscribes to this level
+      const hasLevel = !webhook.levels ||
+        webhook.levels.length === 0 ||
+        webhook.levels.includes(filteredEvent.level)
+
+      return hasCategory && hasLevel
     })
 
     if (categoryWebhooks.length === 0) {
