@@ -10,7 +10,7 @@ const webhookService = WebhookService.getInstance()
 // Register a new webhook
 router.post('/register', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { url, events, secret } = req.body
+    const { url, events, secret, categories, levels } = req.body
 
     if (!url || !events || !Array.isArray(events)) {
       return res.status(400).json({
@@ -18,7 +18,7 @@ router.post('/register', authMiddleware, async (req: Request, res: Response) => 
       })
     }
 
-    const webhook = await webhookService.registerWebhook(url, events, secret)
+    const webhook = await webhookService.registerWebhook(url, events, secret, categories, levels)
 
     res.status(201).json({
       message: 'Webhook registered successfully',
@@ -26,6 +26,8 @@ router.post('/register', authMiddleware, async (req: Request, res: Response) => 
         id: webhook._id,
         url: webhook.url,
         events: webhook.events,
+        categories: webhook.categories,
+        levels: webhook.levels,
         isActive: webhook.isActive,
         createdAt: webhook.createdAt
       }
@@ -48,6 +50,8 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
         id: webhook._id,
         url: webhook.url,
         events: webhook.events,
+        categories: webhook.categories,
+        levels: webhook.levels,
         isActive: webhook.isActive,
         lastDeliveredAt: webhook.lastDeliveredAt,
         failureCount: webhook.failureCount,
@@ -80,6 +84,8 @@ router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
         id: webhook._id,
         url: webhook.url,
         events: webhook.events,
+        categories: webhook.categories,
+        levels: webhook.levels,
         isActive: webhook.isActive
       }
     })
