@@ -19,9 +19,11 @@ export class ReorgHandlerService {
   private static instance: ReorgHandlerService;
   private logger: any;
   private rollbackOperations: Map<string, RollbackOperation[]> = new Map();
+  private config: any;
 
   constructor(logger?: any) {
     this.logger = logger || this.getDefaultLogger();
+    this.config = require('../config/reorg').default;
   }
 
   static getInstance(logger?: any): ReorgHandlerService {
