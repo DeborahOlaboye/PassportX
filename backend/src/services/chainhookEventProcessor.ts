@@ -4,6 +4,7 @@ import ChainhookPerformanceProfiler from './chainhookPerformanceProfiler'
 import WebhookService from './WebhookService'
 import BadgeCategoryFilter, { FilteredBadgeEvent } from './BadgeCategoryFilter'
 import CategoryHandlerManager from './CategoryHandlerManager'
+import ReorgHandlerService from './ReorgHandlerService'
 
 export interface ProcessedEvent {
   id: string
@@ -50,6 +51,10 @@ export class ChainhookEventProcessor {
     const processedEvents: ProcessedEvent[] = []
 
     try {
+      // Handle reorg events first
+      const reorgHandler = ReorgHandlerService.getInstance(this.logger);
+      await reorgHandler.handleReorgEvent(chainhookEvent);
+
       if (this.cache.has(chainhookEvent)) {
         const cached = this.cache.get(chainhookEvent)
         this.logger.debug('Cache hit for event', { blockHeight: chainhookEvent.block_identifier?.index })
