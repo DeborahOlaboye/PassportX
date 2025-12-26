@@ -1,6 +1,7 @@
 import Webhook, { IWebhook } from '../models/Webhook'
 import crypto from 'crypto'
 import axios, { AxiosResponse } from 'axios'
+import { BadgeCategory, BadgeLevel, BadgeCategoryFilter } from './BadgeCategoryFilter'
 
 export interface WebhookPayload {
   event: string
@@ -19,12 +20,26 @@ export class WebhookService {
     return WebhookService.instance
   }
 
-  async registerWebhook(url: string, events: string[], secret?: string): Promise<IWebhook> {
+  async registerWebhook(
+    url: string,
+    events: string[],
+    secret?: string,
+    categories?: BadgeCategory[],
+    levels?: BadgeLevel[]
+  ): Promise<IWebhook> {
     // Validate URL
     this.validateWebhookUrl(url)
 
     // Validate events
     this.validateEvents(events)
+
+    // Validate categories and levels
+    if (categories) {
+      this.validateCategories(categories)
+    }
+    if (levels) {
+      this.validateLevels(levels)
+    }
 
     console.log(`Registering webhook for URL: ${url} with events: ${events.join(', ')}`)
 
@@ -35,6 +50,8 @@ export class WebhookService {
       url,
       secret: webhookSecret,
       events,
+      categories,
+      levels,
       isActive: true
     })
 
@@ -44,11 +61,21 @@ export class WebhookService {
     return savedWebhook
   }
 
-  async getActiveWebhooks(event?: string): Promise<IWebhook[]> {
+  async getActiveWebhooks(event?: string, category?: BadgeCategory, level?: BadgeLevel): Promise<IWebhook[]> {
     const query: any = { isActive: true }
+
     if (event) {
       query.events = event
     }
+
+    if (category) {
+      query.categories = category
+    }
+
+    if (level) {
+      query.levels = level
+    }
+
     return await Webhook.find(query)
   }
 
@@ -172,6 +199,28 @@ export class WebhookService {
 
     if (events.length === 0) {
       throw new Error('At least one event type must be specified')
+    }
+  }
+
+  private validateCategories(categories: BadgeCategory[]): void {
+    const categoryFilter = BadgeCategoryFilter.getInstance()
+    const validCategories = categoryFilter.getValidCategories()
+
+    for (const category of categories) {
+      if (!validCategories.includes(category)) {
+        throw new Error(`Invalid category: ${category}. Valid categories: ${validCategories.join(', ')}`)
+      }
+    }
+  }
+
+  private validateLevels(levels: BadgeLevel[]): void {
+    const categoryFilter = BadgeCategoryFilter.getInstance()
+    const validLevels = categoryFilter.getValidLevels()
+
+    for (const level of levels) {
+      if (!validLevels.includes(level)) {
+        throw new Error(`Invalid level: ${level}. Valid levels: ${validLevels.join(', ')}`)
+      }
     }
   }
 }
