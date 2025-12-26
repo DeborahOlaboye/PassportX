@@ -63,8 +63,16 @@ export class ChainhookEventProcessor {
 
       // If a reorg was detected, handle database rollback
       if (reorgEvent) {
+        this.logger.info('Reorg detected and processed', {
+          rollbackToBlock: reorgEvent.rollbackToBlock,
+          newCanonicalBlock: reorgEvent.newCanonicalBlock,
+          affectedTransactionsCount: reorgEvent.affectedTransactions.length,
+          reorgDepth: reorgEvent.newCanonicalBlock - reorgEvent.rollbackToBlock
+        });
+
         await this.reorgDatabase.handleReorg(reorgEvent);
         await this.reorgMonitor.recordReorgEvent(reorgEvent, this.reorgDatabase);
+
         this.logger.info('Database rollback and monitoring completed for reorg', {
           rollbackToBlock: reorgEvent.rollbackToBlock,
           affectedTransactions: reorgEvent.affectedTransactions.length
