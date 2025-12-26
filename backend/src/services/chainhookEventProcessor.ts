@@ -1,6 +1,7 @@
 import ChainhookEventValidator from './chainhookEventValidator'
 import ChainhookEventCache from './chainhookEventCache'
 import ChainhookPerformanceProfiler from './chainhookPerformanceProfiler'
+import WebhookService from './WebhookService'
 
 export interface ProcessedEvent {
   id: string
@@ -80,6 +81,9 @@ export class ChainhookEventProcessor {
         transactionCount: chainhookEvent.transactions?.length || 0,
         processedEventCount: processedEvents.length
       })
+
+      // Forward events to registered webhooks
+      await this.forwardToWebhooks(chainhookEvent, processedEvents)
 
       this.profiler.recordEventProcessed('chainhook-event')
       this.profiler.endMeasurement('processEvent')
@@ -285,6 +289,44 @@ export class ChainhookEventProcessor {
 
   destroyCache(): void {
     this.cache.destroy()
+  }
+
+  private async forwardToWebhooks(chainhookEvent: any, processedEvents: ProcessedEvent[]): Promise<void> {
+    try {
+      const webhookService = WebhookService.getInstance()
+
+      for (const processedEvent of processedEvents) {
+        const webhooks = await webhookService.getActiveWebhooks(processedEvent.eventType)
+
+        if (webhooks.length === 0) {
+          continue
+        }
+
+        const payload = {
+          event: processedEvent.eventType,
+          data: {
+            id: processedEvent.id,
+            contractAddress: processedEvent.contractAddress,
+            method: processedEvent.method,
+            transactionHash: processedEvent.transactionHash,
+            blockHeight: processedEvent.blockHeight,
+            timestamp: processedEvent.timestamp,
+            originalEvent: processedEvent.originalEvent
+          },
+          timestamp: new Date().toISOString()
+        }
+
+        const webhookPromises = webhooks.map(webhook =>
+          webhookService.sendWebhook(webhook, payload).catch(error => {
+            this.logger.error(`Failed to send webhook to ${webhook.url}`, error)
+          })
+        )
+
+        await Promise.allSettled(webhookPromises)
+      }
+    } catch (error) {
+      this.logger.error('Error forwarding events to webhooks', error)
+    }
   }
 }
 
