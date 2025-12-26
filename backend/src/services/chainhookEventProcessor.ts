@@ -4,6 +4,9 @@ import ChainhookPerformanceProfiler from './chainhookPerformanceProfiler'
 import WebhookService from './WebhookService'
 import BadgeCategoryFilter, { FilteredBadgeEvent } from './BadgeCategoryFilter'
 import CategoryHandlerManager from './CategoryHandlerManager'
+import ReorgHandlerService from './ReorgHandlerService'
+import ReorgAwareDatabase from './ReorgAwareDatabase'
+import ReorgMonitoringService from '../../src/services/ReorgMonitoringService'
 
 export interface ProcessedEvent {
   id: string
@@ -28,12 +31,16 @@ export class ChainhookEventProcessor {
   private logger: any
   private maxProcessedEventsInMemory = 10000
   private processingBatch: Map<string, ProcessedEvent> = new Map()
+  private reorgDatabase: ReorgAwareDatabase
+  private reorgMonitor: ReorgMonitoringService
 
   constructor(logger?: any) {
     this.validator = new ChainhookEventValidator(logger)
     this.logger = logger || this.getDefaultLogger()
     this.cache = new ChainhookEventCache({ maxSize: 5000, ttlMs: 300000 }, this.logger)
     this.profiler = new ChainhookPerformanceProfiler(this.logger)
+    this.reorgDatabase = new ReorgAwareDatabase(ReorgHandlerService.getInstance(this.logger), this.logger)
+    this.reorgMonitor = ReorgMonitoringService.getInstance(this.logger)
   }
 
   private getDefaultLogger() {
@@ -50,6 +57,20 @@ export class ChainhookEventProcessor {
     const processedEvents: ProcessedEvent[] = []
 
     try {
+      // Handle reorg events first
+      const reorgHandler = ReorgHandlerService.getInstance(this.logger);
+      const reorgEvent = await reorgHandler.handleReorgEvent(chainhookEvent);
+
+      // If a reorg was detected, handle database rollback
+      if (reorgEvent) {
+        await this.reorgDatabase.handleReorg(reorgEvent);
+        await this.reorgMonitor.recordReorgEvent(reorgEvent, this.reorgDatabase);
+        this.logger.info('Database rollback and monitoring completed for reorg', {
+          rollbackToBlock: reorgEvent.rollbackToBlock,
+          affectedTransactions: reorgEvent.affectedTransactions.length
+        });
+      }
+
       if (this.cache.has(chainhookEvent)) {
         const cached = this.cache.get(chainhookEvent)
         this.logger.debug('Cache hit for event', { blockHeight: chainhookEvent.block_identifier?.index })
