@@ -137,4 +137,18 @@ router.post('/:id/test', authMiddleware, async (req: Request, res: Response) => 
   }
 })
 
+// Retry failed webhooks
+router.post('/retry-failed', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    await webhookService.retryFailedWebhooks()
+
+    res.json({ message: 'Retry process initiated for failed webhooks' })
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to retry webhooks',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
 export default router
