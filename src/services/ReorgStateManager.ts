@@ -48,7 +48,7 @@ export class ReorgStateManager {
       affectedTransactions: reorgEvent.affectedTransactions.length
     })
 
-    // Set reorg in progress
+    // Set reorg in progress flag
     this.updateState({
       ...this.state,
       isReorgInProgress: true,
@@ -70,11 +70,17 @@ export class ReorgStateManager {
         reorgHistory: [...this.state.reorgHistory, reorgEvent]
       })
 
-      // Notify listeners
+      // Notify listeners immediately
       this.notifyListeners()
 
       // Process pending updates
       await this.processPendingUpdates()
+
+      // Clear reorg in progress flag
+      this.updateState({
+        ...this.state,
+        isReorgInProgress: false
+      })
 
       this.logger.info('Reorg handling completed in UI state manager', {
         affectedEntitiesCount: affectedEntities.length,
@@ -83,14 +89,16 @@ export class ReorgStateManager {
 
     } catch (error) {
       this.logger.error('Error handling reorg in UI state manager', error)
-    } finally {
-      // Clear reorg in progress flag
+
+      // Clear reorg in progress flag even on error
       this.updateState({
         ...this.state,
         isReorgInProgress: false
       })
-      this.notifyListeners()
     }
+
+    // Final notification
+    this.notifyListeners()
   }
 
   /**
