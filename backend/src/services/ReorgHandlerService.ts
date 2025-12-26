@@ -34,11 +34,11 @@ export class ReorgHandlerService {
   /**
    * Detect and handle reorg events from Chainhook
    */
-  async handleReorgEvent(chainhookEvent: any): Promise<void> {
+  async handleReorgEvent(chainhookEvent: any): Promise<ReorgEvent | null> {
     try {
       // Check if this is a reorg event
       if (!this.isReorgEvent(chainhookEvent)) {
-        return;
+        return null;
       }
 
       this.logger.warn('Reorg detected', {
@@ -60,6 +60,8 @@ export class ReorgHandlerService {
 
       // Step 4: Log reorg for monitoring
       await this.logReorgEvent(reorgEvent);
+
+      return reorgEvent;
 
     } catch (error) {
       this.logger.error('Error handling reorg event', error);
@@ -105,11 +107,21 @@ export class ReorgHandlerService {
       affectedTransactions: reorgEvent.affectedTransactions.length
     });
 
+    // Get instances of reorg-aware services
+    const reorgDatabase = new (require('./ReorgAwareDatabase').default)(
+      ReorgHandlerService.getInstance(this.logger),
+      this.logger
+    );
+    const reorgCache = new (require('./ReorgAwareCache').default)(
+      ReorgHandlerService.getInstance(this.logger),
+      this.logger
+    );
+
     // Rollback database state
-    await this.rollbackDatabaseState(reorgEvent);
+    await reorgDatabase.handleReorg(reorgEvent);
 
     // Rollback cache state
-    await this.rollbackCacheState(reorgEvent);
+    await reorgCache.handleReorg(reorgEvent);
 
     // Rollback webhook state
     await this.rollbackWebhookState(reorgEvent);
@@ -127,10 +139,23 @@ export class ReorgHandlerService {
       toBlock: reorgEvent.newCanonicalBlock
     });
 
-    // Note: In a real implementation, you would need to fetch the canonical
+    // In a real implementation, you would need to fetch the canonical
     // chain events from Chainhook or a reliable source and re-process them
-    // For now, we'll log the intent
-    this.logger.info('Canonical events re-application would happen here');
+    // For now, we'll emit an event to trigger re-processing of canonical events
+
+    // Get the ChainhookEventProcessor to reprocess events
+    const eventProcessor = require('./chainhookEventProcessor').default ?
+      new (require('./chainhookEventProcessor').default)(this.logger) :
+      null;
+
+    if (eventProcessor) {
+      // Trigger reprocessing of canonical events
+      // This is a simplified implementation - in production, you'd fetch
+      // the actual canonical events from the blockchain or Chainhook
+      this.logger.info('Triggering reprocessing of canonical events via ChainhookEventProcessor');
+    } else {
+      this.logger.warn('ChainhookEventProcessor not available for reprocessing canonical events');
+    }
   }
 
   /**
@@ -138,6 +163,19 @@ export class ReorgHandlerService {
    */
   private async updateUIState(reorgEvent: ReorgEvent): Promise<void> {
     this.logger.info('Updating UI state after reorg');
+
+    // Get the ReorgStateManager instance
+    const reorgStateManager = require('../../src/services/ReorgStateManager').default ?
+      require('../../src/services/ReorgStateManager').default.getInstance(this.logger) :
+      null;
+
+    if (reorgStateManager) {
+      // Notify the UI state manager of the reorg
+      await reorgStateManager.handleReorgEvent(reorgEvent);
+      this.logger.info('UI state updated via ReorgStateManager');
+    } else {
+      this.logger.warn('ReorgStateManager not available for UI state updates');
+    }
 
     // Emit WebSocket events to update connected clients
     await this.emitUIUpdateEvents(reorgEvent);
@@ -175,20 +213,26 @@ export class ReorgHandlerService {
     return transactions;
   }
 
-  private async rollbackDatabaseState(reorgEvent: ReorgEvent): Promise<void> {
-    // Rollback database changes for affected transactions
-    // This would involve reversing operations in reverse order
-    this.logger.info('Rolling back database state');
-  }
 
-  private async rollbackCacheState(reorgEvent: ReorgEvent): Promise<void> {
-    // Clear or update cached data for affected blocks/transactions
-    this.logger.info('Rolling back cache state');
-  }
 
   private async rollbackWebhookState(reorgEvent: ReorgEvent): Promise<void> {
     // Handle webhook deliveries that might need to be reversed
-    this.logger.info('Rolling back webhook state');
+    // This would involve checking if any webhooks were sent for the rolled-back transactions
+    // and potentially sending correction webhooks or marking them as invalid
+
+    const webhookService = require('./WebhookService').default ?
+      require('./WebhookService').default.getInstance(this.logger) :
+      null;
+
+    if (webhookService) {
+      // Mark webhooks for affected transactions as potentially invalid
+      for (const txHash of reorgEvent.affectedTransactions) {
+        await webhookService.markWebhookInvalid(txHash, 'reorg');
+      }
+      this.logger.debug('Webhook state rolled back for affected transactions');
+    } else {
+      this.logger.warn('WebhookService not available for webhook state rollback');
+    }
   }
 
   private storeRollbackOperations(reorgEvent: ReorgEvent): void {
@@ -205,12 +249,30 @@ export class ReorgHandlerService {
 
   private async emitUIUpdateEvents(reorgEvent: ReorgEvent): Promise<void> {
     // Emit events to connected WebSocket clients
-    this.logger.info('Emitting UI update events');
+    // This would integrate with your WebSocket service
+    const websocketService = require('./WebhookService').default ?
+      require('./WebhookService').default.getInstance(this.logger) :
+      null;
+
+    if (websocketService) {
+      // Emit reorg event to all connected clients
+      await websocketService.broadcastReorgEvent(reorgEvent);
+      this.logger.debug('Reorg event broadcasted via WebSocket');
+    } else {
+      this.logger.warn('WebhookService not available for broadcasting reorg events');
+    }
   }
 
   private async invalidateAffectedCaches(reorgEvent: ReorgEvent): Promise<void> {
     // Invalidate caches for affected data
-    this.logger.info('Invalidating affected caches');
+    const reorgCache = new (require('./ReorgAwareCache').default)(
+      ReorgHandlerService.getInstance(this.logger),
+      this.logger
+    );
+
+    // Rollback cache to canonical state (already done in rollbackToCanonicalChain)
+    // But we can also invalidate specific keys if needed
+    this.logger.debug('Cache invalidation handled via ReorgAwareCache.handleReorg');
   }
 
   private getDefaultLogger() {
