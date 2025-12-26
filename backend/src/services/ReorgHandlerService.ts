@@ -294,6 +294,29 @@ export class ReorgHandlerService {
   }
 
   /**
+   * Get reorg statistics
+   */
+  getReorgStats(): {
+    totalRollbackOperations: number;
+    blocksWithRollbacks: number;
+    oldestRollbackBlock: number | null;
+    newestRollbackBlock: number | null;
+  } {
+    const blocks = Array.from(this.rollbackOperations.keys());
+    const operations = Array.from(this.rollbackOperations.values());
+
+    const allOperations = operations.flat();
+    const blockHeights = allOperations.map(op => op.blockHeight).sort((a, b) => a - b);
+
+    return {
+      totalRollbackOperations: allOperations.length,
+      blocksWithRollbacks: blocks.length,
+      oldestRollbackBlock: blockHeights.length > 0 ? blockHeights[0] : null,
+      newestRollbackBlock: blockHeights.length > 0 ? blockHeights[blockHeights.length - 1] : null
+    };
+  }
+
+  /**
    * Clear old rollback operations (for memory management)
    */
   clearOldRollbackOperations(olderThanMs: number = 24 * 60 * 60 * 1000): void {
