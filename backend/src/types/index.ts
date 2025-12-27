@@ -298,12 +298,20 @@ export interface IHealthStatus extends Document {
   averageResponseTime: number
 }
 
-export interface IAlert extends Document {
-  type: 'performance' | 'connection' | 'failed_event' | 'anomaly'
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  message: string
-  details?: any
-  resolved: boolean
-  createdAt: Date
-  resolvedAt?: Date
+export interface IProcessedEvent extends Document {
+  id: string
+  originalEvent: any
+  eventType: string
+  contractAddress?: string
+  method?: string
+  transactionHash: string
+  blockHeight: number
+  timestamp: number
+  processedAt: Date
+  status: 'processed' | 'failed' | 'queued'
+  error?: string
+  replayCount: number
+  lastReplayedAt?: Date
 }
+
+export interface IAlert extends Document {
