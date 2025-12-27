@@ -7,6 +7,7 @@ import CategoryHandlerManager from './CategoryHandlerManager'
 import ReorgHandlerService from './ReorgHandlerService'
 import ReorgAwareDatabase from './ReorgAwareDatabase'
 import ReorgMonitoringService from '../../src/services/ReorgMonitoringService'
+import ProcessedEvent from '../models/ProcessedEvent'
 
 export interface ProcessedEvent {
   id: string
@@ -139,7 +140,7 @@ export class ChainhookEventProcessor {
         const opProcessed = this.processOperation(chainhookEvent, transaction, operation)
 
         if (opProcessed) {
-          this.addProcessedEvent(opProcessed)
+          await this.addProcessedEvent(opProcessed)
           processedEvents.push(opProcessed)
         }
       }
@@ -225,8 +226,25 @@ export class ChainhookEventProcessor {
     return 'unknown'
   }
 
-  private addProcessedEvent(event: ProcessedEvent): void {
+  private async addProcessedEvent(event: ProcessedEvent): Promise<void> {
     this.processedEvents.set(event.id, event)
+
+    // Save to database for replay functionality
+    try {
+      await ProcessedEvent.findOneAndUpdate(
+        { id: event.id },
+        {
+          ...event,
+          replayCount: 0
+        },
+        {
+          upsert: true,
+          new: true
+        }
+      )
+    } catch (error) {
+      this.logger.error('Failed to save processed event to database', error)
+    }
 
     // Cleanup old events if we exceed max
     if (this.processedEvents.size > this.maxProcessedEventsInMemory) {
