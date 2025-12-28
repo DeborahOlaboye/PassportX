@@ -28,3 +28,15 @@
   - Target coverage: 80%+ across all metrics
   - Added testing guide and coverage report documentation
 
+- Feature: Message signing for user authentication
+  - Added `src/utils/messageSigning.ts` to create and format messages for signing with domain and timestamp replay attack prevention
+  - Added `src/utils/signatureVerification.ts` to verify signatures and check expiration windows
+  - Added `src/types/auth.ts` with `AuthToken` and `AuthSession` interfaces including expiry helpers
+  - Added `src/utils/tokenStorage.ts` for secure storage and retrieval of auth tokens with optional encryption
+  - Added `src/utils/sessionTokens.ts` for generating and validating session tokens
+  - Added `src/context/AuthContext.tsx` React provider managing sign-in, sign-out, and token verification flows
+  - Added `src/hooks/useAuth.tsx` hook for consuming auth state and methods throughout components
+  - Added `src/components/AuthDemo.tsx` demo component showing authentication UI and flows
+  - Unit tests for message signing, token management, and auth context with 20+ test cases
+  - **Security Note**: User's private keys never exposed; signing remains with user's wallet provider
+
