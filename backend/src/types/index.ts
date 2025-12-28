@@ -315,3 +315,13 @@ export interface IProcessedEvent extends Document {
 }
 
 export interface IAlert extends Document {
+  type: 'error' | 'warning' | 'info';
+  message: string;
+  source: string;
+  createdAt: Date;
+  acknowledged: boolean;
+  severity?: string;
+  resolved?: boolean;
+  resolvedAt?: Date;
+  metadata?: Record<string, any>;
+}

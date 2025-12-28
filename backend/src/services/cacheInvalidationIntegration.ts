@@ -310,5 +310,4 @@ export class CacheInvalidationIntegration {
   }
 }
 
-export default CacheInvalidationIntegration;</content>
-<parameter name="filePath">/Users/mac/Documents/DEBY/Personal Projects/PassportX/backend/src/services/cacheInvalidationIntegration.ts
+export default CacheInvalidationIntegration;
