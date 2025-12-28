@@ -1,0 +1,87 @@
+note: using existing deployments/default.mainnet-plan.yaml
+The following deployment plan will be applied:
+---
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: access-control
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 53540
+            path: access-control.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: badge-issuer-trait
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 5360
+            path: traits/badge-issuer-trait.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: badge-metadata
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 20550
+            path: badge-metadata.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: passport-nft
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 14770
+            path: passport-nft.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: badge-issuer
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 33310
+            path: badge-issuer.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: badge-reader-trait
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 7370
+            path: traits/badge-reader-trait.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: badge-reader
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 43280
+            path: badge-reader.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: community-manager
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 42860
+            path: community-manager.clar
+            anchor-block-only: true
+            clarity-version: 2
+        - contract-publish:
+            contract-name: passport-core
+            expected-sender: SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0
+            cost: 13650
+            path: passport-core.clar
+            anchor-block-only: true
+            clarity-version: 2
+      epoch: "2.5"
+
+
+Total cost:	0.234690 STX
+Duration:	1 blocks
+
+
+Continue [Y/n]?
+
+thread 'main' panicked at components/clarinet-cli/src/deployments/ui/mod.rs:22:23:
+unable to setup user interface: Os { code: 6, kind: Uncategorized, message: "Device not configured" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

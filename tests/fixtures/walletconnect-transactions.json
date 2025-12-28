@@ -1,0 +1,154 @@
+{
+  "testnet": {
+    "sendTransaction": {
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "eth_sendTransaction",
+      "params": [
+        {
+          "from": "0x1234567890123456789012345678901234567890",
+          "to": "0x0987654321098765432109876543210987654321",
+          "value": "1000000000000000000",
+          "data": "0x",
+          "gas": "21000",
+          "gasPrice": "20000000000"
+        }
+      ]
+    },
+    "signTransaction": {
+      "id": 2,
+      "jsonrpc": "2.0",
+      "method": "eth_signTransaction",
+      "params": [
+        {
+          "from": "0x1234567890123456789012345678901234567890",
+          "to": "0x0987654321098765432109876543210987654321",
+          "value": "1000000000000000000",
+          "data": "0x",
+          "gas": "21000",
+          "gasPrice": "20000000000",
+          "nonce": "0",
+          "chainId": 5
+        }
+      ]
+    },
+    "personalSign": {
+      "id": 3,
+      "jsonrpc": "2.0",
+      "method": "personal_sign",
+      "params": [
+        "0x48656c6c6f2c20576f726c6421",
+        "0x1234567890123456789012345678901234567890"
+      ]
+    },
+    "signTypedData": {
+      "id": 4,
+      "jsonrpc": "2.0",
+      "method": "eth_signTypedData",
+      "params": [
+        "0x1234567890123456789012345678901234567890",
+        {
+          "types": {
+            "EIP712Domain": [
+              { "name": "name", "type": "string" },
+              { "name": "version", "type": "string" },
+              { "name": "chainId", "type": "uint256" },
+              { "name": "verifyingContract", "type": "address" }
+            ],
+            "Message": [
+              { "name": "content", "type": "string" },
+              { "name": "timestamp", "type": "uint256" }
+            ]
+          },
+          "primaryType": "Message",
+          "domain": {
+            "name": "PassportX",
+            "version": "1",
+            "chainId": 5,
+            "verifyingContract": "0x1234567890123456789012345678901234567890"
+          },
+          "message": {
+            "content": "Test message",
+            "timestamp": 1700000000
+          }
+        }
+      ]
+    }
+  },
+  "mainnet": {
+    "sendTransaction": {
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "eth_sendTransaction",
+      "params": [
+        {
+          "from": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+          "to": "0x1234567890123456789012345678901234567890",
+          "value": "1000000000000000000",
+          "data": "0x",
+          "gas": "21000",
+          "gasPrice": "30000000000"
+        }
+      ]
+    },
+    "signTransaction": {
+      "id": 2,
+      "jsonrpc": "2.0",
+      "method": "eth_signTransaction",
+      "params": [
+        {
+          "from": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+          "to": "0x1234567890123456789012345678901234567890",
+          "value": "1000000000000000000",
+          "data": "0x",
+          "gas": "21000",
+          "gasPrice": "30000000000",
+          "nonce": "0",
+          "chainId": 1
+        }
+      ]
+    },
+    "personalSign": {
+      "id": 3,
+      "jsonrpc": "2.0",
+      "method": "personal_sign",
+      "params": [
+        "0x48656c6c6f2c20576f726c6421",
+        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+      ]
+    },
+    "signTypedData": {
+      "id": 4,
+      "jsonrpc": "2.0",
+      "method": "eth_signTypedData",
+      "params": [
+        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+        {
+          "types": {
+            "EIP712Domain": [
+              { "name": "name", "type": "string" },
+              { "name": "version", "type": "string" },
+              { "name": "chainId", "type": "uint256" },
+              { "name": "verifyingContract", "type": "address" }
+            ],
+            "Message": [
+              { "name": "content", "type": "string" },
+              { "name": "timestamp", "type": "uint256" }
+            ]
+          },
+          "primaryType": "Message",
+          "domain": {
+            "name": "PassportX",
+            "version": "1",
+            "chainId": 1,
+            "verifyingContract": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+          },
+          "message": {
+            "content": "Production message",
+            "timestamp": 1700000000
+          }
+        }
+      ]
+    }
+  }
+}
