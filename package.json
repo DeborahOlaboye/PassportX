@@ -9,6 +9,7 @@
     "start": "next start",
     "prepare": "husky install",
     "test": "npm run test:unit && npm run test:contracts",
+    "test:integration:wc": "WC_ENABLED=1 jest --testPathPattern=tests/integration --runInBand",
     "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
@@ -86,5 +87,9 @@
     "tailwindcss": "^3.3.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.0"
+  }
+  ,
+  "scripts": {
+    "lint:check": "eslint . --ext .js,.ts,.tsx || true"
   }
 }

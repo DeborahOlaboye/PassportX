@@ -362,5 +362,23 @@ Usage (example):
 1. Wrap your app with `WalletSessionProvider`.
 2. Use `useWalletSession()` to `save` or `disconnect`.
 
+### Integration tests
+
+Integration tests for WalletConnect flows are available under `tests/integration`.
+They are disabled by default; follow `tests/integration/README.md` and `.env.example.integration` to enable.
+
+### Error handling & recovery
+
+This release adds error handling components and utilities:
+
+- `ErrorBoundary` — React boundary to catch render errors.
+- `ErrorToast` and `FallbackUI` — user-facing fallback and toast messages.
+- `retry` util — retry transient operations with backoff.
+- `logger` — lightweight logging helpers.
+
+Wrap risky components with `ErrorBoundary` and use `useWalletSession()`'s `retryOperation` to run retryable actions. The provider now surfaces `error` for UI consumption.
+
+
+
 
 ```
