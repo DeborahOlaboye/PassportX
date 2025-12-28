@@ -1,0 +1,76 @@
+{
+  "testnet": {
+    "session": {
+      "topic": "57e11ab3-0f3b-465f-98db-d97a4d2f9f4d",
+      "relay": {
+        "protocol": "irn",
+        "data": "eu-1"
+      },
+      "expiry": 1700000000000,
+      "namespaces": {
+        "eip155": {
+          "chains": ["eip155:5"],
+          "accounts": [
+            "eip155:5:0x1234567890123456789012345678901234567890"
+          ],
+          "methods": [
+            "eth_sendTransaction",
+            "eth_signTransaction",
+            "eth_sign",
+            "personal_sign",
+            "eth_signTypedData"
+          ],
+          "events": ["chainChanged", "accountsChanged"]
+        }
+      },
+      "controller": "did:key:z6MkhaXgBZDvotDkL5257faWxcqV6KpNKeWQdwSsFqXyQjr7",
+      "requiredNamespaces": {
+        "eip155": {
+          "chains": ["eip155:5"],
+          "methods": ["eth_sendTransaction", "eth_sign", "personal_sign"],
+          "events": ["chainChanged", "accountsChanged"]
+        }
+      }
+    },
+    "address": "0x1234567890123456789012345678901234567890",
+    "chainId": 5,
+    "network": "testnet"
+  },
+  "mainnet": {
+    "session": {
+      "topic": "67f21bc4-1g4c-576g-09ec-e08b5e2d0g5e",
+      "relay": {
+        "protocol": "irn",
+        "data": "eu-1"
+      },
+      "expiry": 1800000000000,
+      "namespaces": {
+        "eip155": {
+          "chains": ["eip155:1"],
+          "accounts": [
+            "eip155:1:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+          ],
+          "methods": [
+            "eth_sendTransaction",
+            "eth_signTransaction",
+            "eth_sign",
+            "personal_sign",
+            "eth_signTypedData"
+          ],
+          "events": ["chainChanged", "accountsChanged"]
+        }
+      },
+      "controller": "did:key:z6MkhaXgBZDvotDkL5257faWxcqV6KpNKeWQdwSsFqXyQjr7",
+      "requiredNamespaces": {
+        "eip155": {
+          "chains": ["eip155:1"],
+          "methods": ["eth_sendTransaction", "eth_sign", "personal_sign"],
+          "events": ["chainChanged", "accountsChanged"]
+        }
+      }
+    },
+    "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    "chainId": 1,
+    "network": "mainnet"
+  }
+}

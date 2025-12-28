@@ -7,7 +7,7 @@ Clarinet.test({
         const deployer = accounts.get('deployer')!;
         const user1 = accounts.get('wallet_1')!;
         
-        let block = chain.mineBlock([
+        const block = chain.mineBlock([
             Tx.contractCall('passport-nft', 'mint', [
                 types.principal(user1.address)
             ], deployer.address)
@@ -25,14 +25,14 @@ Clarinet.test({
         const user2 = accounts.get('wallet_2')!;
         
         // First mint an NFT
-        let mintBlock = chain.mineBlock([
+        const mintBlock = chain.mineBlock([
             Tx.contractCall('passport-nft', 'mint', [
                 types.principal(user1.address)
             ], deployer.address)
         ]);
         
         // Try to transfer - should fail
-        let transferBlock = chain.mineBlock([
+        const transferBlock = chain.mineBlock([
             Tx.contractCall('passport-nft', 'transfer', [
                 types.uint(1),
                 types.principal(user1.address),
@@ -50,7 +50,7 @@ Clarinet.test({
         const user1 = accounts.get('wallet_1')!;
         const user2 = accounts.get('wallet_2')!;
         
-        let block = chain.mineBlock([
+        const block = chain.mineBlock([
             Tx.contractCall('passport-nft', 'mint', [
                 types.principal(user2.address)
             ], user1.address)
