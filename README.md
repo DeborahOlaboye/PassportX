@@ -151,18 +151,22 @@ console.log(badges);
 
 ## 🛣️ Roadmap
 
-### **Phase 1 — Core System**
+### **Phase 1 — Core System** ✅ COMPLETED
 
-* Passport UI
-* SIP-12 badge minting
-* Typed metadata
-* Admin badge issuance
+* ✅ Passport UI
+* ✅ SIP-12 badge minting (contracts ready)
+* ✅ Typed metadata
+* ✅ Admin badge issuance
+* ✅ Frontend application with Next.js
+* ✅ Wallet integration
+* ✅ Responsive design
 
-### **Phase 2 — Community Tools**
+### **Phase 2 — Community Tools** ✅ COMPLETED
 
-* Badge templates
-* Community branding
-* Permissioning model
+* ✅ Badge templates
+* ✅ Community branding
+* ✅ Permissioning model
+* ✅ Smart contract deployment (Mainnet)
 
 ### **Phase 3 — Developer Ecosystem**
 
@@ -170,11 +174,157 @@ console.log(badges);
 * Badge reader API
 * Integration docs
 
-### **Phase 4 — Social + Sharing**
+### **Phase 4 — Social + Sharing** ✅ COMPLETED
 
-* Public Passport
-* Embeddable widgets
-* Social previews
+* ✅ Public Passport
+* ✅ Embeddable widgets
+* ✅ Social previews
+
+---
+
+## 🚀 Mainnet Deployment
+
+### Smart Contracts Live on Stacks Mainnet
+
+All PassportX smart contracts are successfully deployed and verified on **Stacks Mainnet**.
+
+**Deployer Address:** `SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0`
+
+### Deployed Contracts
+
+| Contract Name | Transaction Hash |
+|--------------|------------------|
+| **passport-core** | `70409884e55488f587065571008bdd9cdb5776cc9ddc9197b88354e2bdccaea4` |
+| **passport-nft** | `78076cad20931ceabb83b68d68131b2f29500f9d0e6593efb8943c17cd5bcde5` |
+| **access-control** | `b22729ce59d5c78d3fe469d425282fe0b38275979c5e681d80c4cdbf4a0d4b33` |
+| **badge-issuer** | `53185097d7181fd4b3119e4f215123e7bbd97000e491f92561543ee8d236a74b` |
+| **badge-reader** | `63b4d91a4907fbf00cabeebe4c8837e23764092692b511dccc4146d868b72c9e` |
+| **badge-metadata** | `9bab88a536fd093d885b103109d3e80e56dad2ce44c4f0c0abc73ec90db19e5d` |
+| **community-manager** | `92693aa94c6d0022bacc42fb4cf6fca21a2267e899c6b84ade0c8565ded4d764` |
+| **badge-issuer-trait** | `3eef42540f0f2dfb75279cfeb0a334219f96f113dc1669cc7f2c7b6a8afa53d1` |
+| **badge-reader-trait** | `1a076b0897be40e1e2594faab4a8d4db4ff332bacc06fdd9e54fed86104df9e0` |
+
+### Deployment Details
+
+- **Network:** Stacks Mainnet
+- **Total Deployment Cost:** 0.221070 STX
+- **Deployment Date:** December 13, 2025
+- **Contract Version:** Clarity 2.5
+- **Status:** ✅ All contracts confirmed on-chain
+
+### Explorer Links
+
+View all contracts on Stacks Explorer:
+🔗 [https://explorer.hiro.so/address/SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0?chain=mainnet](https://explorer.hiro.so/address/SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0?chain=mainnet)
+
+### Contract Addresses for Integration
+
+```clarity
+;; Main Integration Contract
+SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-core
+
+;; NFT Contract
+SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft
+
+;; Access Control
+SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.access-control
+```
+
+---
+
+## 🔗 Hiro Chainhooks Integration
+
+PassportX integrates with **Hiro Chainhooks** for real-time blockchain event monitoring and indexing.
+
+### What is Chainhooks?
+
+Chainhooks is a reorg-aware transaction indexing engine that provides reliable blockchain data regardless of forks and reorgs. PassportX uses Chainhooks to:
+
+- 🎯 Monitor badge minting events in real-time
+- 📊 Track badge metadata updates
+- 👥 Listen for community creation events
+- 🔔 Trigger instant notifications for users
+- 📈 Power analytics and metrics dashboards
+- ♻️ Handle blockchain reorganizations gracefully
+
+### Quick Start
+
+1. **Install Dependencies**
+   ```bash
+   npm install @hirosystems/chainhook-client
+   ```
+
+2. **Configure Environment Variables**
+   ```bash
+   # Copy example files
+   cp .env.example .env
+   cp .env.local.example .env.local
+
+   # Configure Chainhook node connection
+   CHAINHOOK_NODE_URL=http://localhost:20456
+   CHAINHOOK_SERVER_PORT=3010
+   NEXT_PUBLIC_CHAINHOOK_ENABLED=true
+   ```
+
+3. **Start Using Chainhooks**
+   ```typescript
+   import { getChainhookConfig } from '@/config/chainhook';
+
+   const config = getChainhookConfig('development', 'mainnet');
+   ```
+
+### Configuration Files
+
+All Chainhook configuration is located in `src/config/chainhook/`:
+
+- **`types/chainhook.ts`** - TypeScript type definitions
+- **`server.config.ts`** - Local event server configuration
+- **`node.config.ts`** - Remote Chainhook node configuration
+- **`index.ts`** - Main configuration module
+- **`constants.ts`** - Constants and defaults
+- **`utils.ts`** - Utility functions
+- **`README.md`** - Detailed documentation
+
+### Environment Variables Reference
+
+**Server Configuration:**
+- `CHAINHOOK_SERVER_HOST` - Local server hostname (default: localhost)
+- `CHAINHOOK_SERVER_PORT` - Local server port (default: 3010)
+- `CHAINHOOK_SERVER_EXTERNAL_URL` - External URL for webhooks
+- `CHAINHOOK_SERVER_HTTPS` - Enable HTTPS (true/false)
+
+**Node Configuration:**
+- `CHAINHOOK_NODE_URL` - Chainhook node base URL
+- `CHAINHOOK_NODE_API_KEY` - API key for authentication
+- `CHAINHOOK_NODE_TIMEOUT` - Request timeout in milliseconds
+- `CHAINHOOK_NODE_MAX_RETRIES` - Maximum retry attempts
+
+**Feature Flags:**
+- `NEXT_PUBLIC_CHAINHOOK_ENABLED` - Enable/disable Chainhooks
+- `NEXT_PUBLIC_CHAINHOOK_DEBUG` - Enable debug logging
+
+### Monitored Events
+
+PassportX monitors the following contract events:
+
+- **Badge Minting** - `passport-nft` contract
+- **Metadata Updates** - `badge-metadata` contract
+- **Community Creation** - `community-manager` contract
+- **Access Control Changes** - `access-control` contract
+- **Badge Revocations** - `badge-issuer` contract
+
+### Resources
+
+- 📚 [Chainhook Configuration Documentation](./src/config/chainhook/README.md)
+- 🔗 [Hiro Chainhooks Docs](https://docs.hiro.so/chainhook/overview)
+- 📦 [Chainhook Client NPM](https://www.npmjs.com/package/@hirosystems/chainhook-client)
+- 💻 [Chainhook GitHub](https://github.com/hirosystems/chainhook)
+
+### Related Issues
+
+- [#31 - Set up Hiro Chainhooks infrastructure](https://github.com/DeborahOlaboye/PassportX/issues/31)
+- [#32 - Create ChainhookEventObserver service](https://github.com/DeborahOlaboye/PassportX/issues/32)
+- [#33 - Implement predicate for badge minting events](https://github.com/DeborahOlaboye/PassportX/issues/33)
 
 ---
 

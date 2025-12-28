@@ -7,7 +7,7 @@ Clarinet.test({
         const deployer = accounts.get('deployer')!;
         const user1 = accounts.get('wallet_1')!;
         
-        let block = chain.mineBlock([
+        const block = chain.mineBlock([
             Tx.contractCall('badge-issuer', 'mint-badge', [
                 types.principal(user1.address),
                 types.uint(1)
@@ -26,7 +26,7 @@ Clarinet.test({
         const user1 = accounts.get('wallet_1')!;
         const user2 = accounts.get('wallet_2')!;
         
-        let block = chain.mineBlock([
+        const block = chain.mineBlock([
             Tx.contractCall('passport-nft', 'transfer', [
                 types.uint(1),
                 types.principal(user1.address),
