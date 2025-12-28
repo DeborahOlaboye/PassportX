@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  walletconnect-mainnet-staging:
+    image: passportx-walletconnect:mainnet-staging
+    container_name: passportx-walletconnect-mainnet-staging
+    environment:
+      NODE_ENV: mainnet-staging
+      WALLETCONNECT_PROJECT_ID: ${MAINNET_STAGING_WALLETCONNECT_PROJECT_ID}
+      WALLETCONNECT_RELAY_URL: wss://relay.walletconnect.org
+      NEXT_PUBLIC_WALLETCONNECT_ENABLED: "true"
+      NEXT_PUBLIC_WALLETCONNECT_NETWORK: mainnet
+      NEXT_PUBLIC_CHAIN_ID: "1"
+      NEXT_PUBLIC_RPC_URL: https://mainnet.infura.io/v3/${INFURA_KEY}
+      NEXT_PUBLIC_API_URL: https://staging-mainnet-api.passportx.app
+      WALLETCONNECT_TEST_MODE: "false"
+      WALLETCONNECT_LOG_LEVEL: info
+      WALLETCONNECT_TIMEOUT: "45000"
+      WALLETCONNECT_DEPLOYMENT_APPROVAL_REQUIRED: "true"
+      WALLETCONNECT_REQUIRE_SECURITY_AUDIT: "true"
+      PORT: 3000
+      ENABLE_SECURITY_HEADERS: "true"
+      ENABLE_RATE_LIMITING: "true"
+      ENABLE_AUDIT_LOGGING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./logs:/app/logs
+    depends_on:
+      - walletconnect-mainnet-staging-db
+      - walletconnect-mainnet-staging-redis
+      - walletconnect-mainnet-staging-monitoring
+    networks:
+      - walletconnect-mainnet-staging-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+
+  walletconnect-mainnet-staging-db:
+    image: postgres:15-alpine
+    container_name: passportx-walletconnect-mainnet-staging-db
+    environment:
+      POSTGRES_USER: walletconnect_mainnet_staging
+      POSTGRES_PASSWORD: ${MAINNET_STAGING_DB_PASSWORD}
+      POSTGRES_DB: walletconnect_mainnet_staging
+    volumes:
+      - walletconnect-mainnet-staging-db-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - walletconnect-mainnet-staging-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U walletconnect_mainnet_staging"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  walletconnect-mainnet-staging-redis:
+    image: redis:7-alpine
+    container_name: passportx-walletconnect-mainnet-staging-redis
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass ${MAINNET_STAGING_REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - walletconnect-mainnet-staging-redis-data:/data
+    networks:
+      - walletconnect-mainnet-staging-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  walletconnect-mainnet-staging-monitoring:
+    image: prom/prometheus:latest
+    container_name: passportx-walletconnect-mainnet-staging-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - walletconnect-mainnet-staging-prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - walletconnect-mainnet-staging-network
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+
+  walletconnect-mainnet-staging-grafana:
+    image: grafana/grafana:latest
+    container_name: passportx-walletconnect-mainnet-staging-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SECURITY_ADMIN_USER: admin
+    volumes:
+      - walletconnect-mainnet-staging-grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - walletconnect-mainnet-staging-monitoring
+    networks:
+      - walletconnect-mainnet-staging-network
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  walletconnect-mainnet-staging-db-data:
+    driver: local
+  walletconnect-mainnet-staging-redis-data:
+    driver: local
+  walletconnect-mainnet-staging-prometheus-data:
+    driver: local
+  walletconnect-mainnet-staging-grafana-data:
+    driver: local
+
+networks:
+  walletconnect-mainnet-staging-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
