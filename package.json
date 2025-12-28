@@ -4,6 +4,7 @@
   "description": "PassportX Achievement Passport",
   "scripts": {
     "test": "npm run test:unit && npm run test:contracts",
+    "test:integration:wc": "WC_ENABLED=1 jest --testPathPattern=tests/integration --runInBand",
     "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
