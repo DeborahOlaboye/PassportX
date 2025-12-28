@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Feature: Comprehensive test suite for Chainhook integration
+  - Added `src/types/chainhook.ts` with event types and predicate definitions
+  - Added `src/utils/predicateEvaluator.ts` for evaluating event predicates with fluent builder API
+  - Added `src/utils/mockChainhookEvents.ts` factory for creating realistic mock events
+  - Added `src/utils/eventHandlerRegistry.ts` for registering and dispatching event handlers
+  - Added `src/utils/reorgHandler.ts` for tracking blockchain reorganizations and recovery
+  - Added predicate logic unit tests: `tests/unit/chainhook.predicates.test.ts` (14 tests)
+  - Added event handler unit tests: `tests/unit/chainhook.handlers.test.ts` (11 tests)
+  - Added reorg handling unit tests: `tests/unit/chainhook.reorg.test.ts` (20 tests)
+  - Added integration tests: `tests/integration/chainhook.integration.test.ts` (15 tests)
+  - Added performance tests: `tests/performance/chainhook.performance.test.ts` (15 tests)
+  - Added E2E test scenarios: `tests/e2e/chainhook.e2e.test.ts` (10 tests)
+  - Coverage: 85+ tests covering predicates, handlers, reorg scenarios, and high-volume processing
+  - Supports monitoring badge mint, community creation, metadata updates, revocations, and reorg events
+  - Includes reorg-aware event processor to prevent processing of affected transactions
+  - Performance optimized for 1000+ events and 500+ predicates
+
 - Feature: Session management and persistence for WalletConnect connections
   - Added `src/utils/walletSession.ts` for saving, loading, recovering and clearing sessions
   - Added `src/context/WalletSessionContext.tsx` provider and `useWalletSession` hook
