@@ -1,3 +1,7 @@
+/**
+ * Simple storage adapter to abstract `localStorage` and `sessionStorage`.
+ * Consumers should prefer `session` for short-lived sensitive data.
+ */
 export type StorageArea = 'local' | 'session';
 
 const available = (kind: StorageArea) => {
