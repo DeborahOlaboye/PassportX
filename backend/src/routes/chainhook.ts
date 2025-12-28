@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express'
 import ChainhookManager from '../services/chainhookManager'
 import { authMiddleware } from '../middleware/auth'
+import EventReplayService from '../services/EventReplayService'
+import ChainhookEventProcessor from '../services/chainhookEventProcessor'
 
 const router = Router()
 let chainhookManager: ChainhookManager | null = null
@@ -281,6 +283,103 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       error: 'Failed to get error logs',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
+router.get('/events/historical', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const replayService = new EventReplayService()
+
+    const filters = {
+      eventType: req.query.eventType as string,
+      contractAddress: req.query.contractAddress as string,
+      method: req.query.method as string,
+      startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+      endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+      startBlock: req.query.startBlock ? parseInt(req.query.startBlock as string) : undefined,
+      endBlock: req.query.endBlock ? parseInt(req.query.endBlock as string) : undefined,
+      transactionHash: req.query.transactionHash as string,
+      limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+      offset: req.query.offset ? parseInt(req.query.offset as string) : undefined
+    }
+
+    const events = await replayService.getHistoricalEvents(filters)
+
+    res.json({
+      events,
+      total: events.length,
+      filters
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to fetch historical events',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
+router.get('/events/statistics', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const replayService = new EventReplayService()
+
+    const filters = {
+      eventType: req.query.eventType as string,
+      contractAddress: req.query.contractAddress as string,
+      method: req.query.method as string,
+      startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
+      endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
+      startBlock: req.query.startBlock ? parseInt(req.query.startBlock as string) : undefined,
+      endBlock: req.query.endBlock ? parseInt(req.query.endBlock as string) : undefined,
+      transactionHash: req.query.transactionHash as string
+    }
+
+    const statistics = await replayService.getEventStatistics(filters)
+
+    res.json(statistics)
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to get event statistics',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
+
+router.post('/events/replay', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    if (!chainhookManager) {
+      return res.status(503).json({ error: 'Chainhook manager not initialized' })
+    }
+
+    const replayService = new EventReplayService()
+    const eventProcessor = chainhookManager.getEventProcessor()
+
+    if (!eventProcessor) {
+      return res.status(503).json({ error: 'Event processor not available' })
+    }
+
+    const filters = {
+      eventType: req.body.eventType,
+      contractAddress: req.body.contractAddress,
+      method: req.body.method,
+      startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+      endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+      startBlock: req.body.startBlock,
+      endBlock: req.body.endBlock,
+      transactionHash: req.body.transactionHash,
+      limit: req.body.limit || 100
+    }
+
+    const result = await replayService.replayEvents(filters, eventProcessor)
+
+    res.json({
+      message: 'Event replay completed',
+      ...result
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to replay events',
       message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
