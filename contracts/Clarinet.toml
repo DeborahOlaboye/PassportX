@@ -5,35 +5,43 @@ authors = ["PassportX Team"]
 telemetry = false
 cache_dir = "./.clarinet"
 
+[contracts.badge-issuer-trait]
+path = "traits/badge-issuer-trait.clar"
+epoch = 2.5
+
+[contracts.badge-reader-trait]
+path = "traits/badge-reader-trait.clar"
+epoch = 2.5
+
 [contracts.passport-nft]
-path = "contracts/passport-nft.clar"
-clarity_version = 2
+path = "passport-nft.clar"
+epoch = 2.5
 
 [contracts.badge-metadata]
-path = "contracts/badge-metadata.clar"
-clarity_version = 2
+path = "badge-metadata.clar"
+epoch = 2.5
 
 [contracts.badge-issuer]
-path = "contracts/badge-issuer.clar"
-clarity_version = 2
+path = "badge-issuer.clar"
+epoch = 2.5
 depends_on = ["badge-metadata", "passport-nft"]
 
 [contracts.badge-reader]
-path = "contracts/badge-reader.clar"
-clarity_version = 2
+path = "badge-reader.clar"
+epoch = 2.5
 depends_on = ["badge-metadata", "passport-nft"]
 
 [contracts.community-manager]
-path = "contracts/community-manager.clar"
-clarity_version = 2
+path = "community-manager.clar"
+epoch = 2.5
 
 [contracts.access-control]
-path = "contracts/access-control.clar"
-clarity_version = 2
+path = "access-control.clar"
+epoch = 2.5
 
 [contracts.passport-core]
-path = "contracts/passport-core.clar"
-clarity_version = 2
+path = "passport-core.clar"
+epoch = 2.5
 depends_on = ["badge-issuer", "badge-reader", "access-control"]
 
 [[project.requirements]]

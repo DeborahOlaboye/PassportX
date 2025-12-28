@@ -1,0 +1,171 @@
+---
+deployment:
+  name: "Badge Verification - Mainnet Deployment"
+  version: "2.0.0"
+  date: "2024-12-15"
+  network: "mainnet"
+
+contracts:
+  badge-reader:
+    path: "contracts/badge-reader.clar"
+    version: "2.0.0"
+    dependencies:
+      - badge-metadata
+      - passport-nft
+    new_functions:
+      - verify-badge-ownership
+      - verify-badge-authenticity
+      - get-verification-status
+    breaking_changes: false
+    backward_compatible: true
+
+pre_deployment:
+  tests:
+    - name: "Unit tests"
+      command: "clarinet test tests/unit/badge-verification_test.ts"
+      required: true
+    - name: "Integration tests"
+      command: "npm run test:integration"
+      required: true
+    - name: "Contract validation"
+      command: "clarinet check"
+      required: true
+
+  checklist:
+    - item: "All tests passing"
+      status: pending
+    - item: "Code review completed"
+      status: pending
+    - item: "Testnet deployment verified"
+      status: pending
+    - item: "Security audit completed"
+      status: pending
+    - item: "Deployer wallet funded (5+ STX)"
+      status: pending
+    - item: "Backup/rollback plan documented"
+      status: pending
+    - item: "Team notified"
+      status: pending
+
+deployment_steps:
+  - step: 1
+    name: "Validate environment"
+    commands:
+      - "echo 'Checking mainnet configuration...'"
+      - "clarinet check"
+
+  - step: 2
+    name: "Run pre-deployment tests"
+    commands:
+      - "clarinet test"
+      - "npm run test:integration"
+
+  - step: 3
+    name: "Deploy contract"
+    commands:
+      - "./scripts/deploy-verification-contracts.sh mainnet"
+    estimated_time: "30-45 minutes"
+    cost_estimate: "1-2 STX"
+
+  - step: 4
+    name: "Verify deployment"
+    commands:
+      - "npm run verify:deployment"
+    validation:
+      - "Contract visible on Stacks Explorer"
+      - "All functions callable"
+      - "Existing functions still work"
+
+  - step: 5
+    name: "Update backend"
+    files:
+      - "backend/src/config/contracts.ts"
+      - ".env.production"
+    actions:
+      - "Update contract addresses"
+      - "Restart backend services"
+
+  - step: 6
+    name: "Integration testing"
+    tests:
+      - "API verification endpoints"
+      - "Public verification page"
+      - "Badge card verification display"
+
+  - step: 7
+    name: "Monitoring"
+    duration: "24-48 hours"
+    metrics:
+      - "API error rates"
+      - "Contract function calls"
+      - "User feedback"
+
+post_deployment:
+  verification:
+    - check: "Contract deployed successfully"
+      method: "Check Stacks Explorer"
+    - check: "Verification functions working"
+      method: "Test API endpoints"
+    - check: "No errors in logs"
+      method: "Check monitoring dashboards"
+    - check: "User-facing features working"
+      method: "Manual testing of UI"
+
+  documentation:
+    - "Update API documentation"
+    - "Update contract address in README"
+    - "Create deployment report"
+    - "Update changelog"
+
+rollback:
+  procedure:
+    - "Update backend to use previous contract address"
+    - "Disable new verification endpoints"
+    - "Monitor for stabilization"
+    - "Investigate issues on testnet"
+  notes:
+    - "Contract is immutable - cannot be deleted"
+    - "Backend can point to old contract"
+    - "New features can be disabled via feature flags"
+
+monitoring:
+  duration: "48 hours minimum"
+  alerts:
+    - metric: "API error rate"
+      threshold: "> 5%"
+      action: "Investigate immediately"
+    - metric: "Verification endpoint failures"
+      threshold: "> 1%"
+      action: "Check contract connectivity"
+
+  dashboards:
+    - "Stacks Explorer - Contract activity"
+    - "Backend API metrics"
+    - "Frontend error tracking"
+
+success_criteria:
+  - criteria: "Contract deployed and confirmed"
+    weight: critical
+  - criteria: "All verification functions callable"
+    weight: critical
+  - criteria: "Backward compatibility maintained"
+    weight: critical
+  - criteria: "API integration working"
+    weight: high
+  - criteria: "Public verification page accessible"
+    weight: high
+  - criteria: "No errors for 24 hours"
+    weight: medium
+
+contacts:
+  lead_developer: "team@passportx.io"
+  devops: "devops@passportx.io"
+  security: "security@passportx.io"
+
+resources:
+  - name: "Stacks Explorer"
+    url: "https://explorer.stacks.co"
+  - name: "Clarinet Documentation"
+    url: "https://docs.hiro.so/clarinet"
+  - name: "Deployment Checklist"
+    url: "./MAINNET_DEPLOYMENT.md"

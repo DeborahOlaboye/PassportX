@@ -1,0 +1,58 @@
+[plan]
+name = "badge-reader-verification-upgrade"
+description = "Deploy badge-reader contract with verification functions"
+version = "2.0.0"
+network = "devnet" # Change to testnet or mainnet as needed
+
+[contracts.badge-reader]
+path = "../badge-reader.clar"
+depends_on = ["badge-metadata", "passport-nft"]
+
+# Deployment steps
+[[steps]]
+name = "verify-dependencies"
+description = "Ensure badge-metadata and passport-nft are deployed"
+required = true
+
+[[steps]]
+name = "deploy-badge-reader"
+description = "Deploy updated badge-reader contract with verification functions"
+contract = "badge-reader"
+required = true
+
+[[steps]]
+name = "verify-deployment"
+description = "Test verification functions after deployment"
+tests = [
+  "verify-badge-ownership",
+  "verify-badge-authenticity",
+  "get-verification-status"
+]
+required = true
+
+[[steps]]
+name = "update-backend-config"
+description = "Update backend to use new contract address"
+required = true
+
+# Rollback plan
+[rollback]
+enabled = true
+description = "Keep reference to previous contract version"
+
+# Post-deployment verification
+[verification]
+run_tests = true
+test_accounts = ["deployer", "wallet_1", "wallet_2"]
+
+# Contract metadata
+[metadata]
+changelog = """
+- Added verify-badge-ownership function
+- Added verify-badge-authenticity function
+- Added get-verification-status function
+- Enhanced error handling for verification
+"""
+
+breaking_changes = false
+backward_compatible = true
