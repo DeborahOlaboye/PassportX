@@ -11,11 +11,17 @@ type WalletSessionContextValue = {
 
 export const WalletSessionContext = createContext<WalletSessionContextValue | undefined>(undefined);
 
-export const WalletSessionProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
+type ProviderProps = {
+  storageArea?: 'local' | 'session';
+  encrypt?: (payload: string) => Promise<string> | string;
+  decrypt?: (payload: string) => Promise<string> | string;
+};
+
+export const WalletSessionProvider: React.FC<React.PropsWithChildren<ProviderProps>> = ({ children, storageArea, encrypt, decrypt }) => {
   const [session, setSession] = useState<WalletSession | null>(null);
 
   const save = useCallback(async (s: WalletSession) => {
-    const ok = await saveSession(s as any);
+    const ok = await saveSession(s as any, { area: storageArea as any, encrypt });
     if (ok) setSession(s);
     return ok;
   }, []);
@@ -27,7 +33,7 @@ export const WalletSessionProvider: React.FC<React.PropsWithChildren<{}>> = ({ c
   }, []);
 
   const recover = useCallback(async () => {
-    const s = await recoverSession();
+    const s = await recoverSession({ area: storageArea as any, decrypt });
     if (!s) return;
     if (isExpired(s)) {
       clearSession();
