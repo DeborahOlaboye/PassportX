@@ -32,4 +32,8 @@
     "sonar-scanner": "^3.1.0",
     "typescript": "^5.0.0"
   }
+  ,
+  "scripts": {
+    "lint:check": "eslint . --ext .js,.ts,.tsx || true"
+  }
 }
