@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { WalletSessionProvider } from '../context/WalletSessionContext';
 import { useWalletSession } from '../hooks/useWalletSession';
 import { generateKeyFromPassword, encrypt } from '../utils/crypto';
+import ErrorToast from './ErrorToast';
 
 const DemoInner: React.FC = () => {
   const { session, save, disconnect, isConnected } = useWalletSession();
   const [useSession, setUseSession] = useState(false);
+  const { error, retryOperation } = useWalletSession() as any;
+  const [showError, setShowError] = useState(false);
 
   const createEncryptor = async (password: string) => {
     const { key } = await generateKeyFromPassword(password);
@@ -19,7 +22,11 @@ const DemoInner: React.FC = () => {
       connectedAt: Date.now(),
       expiresAt: Date.now() + 1000 * 60 * 60 // 1h
     };
-    await save(s as any);
+    try {
+      await save(s as any);
+    } catch (e) {
+      setShowError(true);
+    }
   };
 
   return (
@@ -31,6 +38,7 @@ const DemoInner: React.FC = () => {
       </label>
       <button data-testid="connect-wallet" onClick={connect}>Connect (demo)</button>
       <button data-testid="disconnect-wallet" onClick={disconnect}>Disconnect</button>
+      {error && showError && <ErrorToast message={error.message || 'Connection error'} onClose={() => setShowError(false)} />}
     </div>
   );
 };
