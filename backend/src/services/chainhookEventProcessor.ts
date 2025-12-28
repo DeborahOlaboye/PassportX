@@ -8,6 +8,8 @@ import ReorgHandlerService from './ReorgHandlerService'
 import ReorgAwareDatabase from './ReorgAwareDatabase'
 import ReorgMonitoringService from '../../src/services/ReorgMonitoringService'
 import ProcessedEvent from '../models/ProcessedEvent'
+import RetryQueueService from './RetryQueueService'
+import CircuitBreakerRegistry from './CircuitBreakerService'
 
 export interface ProcessedEvent {
   id: string
@@ -34,6 +36,8 @@ export class ChainhookEventProcessor {
   private processingBatch: Map<string, ProcessedEvent> = new Map()
   private reorgDatabase: ReorgAwareDatabase
   private reorgMonitor: ReorgMonitoringService
+  private retryQueueService: typeof RetryQueueService
+  private circuitBreakerRegistry: typeof CircuitBreakerRegistry
 
   constructor(logger?: any) {
     this.validator = new ChainhookEventValidator(logger)
@@ -42,6 +46,8 @@ export class ChainhookEventProcessor {
     this.profiler = new ChainhookPerformanceProfiler(this.logger)
     this.reorgDatabase = new ReorgAwareDatabase(ReorgHandlerService.getInstance(this.logger), this.logger)
     this.reorgMonitor = ReorgMonitoringService.getInstance(this.logger)
+    this.retryQueueService = RetryQueueService
+    this.circuitBreakerRegistry = CircuitBreakerRegistry
   }
 
   private getDefaultLogger() {
@@ -124,8 +130,55 @@ export class ChainhookEventProcessor {
     } catch (error) {
       this.logger.error('Error processing event', error as Error)
       this.profiler.endMeasurement('processEvent')
+
+      // Add failed event to retry queue
+      try {
+        await this.retryQueueService.addToQueue({
+          itemType: 'event',
+          originalPayload: chainhookEvent,
+          eventType: 'chainhook-event-processing',
+          blockHeight: chainhookEvent.block_identifier?.index,
+          error: (error as Error).message,
+          errorType: this.classifyError(error),
+          metadata: {
+            processingStage: 'event-processing',
+            timestamp: new Date().toISOString()
+          }
+        })
+        this.logger.info('Failed event added to retry queue')
+      } catch (retryError) {
+        this.logger.error('Failed to add event to retry queue', retryError)
+      }
+
       return []
     }
+  }
+
+  private classifyError(error: any): 'network' | 'validation' | 'timeout' | 'rate_limit' | 'server_error' | 'unknown' {
+    const errorMessage = error.message?.toLowerCase() || '';
+    const errorCode = error.code || error.status || '';
+
+    if (errorMessage.includes('timeout') || errorCode === 'ETIMEDOUT') {
+      return 'timeout';
+    }
+
+    if (errorMessage.includes('network') || errorCode === 'ECONNREFUSED' || errorCode === 'ENOTFOUND') {
+      return 'network';
+    }
+
+    if (errorMessage.includes('validation') || errorCode === 400) {
+      return 'validation';
+    }
+
+    if (errorMessage.includes('rate limit') || errorCode === 429) {
+      return 'rate_limit';
+    }
+
+    if (errorCode >= 500 && errorCode < 600) {
+      return 'server_error';
+    }
+
+    return 'unknown';
   }
 
   private async processTransaction(chainhookEvent: any, transaction: any): Promise<ProcessedEvent[]> {
@@ -383,10 +436,9 @@ export class ChainhookEventProcessor {
             timestamp: new Date().toISOString()
           }
 
+          // Send webhooks with circuit breaker protection
           const webhookPromises = webhooks.map(webhook =>
-            webhookService.sendWebhook(webhook, payload).catch(error => {
-              this.logger.error(`Failed to send webhook to ${webhook.url}`, error)
-            })
+            this.sendWebhookWithRetry(webhookService, webhook, payload)
           )
 
           await Promise.allSettled(webhookPromises)
@@ -394,6 +446,43 @@ export class ChainhookEventProcessor {
       }
     } catch (error) {
       this.logger.error('Error forwarding events to webhooks', error)
+    }
+  }
+
+  private async sendWebhookWithRetry(webhookService: WebhookService, webhook: any, payload: any): Promise<void> {
+    const circuitBreaker = this.circuitBreakerRegistry.getBreaker(`webhook:${webhook.url}`, {
+      failureThreshold: 3,
+      successThreshold: 2,
+      timeout: 30000,
+      volumeThreshold: 5,
+      errorThresholdPercentage: 50,
+      monitoringPeriod: 60000
+    })
+
+    try {
+      await circuitBreaker.execute(async () => {
+        await webhookService.sendWebhook(webhook, payload)
+      })
+    } catch (error) {
+      this.logger.error(`Failed to send webhook to ${webhook.url}`, error)
+
+      // Add to retry queue
+      try {
+        await this.retryQueueService.addToQueue({
+          itemType: 'webhook',
+          originalPayload: payload,
+          targetUrl: webhook.url,
+          error: (error as Error).message,
+          errorType: this.classifyError(error),
+          metadata: {
+            webhookId: webhook._id?.toString(),
+            eventType: payload.event
+          }
+        })
+        this.logger.info(`Failed webhook added to retry queue: ${webhook.url}`)
+      } catch (retryError) {
+        this.logger.error('Failed to add webhook to retry queue', retryError)
+      }
     }
   }
 
