@@ -8,14 +8,19 @@ export interface WalletSession {
 
 const STORAGE_KEY = 'passportx_wallet_session_v1';
 
-export const saveSession = (session: WalletSession, useSessionStorage = false) => {
+import storageAdapter, { StorageArea } from './storageAdapter';
+
+type SaveOptions = {
+  area?: StorageArea;
+  encrypt?: (payload: string) => Promise<string> | string;
+};
+
+export const saveSession = async (session: WalletSession, opts?: SaveOptions) => {
   const raw = JSON.stringify(session);
   try {
-    if (useSessionStorage && typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem(STORAGE_KEY, raw);
-    } else if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, raw);
-    }
+    const area = opts?.area ?? 'local';
+    const payload = opts?.encrypt ? await opts.encrypt(raw) : raw;
+    storageAdapter.setItem(STORAGE_KEY, payload, area);
     return true;
   } catch (e) {
     console.warn('Failed to save wallet session', e);
@@ -23,16 +28,15 @@ export const saveSession = (session: WalletSession, useSessionStorage = false) =
   }
 };
 
-export const loadSession = (preferSessionStorage = false): WalletSession | null => {
-  try {
-    const raw = preferSessionStorage && typeof sessionStorage !== 'undefined'
-      ? sessionStorage.getItem(STORAGE_KEY)
-      : typeof localStorage !== 'undefined'
-        ? localStorage.getItem(STORAGE_KEY)
-        : null;
+type LoadOptions = { area?: StorageArea; decrypt?: (payload: string) => Promise<string> | string };
 
+export const loadSession = async (opts?: LoadOptions): Promise<WalletSession | null> => {
+  try {
+    const area = opts?.area ?? 'local';
+    const raw = storageAdapter.getItem(STORAGE_KEY, area);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as WalletSession;
+    const payload = opts?.decrypt ? await opts.decrypt(raw) : raw;
+    const parsed = JSON.parse(payload) as WalletSession;
     return parsed;
   } catch (e) {
     console.warn('Failed to load wallet session', e);
@@ -42,8 +46,7 @@ export const loadSession = (preferSessionStorage = false): WalletSession | null 
 
 export const clearSession = () => {
   try {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
-    if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(STORAGE_KEY);
+    storageAdapter.removeItem(STORAGE_KEY);
     return true;
   } catch (e) {
     console.warn('Failed to clear wallet session', e);
@@ -57,8 +60,8 @@ export const isExpired = (session: WalletSession | null) => {
   return Date.now() > session.expiresAt;
 };
 
-export const recoverSession = (preferSessionStorage = false): WalletSession | null => {
-  const session = loadSession(preferSessionStorage);
+export const recoverSession = async (opts?: LoadOptions) : Promise<WalletSession | null> => {
+  const session = await loadSession(opts);
   if (!session) return null;
   if (isExpired(session)) {
     clearSession();
