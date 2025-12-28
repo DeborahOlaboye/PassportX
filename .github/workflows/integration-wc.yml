@@ -1,0 +1,27 @@
+name: Integration - WalletConnect
+
+on:
+  workflow_dispatch:
+
+jobs:
+  integration-wc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install
+        run: npm ci
+      - name: Run WalletConnect integration tests (if enabled)
+        env:
+          WC_ENABLED: ${{ secrets.WC_ENABLED }}
+          WC_TESTNET_URL: ${{ secrets.WC_TESTNET_URL }}
+          WC_PRIVATE_KEY: ${{ secrets.WC_PRIVATE_KEY }}
+        run: |
+          if [ "$WC_ENABLED" = "1" ]; then
+            npm run test:integration:wc; 
+          else
+            echo "WalletConnect integration tests disabled";
+          fi
