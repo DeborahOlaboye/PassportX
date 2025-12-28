@@ -310,5 +310,4 @@ ${health.recommendations.map(rec => `- ${rec}`).join('\n')}
   }
 }
 
-export default CachePerformanceMonitor;</content>
-<parameter name="filePath">/Users/mac/Documents/DEBY/Personal Projects/PassportX/backend/src/services/cachePerformanceMonitor.ts
+export default CachePerformanceMonitor;

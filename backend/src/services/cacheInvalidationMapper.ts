@@ -365,5 +365,4 @@ export class CacheInvalidationMapper {
   }
 }
 
-export default CacheInvalidationMapper;</content>
-<parameter name="filePath">/Users/mac/Documents/DEBY/Personal Projects/PassportX/backend/src/services/cacheInvalidationMapper.ts
+export default CacheInvalidationMapper;
