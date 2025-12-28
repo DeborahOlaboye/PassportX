@@ -15,6 +15,10 @@ type SaveOptions = {
   encrypt?: (payload: string) => Promise<string> | string;
 };
 
+/**
+ * Persist a wallet session. `opts.area` can be 'local' or 'session'.
+ * Optional `encrypt` can be provided to protect the stored payload.
+ */
 export const saveSession = async (session: WalletSession, opts?: SaveOptions) => {
   const raw = JSON.stringify(session);
   try {
@@ -30,6 +34,10 @@ export const saveSession = async (session: WalletSession, opts?: SaveOptions) =>
 
 type LoadOptions = { area?: StorageArea; decrypt?: (payload: string) => Promise<string> | string };
 
+/**
+ * Load a persisted wallet session. If `decrypt` is supplied it will be used
+ * to transform the stored payload back to plaintext before parsing.
+ */
 export const loadSession = async (opts?: LoadOptions): Promise<WalletSession | null> => {
   try {
     const area = opts?.area ?? 'local';
