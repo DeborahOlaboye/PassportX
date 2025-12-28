@@ -212,5 +212,11 @@ Usage (example):
 1. Wrap your app with `WalletSessionProvider`.
 2. Use `useWalletSession()` to `save` or `disconnect`.
 
+### Integration tests
+
+Integration tests for WalletConnect flows are available under `tests/integration`.
+They are disabled by default; follow `tests/integration/README.md` and `.env.example.integration` to enable.
+
+
 
 ```
