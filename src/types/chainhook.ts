@@ -1,101 +1,196 @@
-/**
- * Chainhook Configuration Types
- *
- * Type definitions for Hiro Chainhooks client configuration
- * Related to issue #31
- */
+// Chainhook types and event definitions for testing and integration
 
 /**
- * Server options for the local Chainhook event server
+ * Chainhook Event Types
+ * Represents different blockchain events that Chainhook can monitor
  */
-export interface ServerOptions {
-  /** Host address for the local server (default: 'localhost') */
-  hostname: string;
 
-  /** Port number for the local server (default: 3010) */
-  port: number;
+export enum EventType {
+  TX = 'tx',
+  BLOCK = 'block',
+  MICROBLOCK = 'microblock'
+}
 
-  /** External URL where this server can be reached (for webhooks) */
-  externalUrl?: string;
-
-  /** Enable HTTPS for the local server */
-  https?: boolean;
-
-  /** Path to SSL certificate (if HTTPS is enabled) */
-  sslCertPath?: string;
-
-  /** Path to SSL key (if HTTPS is enabled) */
-  sslKeyPath?: string;
+export interface ChainhookEvent {
+  type: EventType;
+  timestamp: number;
+  blockHeight: number;
+  blockHash: string;
+  txHash?: string;
 }
 
 /**
- * Configuration options for connecting to a Chainhook node
+ * STX Transfer Event
+ * Used for tracking badge minting and payments
  */
-export interface ChainhookNodeOptions {
-  /** Base URL of the Chainhook node */
-  baseUrl: string;
-
-  /** API key for authenticating with the Chainhook node */
-  apiKey?: string;
-
-  /** Request timeout in milliseconds (default: 30000) */
-  timeout?: number;
-
-  /** Enable retry logic for failed requests */
-  retryEnabled?: boolean;
-
-  /** Maximum number of retry attempts (default: 3) */
-  maxRetries?: number;
-
-  /** Delay between retry attempts in milliseconds (default: 1000) */
-  retryDelay?: number;
+export interface STXTransferEvent extends ChainhookEvent {
+  type: EventType.TX;
+  sender: string;
+  recipient: string;
+  amount: bigint;
+  txIndex: number;
 }
 
 /**
- * Combined Chainhook configuration
+ * Contract Call Event
+ * Used for tracking badge issuance and community creation
+ */
+export interface ContractCallEvent extends ChainhookEvent {
+  type: EventType.TX;
+  contract: string;
+  function: string;
+  args: Record<string, any>;
+  txIndex: number;
+  success: boolean;
+}
+
+/**
+ * NFT Mint Event
+ * Specifically for badge NFT minting
+ */
+export interface NFTMintEvent extends ChainhookEvent {
+  type: EventType.TX;
+  tokenId: string;
+  recipient: string;
+  contractAddress: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Metadata Update Event
+ * For tracking badge metadata changes
+ */
+export interface MetadataUpdateEvent extends ChainhookEvent {
+  type: EventType.TX;
+  entityId: string;
+  entityType: 'badge' | 'community' | 'profile';
+  changes: Record<string, any>;
+  previousValues?: Record<string, any>;
+}
+
+/**
+ * Reorg Event
+ * Represents blockchain reorganization
+ */
+export interface ReorgEvent extends ChainhookEvent {
+  type: EventType.BLOCK;
+  reorgDepth: number;
+  commonAncestorHeight: number;
+  removedBlockHashes: string[];
+  addedBlockHashes: string[];
+  affectedTransactions: string[];
+}
+
+/**
+ * Connection Event
+ * For monitoring Chainhook connection status
+ */
+export interface ConnectionEvent {
+  timestamp: number;
+  status: 'connected' | 'disconnected' | 'reconnecting';
+  reason?: string;
+  retryCount?: number;
+}
+
+/**
+ * Predicate Configuration
+ * Defines what events to listen for
+ */
+export interface PredicateConfig {
+  id: string;
+  name: string;
+  network: 'mainnet' | 'testnet';
+  contractAddress?: string;
+  eventType: EventType;
+  filters: {
+    functionName?: string;
+    sender?: string;
+    recipient?: string;
+    minAmount?: bigint;
+  };
+  enabled: boolean;
+  createdAt: number;
+}
+
+/**
+ * Predicate Result
+ * Result of predicate evaluation
+ */
+export interface PredicateResult {
+  predicateId: string;
+  matched: boolean;
+  event: ChainhookEvent;
+  matchedAt: number;
+  actions?: string[];
+}
+
+/**
+ * Event Handler Response
+ * Response from processing an event
+ */
+export interface EventHandlerResponse {
+  success: boolean;
+  eventHash: string;
+  handledAt: number;
+  processingTimeMs: number;
+  actions: {
+    name: string;
+    status: 'success' | 'failed' | 'pending';
+    result?: any;
+    error?: string;
+  }[];
+}
+
+/**
+ * Chainhook Integration Config
  */
 export interface ChainhookConfig {
-  /** Local server configuration */
-  server: ServerOptions;
-
-  /** Remote Chainhook node configuration */
-  node: ChainhookNodeOptions;
-
-  /** Enable debug logging */
-  debug?: boolean;
-
-  /** Environment (development, staging, production) */
-  environment?: 'development' | 'staging' | 'production';
+  enabled: boolean;
+  network: 'mainnet' | 'testnet';
+  rpcEndpoint: string;
+  webhookUrl?: string;
+  pollingIntervalMs: number;
+  maxRetries: number;
+  retryDelayMs: number;
+  timeoutMs: number;
+  predicates: PredicateConfig[];
 }
 
 /**
- * Predicate types supported by Chainhook
+ * Badge Mint Predicate Event
+ * Specific event for badge minting
  */
-export type PredicateType =
-  | 'stacks-block'
-  | 'stacks-transaction'
-  | 'stacks-contract-call'
-  | 'stacks-contract-deployment'
-  | 'stacks-print-event'
-  | 'bitcoin-block'
-  | 'bitcoin-transaction';
+export interface BadgeMintPredicateEvent extends ChainhookEvent {
+  type: EventType.TX;
+  badgeId: string;
+  recipientAddress: string;
+  issuerAddress: string;
+  communityId: string;
+  level: number;
+  timestamp: number;
+}
 
 /**
- * Base predicate configuration
+ * Community Creation Predicate Event
  */
-export interface BasePredicate {
-  /** Unique identifier for this predicate */
-  uuid: string;
-
-  /** Human-readable name */
+export interface CommunityCreationEvent extends ChainhookEvent {
+  type: EventType.TX;
+  communityId: string;
+  creatorAddress: string;
   name: string;
+  description: string;
+  metadata?: Record<string, any>;
+}
 
-  /** Predicate type */
-  type: PredicateType;
-
-  /** Network (mainnet or testnet) */
-  network: 'mainnet' | 'testnet';
-
-  /** Whether this predicate is enabled */
-  enabled?: boolean;
+/**
+ * Revocation Event
+ * For badge or community revocation
+ */
+export interface RevocationEvent extends ChainhookEvent {
+  type: EventType.TX;
+  revokedEntityId: string;
+  revokedEntityType: 'badge' | 'community';
+  revokedByAddress: string;
+  reason: string;
+  timestamp: number;
 }
