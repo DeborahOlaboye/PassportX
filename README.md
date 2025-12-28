@@ -347,4 +347,20 @@ Built on **Stacks**
 Powered by **Clarity 4**
 Inspired by a vision of portable identity and community-centered recognition.
 
+---
+
+## 🔐 Session Management (WalletConnect)
+
+Client-side session management utilities and a React provider are available under `src/`.
+
+- Persist sessions across reloads using `saveSession` / `recoverSession`.
+- Clear sessions with `clearSession` and `disconnect` on the provider to avoid stale sessions.
+- Optional client-side encryption helpers are in `src/utils/crypto.ts`.
+
+Usage (example):
+
+1. Wrap your app with `WalletSessionProvider`.
+2. Use `useWalletSession()` to `save` or `disconnect`.
+
+
 ```
