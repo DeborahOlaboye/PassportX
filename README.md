@@ -4,7 +4,6 @@
 Powered by Clarity 4 on Stacks.**
 
 PassportX lets communities issue verifiable, user-owned achievement badges using SIP-12 NFTs and Clarity 4 typed maps. Users collect achievements across any community and showcase them in a single, beautiful passport.
-
 ---
 
 ## 🚀 Why PassportX?
