@@ -5,7 +5,8 @@ import { Award, Upload, Palette } from 'lucide-react'
 import {
   validateBadgeMetadata,
   ValidationError,
-  getValidBadgeCategories
+  getValidBadgeCategories,
+  VALIDATION_CONSTANTS
 } from '@/lib/validation/badgeValidation'
 
 interface BadgeFormData {
@@ -109,7 +110,12 @@ export default function BadgeForm({ onSubmit, communities }: BadgeFormProps) {
             {validationErrors.name && (
               <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
             )}
-            <p className="text-gray-500 text-xs mt-1">Max 64 characters, alphanumeric and spaces only</p>
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-gray-500 text-xs">Alphanumeric and spaces only</p>
+              <p className={`text-xs ${formData.name.length > VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
+                {formData.name.length}/{VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH}
+              </p>
+            </div>
           </div>
 
           <div>
@@ -129,7 +135,19 @@ export default function BadgeForm({ onSubmit, communities }: BadgeFormProps) {
             {validationErrors.description && (
               <p className="text-red-500 text-sm mt-1">{validationErrors.description}</p>
             )}
-            <p className="text-gray-500 text-xs mt-1">10-256 characters required</p>
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-gray-500 text-xs">
+                {VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH}-{VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH} characters required
+              </p>
+              <p className={`text-xs ${
+                formData.description.length < VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH ||
+                formData.description.length > VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH
+                  ? 'text-orange-500'
+                  : 'text-green-600'
+              }`}>
+                {formData.description.length}/{VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH}
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
