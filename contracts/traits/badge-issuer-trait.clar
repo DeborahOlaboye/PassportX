@@ -9,6 +9,9 @@
     ;; Mint a badge to a user
     (mint-badge (principal uint) (response uint uint))
 
+    ;; Mint multiple badges in a single transaction
+    (batch-mint-badges ((list 50 principal) (list 50 uint)) (response (list 50 (response uint uint)) uint))
+
     ;; Revoke a badge
     (revoke-badge (uint) (response bool uint))
 

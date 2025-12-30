@@ -61,6 +61,35 @@
   )
 )
 
+;; Batch update badge metadata
+(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))) 
+  (let (
+      (badge-ids-len (len badge-ids))
+      (metadatas-len (len metadatas))
+    )
+    ;; Input validation
+    (asserts! (is-eq badge-ids-len metadatas-len) (err u201)) ;; u201: Mismatched array lengths
+    (asserts! (<= badge-ids-len u50) (err u202)) ;; u202: Batch size too large
+    (asserts! (> badge-ids-len u0) (err u203))   ;; u203: Empty batch
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    
+    ;; Process each metadata update
+    (let ((i u0))
+      (while (< i badge-ids-len)
+        (let (
+            (badge-id (unwrap! (element-at badge-ids i) (err u204))) ;; u204: Invalid badge ID
+            (metadata (unwrap! (element-at metadatas i) (err u205)))  ;; u205: Invalid metadata
+          )
+          (try! (ok (map-set badge-metadata { id: badge-id } metadata)))
+        )
+        (set! i (+ i u1))
+      )
+    )
+    
+    (ok true)
+  )
+)
+
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
   (let
     (
