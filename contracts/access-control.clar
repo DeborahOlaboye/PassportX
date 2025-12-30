@@ -76,6 +76,19 @@
 (define-public (set-global-permissions (user principal) (permissions {can-create-communities: bool, can-issue-badges: bool, is-platform-admin: bool, suspended: bool}))
   (begin
     (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
+
+    ;; Emit global permissions updated event
+    (print {
+      event: "global-permissions-updated",
+      user: user,
+      can-create-communities: (get can-create-communities permissions),
+      can-issue-badges: (get can-issue-badges permissions),
+      is-platform-admin: (get is-platform-admin permissions),
+      suspended: (get suspended permissions),
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+
     (ok (map-set global-permissions { user: user } permissions))
   )
 )
@@ -84,6 +97,21 @@
 (define-public (set-community-permissions (community-id uint) (user principal) (permissions {can-issue-badges: bool, can-manage-members: bool, can-create-templates: bool, can-revoke-badges: bool, role: (string-ascii 32)}))
   (begin
     (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
+
+    ;; Emit community permissions updated event
+    (print {
+      event: "community-permissions-updated",
+      community-id: community-id,
+      user: user,
+      can-issue-badges: (get can-issue-badges permissions),
+      can-manage-members: (get can-manage-members permissions),
+      can-create-templates: (get can-create-templates permissions),
+      can-revoke-badges: (get can-revoke-badges permissions),
+      role: (get role permissions),
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+
     (ok (map-set community-permissions { community-id: community-id, user: user } permissions))
   )
 )
@@ -175,14 +203,23 @@
 (define-public (suspend-user (user principal))
   (let
     (
-      (current-perms (default-to 
+      (current-perms (default-to
         { can-create-communities: false, can-issue-badges: false, is-platform-admin: false, suspended: false }
         (map-get? global-permissions { user: user })
       ))
     )
-    (asserts! (is-platform-admin tx-sender) err-unauthorized)
-    (ok (map-set global-permissions 
-      { user: user } 
+    (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
+
+    ;; Emit user suspended event
+    (print {
+      event: "user-suspended",
+      user: user,
+      suspended-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-set global-permissions
+      { user: user }
       (merge current-perms { suspended: true })
     ))
   )
@@ -191,14 +228,23 @@
 (define-public (unsuspend-user (user principal))
   (let
     (
-      (current-perms (default-to 
+      (current-perms (default-to
         { can-create-communities: false, can-issue-badges: false, is-platform-admin: false, suspended: false }
         (map-get? global-permissions { user: user })
       ))
     )
-    (asserts! (is-platform-admin tx-sender) err-unauthorized)
-    (ok (map-set global-permissions 
-      { user: user } 
+    (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
+
+    ;; Emit user unsuspended event
+    (print {
+      event: "user-unsuspended",
+      user: user,
+      unsuspended-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-set global-permissions
+      { user: user }
       (merge current-perms { suspended: false })
     ))
   )
