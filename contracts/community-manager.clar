@@ -1,12 +1,22 @@
 ;; Community Manager Contract
 ;; Manages communities and their badge issuance permissions
+;;
+;; Error Codes Used:
+;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
+;; - u104: ERR-UNAUTHORIZED - Caller lacks required permissions
+;; - u300: ERR-COMMUNITY-NOT-FOUND - Community does not exist
+;; - u301: ERR-NOT-COMMUNITY-OWNER - Not the community owner
+;; - u304: ERR-COMMUNITY-ALREADY-EXISTS - Community already exists
 
-;; Constants
+;; Import error codes from centralized error-codes contract
+(define-constant ERR-OWNER-ONLY (err u100))
+(define-constant ERR-UNAUTHORIZED (err u104))
+(define-constant ERR-COMMUNITY-NOT-FOUND (err u300))
+(define-constant ERR-NOT-COMMUNITY-OWNER (err u301))
+(define-constant ERR-COMMUNITY-ALREADY-EXISTS (err u304))
+
+;; Contract constants
 (define-constant contract-owner tx-sender)
-(define-constant err-owner-only (err u100))
-(define-constant err-unauthorized (err u104))
-(define-constant err-community-not-found (err u107))
-(define-constant err-already-exists (err u108))
 
 ;; Data variables
 (define-data-var next-community-id uint u1)
@@ -92,9 +102,9 @@
 (define-public (add-community-member (community-id uint) (member principal) (role (string-ascii 32)))
   (let
     (
-      (community (unwrap! (map-get? communities { community-id: community-id }) err-community-not-found))
+      (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
-    (asserts! (is-eq tx-sender (get owner community)) err-unauthorized)
+    (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
     (ok (map-set community-members
       { community-id: community-id, member: member }
       { role: role, joined-at: block-height }
@@ -116,9 +126,9 @@
 (define-public (update-community-settings (community-id uint) (settings {public-badges: bool, allow-member-requests: bool, require-approval: bool}))
   (let
     (
-      (community (unwrap! (map-get? communities { community-id: community-id }) err-community-not-found))
+      (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
-    (asserts! (is-eq tx-sender (get owner community)) err-unauthorized)
+    (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
     (ok (map-set community-settings { community-id: community-id } settings))
   )
 )
@@ -127,9 +137,9 @@
 (define-public (deactivate-community (community-id uint))
   (let
     (
-      (community (unwrap! (map-get? communities { community-id: community-id }) err-community-not-found))
+      (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
-    (asserts! (is-eq tx-sender (get owner community)) err-unauthorized)
+    (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
     (ok (map-set communities 
       { community-id: community-id }
       (merge community { active: false })
@@ -141,9 +151,9 @@
 (define-public (transfer-community-ownership (community-id uint) (new-owner principal))
   (let
     (
-      (community (unwrap! (map-get? communities { community-id: community-id }) err-community-not-found))
+      (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
-    (asserts! (is-eq tx-sender (get owner community)) err-unauthorized)
+    (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
     (ok (map-set communities 
       { community-id: community-id }
       (merge community { owner: new-owner })

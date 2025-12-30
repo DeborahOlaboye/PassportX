@@ -1,11 +1,26 @@
 ;; Badge Metadata Contract
 ;; Manages typed maps for badge metadata storage
+;;
+;; Error Codes Used:
+;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
+;; - u500: ERR-METADATA-NOT-FOUND - Metadata not found
+;; - u501: ERR-INVALID-METADATA - Invalid metadata
+;; - u700: ERR-BATCH-TOO-LARGE - Batch exceeds size limit
+;; - u701: ERR-BATCH-EMPTY - Batch array is empty
+;; - u702: ERR-BATCH-MISMATCHED-LENGTHS - Array length mismatch
+;; - u705: ERR-INVALID-BATCH-INDEX - Invalid array index
 
-;; Constants
+;; Import error codes from centralized error-codes contract
+(define-constant ERR-OWNER-ONLY (err u100))
+(define-constant ERR-METADATA-NOT-FOUND (err u500))
+(define-constant ERR-INVALID-METADATA (err u501))
+(define-constant ERR-BATCH-TOO-LARGE (err u700))
+(define-constant ERR-BATCH-EMPTY (err u701))
+(define-constant ERR-BATCH-MISMATCHED-LENGTHS (err u702))
+(define-constant ERR-INVALID-BATCH-INDEX (err u705))
+
+;; Contract constants
 (define-constant contract-owner tx-sender)
-(define-constant err-owner-only (err u100))
-(define-constant err-not-found (err u102))
-(define-constant err-unauthorized (err u104))
 
 ;; Badge metadata structure using typed maps
 (define-map badge-metadata 
@@ -56,7 +71,7 @@
 ;; Write functions
 (define-public (set-badge-metadata (badge-id uint) (metadata {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))
   (begin
-    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (ok (map-set badge-metadata { id: badge-id } metadata))
   )
 )
@@ -68,17 +83,17 @@
       (metadatas-len (len metadatas))
     )
     ;; Input validation
-    (asserts! (is-eq badge-ids-len metadatas-len) (err u201)) ;; u201: Mismatched array lengths
-    (asserts! (<= badge-ids-len u50) (err u202)) ;; u202: Batch size too large
-    (asserts! (> badge-ids-len u0) (err u203))   ;; u203: Empty batch
-    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
-    
+    (asserts! (is-eq badge-ids-len metadatas-len) ERR-BATCH-MISMATCHED-LENGTHS)
+    (asserts! (<= badge-ids-len u50) ERR-BATCH-TOO-LARGE)
+    (asserts! (> badge-ids-len u0) ERR-BATCH-EMPTY)
+    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+
     ;; Process each metadata update
     (let ((i u0))
       (while (< i badge-ids-len)
         (let (
-            (badge-id (unwrap! (element-at badge-ids i) (err u204))) ;; u204: Invalid badge ID
-            (metadata (unwrap! (element-at metadatas i) (err u205)))  ;; u205: Invalid metadata
+            (badge-id (unwrap! (element-at badge-ids i) ERR-INVALID-BATCH-INDEX))
+            (metadata (unwrap! (element-at metadatas i) ERR-INVALID-METADATA))
           )
           (try! (ok (map-set badge-metadata { id: badge-id } metadata)))
         )
