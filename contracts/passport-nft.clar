@@ -1,14 +1,22 @@
 ;; PassportX NFT Contract
 ;; SIP-12 compliant non-transferable NFT for achievement badges
+;;
+;; Error Codes Used:
+;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
+;; - u101: ERR-NOT-TOKEN-OWNER - Caller is not token owner
+;; - u102: ERR-NOT-FOUND - Token not found
+;; - u103: ERR-TRANSFER-DISABLED - Transfers are disabled
 
 (impl-trait 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait)
 
-;; Constants
+;; Import error codes from centralized error-codes contract
+(define-constant ERR-OWNER-ONLY (err u100))
+(define-constant ERR-NOT-TOKEN-OWNER (err u101))
+(define-constant ERR-NOT-FOUND (err u102))
+(define-constant ERR-TRANSFER-DISABLED (err u103))
+
+;; Contract constants
 (define-constant contract-owner tx-sender)
-(define-constant err-owner-only (err u100))
-(define-constant err-not-token-owner (err u101))
-(define-constant err-not-found (err u102))
-(define-constant err-transfer-disabled (err u103))
 
 ;; Data Variables
 (define-data-var last-token-id uint u0)
@@ -36,7 +44,7 @@
 ;; Transfer function - DISABLED for non-transferable NFTs
 (define-public (transfer (id uint) (sender principal) (recipient principal))
   (begin
-    (asserts! false err-transfer-disabled)
+    (asserts! false ERR-TRANSFER-DISABLED)
     (ok true)
   )
 )
@@ -47,7 +55,7 @@
     (
       (token-id (+ (var-get last-token-id) u1))
     )
-    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (try! (nft-mint? passport-badge token-id recipient))
     (var-set last-token-id token-id)
     (ok token-id)
