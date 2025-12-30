@@ -12,6 +12,26 @@ const MAX_RECIPIENT_NAME_LENGTH = 100
 const MIN_RECIPIENT_NAME_LENGTH = 2
 const MIN_STACKS_ADDRESS_LENGTH = 34
 
+const MAX_BADGE_NAME_LENGTH = 64
+const MIN_BADGE_NAME_LENGTH = 1
+const MAX_BADGE_DESCRIPTION_LENGTH = 256
+const MIN_BADGE_DESCRIPTION_LENGTH = 10
+
+const VALID_BADGE_CATEGORIES = [
+  'skill',
+  'participation',
+  'contribution',
+  'leadership',
+  'learning',
+  'achievement',
+  'milestone'
+] as const
+
+const MIN_BADGE_LEVEL = 1
+const MAX_BADGE_LEVEL = 5
+
+const BADGE_NAME_PATTERN = /^[a-zA-Z0-9\s]+$/
+
 export const validateRecipientName = (name: string): ValidationError | null => {
   if (!name || name.trim().length === 0) {
     return { field: 'recipientName', message: 'Recipient name is required' }
@@ -90,6 +110,120 @@ export const validateCommunitySelection = (communityId: number): ValidationError
   return null
 }
 
+export const validateBadgeName = (name: string): ValidationError | null => {
+  if (!name || name.trim().length === 0) {
+    return { field: 'name', message: 'Badge name is required' }
+  }
+
+  const trimmedName = name.trim()
+
+  if (trimmedName.length > MAX_BADGE_NAME_LENGTH) {
+    return {
+      field: 'name',
+      message: `Badge name must not exceed ${MAX_BADGE_NAME_LENGTH} characters (current: ${trimmedName.length})`
+    }
+  }
+
+  if (!BADGE_NAME_PATTERN.test(trimmedName)) {
+    return {
+      field: 'name',
+      message: 'Badge name can only contain alphanumeric characters and spaces'
+    }
+  }
+
+  return null
+}
+
+export const validateBadgeDescription = (description: string): ValidationError | null => {
+  if (!description || description.trim().length === 0) {
+    return { field: 'description', message: 'Badge description is required' }
+  }
+
+  const trimmedDescription = description.trim()
+
+  if (trimmedDescription.length < MIN_BADGE_DESCRIPTION_LENGTH) {
+    return {
+      field: 'description',
+      message: `Badge description must be at least ${MIN_BADGE_DESCRIPTION_LENGTH} characters (current: ${trimmedDescription.length})`
+    }
+  }
+
+  if (trimmedDescription.length > MAX_BADGE_DESCRIPTION_LENGTH) {
+    return {
+      field: 'description',
+      message: `Badge description must not exceed ${MAX_BADGE_DESCRIPTION_LENGTH} characters (current: ${trimmedDescription.length})`
+    }
+  }
+
+  return null
+}
+
+export const validateBadgeCategory = (
+  category: string,
+  validCategories?: string[]
+): ValidationError | null => {
+  if (!category || category.trim().length === 0) {
+    return { field: 'category', message: 'Badge category is required' }
+  }
+
+  const categoriesToCheck = validCategories || Array.from(VALID_BADGE_CATEGORIES)
+
+  if (!categoriesToCheck.includes(category.toLowerCase())) {
+    return {
+      field: 'category',
+      message: `Invalid badge category. Must be one of: ${categoriesToCheck.join(', ')}`
+    }
+  }
+
+  return null
+}
+
+export const validateBadgeLevel = (level: number): ValidationError | null => {
+  if (level === null || level === undefined) {
+    return { field: 'level', message: 'Badge level is required' }
+  }
+
+  if (!Number.isInteger(level)) {
+    return { field: 'level', message: 'Badge level must be a whole number' }
+  }
+
+  if (level < MIN_BADGE_LEVEL || level > MAX_BADGE_LEVEL) {
+    return {
+      field: 'level',
+      message: `Badge level must be between ${MIN_BADGE_LEVEL} and ${MAX_BADGE_LEVEL} (provided: ${level})`
+    }
+  }
+
+  return null
+}
+
+export const validateBadgeMetadata = (data: {
+  name: string
+  description: string
+  category: string
+  level: number
+  validCategories?: string[]
+}): BadgeValidationResult => {
+  const errors: ValidationError[] = []
+
+  const nameError = validateBadgeName(data.name)
+  if (nameError) errors.push(nameError)
+
+  const descriptionError = validateBadgeDescription(data.description)
+  if (descriptionError) errors.push(descriptionError)
+
+  const categoryError = validateBadgeCategory(data.category, data.validCategories)
+  if (categoryError) errors.push(categoryError)
+
+  const levelError = validateBadgeLevel(data.level)
+  if (levelError) errors.push(levelError)
+
+  return {
+    valid: errors.length === 0,
+    errors
+  }
+}
+
 export const validateBadgeIssuanceForm = (data: {
   recipientName: string
   recipientAddress: string
@@ -128,31 +262,23 @@ export const validateBadgeTemplateCreation = (data: {
   category: string
   level: number
   communityId: string
+  validCategories?: string[]
 }): BadgeValidationResult => {
   const errors: ValidationError[] = []
 
-  if (!data.name || data.name.trim().length === 0) {
-    errors.push({ field: 'name', message: 'Badge name is required' })
-  } else if (data.name.length > 100) {
-    errors.push({ field: 'name', message: 'Name must be less than 100 characters' })
-  }
+  const nameError = validateBadgeName(data.name)
+  if (nameError) errors.push(nameError)
 
-  if (!data.description || data.description.trim().length === 0) {
-    errors.push({ field: 'description', message: 'Description is required' })
-  } else if (data.description.length > 500) {
-    errors.push({ field: 'description', message: 'Description must be less than 500 characters' })
-  }
+  const descriptionError = validateBadgeDescription(data.description)
+  if (descriptionError) errors.push(descriptionError)
 
-  const validCategories = ['skill', 'participation', 'contribution', 'leadership', 'learning', 'achievement', 'milestone']
-  if (!data.category || !validCategories.includes(data.category)) {
-    errors.push({ field: 'category', message: 'Invalid badge category' })
-  }
+  const categoryError = validateBadgeCategory(data.category, data.validCategories)
+  if (categoryError) errors.push(categoryError)
 
-  if (!data.level || data.level < 1 || data.level > 5) {
-    errors.push({ field: 'level', message: 'Badge level must be between 1 and 5' })
-  }
+  const levelError = validateBadgeLevel(data.level)
+  if (levelError) errors.push(levelError)
 
-  if (!data.communityId) {
+  if (!data.communityId || data.communityId.trim().length === 0) {
     errors.push({ field: 'communityId', message: 'Please select a community' })
   }
 
@@ -206,4 +332,16 @@ export const validateBulkBadgeIssuance = (recipients: Array<{
 export const getValidationErrorMessage = (field: string, errors: ValidationError[]): string | null => {
   const error = errors.find(e => e.field === field)
   return error ? error.message : null
+}
+
+export const getValidBadgeCategories = (): typeof VALID_BADGE_CATEGORIES => {
+  return VALID_BADGE_CATEGORIES
+}
+
+export const isCategoryValid = (category: string): boolean => {
+  return VALID_BADGE_CATEGORIES.includes(category as any)
+}
+
+export const isLevelInValidRange = (level: number): boolean => {
+  return Number.isInteger(level) && level >= MIN_BADGE_LEVEL && level <= MAX_BADGE_LEVEL
 }
