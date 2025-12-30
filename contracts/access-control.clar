@@ -1,11 +1,22 @@
 ;; Access Control Contract
 ;; Centralized access control for badge issuance and management
+;;
+;; Error Codes Used:
+;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
+;; - u400: ERR-INSUFFICIENT-PERMISSIONS - Lacks required permissions
+;; - u401: ERR-INVALID-ROLE - Role is invalid
+;; - u403: ERR-ACCOUNT-SUSPENDED - Account is suspended
+;; - u405: ERR-NOT-PLATFORM-ADMIN - Not a platform administrator
 
-;; Constants
+;; Import error codes from centralized error-codes contract
+(define-constant ERR-OWNER-ONLY (err u100))
+(define-constant ERR-INSUFFICIENT-PERMISSIONS (err u400))
+(define-constant ERR-INVALID-ROLE (err u401))
+(define-constant ERR-ACCOUNT-SUSPENDED (err u403))
+(define-constant ERR-NOT-PLATFORM-ADMIN (err u405))
+
+;; Contract constants
 (define-constant contract-owner tx-sender)
-(define-constant err-owner-only (err u100))
-(define-constant err-unauthorized (err u104))
-(define-constant err-invalid-role (err u109))
 
 ;; Role definitions
 (define-constant ROLE-ADMIN "admin")
@@ -64,7 +75,7 @@
 ;; Global permission management
 (define-public (set-global-permissions (user principal) (permissions {can-create-communities: bool, can-issue-badges: bool, is-platform-admin: bool, suspended: bool}))
   (begin
-    (asserts! (is-platform-admin tx-sender) err-unauthorized)
+    (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
     (ok (map-set global-permissions { user: user } permissions))
   )
 )
@@ -72,7 +83,7 @@
 ;; Community permission management
 (define-public (set-community-permissions (community-id uint) (user principal) (permissions {can-issue-badges: bool, can-manage-members: bool, can-create-templates: bool, can-revoke-badges: bool, role: (string-ascii 32)}))
   (begin
-    (asserts! (can-manage-community-members community-id tx-sender) err-unauthorized)
+    (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
     (ok (map-set community-permissions { community-id: community-id, user: user } permissions))
   )
 )
