@@ -71,7 +71,7 @@
         created-at: block-height
       }
     )
-    
+
     ;; Set default community settings
     (map-set community-settings
       { community-id: community-id }
@@ -81,13 +81,23 @@
         require-approval: false
       }
     )
-    
+
     ;; Add creator as admin member
     (map-set community-members
       { community-id: community-id, member: tx-sender }
       { role: "admin", joined-at: block-height }
     )
-    
+
+    ;; Emit community created event
+    (print {
+      event: "community-created",
+      community-id: community-id,
+      name: name,
+      description: description,
+      owner: tx-sender,
+      block-height: block-height
+    })
+
     (var-set next-community-id (+ community-id u1))
     (ok community-id)
   )
@@ -105,6 +115,17 @@
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
     (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
+
+    ;; Emit member added event
+    (print {
+      event: "community-member-added",
+      community-id: community-id,
+      member: member,
+      role: role,
+      added-by: tx-sender,
+      block-height: block-height
+    })
+
     (ok (map-set community-members
       { community-id: community-id, member: member }
       { role: role, joined-at: block-height }
@@ -129,6 +150,18 @@
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
     (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
+
+    ;; Emit settings updated event
+    (print {
+      event: "community-settings-updated",
+      community-id: community-id,
+      public-badges: (get public-badges settings),
+      allow-member-requests: (get allow-member-requests settings),
+      require-approval: (get require-approval settings),
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+
     (ok (map-set community-settings { community-id: community-id } settings))
   )
 )
@@ -140,7 +173,16 @@
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
     (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
-    (ok (map-set communities 
+
+    ;; Emit community deactivated event
+    (print {
+      event: "community-deactivated",
+      community-id: community-id,
+      deactivated-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-set communities
       { community-id: community-id }
       (merge community { active: false })
     ))
@@ -154,7 +196,17 @@
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
     (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
-    (ok (map-set communities 
+
+    ;; Emit ownership transferred event
+    (print {
+      event: "community-ownership-transferred",
+      community-id: community-id,
+      old-owner: tx-sender,
+      new-owner: new-owner,
+      block-height: block-height
+    })
+
+    (ok (map-set communities
       { community-id: community-id }
       (merge community { owner: new-owner })
     ))

@@ -54,6 +54,81 @@ All contracts use a centralized error code system defined in `error-codes.clar`.
 
 See [ERROR_CODES.md](../docs/ERROR_CODES.md) for complete error code reference.
 
+## Event System
+
+All contracts emit events for critical actions using Clarity's `print` function. This enables real-time monitoring, analytics, and frontend state synchronization.
+
+### Event Structure
+
+All events follow a consistent structure:
+
+```clarity
+(print {
+  event: "event-name",
+  [relevant-fields]: values,
+  block-height: block-height
+})
+```
+
+### Events by Contract
+
+#### badge-issuer.clar (7 events)
+- `badge-minted`: Single badge minted
+- `batch-badges-minted`: Multiple badges minted
+- `template-created`: Badge template created
+- `badge-revoked`: Badge revoked
+- `badge-metadata-updated`: Badge metadata changed
+- `issuer-authorized`: Issuer granted permissions
+- `issuer-revoked`: Issuer permissions removed
+
+#### community-manager.clar (5 events)
+- `community-created`: New community created
+- `community-member-added`: Member joins community
+- `community-settings-updated`: Community settings changed
+- `community-deactivated`: Community deactivated
+- `community-ownership-transferred`: Ownership changes
+
+#### access-control.clar (4 events)
+- `global-permissions-updated`: User's global permissions changed
+- `community-permissions-updated`: Community permissions changed
+- `user-suspended`: User account suspended
+- `user-unsuspended`: User account restored
+
+#### passport-nft.clar (1 event)
+- `passport-badge-minted`: NFT token minted
+
+### Adding New Events
+
+When adding new events:
+
+1. Use consistent naming: `{noun}-{verb-past-tense}`
+2. Include all relevant context in event data
+3. Always include `block-height`
+4. Document in contract header comments
+5. Update `docs/EVENTS.md`
+
+Example:
+```clarity
+;; In your public function
+(define-public (perform-action (param uint))
+  (begin
+    ;; ... perform action logic ...
+
+    ;; Emit event
+    (print {
+      event: "action-performed",
+      param: param,
+      performer: tx-sender,
+      block-height: block-height
+    })
+
+    (ok true)
+  )
+)
+```
+
+See [EVENTS.md](../docs/EVENTS.md) for complete event reference and usage examples.
+
 ## Contract Relationships
 
 ```

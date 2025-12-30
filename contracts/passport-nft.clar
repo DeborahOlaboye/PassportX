@@ -57,6 +57,16 @@
     )
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (try! (nft-mint? passport-badge token-id recipient))
+
+    ;; Emit passport badge minted event
+    (print {
+      event: "passport-badge-minted",
+      token-id: token-id,
+      recipient: recipient,
+      minted-by: tx-sender,
+      block-height: block-height
+    })
+
     (var-set last-token-id token-id)
     (ok token-id)
   )

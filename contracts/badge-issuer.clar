@@ -45,6 +45,15 @@
 (define-public (authorize-issuer (issuer principal))
   (begin
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+
+    ;; Emit issuer authorized event
+    (print {
+      event: "issuer-authorized",
+      issuer: issuer,
+      authorized-by: tx-sender,
+      block-height: block-height
+    })
+
     (ok (map-set authorized-issuers issuer true))
   )
 )
@@ -52,6 +61,15 @@
 (define-public (revoke-issuer (issuer principal))
   (begin
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+
+    ;; Emit issuer revoked event
+    (print {
+      event: "issuer-revoked",
+      issuer: issuer,
+      revoked-by: tx-sender,
+      block-height: block-height
+    })
+
     (ok (map-set authorized-issuers issuer false))
   )
 )
@@ -62,9 +80,25 @@
 
 ;; Badge template creation
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
-  (begin
+  (let
+    (
+      (result (try! (contract-call? .badge-metadata create-badge-template name description category default-level)))
+    )
     (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
-    (contract-call? .badge-metadata create-badge-template name description category default-level)
+
+    ;; Emit template created event
+    (print {
+      event: "template-created",
+      template-id: result,
+      name: name,
+      description: description,
+      category: category,
+      default-level: default-level,
+      creator: tx-sender,
+      block-height: block-height
+    })
+
+    (ok result)
   )
 )
 
@@ -76,13 +110,13 @@
       (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
     )
     (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
-    
+
     ;; Mint NFT
     (try! (contract-call? .passport-nft mint recipient))
-    
+
     ;; Set badge metadata
-    (try! (contract-call? .badge-metadata set-badge-metadata 
-      badge-id 
+    (try! (contract-call? .badge-metadata set-badge-metadata
+      badge-id
       {
         level: (get default-level template),
         category: (get category template),
@@ -91,22 +125,26 @@
         active: true
       }
     ))
-    
+
+    ;; Emit badge minted event
+    (print {
+      event: "badge-minted",
+      badge-id: badge-id,
+      recipient: recipient,
+      template-id: template-id,
+      issuer: tx-sender,
+      level: (get default-level template),
+      category: (get category template),
+      block-height: block-height
+    })
+
     (var-set next-badge-id (+ badge-id u1))
     (ok badge-id)
   )
 )
 
-;; Events
-(define-data-var batch-mint-event-version uint u1)
-(define-event batch-mint 
-  (batch-id uint) 
-  (issuer principal) 
-  (recipients (list 50 principal)) 
-  (template-ids (list 50 uint))
-  (badge-ids (list 50 uint))
-  (timestamp uint)
-)
+;; Batch mint counter for tracking
+(define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
 (define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)))
@@ -117,7 +155,7 @@
       (badge-ids (list))
       (metadatas (list))
       (current-badge-id (var-get next-badge-id))
-      (batch-id (var-get batch-mint-event-version))
+      (batch-id (var-get batch-mint-counter))
     )
     ;; Input validation
     (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
@@ -159,18 +197,21 @@
     
     ;; Update the next badge ID
     (var-set next-badge-id current-badge-id)
-    
+
     ;; Emit batch mint event
-    (var-set batch-mint-event-version (+ batch-id u1))
-    (emit-raw (event batch-mint 
-      batch-id 
-      tx-sender 
-      recipients 
-      template-ids 
-      badge-ids 
-      block-height
-    ))
-    
+    (print {
+      event: "batch-badges-minted",
+      batch-id: batch-id,
+      issuer: tx-sender,
+      recipients: recipients,
+      template-ids: template-ids,
+      badge-ids: badge-ids,
+      count: recipients-len,
+      block-height: block-height
+    })
+
+    (var-set batch-mint-counter (+ batch-id u1))
+
     (ok results)
   )
 )
@@ -182,8 +223,18 @@
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
     (asserts! (or (is-eq tx-sender (get issuer metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
-    (contract-call? .badge-metadata set-badge-metadata 
-      badge-id 
+
+    ;; Emit badge revoked event
+    (print {
+      event: "badge-revoked",
+      badge-id: badge-id,
+      issuer: (get issuer metadata),
+      revoked-by: tx-sender,
+      block-height: block-height
+    })
+
+    (contract-call? .badge-metadata set-badge-metadata
+      badge-id
       (merge metadata { active: false })
     )
   )
@@ -196,8 +247,21 @@
       (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
     (asserts! (or (is-eq tx-sender (get issuer current-metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
-    (contract-call? .badge-metadata set-badge-metadata 
-      badge-id 
+
+    ;; Emit metadata updated event
+    (print {
+      event: "badge-metadata-updated",
+      badge-id: badge-id,
+      old-level: (get level current-metadata),
+      new-level: (get level new-metadata),
+      old-category: (get category current-metadata),
+      new-category: (get category new-metadata),
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+
+    (contract-call? .badge-metadata set-badge-metadata
+      badge-id
       (merge current-metadata new-metadata)
     )
   )
