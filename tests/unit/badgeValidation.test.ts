@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest'
 import {
   validateBadgeName,
   validateBadgeDescription,
@@ -7,9 +6,7 @@ import {
   validateBadgeMetadata,
   getValidBadgeCategories,
   isCategoryValid,
-  isLevelInValidRange,
-  ValidationError,
-  BadgeValidationResult
+  isLevelInValidRange
 } from '../../src/lib/validation/badgeValidation'
 
 describe('Badge Validation Functions', () => {
