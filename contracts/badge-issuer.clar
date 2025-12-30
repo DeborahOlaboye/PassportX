@@ -143,16 +143,8 @@
   )
 )
 
-;; Events
-(define-data-var batch-mint-event-version uint u1)
-(define-event batch-mint 
-  (batch-id uint) 
-  (issuer principal) 
-  (recipients (list 50 principal)) 
-  (template-ids (list 50 uint))
-  (badge-ids (list 50 uint))
-  (timestamp uint)
-)
+;; Batch mint counter for tracking
+(define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
 (define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)))
@@ -163,7 +155,7 @@
       (badge-ids (list))
       (metadatas (list))
       (current-badge-id (var-get next-badge-id))
-      (batch-id (var-get batch-mint-event-version))
+      (batch-id (var-get batch-mint-counter))
     )
     ;; Input validation
     (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
@@ -205,18 +197,21 @@
     
     ;; Update the next badge ID
     (var-set next-badge-id current-badge-id)
-    
+
     ;; Emit batch mint event
-    (var-set batch-mint-event-version (+ batch-id u1))
-    (emit-raw (event batch-mint 
-      batch-id 
-      tx-sender 
-      recipients 
-      template-ids 
-      badge-ids 
-      block-height
-    ))
-    
+    (print {
+      event: "batch-badges-minted",
+      batch-id: batch-id,
+      issuer: tx-sender,
+      recipients: recipients,
+      template-ids: template-ids,
+      badge-ids: badge-ids,
+      count: recipients-len,
+      block-height: block-height
+    })
+
+    (var-set batch-mint-counter (+ batch-id u1))
+
     (ok results)
   )
 )
