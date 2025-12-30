@@ -244,6 +244,13 @@ export const validateBadgeLevel = (level: number): ValidationError | null => {
   return null
 }
 
+/**
+ * Validates all badge metadata fields in one function call.
+ * Performs comprehensive validation of name, description, category, and level.
+ *
+ * @param data - Badge metadata object containing name, description, category, level, and optional validCategories
+ * @returns BadgeValidationResult with valid flag and array of errors if any
+ */
 export const validateBadgeMetadata = (data: {
   name: string
   description: string
@@ -381,14 +388,31 @@ export const getValidationErrorMessage = (field: string, errors: ValidationError
   return error ? error.message : null
 }
 
+/**
+ * Returns the array of valid badge categories.
+ *
+ * @returns Array of valid badge category strings
+ */
 export const getValidBadgeCategories = (): typeof VALID_BADGE_CATEGORIES => {
   return VALID_BADGE_CATEGORIES
 }
 
+/**
+ * Checks if a given category is in the list of valid badge categories.
+ *
+ * @param category - The category to check
+ * @returns true if category is valid, false otherwise
+ */
 export const isCategoryValid = (category: string): boolean => {
   return VALID_BADGE_CATEGORIES.includes(category as any)
 }
 
+/**
+ * Checks if a given level is within the valid range (1-5) and is an integer.
+ *
+ * @param level - The level to check
+ * @returns true if level is valid, false otherwise
+ */
 export const isLevelInValidRange = (level: number): boolean => {
   return Number.isInteger(level) && level >= MIN_BADGE_LEVEL && level <= MAX_BADGE_LEVEL
 }
