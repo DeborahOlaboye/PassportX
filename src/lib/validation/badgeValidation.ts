@@ -189,6 +189,14 @@ export const validateBadgeDescription = (description: string): ValidationError |
   return null
 }
 
+/**
+ * Validates a badge category against a list of valid categories.
+ * Default valid categories: skill, participation, contribution, leadership, learning, achievement, milestone
+ *
+ * @param category - The badge category to validate
+ * @param validCategories - Optional custom list of valid categories
+ * @returns ValidationError if invalid, null if valid
+ */
 export const validateBadgeCategory = (
   category: string,
   validCategories?: string[]
@@ -209,6 +217,14 @@ export const validateBadgeCategory = (
   return null
 }
 
+/**
+ * Validates a badge level according to the following rules:
+ * - Must be an integer
+ * - Must be between 1 and 5 (inclusive)
+ *
+ * @param level - The badge level to validate
+ * @returns ValidationError if invalid, null if valid
+ */
 export const validateBadgeLevel = (level: number): ValidationError | null => {
   if (level === null || level === undefined) {
     return { field: 'level', message: 'Badge level is required' }
