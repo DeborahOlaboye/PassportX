@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Award, Mail, User, Loader } from 'lucide-react'
+import {
+  validateBadgeIssuanceForm
+} from '@/lib/validation/badgeValidation'
 
 interface BadgeTemplate {
   id: number
@@ -69,35 +72,25 @@ export default function BadgeIssuanceForm({
   const selectedTemplate = templates.find(t => t.id === formData.templateId)
 
   const validateForm = (): boolean => {
-    const errors: Record<string, string> = {}
+    const validationResult = validateBadgeIssuanceForm({
+      recipientName: formData.recipientName,
+      recipientAddress: formData.recipientAddress,
+      recipientEmail: formData.recipientEmail,
+      templateId: formData.templateId,
+      communityId: formData.communityId
+    })
 
-    if (!formData.recipientAddress.trim()) {
-      errors.recipientAddress = 'Recipient Stacks address is required'
-    } else if (!formData.recipientAddress.startsWith('S') && !formData.recipientAddress.startsWith('s')) {
-      errors.recipientAddress = 'Invalid Stacks address format'
+    if (!validationResult.valid) {
+      const errors: Record<string, string> = {}
+      validationResult.errors.forEach((error) => {
+        errors[error.field] = error.message
+      })
+      setValidationErrors(errors)
+      return false
     }
 
-    if (!formData.recipientName.trim()) {
-      errors.recipientName = 'Recipient name is required'
-    } else if (formData.recipientName.length > 100) {
-      errors.recipientName = 'Name must be less than 100 characters'
-    }
-
-    if (formData.recipientEmail && !isValidEmail(formData.recipientEmail)) {
-      errors.recipientEmail = 'Invalid email format'
-    }
-
-    if (!formData.templateId) {
-      errors.templateId = 'Please select a badge template'
-    }
-
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+    setValidationErrors({})
+    return true
   }
 
   const handleChange = (field: keyof BadgeIssuanceFormData, value: string | number) => {
