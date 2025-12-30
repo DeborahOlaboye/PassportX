@@ -1,19 +1,30 @@
 ;; Badge Issuer Contract
 ;; Implements badge creation and minting functionality
+;;
+;; Error Codes Used:
+;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
+;; - u104: ERR-UNAUTHORIZED - Caller lacks required permissions
+;; - u204: ERR-INVALID-RECIPIENT - Invalid recipient address
+;; - u600: ERR-TEMPLATE-NOT-FOUND - Template does not exist
+;; - u601: ERR-INVALID-TEMPLATE - Template data is invalid
+;; - u700: ERR-BATCH-TOO-LARGE - Batch exceeds size limit
+;; - u701: ERR-BATCH-EMPTY - Batch array is empty
+;; - u702: ERR-BATCH-MISMATCHED-LENGTHS - Array length mismatch
 
 (use-trait badge-issuer-trait .badge-issuer-trait.badge-issuer)
 
-;; Constants
+;; Import error codes from centralized error-codes contract
+(define-constant ERR-OWNER-ONLY (err u100))
+(define-constant ERR-UNAUTHORIZED (err u104))
+(define-constant ERR-INVALID-RECIPIENT (err u204))
+(define-constant ERR-TEMPLATE-NOT-FOUND (err u600))
+(define-constant ERR-INVALID-TEMPLATE (err u601))
+(define-constant ERR-BATCH-TOO-LARGE (err u700))
+(define-constant ERR-BATCH-EMPTY (err u701))
+(define-constant ERR-BATCH-MISMATCHED-LENGTHS (err u702))
+
+;; Contract constants
 (define-constant contract-owner tx-sender)
-(define-constant err-owner-only (err u100))
-(define-constant err-unauthorized (err u104))
-(define-constant err-invalid-template (err u105))
-(define-constant err-mint-failed (err u106))
-(define-constant err-mismatched-array-lengths (err u107))
-(define-constant err-batch-too-large (err u108))
-(define-constant err-empty-batch (err u109))
-(define-constant err-invalid-recipient (err u110))
-(define-constant err-invalid-template-id (err u111))
 
 ;; Data variables
 (define-data-var next-badge-id uint u1)
@@ -33,14 +44,14 @@
 ;; Access control functions
 (define-public (authorize-issuer (issuer principal))
   (begin
-    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (ok (map-set authorized-issuers issuer true))
   )
 )
 
 (define-public (revoke-issuer (issuer principal))
   (begin
-    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (ok (map-set authorized-issuers issuer false))
   )
 )
@@ -52,7 +63,7 @@
 ;; Badge template creation
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
   (begin
-    (asserts! (is-authorized-issuer tx-sender) err-unauthorized)
+    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
     (contract-call? .badge-metadata create-badge-template name description category default-level)
   )
 )
@@ -62,9 +73,9 @@
   (let
     (
       (badge-id (var-get next-badge-id))
-      (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) err-invalid-template))
+      (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
     )
-    (asserts! (is-authorized-issuer tx-sender) err-unauthorized)
+    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
     
     ;; Mint NFT
     (try! (contract-call? .passport-nft mint recipient))
@@ -109,18 +120,18 @@
       (batch-id (var-get batch-mint-event-version))
     )
     ;; Input validation
-    (asserts! (is-eq recipients-len template-ids-len) err-mismatched-array-lengths)
-    (asserts! (<= recipients-len u50) err-batch-too-large)
-    (asserts! (> recipients-len u0) err-empty-batch)
-    (asserts! (is-authorized-issuer tx-sender) err-unauthorized)
+    (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
+    (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
+    (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
+    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
     
     ;; Process each mint in the batch - Mint NFTs first
     (let ((i u0))
       (while (< i recipients-len)
         (let (
-            (recipient (unwrap! (element-at recipients i) err-invalid-recipient))
-            (template-id (unwrap! (element-at template-ids i) err-invalid-template-id))
-            (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) err-invalid-template))
+            (recipient (unwrap! (element-at recipients i) ERR-INVALID-RECIPIENT))
+            (template-id (unwrap! (element-at template-ids i) ERR-INVALID-TEMPLATE))
+            (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
           )
           ;; Mint NFT
           (try! (contract-call? .passport-nft mint recipient))
@@ -168,9 +179,9 @@
 (define-public (revoke-badge (badge-id uint))
   (let
     (
-      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-invalid-template))
+      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
-    (asserts! (or (is-eq tx-sender (get issuer metadata)) (is-eq tx-sender contract-owner)) err-unauthorized)
+    (asserts! (or (is-eq tx-sender (get issuer metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
     (contract-call? .badge-metadata set-badge-metadata 
       badge-id 
       (merge metadata { active: false })
@@ -182,9 +193,9 @@
 (define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}))
   (let
     (
-      (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-invalid-template))
+      (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
-    (asserts! (or (is-eq tx-sender (get issuer current-metadata)) (is-eq tx-sender contract-owner)) err-unauthorized)
+    (asserts! (or (is-eq tx-sender (get issuer current-metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
     (contract-call? .badge-metadata set-badge-metadata 
       badge-id 
       (merge current-metadata new-metadata)
