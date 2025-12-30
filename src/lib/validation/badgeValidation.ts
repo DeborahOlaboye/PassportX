@@ -123,6 +123,15 @@ export const validateCommunitySelection = (communityId: number): ValidationError
   return null
 }
 
+/**
+ * Validates a badge name according to the following rules:
+ * - Cannot be empty
+ * - Maximum 64 characters
+ * - Only alphanumeric characters and spaces allowed
+ *
+ * @param name - The badge name to validate
+ * @returns ValidationError if invalid, null if valid
+ */
 export const validateBadgeName = (name: string): ValidationError | null => {
   if (!name || name.trim().length === 0) {
     return { field: 'name', message: 'Badge name is required' }
@@ -147,6 +156,15 @@ export const validateBadgeName = (name: string): ValidationError | null => {
   return null
 }
 
+/**
+ * Validates a badge description according to the following rules:
+ * - Cannot be empty
+ * - Minimum 10 characters
+ * - Maximum 256 characters
+ *
+ * @param description - The badge description to validate
+ * @returns ValidationError if invalid, null if valid
+ */
 export const validateBadgeDescription = (description: string): ValidationError | null => {
   if (!description || description.trim().length === 0) {
     return { field: 'description', message: 'Badge description is required' }
