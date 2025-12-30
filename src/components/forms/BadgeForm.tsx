@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { Award, Upload, Palette } from 'lucide-react'
+import {
+  validateBadgeMetadata,
+  ValidationError,
+  getValidBadgeCategories,
+  VALIDATION_CONSTANTS
+} from '@/lib/validation/badgeValidation'
 
 interface BadgeFormData {
   name: string
@@ -18,15 +24,7 @@ interface BadgeFormProps {
   communities: Array<{ id: string; name: string }>
 }
 
-const categories = [
-  'skill',
-  'participation',
-  'contribution',
-  'leadership',
-  'learning',
-  'achievement',
-  'milestone'
-]
+const categories = Array.from(getValidBadgeCategories())
 
 const iconOptions = [
   '🏆', '🎯', '⭐', '🚀', '💎', '🔥', '⚡', '🌟',
@@ -44,15 +42,51 @@ export default function BadgeForm({ onSubmit, communities }: BadgeFormProps) {
     requirements: ''
   })
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [preview, setPreview] = useState(true)
+
+  const validateForm = (): boolean => {
+    const validationResult = validateBadgeMetadata({
+      name: formData.name,
+      description: formData.description,
+      category: formData.category,
+      level: formData.level
+    })
+
+    if (!validationResult.valid) {
+      const errors: Record<string, string> = {}
+      validationResult.errors.forEach((error: ValidationError) => {
+        errors[error.field] = error.message
+      })
+      setValidationErrors(errors)
+      return false
+    }
+
+    setValidationErrors({})
+    return true
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!validateForm()) {
+      return
+    }
+
     onSubmit(formData)
   }
 
   const handleChange = (field: keyof BadgeFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    }
   }
 
   return (
@@ -67,10 +101,21 @@ export default function BadgeForm({ onSubmit, communities }: BadgeFormProps) {
               type="text"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                validationErrors.name ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="e.g., Python Beginner"
-              required
+              maxLength={64}
             />
+            {validationErrors.name && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
+            )}
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-gray-500 text-xs">Alphanumeric and spaces only</p>
+              <p className={`text-xs ${formData.name.length > VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
+                {formData.name.length}/{VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH}
+              </p>
+            </div>
           </div>
 
           <div>
@@ -81,10 +126,28 @@ export default function BadgeForm({ onSubmit, communities }: BadgeFormProps) {
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                validationErrors.description ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Describe what this badge represents..."
-              required
+              maxLength={256}
             />
+            {validationErrors.description && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.description}</p>
+            )}
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-gray-500 text-xs">
+                {VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH}-{VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH} characters required
+              </p>
+              <p className={`text-xs ${
+                formData.description.length < VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH ||
+                formData.description.length > VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH
+                  ? 'text-orange-500'
+                  : 'text-green-600'
+              }`}>
+                {formData.description.length}/{VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH}
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
