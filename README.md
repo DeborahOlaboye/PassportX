@@ -322,9 +322,9 @@ PassportX monitors the following contract events:
 
 ### Related Issues
 
-- [#31 - Set up Hiro Chainhooks infrastructure](https://github.com/DeborahOlaboye/PassportX/issues/31)
-- [#32 - Create ChainhookEventObserver service](https://github.com/DeborahOlaboye/PassportX/issues/32)
-- [#33 - Implement predicate for badge minting events](https://github.com/DeborahOlaboye/PassportX/issues/33)
+- [#31 - Set up Hiro Chainhooks infrastructure](https://github.com/AdekunleBamz/PassportX/issues/31)
+- [#32 - Create ChainhookEventObserver service](https://github.com/AdekunleBamz/PassportX/issues/32)
+- [#33 - Implement predicate for badge minting events](https://github.com/AdekunleBamz/PassportX/issues/33)
 
 ---
 
