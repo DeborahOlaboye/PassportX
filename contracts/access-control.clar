@@ -117,6 +117,32 @@
   )
 )
 
+;; Community issuer role management
+(define-public (grant-community-issuer-role (community-id uint) (user principal))
+  (begin
+    (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
+    
+    (print {
+      event: "community-issuer-granted",
+      community-id: community-id,
+      user: user,
+      granted-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-set community-permissions
+      { community-id: community-id, user: user }
+      {
+        can-issue-badges: true,
+        can-manage-members: false,
+        can-create-templates: false,
+        can-revoke-badges: false,
+        role: ROLE-COMMUNITY-ISSUER
+      }
+    ))
+  )
+)
+
 ;; Permission check functions
 (define-read-only (is-platform-admin (user principal))
   (default-to false (get is-platform-admin (map-get? global-permissions { user: user })))
