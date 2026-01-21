@@ -72,6 +72,7 @@
 ;; Write functions
 (define-public (set-badge-metadata (badge-id uint) (metadata {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))
   (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (ok (map-set badge-metadata { id: badge-id } metadata))
   )
@@ -79,15 +80,17 @@
 
 ;; Batch update badge metadata
 (define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))) 
-  (let (
-      (badge-ids-len (len badge-ids))
-      (metadatas-len (len metadatas))
-    )
-    ;; Input validation
-    (asserts! (is-eq badge-ids-len metadatas-len) ERR-BATCH-MISMATCHED-LENGTHS)
-    (asserts! (<= badge-ids-len u50) ERR-BATCH-TOO-LARGE)
-    (asserts! (> badge-ids-len u0) ERR-BATCH-EMPTY)
-    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let (
+        (badge-ids-len (len badge-ids))
+        (metadatas-len (len metadatas))
+      )
+      ;; Input validation
+      (asserts! (is-eq badge-ids-len metadatas-len) ERR-BATCH-MISMATCHED-LENGTHS)
+      (asserts! (<= badge-ids-len u50) ERR-BATCH-TOO-LARGE)
+      (asserts! (> badge-ids-len u0) ERR-BATCH-EMPTY)
+      (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
 
     ;; Process each metadata update
     (let ((i u0))
@@ -101,16 +104,19 @@
         (set! i (+ i u1))
       )
     )
-
+    
     (ok true)
+    )
   )
 )
 
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
-  (let
-    (
-      (template-id (var-get next-template-id))
-    )
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (template-id (var-get next-template-id))
+      )
     (map-set badge-templates 
       { template-id: template-id }
       {
@@ -123,6 +129,6 @@
     )
     (var-set next-template-id (+ template-id u1))
     (ok template-id)
+    )
   )
 )
-
