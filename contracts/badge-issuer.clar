@@ -254,12 +254,16 @@
 )
 
 ;; Update badge metadata
-(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}))
+(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}) (community-id uint))
   (let
     (
       (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
-    (asserts! (or (is-eq tx-sender (get issuer current-metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-eq tx-sender (get issuer current-metadata)) 
+      (is-eq tx-sender contract-owner)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Emit metadata updated event
     (print {
