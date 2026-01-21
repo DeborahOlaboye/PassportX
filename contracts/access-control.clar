@@ -327,3 +327,6 @@
   )
 )
 
+(define-read-only (is-paused)
+  (var-get contract-paused)
+)
