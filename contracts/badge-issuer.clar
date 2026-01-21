@@ -105,49 +105,50 @@
 ;; Badge minting function
 (define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
   (begin
+  (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
-  (let
-    (
-      (badge-id (var-get next-badge-id))
-      (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
-    )
-    (asserts! (or 
-      (is-authorized-issuer tx-sender)
-      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
+    (let
+      (
+        (badge-id (var-get next-badge-id))
+        (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
+      )
+      (asserts! (or 
+        (is-authorized-issuer tx-sender)
+        (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
 
-    ;; Mint NFT
-    (try! (contract-call? .passport-nft mint recipient))
+      ;; Mint NFT
+      (try! (contract-call? .passport-nft mint recipient))
 
-    ;; Set badge metadata
-    (try! (contract-call? .badge-metadata set-badge-metadata
-      badge-id
-      {
+      ;; Set badge metadata
+      (try! (contract-call? .badge-metadata set-badge-metadata
+        badge-id
+        {
+          level: (get default-level template),
+          category: (get category template),
+          timestamp: block-height,
+          issuer: tx-sender,
+          active: true
+        }
+      ))
+
+      ;; Emit badge minted event
+      (print {
+        event: "badge-minted",
+        badge-id: badge-id,
+        recipient: recipient,
+        template-id: template-id,
+        issuer: tx-sender,
         level: (get default-level template),
         category: (get category template),
-        timestamp: block-height,
-        issuer: tx-sender,
-        active: true
-      }
-    ))
+        block-height: block-height
+      })
 
-    ;; Emit badge minted event
-    (print {
-      event: "badge-minted",
-      badge-id: badge-id,
-      recipient: recipient,
-      template-id: template-id,
-      issuer: tx-sender,
-      level: (get default-level template),
-      category: (get category template),
-      block-height: block-height
-    })
-
-    (var-set next-badge-id (+ badge-id u1))
-    (ok badge-id)
+      (var-set next-badge-id (+ badge-id u1))
+      (ok badge-id)
+    )
   )
 
-;; Batch mint counter for tracking
 (define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
