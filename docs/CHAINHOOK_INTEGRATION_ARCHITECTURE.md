@@ -25,3 +25,6 @@ graph TD
 
 ### 1. Chainhook Node
 The external service provided by Hiro that monitors the Stacks blockchain for specific conditions (predicates).
+
+### 2. ChainhookEventObserver (`src/chainhook/`)
+A centralized service in the backend that manages the lifecycle of event reception.
