@@ -27,6 +27,7 @@
 (define-map badge-metadata 
   { id: uint }
   { 
+    template-id: uint,
     level: uint, 
     category: uint, 
     timestamp: uint,
@@ -71,8 +72,33 @@
   (default-to { badge-ids: (list) } (map-get? user-badges { owner: user }))
 )
 
+(define-read-only (is-badge-expired (badge-id uint))
+  (let
+    (
+      (metadata (unwrap! (get-badge-metadata badge-id) true))
+      (expiration-height (get expiration-height metadata))
+    )
+    (if (is-eq expiration-height u0)
+      false
+      (>= block-height expiration-height)
+    )
+  )
+)
+
+(define-read-only (is-badge-valid (badge-id uint))
+  (let
+    (
+      (metadata (unwrap! (get-badge-metadata badge-id) false))
+    )
+    (and 
+      (get active metadata)
+      (not (is-badge-expired badge-id))
+    )
+  )
+)
+
 ;; Write functions
-(define-public (set-badge-metadata (badge-id uint) (metadata {level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))
+(define-public (set-badge-metadata (badge-id uint) (metadata {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
@@ -81,7 +107,7 @@
 )
 
 ;; Batch update badge metadata
-(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))) 
+(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))) 
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (let (
