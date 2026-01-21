@@ -315,6 +315,7 @@ PassportX monitors the following contract events:
 
 ### Resources
 
+- 🏗️ [Chainhook Integration Architecture](./docs/CHAINHOOK_INTEGRATION_ARCHITECTURE.md)
 - 📚 [Chainhook Configuration Documentation](./src/config/chainhook/README.md)
 - 🔗 [Hiro Chainhooks Docs](https://docs.hiro.so/chainhook/overview)
 - 📦 [Chainhook Client NPM](https://www.npmjs.com/package/@hirosystems/chainhook-client)
