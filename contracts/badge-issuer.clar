@@ -231,31 +231,31 @@
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (let
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
       (
         (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
       )
-  (let
-    (
-      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
-    )
-    (asserts! (or 
-      (is-eq tx-sender (get issuer metadata)) 
-      (is-eq tx-sender contract-owner)
-      (contract-call? .access-control can-revoke-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
+      (asserts! (or 
+        (is-eq tx-sender (get issuer metadata)) 
+        (is-eq tx-sender contract-owner)
+        (contract-call? .access-control can-revoke-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
 
-    ;; Emit badge revoked event
-    (print {
-      event: "badge-revoked",
-      badge-id: badge-id,
-      issuer: (get issuer metadata),
-      revoked-by: tx-sender,
-      block-height: block-height
-    })
+      ;; Emit badge revoked event
+      (print {
+        event: "badge-revoked",
+        badge-id: badge-id,
+        issuer: (get issuer metadata),
+        revoked-by: tx-sender,
+        block-height: block-height
+      })
 
-    (contract-call? .badge-metadata set-badge-metadata
-      badge-id
-      (merge metadata { active: false })
+      (contract-call? .badge-metadata set-badge-metadata
+        badge-id
+        (merge metadata { active: false })
+      )
     )
   )
 
