@@ -20,3 +20,8 @@ graph TD
     G -->|Notify| I[Socket.io / Push]
     G -->|Trigger| J[Internal Services]
 ```
+
+## Core Components
+
+### 1. Chainhook Node
+The external service provided by Hiro that monitors the Stacks blockchain for specific conditions (predicates).
