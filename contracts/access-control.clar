@@ -7,6 +7,7 @@
 ;; - u401: ERR-INVALID-ROLE - Role is invalid
 ;; - u403: ERR-ACCOUNT-SUSPENDED - Account is suspended
 ;; - u405: ERR-NOT-PLATFORM-ADMIN - Not a platform administrator
+;; - u110: ERR-PAUSED - Contract is currently paused
 
 ;; Import error codes from centralized error-codes contract
 (define-constant ERR-OWNER-ONLY (err u100))
@@ -14,6 +15,7 @@
 (define-constant ERR-INVALID-ROLE (err u401))
 (define-constant ERR-ACCOUNT-SUSPENDED (err u403))
 (define-constant ERR-NOT-PLATFORM-ADMIN (err u405))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -305,3 +307,4 @@
     ))
   )
 )
+
