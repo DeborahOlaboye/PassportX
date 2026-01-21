@@ -27,6 +27,9 @@
 (define-constant ROLE-MODERATOR "moderator")
 (define-constant ROLE-MEMBER "member")
 
+;; Pausable state
+(define-data-var contract-paused bool false)
+
 ;; Global permissions
 (define-map global-permissions
   { user: principal }
