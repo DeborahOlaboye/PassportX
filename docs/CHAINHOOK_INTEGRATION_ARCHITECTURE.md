@@ -54,3 +54,7 @@ Chainhook provides information about block reorganizations.
 ## Downstream Event Handlers
 
 Specialized handlers like AccessControlEventHandler update the application state.
+
+## Configuration
+
+Settings are managed via environment variables like CHAINHOOK_NODE_URL and CHAINHOOK_SERVER_PORT.
