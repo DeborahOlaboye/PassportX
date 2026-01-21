@@ -262,34 +262,34 @@
       (
         (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
       )
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+      )
       (asserts! (or 
         (is-eq tx-sender (get issuer current-metadata)) 
         (is-eq tx-sender contract-owner)
-  (let
-    (
-      (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
-    )
-    (asserts! (or 
-      (is-eq tx-sender (get issuer current-metadata)) 
-      (is-eq tx-sender contract-owner)
-      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
+        (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
 
-    ;; Emit metadata updated event
-    (print {
-      event: "badge-metadata-updated",
-      badge-id: badge-id,
-      old-level: (get level current-metadata),
-      new-level: (get level new-metadata),
-      old-category: (get category current-metadata),
-      new-category: (get category new-metadata),
-      updated-by: tx-sender,
-      block-height: block-height
-    })
+      ;; Emit metadata updated event
+      (print {
+        event: "badge-metadata-updated",
+        badge-id: badge-id,
+        old-level: (get level current-metadata),
+        new-level: (get level new-metadata),
+        old-category: (get category current-metadata),
+        new-category: (get category new-metadata),
+        updated-by: tx-sender,
+        block-height: block-height
+      })
 
-    (contract-call? .badge-metadata set-badge-metadata
-      badge-id
-      (merge current-metadata new-metadata)
+      (contract-call? .badge-metadata set-badge-metadata
+        badge-id
+        (merge current-metadata new-metadata)
+      )
     )
   )
 
