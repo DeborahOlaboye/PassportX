@@ -22,6 +22,7 @@
 (define-constant ERR-BATCH-TOO-LARGE (err u700))
 (define-constant ERR-BATCH-EMPTY (err u701))
 (define-constant ERR-BATCH-MISMATCHED-LENGTHS (err u702))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -97,10 +98,13 @@
 
     (ok result)
   )
+
 )
 
 ;; Badge minting function
 (define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
   (let
     (
       (badge-id (var-get next-badge-id))
@@ -141,13 +145,16 @@
     (var-set next-badge-id (+ badge-id u1))
     (ok badge-id)
   )
-)
 
 ;; Batch mint counter for tracking
 (define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
 (define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)) (community-id uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let (
+        (recipients-len (len recipients))
   (let (
       (recipients-len (len recipients))
       (template-ids-len (len template-ids))
@@ -165,7 +172,7 @@
       (is-authorized-issuer tx-sender)
       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
     ) ERR-UNAUTHORIZED)
-    
+
     ;; Process each mint in the batch - Mint NFTs first
     (let ((i u0))
       (while (< i recipients-len)
@@ -176,7 +183,7 @@
           )
           ;; Mint NFT
           (try! (contract-call? .passport-nft mint recipient))
-          
+
           ;; Prepare metadata for batch update
           (set! badge-ids (append badge-ids current-badge-id))
           (set! metadatas (append metadatas {
@@ -186,7 +193,7 @@
             issuer: tx-sender,
             active: true
           }))
-          
+
           ;; Add success result
           (set! results (append results (ok current-badge-id)))
           (set! current-badge-id (+ current-badge-id u1))
@@ -194,10 +201,10 @@
         (set! i (+ i u1))
       )
     )
-    
+
     ;; Batch update all metadata in a single transaction
     (try! (contract-call? .badge-metadata batch-set-badge-metadata badge-ids metadatas))
-    
+
     ;; Update the next badge ID
     (var-set next-badge-id current-badge-id)
 
@@ -217,10 +224,13 @@
 
     (ok results)
   )
-)
 
-;; Badge revocation
-(define-public (revoke-badge (badge-id uint) (community-id uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+      )
   (let
     (
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
@@ -245,10 +255,13 @@
       (merge metadata { active: false })
     )
   )
-)
 
-;; Update badge metadata
-(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}) (community-id uint))
+      (
+        (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+      )
+      (asserts! (or 
+        (is-eq tx-sender (get issuer current-metadata)) 
+        (is-eq tx-sender contract-owner)
   (let
     (
       (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
@@ -276,4 +289,4 @@
       (merge current-metadata new-metadata)
     )
   )
-)
+
