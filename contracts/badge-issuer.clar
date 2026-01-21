@@ -223,12 +223,16 @@
 )
 
 ;; Badge revocation
-(define-public (revoke-badge (badge-id uint))
+(define-public (revoke-badge (badge-id uint) (community-id uint))
   (let
     (
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
-    (asserts! (or (is-eq tx-sender (get issuer metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-eq tx-sender (get issuer metadata)) 
+      (is-eq tx-sender contract-owner)
+      (contract-call? .access-control can-revoke-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Emit badge revoked event
     (print {
