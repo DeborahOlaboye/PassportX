@@ -378,6 +378,50 @@ Emitted when a user's community-specific permissions are updated.
 }
 ```
 
+### community-issuer-granted
+
+Emitted when a community-specific issuer role is granted to a user.
+
+**Fields:**
+- `event`: "community-issuer-granted"
+- `community-id`: uint - Community ID
+- `user`: principal - User receiving the role
+- `granted-by`: principal - Address that granted the role
+- `block-height`: uint
+
+**Example:**
+```clarity
+{
+  event: "community-issuer-granted",
+  community-id: u5,
+  user: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM,
+  granted-by: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG,
+  block-height: u12860
+}
+```
+
+### community-issuer-revoked
+
+Emitted when a community-specific issuer role is revoked from a user.
+
+**Fields:**
+- `event`: "community-issuer-revoked"
+- `community-id`: uint - Community ID
+- `user`: principal - User losing the role
+- `revoked-by`: principal - Address that revoked the role
+- `block-height`: uint
+
+**Example:**
+```clarity
+{
+  event: "community-issuer-revoked",
+  community-id: u5,
+  user: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM,
+  revoked-by: 'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG,
+  block-height: u12870
+}
+```
+
 ### user-suspended
 
 Emitted when a user account is suspended by a platform admin.
