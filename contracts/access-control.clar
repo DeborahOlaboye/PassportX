@@ -311,3 +311,19 @@
   )
 )
 
+;; Pausable management
+(define-public (set-paused (paused bool))
+  (begin
+    (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
+    
+    (print {
+      event: "contract-pause-status-changed",
+      paused: paused,
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (var-set contract-paused paused))
+  )
+)
+
