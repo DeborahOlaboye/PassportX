@@ -18,6 +18,7 @@
 (define-constant ERR-BATCH-EMPTY (err u701))
 (define-constant ERR-BATCH-MISMATCHED-LENGTHS (err u702))
 (define-constant ERR-INVALID-BATCH-INDEX (err u705))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -100,7 +101,7 @@
         (set! i (+ i u1))
       )
     )
-    
+
     (ok true)
   )
 )
@@ -124,3 +125,4 @@
     (ok template-id)
   )
 )
+
