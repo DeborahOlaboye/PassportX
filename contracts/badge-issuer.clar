@@ -32,12 +32,6 @@
 ;; Access control map
 (define-map authorized-issuers principal bool)
 
-;; Community badge issuers
-(define-map community-issuers 
-  { community-id: uint }
-  { issuer: principal, active: bool }
-)
-
 ;; Initialize contract owner as authorized issuer
 (map-set authorized-issuers contract-owner true)
 
