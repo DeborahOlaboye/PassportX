@@ -52,10 +52,12 @@
 
 ;; Mint function - only contract owner can mint
 (define-public (mint (recipient principal))
-  (let
-    (
-      (token-id (+ (var-get last-token-id) u1))
-    )
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (token-id (+ (var-get last-token-id) u1))
+      )
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (try! (nft-mint? passport-badge token-id recipient))
 
@@ -70,6 +72,6 @@
 
     (var-set last-token-id token-id)
     (ok token-id)
+    )
   )
 )
-
