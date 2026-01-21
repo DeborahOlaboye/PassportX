@@ -103,13 +103,16 @@
 )
 
 ;; Badge minting function
-(define-public (mint-badge (recipient principal) (template-id uint))
+(define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
   (let
     (
       (badge-id (var-get next-badge-id))
       (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
     )
-    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-authorized-issuer tx-sender)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Mint NFT
     (try! (contract-call? .passport-nft mint recipient))
