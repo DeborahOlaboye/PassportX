@@ -58,3 +58,8 @@ Specialized handlers like AccessControlEventHandler update the application state
 ## Configuration
 
 Settings are managed via environment variables like CHAINHOOK_NODE_URL and CHAINHOOK_SERVER_PORT.
+
+## Related Documentation
+
+- [Chainhook Setup Guide](../CHAINHOOK_SETUP.md)
+- [Event Observer Reference](./CHAINHOOK_EVENT_OBSERVER.md)
