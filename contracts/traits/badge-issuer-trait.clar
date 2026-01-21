@@ -4,7 +4,7 @@
 (define-trait badge-issuer
   (
     ;; Create a new badge template
-    (create-badge-template ((string-ascii 64) (string-ascii 256) uint uint uint) (response uint uint))
+    (create-badge-template ((string-ascii 64) (string-ascii 256) uint uint uint uint) (response uint uint))
 
     ;; Mint a badge to a user
     (mint-badge (principal uint uint) (response uint uint))
@@ -16,6 +16,9 @@
     (revoke-badge (uint uint) (response bool uint))
 
     ;; Update badge metadata
-    (update-badge-metadata (uint {level: uint, category: uint, timestamp: uint} uint) (response bool uint))
+    (update-badge-metadata (uint {level: uint, category: uint, timestamp: uint, expiration-height: uint} uint) (response bool uint))
+
+    ;; Renew a badge
+    (renew-badge (uint uint) (response bool uint))
   )
 )
