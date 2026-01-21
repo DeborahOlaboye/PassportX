@@ -10,6 +10,7 @@
 ;; - u700: ERR-BATCH-TOO-LARGE - Batch exceeds size limit
 ;; - u701: ERR-BATCH-EMPTY - Batch array is empty
 ;; - u702: ERR-BATCH-MISMATCHED-LENGTHS - Array length mismatch
+;; - u110: ERR-PAUSED - Contract is paused
 
 (use-trait badge-issuer-trait .badge-issuer-trait.badge-issuer)
 
@@ -22,12 +23,14 @@
 (define-constant ERR-BATCH-TOO-LARGE (err u700))
 (define-constant ERR-BATCH-EMPTY (err u701))
 (define-constant ERR-BATCH-MISMATCHED-LENGTHS (err u702))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
 
 ;; Data variables
 (define-data-var next-badge-id uint u1)
+(define-data-var batch-mint-counter uint u0)
 
 ;; Access control map
 (define-map authorized-issuers principal bool)
@@ -73,207 +76,275 @@
 )
 
 ;; Badge template creation
-(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (community-id uint))
-  (let
-    (
-      (result (try! (contract-call? .badge-metadata create-badge-template name description category default-level)))
-    )
+(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (community-id uint) (expiration-duration uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (or 
       (is-authorized-issuer tx-sender)
       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
     ) ERR-UNAUTHORIZED)
 
-    ;; Emit template created event
-    (print {
-      event: "template-created",
-      template-id: result,
-      name: name,
-      description: description,
-      category: category,
-      default-level: default-level,
-      creator: tx-sender,
-      block-height: block-height
-    })
+    (let
+      (
+        (result (try! (contract-call? .badge-metadata create-badge-template name description category default-level expiration-duration)))
+      )
+      ;; Emit template created event
+      (print {
+        event: "template-created",
+        template-id: result,
+        name: name,
+        description: description,
+        category: category,
+        default-level: default-level,
+        expiration-duration: expiration-duration,
+        creator: tx-sender,
+        block-height: block-height
+      })
 
-    (ok result)
+      (ok result)
+    )
   )
 )
 
 ;; Badge minting function
 (define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
-  (let
-    (
-      (badge-id (var-get next-badge-id))
-      (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
-    )
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (or 
       (is-authorized-issuer tx-sender)
       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
     ) ERR-UNAUTHORIZED)
 
-    ;; Mint NFT
-    (try! (contract-call? .passport-nft mint recipient))
+    (let
+      (
+        (badge-id (var-get next-badge-id))
+        (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
+        (expiration-height (if (> (get expiration-duration template) u0)
+                             (+ block-height (get expiration-duration template))
+                             u0))
+      )
+      ;; Mint NFT
+      (try! (contract-call? .passport-nft mint recipient))
 
-    ;; Set badge metadata
-    (try! (contract-call? .badge-metadata set-badge-metadata
-      badge-id
-      {
+      ;; Set badge metadata
+      (try! (contract-call? .badge-metadata set-badge-metadata
+        badge-id
+        {
+          template-id: template-id,
+          level: (get default-level template),
+          category: (get category template),
+          timestamp: block-height,
+          expiration-height: expiration-height,
+          issuer: tx-sender,
+          active: true
+        }
+      ))
+
+      ;; Emit badge minted event
+      (print {
+        event: "badge-minted",
+        badge-id: badge-id,
+        recipient: recipient,
+        template-id: template-id,
+        issuer: tx-sender,
         level: (get default-level template),
         category: (get category template),
-        timestamp: block-height,
-        issuer: tx-sender,
-        active: true
-      }
-    ))
+        expiration-height: expiration-height,
+        block-height: block-height
+      })
 
-    ;; Emit badge minted event
-    (print {
-      event: "badge-minted",
-      badge-id: badge-id,
-      recipient: recipient,
-      template-id: template-id,
-      issuer: tx-sender,
-      level: (get default-level template),
-      category: (get category template),
-      block-height: block-height
-    })
-
-    (var-set next-badge-id (+ badge-id u1))
-    (ok badge-id)
+      (var-set next-badge-id (+ badge-id u1))
+      (ok badge-id)
+    )
   )
 )
-
-;; Batch mint counter for tracking
-(define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
 (define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)) (community-id uint))
-  (let (
-      (recipients-len (len recipients))
-      (template-ids-len (len template-ids))
-      (results (list))
-      (badge-ids (list))
-      (metadatas (list))
-      (current-badge-id (var-get next-badge-id))
-      (batch-id (var-get batch-mint-counter))
-    )
-    ;; Input validation
-    (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
-    (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
-    (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (or 
       (is-authorized-issuer tx-sender)
       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
     ) ERR-UNAUTHORIZED)
-    
-    ;; Process each mint in the batch - Mint NFTs first
-    (let ((i u0))
-      (while (< i recipients-len)
-        (let (
-            (recipient (unwrap! (element-at recipients i) ERR-INVALID-RECIPIENT))
-            (template-id (unwrap! (element-at template-ids i) ERR-INVALID-TEMPLATE))
-            (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
-          )
-          ;; Mint NFT
-          (try! (contract-call? .passport-nft mint recipient))
-          
-          ;; Prepare metadata for batch update
-          (set! badge-ids (append badge-ids current-badge-id))
-          (set! metadatas (append metadatas {
-            level: (get default-level template),
-            category: (get category template),
-            timestamp: block-height,
-            issuer: tx-sender,
-            active: true
-          }))
-          
-          ;; Add success result
-          (set! results (append results (ok current-badge-id)))
-          (set! current-badge-id (+ current-badge-id u1))
-        )
-        (set! i (+ i u1))
+
+    (let (
+        (recipients-len (len recipients))
+        (template-ids-len (len template-ids))
+        (results (list))
+        (badge-ids (list))
+        (metadatas (list))
+        (current-badge-id (var-get next-badge-id))
+        (batch-id (var-get batch-mint-counter))
       )
+      ;; Input validation
+      (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
+      (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
+      (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
+
+      ;; Process each mint in the batch
+      (let ((i u0))
+        (while (< i recipients-len)
+          (let (
+              (recipient (unwrap! (element-at recipients i) ERR-INVALID-RECIPIENT))
+              (template-id (unwrap! (element-at template-ids i) ERR-INVALID-TEMPLATE))
+              (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
+              (expiration-height (if (> (get expiration-duration template) u0)
+                                   (+ block-height (get expiration-duration template))
+                                   u0))
+            )
+            ;; Mint NFT
+            (try! (contract-call? .passport-nft mint recipient))
+
+            ;; Prepare metadata for batch update
+            (set! badge-ids (append badge-ids current-badge-id))
+            (set! metadatas (append metadatas {
+              template-id: template-id,
+              level: (get default-level template),
+              category: (get category template),
+              timestamp: block-height,
+              expiration-height: expiration-height,
+              issuer: tx-sender,
+              active: true
+            }))
+
+            ;; Add success result
+            (set! results (append results (ok current-badge-id)))
+            (set! current-badge-id (+ current-badge-id u1))
+          )
+          (set! i (+ i u1))
+        )
+      )
+
+      ;; Batch update all metadata in a single transaction
+      (try! (contract-call? .badge-metadata batch-set-badge-metadata badge-ids metadatas))
+
+      ;; Update the next badge ID
+      (var-set next-badge-id current-badge-id)
+
+      ;; Emit batch mint event
+      (print {
+        event: "batch-badges-minted",
+        batch-id: batch-id,
+        issuer: tx-sender,
+        recipients: recipients,
+        template-ids: template-ids,
+        badge-ids: badge-ids,
+        count: recipients-len,
+        block-height: block-height
+      })
+
+      (var-set batch-mint-counter (+ batch-id u1))
+
+      (ok results)
     )
-    
-    ;; Batch update all metadata in a single transaction
-    (try! (contract-call? .badge-metadata batch-set-badge-metadata badge-ids metadatas))
-    
-    ;; Update the next badge ID
-    (var-set next-badge-id current-badge-id)
-
-    ;; Emit batch mint event
-    (print {
-      event: "batch-badges-minted",
-      batch-id: batch-id,
-      issuer: tx-sender,
-      recipients: recipients,
-      template-ids: template-ids,
-      badge-ids: badge-ids,
-      count: recipients-len,
-      block-height: block-height
-    })
-
-    (var-set batch-mint-counter (+ batch-id u1))
-
-    (ok results)
   )
 )
 
-;; Badge revocation
+;; Revoke badge
 (define-public (revoke-badge (badge-id uint) (community-id uint))
-  (let
-    (
-      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
-    )
-    (asserts! (or 
-      (is-eq tx-sender (get issuer metadata)) 
-      (is-eq tx-sender contract-owner)
-      (contract-call? .access-control can-revoke-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+      )
+      (asserts! (or 
+        (is-eq tx-sender (get issuer metadata)) 
+        (is-eq tx-sender contract-owner)
+        (contract-call? .access-control can-revoke-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
 
-    ;; Emit badge revoked event
-    (print {
-      event: "badge-revoked",
-      badge-id: badge-id,
-      issuer: (get issuer metadata),
-      revoked-by: tx-sender,
-      block-height: block-height
-    })
+      ;; Emit badge revoked event
+      (print {
+        event: "badge-revoked",
+        badge-id: badge-id,
+        issuer: (get issuer metadata),
+        revoked-by: tx-sender,
+        block-height: block-height
+      })
 
-    (contract-call? .badge-metadata set-badge-metadata
-      badge-id
-      (merge metadata { active: false })
+      (contract-call? .badge-metadata set-badge-metadata
+        badge-id
+        (merge metadata { active: false })
+      )
     )
   )
 )
 
 ;; Update badge metadata
-(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}) (community-id uint))
-  (let
-    (
-      (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint, expiration-height: uint}) (community-id uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+      )
+      (asserts! (or 
+        (is-eq tx-sender (get issuer current-metadata)) 
+        (is-eq tx-sender contract-owner)
+        (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
+
+      ;; Emit metadata updated event
+      (print {
+        event: "badge-metadata-updated",
+        badge-id: badge-id,
+        old-level: (get level current-metadata),
+        new-level: (get level new-metadata),
+        old-category: (get category current-metadata),
+        new-category: (get category new-metadata),
+        updated-by: tx-sender,
+        block-height: block-height
+      })
+
+      (contract-call? .badge-metadata set-badge-metadata
+        badge-id
+        (merge current-metadata (merge new-metadata { issuer: (get issuer current-metadata), active: (get active current-metadata) }))
+      )
     )
-    (asserts! (or 
-      (is-eq tx-sender (get issuer current-metadata)) 
-      (is-eq tx-sender contract-owner)
-      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
+  )
+)
 
-    ;; Emit metadata updated event
-    (print {
-      event: "badge-metadata-updated",
-      badge-id: badge-id,
-      old-level: (get level current-metadata),
-      new-level: (get level new-metadata),
-      old-category: (get category current-metadata),
-      new-category: (get category new-metadata),
-      updated-by: tx-sender,
-      block-height: block-height
-    })
+;; Renew badge
+(define-public (renew-badge (badge-id uint) (community-id uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
+        (template (unwrap! (contract-call? .badge-metadata get-badge-template (get template-id metadata)) ERR-TEMPLATE-NOT-FOUND))
+        (expiration-duration (get expiration-duration template))
+      )
+      (asserts! (or 
+        (is-eq tx-sender (get issuer metadata)) 
+        (is-eq tx-sender contract-owner)
+        (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
 
-    (contract-call? .badge-metadata set-badge-metadata
-      badge-id
-      (merge current-metadata new-metadata)
+      ;; Can only renew badges that have an expiration duration
+      (asserts! (> expiration-duration u0) ERR-INVALID-TEMPLATE)
+
+      (let
+        (
+          (new-expiration-height (+ block-height expiration-duration))
+          (new-metadata (merge metadata { expiration-height: new-expiration-height, timestamp: block-height, active: true }))
+        )
+        
+        ;; Update metadata
+        (try! (contract-call? .badge-metadata set-badge-metadata badge-id new-metadata))
+
+        ;; Emit badge renewed event
+        (print {
+          event: "badge-renewed",
+          badge-id: badge-id,
+          new-expiration-height: new-expiration-height,
+          renewed-by: tx-sender,
+          block-height: block-height
+        })
+
+        (ok true)
+      )
     )
   )
 )

@@ -7,6 +7,7 @@
 ;; - u401: ERR-INVALID-ROLE - Role is invalid
 ;; - u403: ERR-ACCOUNT-SUSPENDED - Account is suspended
 ;; - u405: ERR-NOT-PLATFORM-ADMIN - Not a platform administrator
+;; - u110: ERR-PAUSED - Contract is currently paused
 
 ;; Import error codes from centralized error-codes contract
 (define-constant ERR-OWNER-ONLY (err u100))
@@ -14,6 +15,7 @@
 (define-constant ERR-INVALID-ROLE (err u401))
 (define-constant ERR-ACCOUNT-SUSPENDED (err u403))
 (define-constant ERR-NOT-PLATFORM-ADMIN (err u405))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -24,6 +26,9 @@
 (define-constant ROLE-COMMUNITY-ISSUER "community-issuer")
 (define-constant ROLE-MODERATOR "moderator")
 (define-constant ROLE-MEMBER "member")
+
+;; Pausable state
+(define-data-var contract-paused bool false)
 
 ;; Global permissions
 (define-map global-permissions
@@ -304,4 +309,24 @@
       (merge current-perms { suspended: false })
     ))
   )
+)
+
+;; Pausable management
+(define-public (set-paused (paused bool))
+  (begin
+    (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
+    
+    (print {
+      event: "contract-pause-status-changed",
+      paused: paused,
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (var-set contract-paused paused))
+  )
+)
+
+(define-read-only (is-paused)
+  (var-get contract-paused)
 )

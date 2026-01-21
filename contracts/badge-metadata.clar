@@ -18,6 +18,7 @@
 (define-constant ERR-BATCH-EMPTY (err u701))
 (define-constant ERR-BATCH-MISMATCHED-LENGTHS (err u702))
 (define-constant ERR-INVALID-BATCH-INDEX (err u705))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -26,9 +27,11 @@
 (define-map badge-metadata 
   { id: uint }
   { 
+    template-id: uint,
     level: uint, 
     category: uint, 
     timestamp: uint,
+    expiration-height: uint,
     issuer: principal,
     active: bool
   }
@@ -42,6 +45,7 @@
     description: (string-ascii 256),
     category: uint,
     default-level: uint,
+    expiration-duration: uint,
     creator: principal
   }
 )
@@ -68,25 +72,53 @@
   (default-to { badge-ids: (list) } (map-get? user-badges { owner: user }))
 )
 
+(define-read-only (is-badge-expired (badge-id uint))
+  (let
+    (
+      (metadata (unwrap! (get-badge-metadata badge-id) true))
+      (expiration-height (get expiration-height metadata))
+    )
+    (if (is-eq expiration-height u0)
+      false
+      (>= block-height expiration-height)
+    )
+  )
+)
+
+(define-read-only (is-badge-valid (badge-id uint))
+  (let
+    (
+      (metadata (unwrap! (get-badge-metadata badge-id) false))
+    )
+    (and 
+      (get active metadata)
+      (not (is-badge-expired badge-id))
+    )
+  )
+)
+
 ;; Write functions
-(define-public (set-badge-metadata (badge-id uint) (metadata {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))
+(define-public (set-badge-metadata (badge-id uint) (metadata {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))
   (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
     (ok (map-set badge-metadata { id: badge-id } metadata))
   )
 )
 
 ;; Batch update badge metadata
-(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))) 
-  (let (
-      (badge-ids-len (len badge-ids))
-      (metadatas-len (len metadatas))
-    )
-    ;; Input validation
-    (asserts! (is-eq badge-ids-len metadatas-len) ERR-BATCH-MISMATCHED-LENGTHS)
-    (asserts! (<= badge-ids-len u50) ERR-BATCH-TOO-LARGE)
-    (asserts! (> badge-ids-len u0) ERR-BATCH-EMPTY)
-    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))) 
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let (
+        (badge-ids-len (len badge-ids))
+        (metadatas-len (len metadatas))
+      )
+      ;; Input validation
+      (asserts! (is-eq badge-ids-len metadatas-len) ERR-BATCH-MISMATCHED-LENGTHS)
+      (asserts! (<= badge-ids-len u50) ERR-BATCH-TOO-LARGE)
+      (asserts! (> badge-ids-len u0) ERR-BATCH-EMPTY)
+      (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
 
     ;; Process each metadata update
     (let ((i u0))
@@ -102,14 +134,17 @@
     )
     
     (ok true)
+    )
   )
 )
 
-(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
-  (let
-    (
-      (template-id (var-get next-template-id))
-    )
+(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (expiration-duration uint))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (template-id (var-get next-template-id))
+      )
     (map-set badge-templates 
       { template-id: template-id }
       {
@@ -117,10 +152,12 @@
         description: description,
         category: category,
         default-level: default-level,
+        expiration-duration: expiration-duration,
         creator: tx-sender
       }
     )
     (var-set next-template-id (+ template-id u1))
     (ok template-id)
+    )
   )
 )
