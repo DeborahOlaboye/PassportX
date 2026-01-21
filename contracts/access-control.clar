@@ -143,6 +143,22 @@
   )
 )
 
+(define-public (revoke-community-issuer-role (community-id uint) (user principal))
+  (begin
+    (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
+    
+    (print {
+      event: "community-issuer-revoked",
+      community-id: community-id,
+      user: user,
+      revoked-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-delete community-permissions { community-id: community-id, user: user }))
+  )
+)
+
 ;; Permission check functions
 (define-read-only (is-platform-admin (user principal))
   (default-to false (get is-platform-admin (map-get? global-permissions { user: user })))
