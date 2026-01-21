@@ -45,3 +45,8 @@ A critical part of the system is monitoring the `access-control` contract for pe
 5. Processing
 6. Execution
 7. Confirmation
+
+## Reliability and Resilience
+
+### Reorg Handling
+Chainhook provides information about block reorganizations.
