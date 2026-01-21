@@ -35,3 +35,13 @@ Orchestrates various sub-services like SubscriptionManager and PredicateManager.
 ## Access Control Monitoring
 
 A critical part of the system is monitoring the `access-control` contract for permissions.
+
+## Event Lifecycle
+
+1. Predicate Registration
+2. Event Arrival
+3. Validation
+4. Queueing
+5. Processing
+6. Execution
+7. Confirmation
