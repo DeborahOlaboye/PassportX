@@ -75,31 +75,32 @@
 
 ;; Badge template creation
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (community-id uint))
-  (let
-    (
-      (result (try! (contract-call? .badge-metadata create-badge-template name description category default-level)))
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (let
+      (
+        (result (try! (contract-call? .badge-metadata create-badge-template name description category default-level)))
+      )
+      (asserts! (or 
+        (is-authorized-issuer tx-sender)
+        (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
+
+      ;; Emit template created event
+      (print {
+        event: "template-created",
+        template-id: result,
+        name: name,
+        description: description,
+        category: category,
+        default-level: default-level,
+        creator: tx-sender,
+        block-height: block-height
+      })
+
+      (ok result)
     )
-    (asserts! (or 
-      (is-authorized-issuer tx-sender)
-      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
-
-    ;; Emit template created event
-    (print {
-      event: "template-created",
-      template-id: result,
-      name: name,
-      description: description,
-      category: category,
-      default-level: default-level,
-      creator: tx-sender,
-      block-height: block-height
-    })
-
-    (ok result)
   )
-
-)
 
 ;; Badge minting function
 (define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
