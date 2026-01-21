@@ -14,6 +14,7 @@
 (define-constant ERR-NOT-TOKEN-OWNER (err u101))
 (define-constant ERR-NOT-FOUND (err u102))
 (define-constant ERR-TRANSFER-DISABLED (err u103))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -71,3 +72,4 @@
     (ok token-id)
   )
 )
+
