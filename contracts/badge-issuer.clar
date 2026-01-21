@@ -32,12 +32,6 @@
 ;; Access control map
 (define-map authorized-issuers principal bool)
 
-;; Community badge issuers
-(define-map community-issuers 
-  { community-id: uint }
-  { issuer: principal, active: bool }
-)
-
 ;; Initialize contract owner as authorized issuer
 (map-set authorized-issuers contract-owner true)
 
@@ -79,12 +73,15 @@
 )
 
 ;; Badge template creation
-(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
+(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (community-id uint))
   (let
     (
       (result (try! (contract-call? .badge-metadata create-badge-template name description category default-level)))
     )
-    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-authorized-issuer tx-sender)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Emit template created event
     (print {
@@ -103,13 +100,16 @@
 )
 
 ;; Badge minting function
-(define-public (mint-badge (recipient principal) (template-id uint))
+(define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
   (let
     (
       (badge-id (var-get next-badge-id))
       (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
     )
-    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-authorized-issuer tx-sender)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Mint NFT
     (try! (contract-call? .passport-nft mint recipient))
@@ -147,7 +147,7 @@
 (define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
-(define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)))
+(define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)) (community-id uint))
   (let (
       (recipients-len (len recipients))
       (template-ids-len (len template-ids))
@@ -161,7 +161,10 @@
     (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
     (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
     (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
-    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-authorized-issuer tx-sender)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
     
     ;; Process each mint in the batch - Mint NFTs first
     (let ((i u0))
@@ -217,12 +220,16 @@
 )
 
 ;; Badge revocation
-(define-public (revoke-badge (badge-id uint))
+(define-public (revoke-badge (badge-id uint) (community-id uint))
   (let
     (
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
-    (asserts! (or (is-eq tx-sender (get issuer metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-eq tx-sender (get issuer metadata)) 
+      (is-eq tx-sender contract-owner)
+      (contract-call? .access-control can-revoke-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Emit badge revoked event
     (print {
@@ -241,12 +248,16 @@
 )
 
 ;; Update badge metadata
-(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}))
+(define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint}) (community-id uint))
   (let
     (
       (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
     )
-    (asserts! (or (is-eq tx-sender (get issuer current-metadata)) (is-eq tx-sender contract-owner)) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-eq tx-sender (get issuer current-metadata)) 
+      (is-eq tx-sender contract-owner)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
 
     ;; Emit metadata updated event
     (print {

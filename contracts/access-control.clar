@@ -21,6 +21,7 @@
 ;; Role definitions
 (define-constant ROLE-ADMIN "admin")
 (define-constant ROLE-ISSUER "issuer")
+(define-constant ROLE-COMMUNITY-ISSUER "community-issuer")
 (define-constant ROLE-MODERATOR "moderator")
 (define-constant ROLE-MEMBER "member")
 
@@ -116,9 +117,64 @@
   )
 )
 
+;; Community issuer role management
+(define-public (grant-community-issuer-role (community-id uint) (user principal))
+  (begin
+    (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
+    
+    (print {
+      event: "community-issuer-granted",
+      community-id: community-id,
+      user: user,
+      granted-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-set community-permissions
+      { community-id: community-id, user: user }
+      {
+        can-issue-badges: true,
+        can-manage-members: false,
+        can-create-templates: false,
+        can-revoke-badges: false,
+        role: ROLE-COMMUNITY-ISSUER
+      }
+    ))
+  )
+)
+
+(define-public (revoke-community-issuer-role (community-id uint) (user principal))
+  (begin
+    (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
+    
+    (print {
+      event: "community-issuer-revoked",
+      community-id: community-id,
+      user: user,
+      revoked-by: tx-sender,
+      block-height: block-height
+    })
+
+    (ok (map-delete community-permissions { community-id: community-id, user: user }))
+  )
+)
+
 ;; Permission check functions
 (define-read-only (is-platform-admin (user principal))
   (default-to false (get is-platform-admin (map-get? global-permissions { user: user })))
+)
+
+(define-read-only (is-community-issuer (community-id uint) (user principal))
+  (let
+    (
+      (perms (map-get? community-permissions { community-id: community-id, user: user }))
+    )
+    (and
+      (is-some perms)
+      (get can-issue-badges (unwrap-panic perms))
+      (is-eq (get role (unwrap-panic perms)) ROLE-COMMUNITY-ISSUER)
+    )
+  )
 )
 
 (define-read-only (can-create-communities (user principal))
