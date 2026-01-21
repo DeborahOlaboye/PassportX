@@ -10,6 +10,7 @@ Clarinet.test({
         const block = chain.mineBlock([
             Tx.contractCall('badge-issuer', 'mint-badge', [
                 types.principal(user1.address),
+                types.uint(1),
                 types.uint(1)
             ], deployer.address)
         ]);
