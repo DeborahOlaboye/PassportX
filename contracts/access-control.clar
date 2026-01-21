@@ -21,6 +21,7 @@
 ;; Role definitions
 (define-constant ROLE-ADMIN "admin")
 (define-constant ROLE-ISSUER "issuer")
+(define-constant ROLE-COMMUNITY-ISSUER "community-issuer")
 (define-constant ROLE-MODERATOR "moderator")
 (define-constant ROLE-MEMBER "member")
 
@@ -119,6 +120,19 @@
 ;; Permission check functions
 (define-read-only (is-platform-admin (user principal))
   (default-to false (get is-platform-admin (map-get? global-permissions { user: user })))
+)
+
+(define-read-only (is-community-issuer (community-id uint) (user principal))
+  (let
+    (
+      (perms (map-get? community-permissions { community-id: community-id, user: user }))
+    )
+    (and
+      (is-some perms)
+      (get can-issue-badges (unwrap-panic perms))
+      (is-eq (get role (unwrap-panic perms)) ROLE-COMMUNITY-ISSUER)
+    )
+  )
 )
 
 (define-read-only (can-create-communities (user principal))
