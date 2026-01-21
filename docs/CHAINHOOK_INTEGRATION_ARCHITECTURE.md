@@ -31,3 +31,7 @@ A centralized service in the backend that manages the lifecycle of event recepti
 
 ### 3. ChainhookManager
 Orchestrates various sub-services like SubscriptionManager and PredicateManager.
+
+## Access Control Monitoring
+
+A critical part of the system is monitoring the `access-control` contract for permissions.
