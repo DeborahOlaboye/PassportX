@@ -150,7 +150,7 @@
 (define-data-var batch-mint-counter uint u0)
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
-(define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)))
+(define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)) (community-id uint))
   (let (
       (recipients-len (len recipients))
       (template-ids-len (len template-ids))
@@ -164,7 +164,10 @@
     (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
     (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
     (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
-    (asserts! (is-authorized-issuer tx-sender) ERR-UNAUTHORIZED)
+    (asserts! (or 
+      (is-authorized-issuer tx-sender)
+      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+    ) ERR-UNAUTHORIZED)
     
     ;; Process each mint in the batch - Mint NFTs first
     (let ((i u0))
