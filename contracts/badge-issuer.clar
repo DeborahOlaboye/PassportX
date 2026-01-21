@@ -155,76 +155,77 @@
 (define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)) (community-id uint))
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+  (begin
+    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (let (
         (recipients-len (len recipients))
-  (let (
-      (recipients-len (len recipients))
-      (template-ids-len (len template-ids))
-      (results (list))
-      (badge-ids (list))
-      (metadatas (list))
-      (current-badge-id (var-get next-badge-id))
-      (batch-id (var-get batch-mint-counter))
-    )
-    ;; Input validation
-    (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
-    (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
-    (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
-    (asserts! (or 
-      (is-authorized-issuer tx-sender)
-      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
-
-    ;; Process each mint in the batch - Mint NFTs first
-    (let ((i u0))
-      (while (< i recipients-len)
-        (let (
-            (recipient (unwrap! (element-at recipients i) ERR-INVALID-RECIPIENT))
-            (template-id (unwrap! (element-at template-ids i) ERR-INVALID-TEMPLATE))
-            (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
-          )
-          ;; Mint NFT
-          (try! (contract-call? .passport-nft mint recipient))
-
-          ;; Prepare metadata for batch update
-          (set! badge-ids (append badge-ids current-badge-id))
-          (set! metadatas (append metadatas {
-            level: (get default-level template),
-            category: (get category template),
-            timestamp: block-height,
-            issuer: tx-sender,
-            active: true
-          }))
-
-          ;; Add success result
-          (set! results (append results (ok current-badge-id)))
-          (set! current-badge-id (+ current-badge-id u1))
-        )
-        (set! i (+ i u1))
+        (template-ids-len (len template-ids))
+        (results (list))
+        (badge-ids (list))
+        (metadatas (list))
+        (current-badge-id (var-get next-badge-id))
+        (batch-id (var-get batch-mint-counter))
       )
+      ;; Input validation
+      (asserts! (is-eq recipients-len template-ids-len) ERR-BATCH-MISMATCHED-LENGTHS)
+      (asserts! (<= recipients-len u50) ERR-BATCH-TOO-LARGE)
+      (asserts! (> recipients-len u0) ERR-BATCH-EMPTY)
+      (asserts! (or 
+        (is-authorized-issuer tx-sender)
+        (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+      ) ERR-UNAUTHORIZED)
+
+      ;; Process each mint in the batch - Mint NFTs first
+      (let ((i u0))
+        (while (< i recipients-len)
+          (let (
+              (recipient (unwrap! (element-at recipients i) ERR-INVALID-RECIPIENT))
+              (template-id (unwrap! (element-at template-ids i) ERR-INVALID-TEMPLATE))
+              (template (unwrap! (contract-call? .badge-metadata get-badge-template template-id) ERR-TEMPLATE-NOT-FOUND))
+            )
+            ;; Mint NFT
+            (try! (contract-call? .passport-nft mint recipient))
+
+            ;; Prepare metadata for batch update
+            (set! badge-ids (append badge-ids current-badge-id))
+            (set! metadatas (append metadatas {
+              level: (get default-level template),
+              category: (get category template),
+              timestamp: block-height,
+              issuer: tx-sender,
+              active: true
+            }))
+
+            ;; Add success result
+            (set! results (append results (ok current-badge-id)))
+            (set! current-badge-id (+ current-badge-id u1))
+          )
+          (set! i (+ i u1))
+        )
+      )
+
+      ;; Batch update all metadata in a single transaction
+      (try! (contract-call? .badge-metadata batch-set-badge-metadata badge-ids metadatas))
+
+      ;; Update the next badge ID
+      (var-set next-badge-id current-badge-id)
+
+      ;; Emit batch mint event
+      (print {
+        event: "batch-badges-minted",
+        batch-id: batch-id,
+        issuer: tx-sender,
+        recipients: recipients,
+        template-ids: template-ids,
+        badge-ids: badge-ids,
+        count: recipients-len,
+        block-height: block-height
+      })
+
+      (var-set batch-mint-counter (+ batch-id u1))
+
+      (ok results)
     )
-
-    ;; Batch update all metadata in a single transaction
-    (try! (contract-call? .badge-metadata batch-set-badge-metadata badge-ids metadatas))
-
-    ;; Update the next badge ID
-    (var-set next-badge-id current-badge-id)
-
-    ;; Emit batch mint event
-    (print {
-      event: "batch-badges-minted",
-      batch-id: batch-id,
-      issuer: tx-sender,
-      recipients: recipients,
-      template-ids: template-ids,
-      badge-ids: badge-ids,
-      count: recipients-len,
-      block-height: block-height
-    })
-
-    (var-set batch-mint-counter (+ batch-id u1))
-
-    (ok results)
   )
 
   (begin
