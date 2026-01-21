@@ -6,8 +6,8 @@
 ;; Helper function to create test badge templates
 (define-private (create-test-templates (issuer principal))
   (begin
-    (contract-call? .badge-issuer create-badge-template "Template 1" "Test Template 1" u1 u1)
-    (contract-call? .badge-issuer create-badge-template "Template 2" "Test Template 2" u2 u1)
+    (contract-call? .badge-issuer create-badge-template "Template 1" "Test Template 1" u1 u1 u1)
+    (contract-call? .badge-issuer create-badge-template "Template 2" "Test Template 2" u2 u1 u1)
     (ok true)
   )
 )
@@ -24,7 +24,7 @@
     (try! (contract-call? .badge-issuer authorize-issuer caller))
     
     ;; Execute batch mint
-    (let ((result (try! (contract-call? .badge-issuer batch-mint-badges recipients template-ids))))
+    (let ((result (try! (contract-call? .badge-issuer batch-mint-badges recipients template-ids u1))))
       (ok result)
     )
   )
@@ -39,7 +39,7 @@
     (try! (create-test-templates caller))
     (try! (contract-call? .badge-issuer authorize-issuer caller))
     
-    (contract-call? .badge-issuer batch-mint-badges recipients template-ids)
+    (contract-call? .badge-issuer batch-mint-badges recipients template-ids u1)
   )
 )
 
@@ -52,7 +52,7 @@
     (try! (create-test-templates caller))
     
     ;; Don't authorize caller as issuer
-    (contract-call? .badge-issuer batch-mint-badges recipients template-ids)
+    (contract-call? .badge-issuer batch-mint-badges recipients template-ids u1)
   )
 )
 
@@ -65,7 +65,7 @@
     (try! (create-test-templates caller))
     (try! (contract-call? .badge-issuer authorize-issuer caller))
     
-    (contract-call? .badge-issuer batch-mint-badges recipients template-ids)
+    (contract-call? .badge-issuer batch-mint-badges recipients template-ids u1)
   )
 )
 
@@ -90,7 +90,7 @@
     (try! (create-test-templates caller))
     (try! (contract-call? .badge-issuer authorize-issuer caller))
     
-    (contract-call? .badge-issuer batch-mint-badges recipients template-ids)
+    (contract-call? .badge-issuer batch-mint-badges recipients template-ids u1)
   )
 )
 
@@ -104,7 +104,7 @@
     (try! (contract-call? .badge-issuer authorize-issuer caller))
     
     ;; Execute batch mint and capture events
-    (let ((result (try! (contract-call? .badge-issuer batch-mint-badges recipients template-ids))))
+    (let ((result (try! (contract-call? .badge-issuer batch-mint-badges recipients template-ids u1))))
       (ok result)
     )
     
