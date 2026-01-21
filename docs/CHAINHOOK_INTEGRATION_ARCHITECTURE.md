@@ -28,3 +28,6 @@ The external service provided by Hiro that monitors the Stacks blockchain for sp
 
 ### 2. ChainhookEventObserver (`src/chainhook/`)
 A centralized service in the backend that manages the lifecycle of event reception.
+
+### 3. ChainhookManager
+Orchestrates various sub-services like SubscriptionManager and PredicateManager.
