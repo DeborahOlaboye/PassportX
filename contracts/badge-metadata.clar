@@ -30,6 +30,7 @@
     level: uint, 
     category: uint, 
     timestamp: uint,
+    expiration-height: uint,
     issuer: principal,
     active: bool
   }
@@ -43,6 +44,7 @@
     description: (string-ascii 256),
     category: uint,
     default-level: uint,
+    expiration-duration: uint,
     creator: principal
   }
 )
@@ -70,7 +72,7 @@
 )
 
 ;; Write functions
-(define-public (set-badge-metadata (badge-id uint) (metadata {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))
+(define-public (set-badge-metadata (badge-id uint) (metadata {level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
@@ -79,7 +81,7 @@
 )
 
 ;; Batch update badge metadata
-(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {level: uint, category: uint, timestamp: uint, issuer: principal, active: bool}))) 
+(define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))) 
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (let (
@@ -110,7 +112,7 @@
   )
 )
 
-(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint))
+(define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (expiration-duration uint))
   (begin
     (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
     (let
@@ -124,6 +126,7 @@
         description: description,
         category: category,
         default-level: default-level,
+        expiration-duration: expiration-duration,
         creator: tx-sender
       }
     )
