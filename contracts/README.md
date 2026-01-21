@@ -88,9 +88,11 @@ All events follow a consistent structure:
 - `community-deactivated`: Community deactivated
 - `community-ownership-transferred`: Ownership changes
 
-#### access-control.clar (4 events)
+#### access-control.clar (6 events)
 - `global-permissions-updated`: User's global permissions changed
 - `community-permissions-updated`: Community permissions changed
+- `community-issuer-granted`: Community-specific issuer role granted
+- `community-issuer-revoked`: Community-specific issuer role revoked
 - `user-suspended`: User account suspended
 - `user-unsuspended`: User account restored
 
