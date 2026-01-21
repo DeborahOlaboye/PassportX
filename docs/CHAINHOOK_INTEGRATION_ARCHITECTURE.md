@@ -50,3 +50,7 @@ A critical part of the system is monitoring the `access-control` contract for pe
 
 ### Reorg Handling
 Chainhook provides information about block reorganizations.
+
+## Downstream Event Handlers
+
+Specialized handlers like AccessControlEventHandler update the application state.
