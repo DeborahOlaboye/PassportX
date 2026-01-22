@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppConfig, UserSession, showConnect } from '@stacks/connect';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
+import { apiClient, APIClientError } from '@/lib/api-client';
 
 interface User {
   stacksAddress: string;
@@ -51,25 +52,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const stacksAddress = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
 
           // Fetch user data from backend
-          const response = await fetch(`/api/users/${stacksAddress}`);
-          if (response.ok) {
-            const userData = await response.json();
+          try {
+            const userData = await apiClient.get<any>(`/api/users/${stacksAddress}`);
             setUser({
               stacksAddress,
-              profile: userData.data?.profile,
-              isPublic: userData.data?.isPublic ?? true,
-              hasPassport: !!userData.data?.passportId,
-              joinDate: userData.data?.joinDate ? new Date(userData.data.joinDate) : undefined,
+              profile: userData.profile,
+              isPublic: userData.isPublic ?? true,
+              hasPassport: !!userData.passportId,
+              joinDate: userData.joinDate ? new Date(userData.joinDate) : undefined,
             });
             setIsAuthenticated(true);
-          } else {
-            // User exists in wallet but not in backend - needs registration
-            setUser({
-              stacksAddress,
-              isPublic: true,
-              hasPassport: false,
-            });
-            setIsAuthenticated(true);
+          } catch (error) {
+            if (error instanceof APIClientError && error.status === 404) {
+              // User exists in wallet but not in backend - needs registration
+              setUser({
+                stacksAddress,
+                isPublic: true,
+                hasPassport: false,
+              });
+              setIsAuthenticated(true);
+            } else {
+              console.error('Auth data fetch failed:', error);
+            }
           }
         }
       } catch (error) {
@@ -97,24 +101,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const stacksAddress = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
 
           // Check if user exists in backend
-          const response = await fetch(`/api/users/${stacksAddress}`);
-
-          if (response.ok) {
-            const userData = await response.json();
+          try {
+            const userData = await apiClient.get<any>(`/api/users/${stacksAddress}`);
             setUser({
               stacksAddress,
-              profile: userData.data?.profile,
-              isPublic: userData.data?.isPublic ?? true,
-              hasPassport: !!userData.data?.passportId,
-              joinDate: userData.data?.joinDate ? new Date(userData.data.joinDate) : undefined,
+              profile: userData.profile,
+              isPublic: userData.isPublic ?? true,
+              hasPassport: !!userData.passportId,
+              joinDate: userData.joinDate ? new Date(userData.joinDate) : undefined,
             });
-          } else {
-            // New user - trigger registration
-            setUser({
-              stacksAddress,
-              isPublic: true,
-              hasPassport: false,
-            });
+          } catch (error) {
+            if (error instanceof APIClientError && error.status === 404) {
+              // New user - trigger registration
+              setUser({
+                stacksAddress,
+                isPublic: true,
+                hasPassport: false,
+              });
+            } else {
+              console.error('Login backend check failed:', error);
+            }
           }
 
           setIsAuthenticated(true);
@@ -147,26 +153,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (!user) throw new Error('No user authenticated');
 
     try {
-      const response = await fetch(`/api/users/${user.stacksAddress}/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
+      await apiClient.put(`/api/users/${user.stacksAddress}/profile`, profileData);
+      
+      setUser({
+        ...user,
+        profile: {
+          ...user.profile,
+          ...profileData,
         },
-        body: JSON.stringify(profileData),
       });
-
-      if (response.ok) {
-        const updatedData = await response.json();
-        setUser({
-          ...user,
-          profile: {
-            ...user.profile,
-            ...profileData,
-          },
-        });
-      } else {
-        throw new Error('Failed to update profile');
-      }
     } catch (error) {
       console.error('Profile update failed:', error);
       throw error;
@@ -178,25 +173,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (user.hasPassport) return;
 
     try {
-      const response = await fetch('/api/passport/initialize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          stacksAddress: user.stacksAddress,
-        }),
+      await apiClient.post('/api/passport/initialize', {
+        stacksAddress: user.stacksAddress,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser({
-          ...user,
-          hasPassport: true,
-        });
-      } else {
-        throw new Error('Failed to initialize passport');
-      }
+      setUser({
+        ...user,
+        hasPassport: true,
+      });
     } catch (error) {
       console.error('Passport initialization failed:', error);
       throw error;

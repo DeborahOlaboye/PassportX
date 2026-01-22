@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-responses'
 
 interface CommunityCreationRequest {
   txId: string
@@ -28,17 +29,11 @@ export async function POST(request: NextRequest) {
     const body: CommunityCreationRequest = await request.json()
 
     if (!body.txId || !body.name || !body.description || !body.owner) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return sendError('Missing required fields', ERROR_CODES.INVALID_INPUT, 400)
     }
 
     if (body.name.length > 100 || body.description.length > 2000) {
-      return NextResponse.json(
-        { error: 'Field length exceeds maximum' },
-        { status: 400 }
-      )
+      return sendError('Field length exceeds maximum', ERROR_CODES.INVALID_INPUT, 400)
     }
 
     const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001'
@@ -72,24 +67,22 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
 
-    return NextResponse.json(
+    return sendSuccess(
       {
-        success: true,
-        message: 'Community created successfully',
         communityId: data.community?._id,
         transactionId: body.txId,
         data
       },
-      { status: 201 }
+      201,
+      'Community created successfully'
     )
   } catch (error) {
     console.error('Community creation error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to create community',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+    return sendError(
+      'Failed to create community',
+      ERROR_CODES.SERVER_ERROR,
+      500,
+      error instanceof Error ? error.message : undefined
     )
   }
 }
@@ -130,12 +123,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Communities fetch error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch communities',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+    return sendError(
+      'Failed to fetch communities',
+      ERROR_CODES.SERVER_ERROR,
+      500,
+      error instanceof Error ? error.message : undefined
     )
   }
 }
