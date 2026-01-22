@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import BadgeGrid from '@/components/BadgeGrid'
 import { Share2, Download, Eye, EyeOff } from 'lucide-react'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import { BadgeErrorFallback } from '@/components/FallbackUI'
 
 // Mock data - in real app, this would come from blockchain
 const mockBadges = [
@@ -39,6 +41,14 @@ const mockBadges = [
 ]
 
 export default function PassportPage() {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+      <PassportPageInner />
+    </ErrorBoundary>
+  )
+}
+
+function PassportPageInner() {
   const [badges, setBadges] = useState(mockBadges)
   const [isPublic, setIsPublic] = useState(true)
   const [shareUrl, setShareUrl] = useState('')
