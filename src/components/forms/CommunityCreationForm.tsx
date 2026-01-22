@@ -1,5 +1,6 @@
 'use client'
-
+import ErrorBoundary from '../ErrorBoundary'
+import { CommunityErrorFallback } from '../FallbackUI'
 import { useState } from 'react'
 import { Users, Palette, Settings, Wallet } from 'lucide-react'
 
@@ -35,7 +36,15 @@ const colorPresets = [
   { name: 'Indigo', color: '#6366f1' }
 ]
 
-export default function CommunityCreationForm({ 
+export default function CommunityCreationForm(props: CommunityCreationFormProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <CommunityErrorFallback error={error} reset={reset} />}>
+      <CommunityCreationFormInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function CommunityCreationFormInner({ 
   onSubmit, 
   isLoading = false,
   error = ''

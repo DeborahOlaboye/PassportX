@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Search, X } from 'lucide-react'
+import ErrorBoundary from '../ErrorBoundary'
+import FallbackUI from '../FallbackUI'
 
 interface SearchSuggestion {
   id: string
@@ -17,7 +19,15 @@ interface SearchBarProps {
   className?: string
 }
 
-export default function SearchBar({
+export default function SearchBar(props: SearchBarProps) {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Search bar error" />}>
+      <SearchBarInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function SearchBarInner({
   onSearch,
   placeholder = 'Search badges by name, description, or issuer...',
   showSuggestions = true,
@@ -202,3 +212,4 @@ export default function SearchBar({
     </div>
   )
 }
+

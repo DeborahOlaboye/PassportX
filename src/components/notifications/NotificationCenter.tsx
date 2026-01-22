@@ -1,11 +1,20 @@
 'use client'
-
+import ErrorBoundary from '../ErrorBoundary'
+import FallbackUI from '../FallbackUI'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { Bell, Check, CheckCheck, Trash2, X, RefreshCw, Wifi, WifiOff, Gift, Users, Megaphone, Award } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
 
 export default function NotificationCenter() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Notification center error" />}>
+      <NotificationCenterInner />
+    </ErrorBoundary>
+  )
+}
+
+function NotificationCenterInner() {
   const {
     notifications,
     unreadCount,

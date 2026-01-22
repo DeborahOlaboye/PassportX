@@ -1,5 +1,6 @@
 'use client'
-
+import ErrorBoundary from '../ErrorBoundary'
+import { BadgeErrorFallback } from '../FallbackUI'
 import { useState } from 'react'
 import { Award, Upload, Palette } from 'lucide-react'
 import {
@@ -31,7 +32,15 @@ const iconOptions = [
   '🎨', '💻', '📚', '🎓', '🛠️', '🎪', '🎭', '🎨'
 ]
 
-export default function BadgeForm({ onSubmit, communities }: BadgeFormProps) {
+export default function BadgeForm(props: BadgeFormProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+      <BadgeFormInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
   const [formData, setFormData] = useState<BadgeFormData>({
     name: '',
     description: '',

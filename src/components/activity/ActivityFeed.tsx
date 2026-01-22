@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
+import ErrorBoundary from '../ErrorBoundary'
+import FallbackUI from '../FallbackUI'
 import {
   Card,
   CardContent,
@@ -59,7 +61,15 @@ const eventTypeLabels: Record<string, string> = {
   passport_created: 'Passport Created'
 }
 
-export function ActivityFeed({ userId, initialPageSize = 20 }: ActivityFeedProps) {
+export function ActivityFeed(props: ActivityFeedProps) {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Activity feed error" />}>
+      <ActivityFeedInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function ActivityFeedInner({ userId, initialPageSize = 20 }: ActivityFeedProps) {
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)

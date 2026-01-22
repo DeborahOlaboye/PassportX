@@ -3,6 +3,8 @@ import { WalletSessionProvider } from '../context/WalletSessionContext';
 import { useWalletSession } from '../hooks/useWalletSession';
 import { generateKeyFromPassword, encrypt } from '../utils/crypto';
 import ErrorToast from './ErrorToast';
+import ErrorBoundary from './ErrorBoundary';
+import { WalletErrorFallback } from './FallbackUI';
 
 const DemoInner: React.FC = () => {
   const { session, save, disconnect, isConnected } = useWalletSession();
@@ -45,7 +47,9 @@ const DemoInner: React.FC = () => {
 
 export const WalletConnectDemo: React.FC = () => (
   <WalletSessionProvider>
-    <DemoInner />
+    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+      <DemoInner />
+    </ErrorBoundary>
   </WalletSessionProvider>
 );
 

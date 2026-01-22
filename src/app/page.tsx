@@ -1,9 +1,12 @@
 import Link from 'next/link'
 import { Award, Users, Share2 } from 'lucide-react'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import FallbackUI from '@/components/FallbackUI'
 
 export default function HomePage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <ErrorBoundary fallback={<FallbackUI message="Failed to load home page" />}>
+      <div className="container mx-auto px-4 py-8">
       <header className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           🌍 PassportX
@@ -49,5 +52,6 @@ export default function HomePage() {
         </Link>
       </div>
     </div>
+    </ErrorBoundary>
   )
 }
