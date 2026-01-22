@@ -20,6 +20,8 @@ import {
   TimeRange 
 } from '@/lib/api/analytics';
 import { useAnalyticsUpdates } from '@/hooks/useAnalyticsUpdates';
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 import { 
   BadgeDistributionChart, 
   EngagementMetrics, 
@@ -30,6 +32,14 @@ import {
 } from './components';
 
 export function AnalyticsDashboard() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Analytics dashboard error" />}>
+      <AnalyticsDashboardInner />
+    </ErrorBoundary>
+  );
+}
+
+function AnalyticsDashboardInner() {
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
     to: new Date(),
@@ -289,3 +299,4 @@ export function AnalyticsDashboard() {
     </div>
   );
 }
+
