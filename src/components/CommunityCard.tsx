@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Users, Award, Settings } from 'lucide-react'
+import ErrorBoundary from './ErrorBoundary'
+import { CommunityErrorFallback } from './FallbackUI'
 
 interface Community {
   id: string
@@ -17,7 +19,15 @@ interface CommunityCardProps {
   community: Community
 }
 
-export default function CommunityCard({ community }: CommunityCardProps) {
+export default function CommunityCard(props: CommunityCardProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <CommunityErrorFallback error={error} reset={reset} />}>
+      <CommunityCardInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function CommunityCardInner({ community }: CommunityCardProps) {
   return (
     <div className="card hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
