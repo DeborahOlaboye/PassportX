@@ -94,13 +94,25 @@ export const validateBadgeIssuance = (req: Request, res: Response, next: NextFun
 }
 
 export const validatePagination = (req: Request, res: Response, next: NextFunction) => {
-  const { page, limit } = req.query
+  let { page, limit } = req.query
 
-  if (page && (!Number.isInteger(Number(page)) || Number(page) < 1)) {
+  // Set default values
+  if (!page) {
+    req.query.page = '1'
+  }
+  if (!limit) {
+    req.query.limit = '20'
+  }
+
+  // Re-fetch to get defaulted values if they were missing
+  const pageNum = Number(req.query.page)
+  const limitNum = Number(req.query.limit)
+
+  if (isNaN(pageNum) || !Number.isInteger(pageNum) || pageNum < 1) {
     return next(createError('Page must be a positive integer', 400))
   }
 
-  if (limit && (!Number.isInteger(Number(limit)) || Number(limit) < 1 || Number(limit) > 100)) {
+  if (isNaN(limitNum) || !Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100) {
     return next(createError('Limit must be between 1 and 100', 400))
   }
 
