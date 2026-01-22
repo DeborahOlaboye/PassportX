@@ -3,13 +3,23 @@
 import { useEffect, useState } from 'react';
 import { SignedTransaction } from '@/types/transaction-signing';
 import { TransactionBroadcaster } from '@/utils/transactionBroadcast';
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 
 interface TransactionStatusTrackerProps {
   transaction: SignedTransaction;
   onStatusUpdate?: (status: SignedTransaction['status']) => void;
 }
 
-export function TransactionStatusTracker({ transaction, onStatusUpdate }: TransactionStatusTrackerProps) {
+export function TransactionStatusTracker(props: TransactionStatusTrackerProps) {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Transaction tracker error" />}>
+      <TransactionStatusTrackerInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: TransactionStatusTrackerProps) {
   const [currentStatus, setCurrentStatus] = useState<SignedTransaction['status']>(transaction.status);
   const [confirmations, setConfirmations] = useState(0);
   const [isPolling, setIsPolling] = useState(false);
@@ -146,6 +156,7 @@ export function TransactionStatusTracker({ transaction, onStatusUpdate }: Transa
     </div>
   );
 }
+
 
 interface TransactionStatusListProps {
   transactions: SignedTransaction[];
