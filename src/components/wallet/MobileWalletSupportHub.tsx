@@ -1,5 +1,6 @@
 'use client';
-
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 import React, { useState } from 'react';
 import {
   HelpCircle,
@@ -106,6 +107,14 @@ const CATEGORY_CONFIG = {
 };
 
 export default function MobileWalletSupportHub() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Support hub error" />}>
+      <MobileWalletSupportHubInner />
+    </ErrorBoundary>
+  );
+}
+
+function MobileWalletSupportHubInner() {
   const [activeSection, setActiveSection] = useState<SupportSection | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<'all' | SupportOption['category']>('all');
 

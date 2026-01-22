@@ -1,5 +1,6 @@
 'use client'
-
+import ErrorBoundary from '@/components/ErrorBoundary'
+import { BadgeErrorFallback } from '@/components/FallbackUI'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 
@@ -16,6 +17,14 @@ interface VerificationData {
 }
 
 export default function VerifyBadgePage() {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+      <VerifyBadgeInner />
+    </ErrorBoundary>
+  )
+}
+
+function VerifyBadgeInner() {
   const params = useParams()
   const badgeId = params?.badgeId as string
 

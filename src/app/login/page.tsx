@@ -1,10 +1,19 @@
 'use client';
-
+import ErrorBoundary from '@/components/ErrorBoundary';
+import FallbackUI from '@/components/FallbackUI';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Login page error" />}>
+      <LoginPageInner />
+    </ErrorBoundary>
+  );
+}
+
+function LoginPageInner() {
   const { user, isAuthenticated, isLoading, connectWallet } = useAuth();
   const router = useRouter();
 

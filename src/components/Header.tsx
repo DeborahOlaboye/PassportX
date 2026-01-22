@@ -45,7 +45,9 @@ export default function Header() {
                 <WalletConnect />
               </ErrorBoundary>
             </div>
-            <MobileMenu />
+            <ErrorBoundary fallback={<div className="p-2 text-red-500">Menu Error</div>}>
+              <MobileMenu />
+            </ErrorBoundary>
           </div>
         </div>
         
