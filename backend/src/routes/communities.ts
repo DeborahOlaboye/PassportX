@@ -24,7 +24,7 @@ router.delete('/:id/admins/:adminAddress', authenticateToken, communityControlle
 
 // Analytics and leaderboard routes
 router.get('/:id/analytics', communityController.getAnalytics)
-router.get('/:id/leaderboard', communityController.getLeaderboard)
+router.get('/:id/leaderboard', validatePagination, communityController.getLeaderboard)
 router.get('/:id/members', communityController.getMembers)
 
 export default router
