@@ -155,11 +155,11 @@ router.get('/suggestions', async (req, res) => {
  * GET /api/badges/issuer/:address
  * Search badges by issuer
  */
-router.get('/issuer/:address', async (req, res) => {
+router.get('/issuer/:address', validatePagination, async (req, res) => {
   try {
     const { address } = req.params
-    const page = req.query.page ? Number(req.query.page) : 1
-    const limit = req.query.limit ? Number(req.query.limit) : 20
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
 
     const result = await badgeSearchService.searchByIssuer(address, page, limit)
 
