@@ -356,13 +356,22 @@ router.post('/passport/initialize', authenticateToken, async (req: AuthRequest, 
 })
 
 // Get user's communities
-router.get('/communities/:address', optionalAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/communities/:address', optionalAuth, validatePagination, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { address } = req.params
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
+    const skip = (page - 1) * limit
 
     const user = await User.findOne({ stacksAddress: address })
-      .populate('communities')
-      .populate('adminCommunities')
+      .populate({
+        path: 'communities',
+        options: { skip, limit }
+      })
+      .populate({
+        path: 'adminCommunities',
+        options: { skip, limit }
+      })
 
     if (!user) {
       throw createError('User not found', 404)
