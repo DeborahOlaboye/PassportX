@@ -37,7 +37,9 @@ export default function Header() {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <NetworkSelector variant="minimal" />
+            <ErrorBoundary fallback={<div className="text-xs text-red-500">Network Error</div>}>
+              <NetworkSelector variant="minimal" />
+            </ErrorBoundary>
             <div className="hidden sm:block">
               <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
                 <WalletConnect />
