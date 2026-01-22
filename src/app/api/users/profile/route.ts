@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendError, ERROR_CODES } from '@/lib/api-responses'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -9,10 +10,7 @@ export async function GET(request: NextRequest) {
     const customUrl = searchParams.get('customUrl')
 
     if (!address && !customUrl) {
-      return NextResponse.json(
-        { success: false, error: 'Address or customUrl required' },
-        { status: 400 }
-      )
+      return sendError('Address or customUrl required', ERROR_CODES.INVALID_INPUT, 400)
     }
 
     let url: string
@@ -34,9 +32,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
     console.error('Error fetching user profile:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch user profile' },
-      { status: 500 }
+    return sendError(
+      'Failed to fetch user profile',
+      ERROR_CODES.SERVER_ERROR,
+      500,
+      error instanceof Error ? error.message : undefined
     )
   }
 }
@@ -47,10 +47,7 @@ export async function PUT(request: NextRequest) {
     const token = request.headers.get('Authorization')
 
     if (!token) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return sendError('Unauthorized', ERROR_CODES.UNAUTHORIZED, 401)
     }
 
     const response = await fetch(`${BACKEND_URL}/api/users/profile`, {
@@ -67,9 +64,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
     console.error('Error updating user profile:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to update user profile' },
-      { status: 500 }
+    return sendError(
+      'Failed to update user profile',
+      ERROR_CODES.SERVER_ERROR,
+      500,
+      error instanceof Error ? error.message : undefined
     )
   }
 }
