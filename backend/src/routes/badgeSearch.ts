@@ -1,6 +1,7 @@
 import express from 'express'
 import badgeSearchService from '../services/badgeSearchService'
 import { IBadgeSearchQuery } from '../types'
+import { validatePagination } from '../middleware/validation'
 
 const router = express.Router()
 
