@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import CommunityCard from '@/components/CommunityCard'
 import { Plus, BarChart3, Users, Award, Loader, Gift } from 'lucide-react'
 import Link from 'next/link'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import { CommunityErrorFallback } from '@/components/FallbackUI'
 
 interface BadgeStats {
   totalIssued: number
@@ -12,6 +14,14 @@ interface BadgeStats {
 }
 
 export default function AdminDashboard() {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <CommunityErrorFallback error={error} reset={reset} />}>
+      <AdminDashboardInner />
+    </ErrorBoundary>
+  )
+}
+
+function AdminDashboardInner() {
   const { user } = useAuth()
   const [communities, setCommunities] = useState<any[]>([])
   const [badgeStats, setBadgeStats] = useState<BadgeStats>({ totalIssued: 0, recentBadges: [] })
