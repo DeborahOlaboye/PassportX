@@ -19,7 +19,7 @@ const handleError = (res: Response, error: any, message: string) => {
   })
 }
 
-router.get('/feed', async (req: Request, res: Response) => {
+router.get('/feed', validatePagination, async (req: Request, res: Response) => {
   try {
     if (!userActivityService) {
       return res.status(503).json({
@@ -29,8 +29,8 @@ router.get('/feed', async (req: Request, res: Response) => {
     }
 
     const userId = req.query.userId as string
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
     const eventType = req.query.eventType as any
     const isRead = req.query.isRead as string
 
