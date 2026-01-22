@@ -6,7 +6,7 @@ import { validatePagination } from '../middleware/validation'
 const router = Router()
 
 // Public routes
-router.get('/', communityController.listCommunities)
+router.get('/', validatePagination, communityController.listCommunities)
 router.get('/:id', communityController.getCommunity)
 
 // Protected routes (require authentication)
