@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as communityController from '../controllers/communityController'
 import { authenticateToken } from '../middleware/auth'
+import { validatePagination } from '../middleware/validation'
 
 const router = Router()
 
