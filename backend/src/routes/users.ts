@@ -2,6 +2,7 @@ import { Router, Response, NextFunction } from 'express'
 import User from '../models/User'
 import Badge from '../models/Badge'
 import { authenticateToken, optionalAuth } from '../middleware/auth'
+import { validatePagination } from '../middleware/validation'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
 import { uploadAvatar, deleteOldAvatar } from '../middleware/upload'
@@ -200,9 +201,13 @@ router.get('/profile/u/:customUrl', optionalAuth, async (req: AuthRequest, res, 
 })
 
 // Get user badges (passport)
-router.get('/badges/:address', optionalAuth, async (req: AuthRequest, res, next) => {
+router.get('/badges/:address', optionalAuth, validatePagination, async (req: AuthRequest, res, next) => {
   try {
     const { address } = req.params
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
+    const skip = (page - 1) * limit
+
     const user = await User.findOne({ stacksAddress: address })
 
     if (!user) {
@@ -218,6 +223,8 @@ router.get('/badges/:address', optionalAuth, async (req: AuthRequest, res, next)
       .populate('templateId')
       .populate('community')
       .sort({ issuedAt: -1 })
+      .skip(skip)
+      .limit(limit)
 
     const formattedBadges = badges.map(badge => ({
       id: badge._id,
@@ -349,13 +356,22 @@ router.post('/passport/initialize', authenticateToken, async (req: AuthRequest, 
 })
 
 // Get user's communities
-router.get('/communities/:address', optionalAuth, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/communities/:address', optionalAuth, validatePagination, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { address } = req.params
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
+    const skip = (page - 1) * limit
 
     const user = await User.findOne({ stacksAddress: address })
-      .populate('communities')
-      .populate('adminCommunities')
+      .populate({
+        path: 'communities',
+        options: { skip, limit }
+      })
+      .populate({
+        path: 'adminCommunities',
+        options: { skip, limit }
+      })
 
     if (!user) {
       throw createError('User not found', 404)

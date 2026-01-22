@@ -3,6 +3,7 @@ import BadgeTemplate from '../models/BadgeTemplate'
 import Badge from '../models/Badge'
 import Community from '../models/Community'
 import { authenticateToken, optionalAuth } from '../middleware/auth'
+import { validatePagination } from '../middleware/validation'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
 import { updateMemberCount } from '../services/communityService'
@@ -77,7 +78,7 @@ router.post('/templates', authenticateToken, async (req: AuthRequest, res, next)
 })
 
 // Get badge templates by community
-router.get('/templates/community/:communityId', async (req, res, next) => {
+router.get('/templates/community/:communityId', validatePagination, async (req, res, next) => {
   try {
     const { communityId } = req.params
     const templates = await BadgeTemplate.find({ 

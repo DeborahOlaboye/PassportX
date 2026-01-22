@@ -1,11 +1,12 @@
 import { Router } from 'express'
 import * as communityController from '../controllers/communityController'
 import { authenticateToken } from '../middleware/auth'
+import { validatePagination } from '../middleware/validation'
 
 const router = Router()
 
 // Public routes
-router.get('/', communityController.listCommunities)
+router.get('/', validatePagination, communityController.listCommunities)
 router.get('/:id', communityController.getCommunity)
 
 // Protected routes (require authentication)
@@ -23,7 +24,7 @@ router.delete('/:id/admins/:adminAddress', authenticateToken, communityControlle
 
 // Analytics and leaderboard routes
 router.get('/:id/analytics', communityController.getAnalytics)
-router.get('/:id/leaderboard', communityController.getLeaderboard)
-router.get('/:id/members', communityController.getMembers)
+router.get('/:id/leaderboard', validatePagination, communityController.getLeaderboard)
+router.get('/:id/members', validatePagination, communityController.getMembers)
 
 export default router
