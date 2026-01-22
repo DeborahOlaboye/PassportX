@@ -20,14 +20,14 @@ const router = express.Router()
  * GET /api/notifications
  * Get user notifications with pagination and filtering
  */
-router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.get('/', authenticateToken, validatePagination, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.stacksAddress
     const {
       type,
       read,
-      page = '1',
-      limit = '20',
+      page,
+      limit,
       sortBy = 'newest'
     } = req.query
 
@@ -35,8 +35,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       userId,
       type: type ? (Array.isArray(type) ? type as string[] : [type as string]) : undefined,
       read: read === 'true' ? true : read === 'false' ? false : undefined,
-      page: parseInt(page as string),
-      limit: parseInt(limit as string),
+      page: Number(page),
+      limit: Number(limit),
       sortBy: sortBy as 'newest' | 'oldest'
     })
 
