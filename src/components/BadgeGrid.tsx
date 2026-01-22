@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import BadgeCard from './BadgeCard'
 import { Filter, Search } from 'lucide-react'
+import ErrorBoundary from './ErrorBoundary'
+import { BadgeErrorFallback } from './FallbackUI'
 
 interface Badge {
   id: number
@@ -19,7 +21,15 @@ interface BadgeGridProps {
   badges: Badge[]
 }
 
-export default function BadgeGrid({ badges }: BadgeGridProps) {
+export default function BadgeGrid(props: BadgeGridProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+      <BadgeGridInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function BadgeGridInner({ badges }: BadgeGridProps) {
   const [filteredBadges, setFilteredBadges] = useState(badges)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
