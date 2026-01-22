@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 
 export function ProfileSettings() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Failed to load profile settings" />}>
+      <ProfileSettingsInner />
+    </ErrorBoundary>
+  );
+}
+
+function ProfileSettingsInner() {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -332,3 +342,4 @@ export function ProfileSettings() {
     </div>
   );
 }
+
