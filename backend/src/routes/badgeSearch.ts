@@ -32,7 +32,7 @@ router.post('/search', async (req, res) => {
  * GET /api/badges/search
  * Search badges with query parameters
  */
-router.get('/search', async (req, res) => {
+router.get('/search', validatePagination, async (req, res) => {
   try {
     const {
       search,
@@ -55,8 +55,8 @@ router.get('/search', async (req, res) => {
       community: community as string,
       startDate: startDate ? new Date(startDate as string) : undefined,
       endDate: endDate ? new Date(endDate as string) : undefined,
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
+      page: Number(page),
+      limit: Number(limit),
       sortBy: sortBy as any
     }
 
