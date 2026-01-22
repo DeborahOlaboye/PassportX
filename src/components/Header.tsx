@@ -2,6 +2,8 @@ import Link from 'next/link'
 import WalletConnect from './WalletConnect'
 import MobileMenu from './MobileMenu'
 import { NetworkSelector } from './NetworkSelector'
+import ErrorBoundary from './ErrorBoundary'
+import { WalletErrorFallback } from './FallbackUI'
 
 export default function Header() {
   return (
@@ -37,7 +39,9 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <NetworkSelector variant="minimal" />
             <div className="hidden sm:block">
-              <WalletConnect />
+              <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+                <WalletConnect />
+              </ErrorBoundary>
             </div>
             <MobileMenu />
           </div>
@@ -45,7 +49,9 @@ export default function Header() {
         
         {/* Mobile wallet connect */}
         <div className="sm:hidden mt-4 pt-4 border-t">
-          <WalletConnect />
+          <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+            <WalletConnect />
+          </ErrorBoundary>
         </div>
       </div>
     </header>
