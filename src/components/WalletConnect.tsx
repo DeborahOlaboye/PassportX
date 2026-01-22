@@ -3,11 +3,21 @@
 import { useState, useEffect } from 'react'
 import { AppConfig, UserSession, showConnect } from '@stacks/connect'
 import { Wallet, LogOut } from 'lucide-react'
+import ErrorBoundary from './ErrorBoundary'
+import { WalletErrorFallback } from './FallbackUI'
 
 const appConfig = new AppConfig(['store_write', 'publish_data'])
 const userSession = new UserSession({ appConfig })
 
 export default function WalletConnect() {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+      <WalletConnectInner />
+    </ErrorBoundary>
+  )
+}
+
+function WalletConnectInner() {
   const [userData, setUserData] = useState<any>(null)
 
   useEffect(() => {
