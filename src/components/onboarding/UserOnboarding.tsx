@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 
 interface OnboardingStep {
   id: number;
@@ -39,6 +41,14 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 ];
 
 export function UserOnboarding() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Onboarding error" />}>
+      <UserOnboardingInner />
+    </ErrorBoundary>
+  );
+}
+
+function UserOnboardingInner() {
   const { user, isAuthenticated, connectWallet, initializePassport, updateProfile } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -347,3 +357,4 @@ export function UserOnboarding() {
     </div>
   );
 }
+
