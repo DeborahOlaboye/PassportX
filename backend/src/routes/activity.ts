@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express'
 import UserActivityService from '../services/userActivityService'
+import { validatePagination } from '../middleware/validation'
 
 const router = express.Router()
 
