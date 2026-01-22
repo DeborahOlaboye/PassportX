@@ -201,9 +201,13 @@ router.get('/profile/u/:customUrl', optionalAuth, async (req: AuthRequest, res, 
 })
 
 // Get user badges (passport)
-router.get('/badges/:address', optionalAuth, async (req: AuthRequest, res, next) => {
+router.get('/badges/:address', optionalAuth, validatePagination, async (req: AuthRequest, res, next) => {
   try {
     const { address } = req.params
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
+    const skip = (page - 1) * limit
+
     const user = await User.findOne({ stacksAddress: address })
 
     if (!user) {
@@ -219,6 +223,8 @@ router.get('/badges/:address', optionalAuth, async (req: AuthRequest, res, next)
       .populate('templateId')
       .populate('community')
       .sort({ issuedAt: -1 })
+      .skip(skip)
+      .limit(limit)
 
     const formattedBadges = badges.map(badge => ({
       id: badge._id,
