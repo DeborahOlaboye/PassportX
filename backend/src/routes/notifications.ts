@@ -1,6 +1,7 @@
 import express, { Response } from 'express'
 import { AuthRequest } from '../types'
 import { authenticateToken } from '../middleware/auth'
+import { validatePagination } from '../middleware/validation'
 import {
   getUserNotifications,
   getUnreadCount,
