@@ -1,5 +1,6 @@
 'use client';
-
+import ErrorBoundary from '../ErrorBoundary';
+import { WalletErrorFallback } from '../FallbackUI';
 import React, { useState } from 'react';
 import { useMultiAccount } from '@/contexts/MultiAccountContext';
 import { X, Plus } from 'lucide-react';
@@ -11,7 +12,15 @@ interface AccountManagementModalProps {
   title?: string;
 }
 
-export default function AccountManagementModal({
+export default function AccountManagementModal(props: AccountManagementModalProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+      <AccountManagementModalInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function AccountManagementModalInner({
   isOpen,
   onClose,
   title = 'Manage Accounts',

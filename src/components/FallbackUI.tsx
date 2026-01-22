@@ -35,4 +35,32 @@ export const CommunityErrorFallback: React.FC<{ error?: Error; reset?: () => voi
   />
 );
 
+export const TransactionErrorFallback: React.FC<{ error?: Error; reset?: () => void }> = ({ error, reset }) => (
+  <FallbackUI 
+    message={`Transaction error: ${error?.message || 'Unknown error'}`} 
+    onRetry={reset} 
+  />
+);
+
+export const SearchErrorFallback: React.FC<{ error?: Error; reset?: () => void }> = ({ error, reset }) => (
+  <FallbackUI 
+    message={`Search error: ${error?.message || 'Unknown error'}`} 
+    onRetry={reset} 
+  />
+);
+
+export const AnalyticsErrorFallback: React.FC<{ error?: Error; reset?: () => void }> = ({ error, reset }) => (
+  <FallbackUI 
+    message={`Analytics error: ${error?.message || 'Unknown error'}`} 
+    onRetry={reset} 
+  />
+);
+
+export const ActivityErrorFallback: React.FC<{ error?: Error; reset?: () => void }> = ({ error, reset }) => (
+  <FallbackUI 
+    message={`Activity feed error: ${error?.message || 'Unknown error'}`} 
+    onRetry={reset} 
+  />
+);
+
 export default FallbackUI;

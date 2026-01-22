@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react'
+import ErrorBoundary from '../ErrorBoundary'
+import { SearchErrorFallback } from '../FallbackUI'
 
 interface FilterOption {
   levels: number[]
@@ -22,7 +24,15 @@ interface FilterPanelProps {
   className?: string
 }
 
-export default function FilterPanel({ onFilterChange, className = '' }: FilterPanelProps) {
+export default function FilterPanel(props: FilterPanelProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <SearchErrorFallback error={error} reset={reset} />}>
+      <FilterPanelInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function FilterPanelInner({ onFilterChange, className = '' }: FilterPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [filterOptions, setFilterOptions] = useState<FilterOption | null>(null)
   const [isLoadingFilters, setIsLoadingFilters] = useState(false)

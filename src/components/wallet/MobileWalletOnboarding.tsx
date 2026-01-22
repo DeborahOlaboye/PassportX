@@ -1,5 +1,6 @@
 'use client';
-
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 import React, { useState, useEffect } from 'react';
 import {
   Smartphone,
@@ -324,6 +325,14 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 ];
 
 export default function MobileWalletOnboarding() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Mobile wallet onboarding error" />}>
+      <MobileWalletOnboardingInner />
+    </ErrorBoundary>
+  );
+}
+
+function MobileWalletOnboardingInner() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 

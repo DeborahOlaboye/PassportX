@@ -1,5 +1,6 @@
 'use client';
-
+import ErrorBoundary from '../ErrorBoundary';
+import { WalletErrorFallback } from '../FallbackUI';
 import React, { useState, useEffect } from 'react';
 import { X, Smartphone, Monitor, Copy, Check } from 'lucide-react';
 import QRCodeDisplay from './QRCodeDisplay';
@@ -39,7 +40,15 @@ const MOBILE_WALLETS = [
   },
 ];
 
-export default function MobileWalletSelector({ onClose }: MobileWalletSelectorProps) {
+export default function MobileWalletSelector(props: MobileWalletSelectorProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+      <MobileWalletSelectorInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
   const { connectWallet, isConnecting } = useWalletConnect();
   const [isMobile, setIsMobile] = useState(false);
   const [showQR, setShowQR] = useState(false);

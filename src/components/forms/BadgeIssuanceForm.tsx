@@ -1,5 +1,6 @@
 'use client'
-
+import ErrorBoundary from '../ErrorBoundary'
+import { BadgeErrorFallback } from '../FallbackUI'
 import { useState, useEffect } from 'react'
 import { Award, Mail, User, Loader } from 'lucide-react'
 import {
@@ -52,7 +53,15 @@ const getLevelColor = (level: number) => {
   }
 }
 
-export default function BadgeIssuanceForm({
+export default function BadgeIssuanceForm(props: BadgeIssuanceFormProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+      <BadgeIssuanceFormInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function BadgeIssuanceFormInner({
   onSubmit,
   templates,
   isLoading = false,
