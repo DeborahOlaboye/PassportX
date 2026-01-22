@@ -78,7 +78,7 @@ router.post('/templates', authenticateToken, async (req: AuthRequest, res, next)
 })
 
 // Get badge templates by community
-router.get('/templates/community/:communityId', async (req, res, next) => {
+router.get('/templates/community/:communityId', validatePagination, async (req, res, next) => {
   try {
     const { communityId } = req.params
     const templates = await BadgeTemplate.find({ 
