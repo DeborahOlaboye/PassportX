@@ -1,12 +1,22 @@
 import React from 'react';
 import { usePermissionState } from '../hooks/usePermissionState';
+import ErrorBoundary from './ErrorBoundary';
+import FallbackUI from './FallbackUI';
 
 export interface AccessControlDashboardProps {
   userPrincipal?: string;
   showSecurityAlerts?: boolean;
 }
 
-export const AccessControlDashboard: React.FC<AccessControlDashboardProps> = ({
+export const AccessControlDashboard: React.FC<AccessControlDashboardProps> = (props) => {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Access control dashboard error" />}>
+      <AccessControlDashboardInner {...props} />
+    </ErrorBoundary>
+  );
+};
+
+const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
   userPrincipal,
   showSecurityAlerts = false
 }) => {
@@ -178,5 +188,6 @@ export const AccessControlDashboard: React.FC<AccessControlDashboardProps> = ({
     </div>
   );
 };
+
 
 export default AccessControlDashboard;
