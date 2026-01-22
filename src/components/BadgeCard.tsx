@@ -1,4 +1,6 @@
 import { Award, Calendar, Tag, ShieldCheck, ExternalLink } from 'lucide-react'
+import ErrorBoundary from './ErrorBoundary'
+import { BadgeErrorFallback } from './FallbackUI'
 
 interface Badge {
   id: number
@@ -19,7 +21,15 @@ interface BadgeCardProps {
   showVerification?: boolean
 }
 
-export default function BadgeCard({ badge, showVerification = true }: BadgeCardProps) {
+export default function BadgeCard(props: BadgeCardProps) {
+  return (
+    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+      <BadgeCardInner {...props} />
+    </ErrorBoundary>
+  )
+}
+
+function BadgeCardInner({ badge, showVerification = true }: BadgeCardProps) {
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString()
   }
