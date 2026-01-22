@@ -2,8 +2,18 @@
 
 import { useState } from 'react'
 import { useNotificationPreferences } from '@/contexts/NotificationPreferencesContext'
+import ErrorBoundary from './ErrorBoundary'
+import FallbackUI from './FallbackUI'
 
 export function NotificationPreferencesPanel() {
+  return (
+    <ErrorBoundary fallback={<FallbackUI message="Failed to load notification preferences" />}>
+      <NotificationPreferencesPanelInner />
+    </ErrorBoundary>
+  )
+}
+
+function NotificationPreferencesPanelInner() {
   const {
     preferences,
     isLoading,
@@ -323,3 +333,4 @@ export function NotificationPreferencesPanel() {
     </div>
   )
 }
+
