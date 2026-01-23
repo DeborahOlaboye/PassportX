@@ -8,6 +8,8 @@
 ;; Constants
 (define-constant contract-owner tx-sender)
 (define-constant err-unauthorized (err u104))
+(define-constant EVENT-PASSPORT-BADGE-CREATED "passport-badge-created")
+(define-constant EVENT-COMMUNITY-ISSUER-SETUP "community-issuer-setup")
 
 ;; Main passport functions
 (define-public (create-passport-badge (recipient principal) (template-id uint) (community-id uint))
@@ -17,6 +19,15 @@
     
     ;; Mint badge through issuer
     (contract-call? .badge-issuer mint-badge recipient template-id)
+(print {
+        event: EVENT-PASSPORT-BADGE-CREATED,
+        recipient: recipient,
+        template-id: template-id,
+        community-id: community-id,
+        issuer: tx-sender,
+        timestamp: block-height,
+        issued-by: tx-sender
+    })
   )
 )
 
@@ -38,5 +49,12 @@
   (begin
     (asserts! (contract-call? .access-control can-manage-community-members community-id tx-sender) err-unauthorized)
     (contract-call? .badge-issuer authorize-issuer issuer)
+     (print {
+        event: EVENT-COMMUNITY-ISSUER-SETUP,
+        community-id: community-id,
+        issuer: issuer,
+        setup-by: tx-sender,
+        timestamp: block-height
+    })
   )
 )
