@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -11,7 +12,7 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
 
     if (!authHeader) {
-      return NextResponse.json({ error: 'Authorization required' }, { status: 401 })
+      return createErrorResponse('Authorization required', null, { status: 401, logLevel: 'warn' })
     }
 
     const response = await fetch(`${BACKEND_URL}/api/notifications/read-all`, {
@@ -25,10 +26,6 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error marking all notifications as read:', error)
-    return NextResponse.json(
-      { error: 'Failed to mark all notifications as read' },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to mark all notifications as read', error)
   }
 }
