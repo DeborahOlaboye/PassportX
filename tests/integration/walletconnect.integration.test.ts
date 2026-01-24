@@ -10,7 +10,7 @@
  * - WC_ENABLED: set to '1' to enable these tests
  */
 
-const WC_ENABLED = process.env.WC_ENABLED === '1';
+const WC_ENABLED = process.env.WC_ENABLED !== '0';
 
 describe('WalletConnect integration (scaffold)', () => {
   beforeAll(() => {
