@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendError, ERROR_CODES } from '@/lib/api-responses'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
 
     if (!authHeader) {
-      return sendError('Authorization required', ERROR_CODES.UNAUTHORIZED, 401)
+      return createErrorResponse('Authorization required', null, { status: 401, logLevel: 'warn' })
     }
 
     const response = await fetch(`${BACKEND_URL}/api/notifications?${queryString}`, {
@@ -29,12 +29,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error fetching notifications:', error)
-    return sendError(
-      'Failed to fetch notifications',
-      ERROR_CODES.SERVER_ERROR,
-      500,
-      error instanceof Error ? error.message : undefined
-    )
+    return createErrorResponse('Failed to fetch notifications', error)
   }
 }
