@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { createErrorResponse } from '@/lib/error-response';
 
 // Disable body parsing for this route
 // This is needed to get the raw body for signature verification
@@ -17,10 +18,7 @@ export async function POST(req: Request) {
     
     // Basic validation
     if (!body.eventName || !body.timestamp) {
-      return new NextResponse(JSON.stringify({ error: 'Invalid event data' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return createErrorResponse('Invalid event data', null, { status: 400 });
     }
 
     // Prepare the document to be inserted
@@ -34,18 +32,8 @@ export async function POST(req: Request) {
     // Insert the event into MongoDB
     await analyticsCollection.insertOne(eventDocument);
 
-    return new NextResponse(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error processing analytics event:', error);
-    return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createErrorResponse('Error processing analytics event', error);
   }
 }
