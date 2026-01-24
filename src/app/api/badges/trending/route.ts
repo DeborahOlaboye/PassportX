@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -28,10 +29,6 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error fetching trending badges:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch trending badges' },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to fetch trending badges', error)
   }
 }
