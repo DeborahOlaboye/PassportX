@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendError, sendSuccess, ERROR_CODES } from '@/lib/api-responses'
+import { createErrorResponse } from '@/lib/error-response'
+import { sendSuccess } from '@/lib/api-responses'
 
 interface CommunityCreationRequest {
   txId: string
@@ -29,11 +30,11 @@ export async function POST(request: NextRequest) {
     const body: CommunityCreationRequest = await request.json()
 
     if (!body.txId || !body.name || !body.description || !body.owner) {
-      return sendError('Missing required fields', ERROR_CODES.INVALID_INPUT, 400)
+      return createErrorResponse('Missing required fields', null, { status: 400, logLevel: 'warn' })
     }
 
     if (body.name.length > 100 || body.description.length > 2000) {
-      return sendError('Field length exceeds maximum', ERROR_CODES.INVALID_INPUT, 400)
+      return createErrorResponse('Field length exceeds maximum', null, { status: 400, logLevel: 'warn' })
     }
 
     const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001'
@@ -77,13 +78,7 @@ export async function POST(request: NextRequest) {
       'Community created successfully'
     )
   } catch (error) {
-    console.error('Community creation error:', error)
-    return sendError(
-      'Failed to create community',
-      ERROR_CODES.SERVER_ERROR,
-      500,
-      error instanceof Error ? error.message : undefined
-    )
+    return createErrorResponse('Failed to create community', error)
   }
 }
 
@@ -122,12 +117,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Communities fetch error:', error)
-    return sendError(
-      'Failed to fetch communities',
-      ERROR_CODES.SERVER_ERROR,
-      500,
-      error instanceof Error ? error.message : undefined
-    )
+    return createErrorResponse('Failed to fetch communities', error)
   }
 }
