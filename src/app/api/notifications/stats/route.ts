@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
 
     if (!authHeader) {
-      return NextResponse.json({ error: 'Authorization required' }, { status: 401 })
+      return createErrorResponse('Authorization required', null, { status: 401, logLevel: 'warn' })
     }
 
     const response = await fetch(`${BACKEND_URL}/api/notifications/stats`, {
@@ -25,10 +26,6 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error fetching notification stats:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch notification stats' },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to fetch notification stats', error)
   }
 }
