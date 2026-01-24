@@ -5,7 +5,8 @@
  */
 
 export const isTestnetConfigured = () => {
-  return !!process.env.WC_TESTNET_URL && !!process.env.WC_ENABLED;
+  // Enabled by default unless explicitly disabled
+  return process.env.WC_ENABLED !== '0';
 };
 
 export const connectWallet = async (uri?: string) => {

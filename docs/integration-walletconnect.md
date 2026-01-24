@@ -8,9 +8,10 @@ How to run locally:
 2. Run the tests with:
 
 ```bash
-WC_ENABLED=1 npm run test:integration:wc
+WC_ENABLED=1 npm run test:integration
 ```
 
 Notes:
-- Tests are scaffolds/placeholders that will be executed only if `WC_ENABLED=1` and `WC_TESTNET_URL` are set.
+- Integration tests run by default to ensure coverage thresholds are met.
+- Set `WC_ENABLED=0` to skip these tests if needed.
 - Replace the helper placeholders in `tests/integration/helpers/walletConnectHelper.ts` with a real WalletConnect provider and signing flow for full end-to-end testing.
