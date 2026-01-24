@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendError, ERROR_CODES } from '@/lib/api-responses'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const customUrl = searchParams.get('customUrl')
 
     if (!address && !customUrl) {
-      return sendError('Address or customUrl required', ERROR_CODES.INVALID_INPUT, 400)
+      return createErrorResponse('Address or customUrl required', null, { status: 400, logLevel: 'warn' })
     }
 
     let url: string
@@ -31,13 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error fetching user profile:', error)
-    return sendError(
-      'Failed to fetch user profile',
-      ERROR_CODES.SERVER_ERROR,
-      500,
-      error instanceof Error ? error.message : undefined
-    )
+    return createErrorResponse('Failed to fetch user profile', error)
   }
 }
 
@@ -47,7 +41,7 @@ export async function PUT(request: NextRequest) {
     const token = request.headers.get('Authorization')
 
     if (!token) {
-      return sendError('Unauthorized', ERROR_CODES.UNAUTHORIZED, 401)
+      return createErrorResponse('Unauthorized', null, { status: 401, logLevel: 'warn' })
     }
 
     const response = await fetch(`${BACKEND_URL}/api/users/profile`, {
@@ -63,12 +57,6 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error updating user profile:', error)
-    return sendError(
-      'Failed to update user profile',
-      ERROR_CODES.SERVER_ERROR,
-      500,
-      error instanceof Error ? error.message : undefined
-    )
+    return createErrorResponse('Failed to update user profile', error)
   }
 }

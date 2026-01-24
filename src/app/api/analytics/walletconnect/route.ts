@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { createErrorResponse } from '@/lib/error-response';
 
 // Configure route behavior
 export const dynamic = 'force-dynamic';
@@ -125,13 +126,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching WalletConnect analytics:', error);
-    return new NextResponse(
-      JSON.stringify({ error: 'Failed to fetch analytics data' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return createErrorResponse('Failed to fetch analytics data', error);
   }
 }

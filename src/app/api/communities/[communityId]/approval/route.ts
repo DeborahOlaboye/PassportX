@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createErrorResponse } from '@/lib/error-response'
 
 interface ApprovalRequest {
   approved: boolean
@@ -15,17 +16,11 @@ export async function POST(
     const body: ApprovalRequest = await request.json()
 
     if (!body.approverAddress) {
-      return NextResponse.json(
-        { error: 'approverAddress is required' },
-        { status: 400 }
-      )
+      return createErrorResponse('approverAddress is required', null, { status: 400, logLevel: 'warn' })
     }
 
     if (!body.approved && !body.reason) {
-      return NextResponse.json(
-        { error: 'reason is required when rejecting' },
-        { status: 400 }
-      )
+      return createErrorResponse('reason is required when rejecting', null, { status: 400, logLevel: 'warn' })
     }
 
     const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001'
@@ -63,14 +58,7 @@ export async function POST(
       { status: 200 }
     )
   } catch (error) {
-    console.error('Approval error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to process approval',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to process approval', error)
   }
 }
 
@@ -99,13 +87,6 @@ export async function GET(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Approval status fetch error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch approval status',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to fetch approval status', error)
   }
 }

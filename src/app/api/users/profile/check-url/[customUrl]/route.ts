@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -23,10 +24,6 @@ export async function GET(
 
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error checking custom URL:', error)
-    return NextResponse.json(
-      { available: false, message: 'Failed to check URL availability' },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to check URL availability', error)
   }
 }
