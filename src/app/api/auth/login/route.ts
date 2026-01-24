@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendError, ERROR_CODES } from '@/lib/api-responses';
+import { createErrorResponse } from '@/lib/error-response';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -28,11 +28,6 @@ export async function POST(request: NextRequest) {
 
     return backendResponse;
   } catch (error) {
-    return sendError(
-      'Failed to authenticate',
-      ERROR_CODES.SERVER_ERROR,
-      500,
-      error instanceof Error ? error.message : undefined
-    );
+    return createErrorResponse('Failed to authenticate', error);
   }
 }
