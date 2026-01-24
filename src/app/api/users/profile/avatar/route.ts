@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createErrorResponse } from '@/lib/error-response'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
 
@@ -8,10 +9,7 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get('Authorization')
 
     if (!token) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return createErrorResponse('Unauthorized', null, { status: 401, logLevel: 'warn' })
     }
 
     const response = await fetch(`${BACKEND_URL}/api/users/profile/avatar`, {
@@ -26,10 +24,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
-    console.error('Error uploading profile picture:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to upload profile picture' },
-      { status: 500 }
-    )
+    return createErrorResponse('Failed to upload profile picture', error)
   }
 }
