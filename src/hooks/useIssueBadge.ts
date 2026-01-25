@@ -2,9 +2,9 @@ import { useState, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   BadgeIssuerManager,
-  BadgeIssuanceParams,
-  BadgeIssuerResponse
+  BadgeIssuanceParams
 } from '@/lib/contracts/badgeContractUtils'
+import { IssueBadgeResponse, RevokeBadgeResponse } from '@/types/contract-responses'
 
 interface IssueBadgeOptions {
   recipientAddress: string
@@ -43,7 +43,7 @@ export const useIssueBadge = () => {
   }, [])
 
   const issueBadge = useCallback(
-    async (options: IssueBadgeOptions) => {
+    async (options: IssueBadgeOptions): Promise<IssueBadgeResponse> => {
       if (!user || !userSession.isUserSignedIn()) {
         setState(prev => ({
           ...prev,
@@ -124,7 +124,7 @@ export const useIssueBadge = () => {
   )
 
   const revokeBadge = useCallback(
-    async (badgeId: number) => {
+    async (badgeId: number): Promise<RevokeBadgeResponse> => {
       if (!user || !userSession.isUserSignedIn()) {
         setState(prev => ({
           ...prev,
