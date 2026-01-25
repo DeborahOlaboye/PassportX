@@ -7,17 +7,17 @@ import {
 } from '@stacks/transactions'
 import { StacksTestnet, StacksMainnet } from '@stacks/network'
 import { UserSession } from '@stacks/auth'
+import { 
+  IssueBadgeResponse, 
+  RevokeBadgeResponse,
+  BaseContractResponse 
+} from '@/types/contract-responses'
 
 export interface BadgeIssuanceParams {
   recipientAddress: string
   templateId: number
   communityId: number
   network: 'testnet' | 'mainnet'
-}
-
-export interface BadgeIssuerResponse {
-  txId: string
-  badgeId?: number
 }
 
 export class BadgeIssuerManager {
@@ -42,7 +42,7 @@ export class BadgeIssuerManager {
       : new StacksTestnet()
   }
 
-  async issueBadge(params: BadgeIssuanceParams): Promise<BadgeIssuerResponse> {
+  async issueBadge(params: BadgeIssuanceParams): Promise<IssueBadgeResponse> {
     if (!this.userSession.isUserSignedIn()) {
       throw new Error('User must be signed in to issue badges')
     }
@@ -98,7 +98,9 @@ export class BadgeIssuerManager {
 
       return {
         txId: tx.txId || '',
-        badgeId: params.templateId
+        status: 'pending',
+        badgeId: params.templateId,
+        recipientAddress: params.recipientAddress
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -111,7 +113,7 @@ export class BadgeIssuerManager {
     }
   }
 
-  async authorizeBadgeIssuer(issuerAddress: string): Promise<BadgeIssuerResponse> {
+  async authorizeBadgeIssuer(issuerAddress: string): Promise<BaseContractResponse> {
     if (!this.userSession.isUserSignedIn()) {
       throw new Error('User must be signed in')
     }
@@ -145,7 +147,8 @@ export class BadgeIssuerManager {
       }
 
       return {
-        txId: tx.txId || ''
+        txId: tx.txId || '',
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -155,7 +158,7 @@ export class BadgeIssuerManager {
     }
   }
 
-  async revokeBadgeIssuer(issuerAddress: string): Promise<BadgeIssuerResponse> {
+  async revokeBadgeIssuer(issuerAddress: string): Promise<BaseContractResponse> {
     if (!this.userSession.isUserSignedIn()) {
       throw new Error('User must be signed in')
     }
@@ -188,7 +191,8 @@ export class BadgeIssuerManager {
       }
 
       return {
-        txId: tx.txId || ''
+        txId: tx.txId || '',
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -198,7 +202,7 @@ export class BadgeIssuerManager {
     }
   }
 
-  async revokeBadge(badgeId: number): Promise<BadgeIssuerResponse> {
+  async revokeBadge(badgeId: number): Promise<RevokeBadgeResponse> {
     if (!this.userSession.isUserSignedIn()) {
       throw new Error('User must be signed in')
     }
@@ -236,6 +240,7 @@ export class BadgeIssuerManager {
 
       return {
         txId: tx.txId || '',
+        status: 'pending',
         badgeId
       }
     } catch (error) {
