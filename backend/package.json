@@ -8,7 +8,10 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "deps:check": "npm ls --depth=0",
+    "deps:audit": "npm audit --audit-level=moderate",
+    "deps:validate": "node ../scripts/validate-package-json.js"
   },
   "dependencies": {
     "@stacks/network": "^6.0.0",
