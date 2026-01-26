@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import BadgeGrid from '@/components/BadgeGrid'
 import { Share2, ExternalLink, Calendar } from 'lucide-react'
+import { validateUserIdParameter, isSafeFromInjection } from '@/utils/validation'
 
 // Mock user data - in real app, this would be fetched based on userId
 const mockUserData = {
@@ -53,7 +55,26 @@ const mockUserData = {
 }
 
 export async function generateMetadata({ params }: { params: { userId: string } }): Promise<Metadata> {
-  // In real app, fetch user data here
+  // Validate the userId parameter
+  const validation = validateUserIdParameter(params.userId)
+  
+  // Return not found for invalid parameters
+  if (!validation.isValid) {
+    return {
+      title: 'Profile Not Found',
+      description: 'This profile does not exist'
+    }
+  }
+
+  // Additional safety check for injection patterns
+  if (!isSafeFromInjection(validation.sanitized || '')) {
+    return {
+      title: 'Profile Not Found',
+      description: 'This profile does not exist'
+    }
+  }
+
+  // In real app, fetch user data here using validated userId
   const user = mockUserData
   
   return {
@@ -73,7 +94,21 @@ export async function generateMetadata({ params }: { params: { userId: string } 
 }
 
 export default function PublicPassportPage({ params }: { params: { userId: string } }) {
-  const user = mockUserData // In real app, fetch based on params.userId
+  // Validate the userId parameter
+  const validation = validateUserIdParameter(params.userId)
+  
+  // Return not found page for invalid parameters
+  if (!validation.isValid) {
+    notFound()
+  }
+
+  // Additional safety check for injection patterns
+  if (!isSafeFromInjection(validation.sanitized || '')) {
+    notFound()
+  }
+
+  // In real app, fetch based on validated params.userId
+  const user = mockUserData
   const communities = new Set(user.badges.map(badge => badge.community))
   
   const handleShare = async () => {

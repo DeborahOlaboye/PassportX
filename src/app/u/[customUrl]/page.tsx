@@ -4,6 +4,7 @@ import { use, useEffect, useState } from 'react'
 import { User, Mail, Globe, Github, Twitter, Linkedin, MessageCircle, Calendar, Shield } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { validateCustomUrlParameter, isSafeFromInjection } from '@/utils/validation'
 
 interface UserProfile {
   id: string
@@ -33,14 +34,34 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Validate customUrl parameter on component mount
+  const validation = validateCustomUrlParameter(resolvedParams.customUrl)
+  
+  // Set error if customUrl is invalid
+  const isValidUrl = validation.isValid && isSafeFromInjection(validation.sanitized || '')
+
   useEffect(() => {
-    fetchProfile()
+    // Only fetch if customUrl is valid
+    if (isValidUrl) {
+      fetchProfile()
+    } else {
+      setError('Invalid custom URL format')
+      setLoading(false)
+    }
   }, [resolvedParams.customUrl])
 
   const fetchProfile = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/users/profile?customUrl=${resolvedParams.customUrl}`)
+      
+      // Use sanitized customUrl from validation
+      const sanitizedUrl = validation.sanitized || ''
+      
+      // Build URL with validated parameter
+      const url = new URL(`${window.location.origin}/api/users/profile`)
+      url.searchParams.set('customUrl', sanitizedUrl)
+      
+      const response = await fetch(url.toString())
       const data = await response.json()
 
       if (response.ok) {

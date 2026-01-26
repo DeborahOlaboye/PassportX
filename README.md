@@ -329,10 +329,46 @@ PassportX monitors the following contract events:
 
 ---
 
+## 🔒 Security
+
+PassportX implements comprehensive security measures to protect user data and prevent injection attacks:
+
+### Security Fixes (Issue #162)
+- **Dynamic Route Parameter Validation** - All route parameters are validated and sanitized before use in database queries
+- **NoSQL Injection Prevention** - Whitelist validation prevents MongoDB operator injection
+- **XSS Protection** - Input sanitization removes dangerous characters and HTML/script patterns
+- **SQL Injection Prevention** - Pattern detection blocks common SQL keywords
+- **Parameter Encoding** - Proper URL encoding prevents parameter pollution attacks
+
+### Key Security Features
+- ✅ Validated Stacks address format
+- ✅ Custom URL slug whitelist validation
+- ✅ Injection pattern detection (MongoDB, SQL, XSS, template injection)
+- ✅ Input length limiting and character sanitization
+- ✅ Early validation at entry points
+- ✅ Graceful error handling without information leakage
+
+### For Developers
+- Review [Security Fix #162 Documentation](./docs/SECURITY_FIX_162.md) for details
+- Follow [Validation Implementation Guide](./docs/VALIDATION_IMPLEMENTATION_EXAMPLES.md) when adding new routes
+- Use validation utilities from `src/utils/validation.ts` for all dynamic parameters
+- See [Deployment Guide](./docs/DEPLOYMENT_GUIDE_162.md) for security best practices
+
+### Reporting Security Issues
+Please report security vulnerabilities responsibly:
+1. Do **not** create public GitHub issues for security vulnerabilities
+2. Email security details to the project maintainers
+3. Allow time for a fix before public disclosure
+
+---
+
 ## 🤝 Contributing
 
 PassportX welcomes contributions across UI, smart contracts, and documentation.
 Open an issue or start a PR!
+
+Before contributing, please review our [security guidelines](./docs/SECURITY_FIX_162.md) to understand input validation requirements.
+
 
 ---
 
