@@ -55,7 +55,26 @@ const mockUserData = {
 }
 
 export async function generateMetadata({ params }: { params: { userId: string } }): Promise<Metadata> {
-  // In real app, fetch user data here
+  // Validate the userId parameter
+  const validation = validateUserIdParameter(params.userId)
+  
+  // Return not found for invalid parameters
+  if (!validation.isValid) {
+    return {
+      title: 'Profile Not Found',
+      description: 'This profile does not exist'
+    }
+  }
+
+  // Additional safety check for injection patterns
+  if (!isSafeFromInjection(validation.sanitized || '')) {
+    return {
+      title: 'Profile Not Found',
+      description: 'This profile does not exist'
+    }
+  }
+
+  // In real app, fetch user data here using validated userId
   const user = mockUserData
   
   return {
