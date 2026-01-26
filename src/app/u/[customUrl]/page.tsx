@@ -4,6 +4,7 @@ import { use, useEffect, useState } from 'react'
 import { User, Mail, Globe, Github, Twitter, Linkedin, MessageCircle, Calendar, Shield } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { validateCustomUrlParameter, isSafeFromInjection } from '@/utils/validation'
 
 interface UserProfile {
   id: string
