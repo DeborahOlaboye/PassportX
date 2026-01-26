@@ -1,0 +1,142 @@
+name: Dependency Issue
+description: Report issues with project dependencies or unmet peer dependencies
+title: "[Dependency] "
+labels: ["dependencies", "bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a dependency issue! Please provide detailed information to help us resolve the problem quickly.
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of dependency issue are you experiencing?
+      options:
+        - Unmet peer dependency
+        - Missing package
+        - Version conflict
+        - Security vulnerability
+        - Installation failure
+        - Compatibility issue
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the dependency issue in detail
+      placeholder: |
+        e.g., "npm ls shows unmet peer dependency for @walletconnect/core@^2.23.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-message
+    attributes:
+      label: Error Message
+      description: Paste the full error message or npm output
+      placeholder: |
+        ```
+        npm error missing: @walletconnect/core@^2.23.1, required by passportx@1.0.0
+        ```
+      render: shell
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Information
+      description: Provide details about your environment
+      placeholder: |
+        - Node version: 18.0.0
+        - npm version: 10.0.0
+        - OS: macOS 13.0
+        - Package manager: npm
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the issue
+      placeholder: |
+        1. Clone the repository
+        2. Run `npm install`
+        3. Run `npm ls`
+        4. See error message
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: What happens when you encounter this issue?
+      placeholder: |
+        npm install fails with unmet peer dependency warnings
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+      placeholder: |
+        npm install should complete successfully with no unmet dependencies
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted-fixes
+    attributes:
+      label: Attempted Fixes
+      description: List any fixes you've already tried
+      placeholder: |
+        - npm cache clean --force
+        - rm -rf node_modules package-lock.json
+        - npm install
+        - npm ci
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      description: How severe is this issue?
+      options:
+        - Blocking (prevents development)
+        - High (causes frequent errors)
+        - Medium (causes occasional issues)
+        - Low (minor inconvenience)
+    validations:
+      required: true
+
+  - type: checkbox
+    id: verification
+    attributes:
+      label: Verification
+      description: Before submitting, please verify
+      options:
+        - label: I have read the [DEPENDENCY_RESOLUTION.md](../docs/DEPENDENCY_RESOLUTION.md)
+          required: true
+        - label: I have tried running `npm run deps:health`
+          required: true
+        - label: I have checked existing issues for duplicates
+          required: true
+        - label: I am providing detailed environment information
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Helpful Resources
+        - [Dependency Resolution Guide](../docs/DEPENDENCY_RESOLUTION.md)
+        - [CI/CD Dependency Management](../docs/CICD_DEPENDENCY_MANAGEMENT.md)
+        - [Dependency Migration Guide](../docs/DEPENDENCY_MIGRATION.md)
+        - [npm Documentation](https://docs.npmjs.com)
