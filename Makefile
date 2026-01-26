@@ -173,3 +173,36 @@ watch: ## Watch and rebuild on file changes
 
 ci: lint test build ## Run CI checks locally
 	@echo "$(GREEN)✓ All CI checks passed$(NC)"
+# Dependency management targets
+deps-check: ## Check dependency tree
+	@echo "$(BLUE)Checking dependency tree...$(NC)"
+	@npm run deps:check
+	@cd backend && npm run deps:check
+
+deps-validate: ## Validate package.json files
+	@echo "$(BLUE)Validating package.json structure...$(NC)"
+	@npm run deps:validate
+
+deps-audit: ## Run security audit on dependencies
+	@echo "$(BLUE)Running security audit...$(NC)"
+	@npm run deps:audit
+	@cd backend && npm run deps:audit
+
+deps-health: ## Run comprehensive dependency health check
+	@echo "$(BLUE)Running dependency health check...$(NC)"
+	@npm run deps:health
+
+deps-install-clean: ## Clean install dependencies (for CI/CD)
+	@echo "$(BLUE)Performing clean dependency installation...$(NC)"
+	@rm -rf node_modules backend/node_modules package-lock.json backend/package-lock.json
+	@npm ci
+	@cd backend && npm ci
+	@echo "$(GREEN)✓ Clean installation complete$(NC)"
+
+deps-outdated: ## Show outdated packages
+	@echo "$(BLUE)Checking for outdated packages...$(NC)"
+	@npm outdated --depth=0 || true
+	@echo "\n$(BLUE)Backend outdated packages:$(NC)"
+	@cd backend && npm outdated --depth=0 || true
+
+deps-all: deps-check deps-validate deps-audit ## Run all dependency checks
