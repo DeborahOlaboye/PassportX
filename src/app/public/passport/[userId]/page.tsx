@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import BadgeGrid from '@/components/BadgeGrid'
 import { Share2, ExternalLink, Calendar } from 'lucide-react'
+import { validateUserIdParameter, isSafeFromInjection } from '@/utils/validation'
 
 // Mock user data - in real app, this would be fetched based on userId
 const mockUserData = {
