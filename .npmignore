@@ -1,0 +1,74 @@
+# .npmignore - Files to exclude from npm package
+
+# Development dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+tests/
+*.test.js
+*.test.ts
+jest.config.js
+cypress/
+cypress.config.js
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Source files (only distribute build output)
+src/
+contracts/
+
+# Config files
+.env
+.env.local
+.env.*.local
+tsconfig.json
+babel.config.js
+.eslintrc*
+.prettierrc*
+.gitignore
+
+# Version control
+.git/
+.github/
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml
+
+# Documentation
+docs/
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+
+# CI/CD
+.github/workflows/
+.circleci/
+.travis.yml
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+.DS_Store
+Thumbs.db
