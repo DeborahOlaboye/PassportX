@@ -94,7 +94,21 @@ export async function generateMetadata({ params }: { params: { userId: string } 
 }
 
 export default function PublicPassportPage({ params }: { params: { userId: string } }) {
-  const user = mockUserData // In real app, fetch based on params.userId
+  // Validate the userId parameter
+  const validation = validateUserIdParameter(params.userId)
+  
+  // Return not found page for invalid parameters
+  if (!validation.isValid) {
+    notFound()
+  }
+
+  // Additional safety check for injection patterns
+  if (!isSafeFromInjection(validation.sanitized || '')) {
+    notFound()
+  }
+
+  // In real app, fetch based on validated params.userId
+  const user = mockUserData
   const communities = new Set(user.badges.map(badge => badge.community))
   
   const handleShare = async () => {
