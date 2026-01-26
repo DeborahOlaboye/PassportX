@@ -53,7 +53,15 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
   const fetchProfile = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/users/profile?customUrl=${resolvedParams.customUrl}`)
+      
+      // Use sanitized customUrl from validation
+      const sanitizedUrl = validation.sanitized || ''
+      
+      // Build URL with validated parameter
+      const url = new URL(`${window.location.origin}/api/users/profile`)
+      url.searchParams.set('customUrl', sanitizedUrl)
+      
+      const response = await fetch(url.toString())
       const data = await response.json()
 
       if (response.ok) {
