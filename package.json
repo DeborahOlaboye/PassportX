@@ -28,7 +28,11 @@
     "quality:check": "sonar-scanner",
     "analyze": "source-map-explorer '.next/static/**/*.js' --html > bundle-analysis.html && open bundle-analysis.html",
     "analyze:size": "next-bundle-analyzer",
-    "verify-deps": "npx tsx scripts/verify-dependencies.ts"
+    "verify-deps": "npx tsx scripts/verify-dependencies.ts",
+    "deps:check": "npm ls --depth=0",
+    "deps:audit": "npm audit --audit-level=moderate",
+    "deps:validate": "node scripts/validate-package-json.js",
+    "deps:health": "bash scripts/dependency-checker.sh"
   },
   "dependencies": {
     "@hirosystems/chainhook-client": "^2.4.0",
