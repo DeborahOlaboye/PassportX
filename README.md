@@ -70,6 +70,63 @@ Users get a portable identity layer showing their growth, contribution, learning
 
 ---
 
+## 🛠️ Environment Setup
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB
+- Stacks account (for contract deployment)
+
+### Environment Variables
+
+PassportX uses environment variables for configuration. The project includes a master `.env.example` file at the repository root that contains all available variables.
+
+#### Quick Setup
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Fill in required variables:**
+   - `MONGODB_URI` - Your MongoDB connection string
+   - `JWT_SECRET` - A secure random string for JWT signing
+   - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - From WalletConnect dashboard
+   - `NEXT_PUBLIC_APP_URL` - Your application's public URL
+
+3. **Configure blockchain settings:**
+   - Set `STACKS_NETWORK` to `devnet`, `testnet`, or `mainnet`
+   - Update contract addresses based on your network
+
+#### Required vs Optional Variables
+
+**Required Variables** (application will fail to start without these):
+- Database: `MONGODB_URI`
+- Authentication: `JWT_SECRET`
+- Application: `NODE_ENV`, `PORT`, `FRONTEND_URL`
+- Blockchain: `STACKS_NETWORK`, `STACKS_API_URL`
+- Frontend: `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, `NEXT_PUBLIC_APP_URL`
+
+**Optional Variables** have sensible defaults and are not required for basic operation:
+- Monitoring: `SENTRY_DSN`, `LOG_LEVEL`
+- Chainhooks: Various `CHAINHOOK_*` variables
+- Feature flags: `ENABLE_*` variables
+
+#### Backend Validation
+
+The backend automatically validates required environment variables at startup using `dotenv-safe`. If any required variable is missing, the application will fail fast with a clear error message listing the missing variables.
+
+#### Environment-Specific Files
+
+- **`.env.example`** - Master template with all variables (repository root)
+- **`backend/.env.example`** - Backend-specific required variables
+- **`.env.local.example`** - Frontend-specific variables
+
+For development, copy `.env.example` to `.env` and modify as needed. For production deployments, ensure all required variables are set.
+
+---
+
 ## 🧑‍💼 How It Works (Product Flow)
 
 ### 1. User Creates Passport
