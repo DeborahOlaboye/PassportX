@@ -34,8 +34,20 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Validate customUrl parameter on component mount
+  const validation = validateCustomUrlParameter(resolvedParams.customUrl)
+  
+  // Set error if customUrl is invalid
+  const isValidUrl = validation.isValid && isSafeFromInjection(validation.sanitized || '')
+
   useEffect(() => {
-    fetchProfile()
+    // Only fetch if customUrl is valid
+    if (isValidUrl) {
+      fetchProfile()
+    } else {
+      setError('Invalid custom URL format')
+      setLoading(false)
+    }
   }, [resolvedParams.customUrl])
 
   const fetchProfile = async () => {
