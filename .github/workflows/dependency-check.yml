@@ -1,0 +1,97 @@
+name: Dependency Health Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    name: Verify Dependencies
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for unmet peer dependencies
+        run: npm ls --depth=0
+
+      - name: Verify no missing packages
+        run: |
+          OUTPUT=$(npm ls --depth=0 2>&1)
+          if echo "$OUTPUT" | grep -q "UNMET DEPENDENCY"; then
+            echo "❌ Unmet peer dependencies found!"
+            echo "$OUTPUT" | grep "UNMET"
+            exit 1
+          else
+            echo "✅ All peer dependencies are met"
+          fi
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate || true
+
+      - name: Check package-lock.json consistency
+        run: |
+          npm ls --depth=0
+          echo "✅ package-lock.json is consistent"
+
+      - name: Generate dependency report
+        if: always()
+        run: |
+          echo "## Dependency Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dependency Tree" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          npm ls --depth=0 >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  backend-dependency-check:
+    runs-on: ubuntu-latest
+    name: Verify Backend Dependencies
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for unmet peer dependencies
+        run: npm ls --depth=0
+
+      - name: Verify no missing packages
+        run: |
+          OUTPUT=$(npm ls --depth=0 2>&1)
+          if echo "$OUTPUT" | grep -q "UNMET DEPENDENCY"; then
+            echo "❌ Unmet peer dependencies found!"
+            echo "$OUTPUT" | grep "UNMET"
+            exit 1
+          else
+            echo "✅ All backend peer dependencies are met"
+          fi
