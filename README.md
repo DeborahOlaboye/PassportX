@@ -251,7 +251,12 @@ Chainhooks is a reorg-aware transaction indexing engine that provides reliable b
 
 1. **Install Dependencies**
    ```bash
-   npm install @hirosystems/chainhook-client
+   npm install
+   ```
+   
+   For CI/CD environments, use `npm ci` for reproducible builds:
+   ```bash
+   npm ci
    ```
 
 2. **Configure Environment Variables**
@@ -266,7 +271,16 @@ Chainhooks is a reorg-aware transaction indexing engine that provides reliable b
    NEXT_PUBLIC_CHAINHOOK_ENABLED=true
    ```
 
-3. **Start Using Chainhooks**
+3. **Verify Dependencies**
+   ```bash
+   # Check for unmet peer dependencies
+   npm ls --depth=0
+   
+   # Run dependency health check
+   npm run verify-deps
+   ```
+
+4. **Start Using Chainhooks**
    ```typescript
    import { getChainhookConfig } from '@/config/chainhook';
 
