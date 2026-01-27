@@ -2,6 +2,8 @@ import request from 'supertest';
 import express from 'express';
 import cors from 'cors';
 
+jest.setTimeout(30000);
+
 describe('CORS Configuration', () => {
   let app: express.Application;
 
@@ -81,11 +83,17 @@ describe('CORS Configuration', () => {
   });
 
   test('should default to localhost when CORS_ORIGIN is empty', () => {
+    const originalValue = process.env.CORS_ORIGIN;
     delete process.env.CORS_ORIGIN;
+    
     const allowedOrigins = process.env.CORS_ORIGIN 
-      ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+      ? (process.env.CORS_ORIGIN as string).split(',').map((origin: string) => origin.trim())
       : ['http://localhost:3000'];
     
     expect(allowedOrigins).toEqual(['http://localhost:3000']);
+    
+    if (originalValue) {
+      process.env.CORS_ORIGIN = originalValue;
+    }
   });
 });

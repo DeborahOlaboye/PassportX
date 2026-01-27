@@ -156,6 +156,50 @@ docker run -p 3001:3001 --env-file .env passportx-backend
 - Security headers (helmet)
 - Environment variable protection
 
+## CORS Configuration
+
+The backend supports multiple allowed origins for cross-origin requests.
+
+### Environment Setup
+
+Configure allowed origins in `.env`:
+
+```bash
+CORS_ORIGIN=http://localhost:3000,https://staging.passportx.com,https://passportx.com
+```
+
+### Features
+
+- Multiple origin whitelist support via comma-separated list
+- Proper preflight OPTIONS request handling
+- Credentials enabled for cookie-based authentication
+- Configurable per environment (development/staging/production)
+- Default fallback to `http://localhost:3000` if not configured
+
+### Security
+
+- Only whitelisted origins can make cross-origin requests
+- Non-whitelisted origins receive CORS error response
+- Supports both HTTP (development) and HTTPS (production)
+- Preflight requests cached for 24 hours
+
+### Testing CORS
+
+Manual test with curl:
+
+```bash
+curl -H "Origin: http://localhost:3000" \
+     -H "Access-Control-Request-Method: POST" \
+     -X OPTIONS \
+     http://localhost:8080/api/endpoint \
+     -v
+```
+
+Expected response headers:
+- `Access-Control-Allow-Origin: http://localhost:3000`
+- `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS`
+- `Access-Control-Allow-Credentials: true`
+
 ### Monitoring & Logging
 - Request/response logging
 - Performance metrics
