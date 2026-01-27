@@ -322,7 +322,161 @@ export class AccessControlSecurityMonitor {
       principal: alert.principal
     });
 
-    // TODO: Send notification (email, Slack, etc.)
+    // Send notifications for high and critical security alerts
+    if (['high', 'critical'].includes(alert.severity)) {
+      this.sendSecurityAlertNotification(alert).catch(error => {
+        this.logger.error('Failed to send security alert notification', error);
+      });
+    }
+  }
+
+  /**
+   * Send security alert notifications via configured channels
+   */
+  private async sendSecurityAlertNotification(alert: SecurityAlert): Promise<void> {
+    const notificationPayload = {
+      title: `🚨 Security Alert: ${alert.title}`,
+      message: alert.description,
+      type: alert.type,
+      severity: alert.severity,
+      principal: alert.principal,
+      evidence: alert.evidence,
+      timestamp: alert.timestamp
+    };
+
+    try {
+      // Send to Slack if configured
+      if (process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL) {
+        await this.sendSlackSecurityNotification(notificationPayload);
+      }
+
+      // Send email if configured
+      if (process.env.SECURITY_EMAIL_ENABLED === 'true' && process.env.SECURITY_EMAIL_TO) {
+        await this.sendSecurityEmailNotification(notificationPayload);
+      }
+
+      this.logger.info('Security alert notification sent successfully', {
+        type: alert.type,
+        severity: alert.severity,
+        principal: alert.principal,
+        channels: this.getEnabledSecurityChannels()
+      });
+    } catch (error) {
+      this.logger.error('Error sending security alert notification', {
+        error,
+        alertType: alert.type,
+        principal: alert.principal
+      });
+    }
+  }
+
+  /**
+   * Send security alert to Slack
+   */
+  private async sendSlackSecurityNotification(notification: any): Promise<void> {
+    const webhookUrl = process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
+    if (!webhookUrl) return;
+
+    const severityColor = {
+      low: '#36a64f',
+      medium: '#ffaa00',
+      high: '#ff6600',
+      critical: '#ff0000'
+    };
+
+    const payload = {
+      text: notification.title,
+      attachments: [
+        {
+          color: severityColor[notification.severity as keyof typeof severityColor] || '#ff6600',
+          blocks: [
+            {
+              type: 'header',
+              text: {
+                type: 'plain_text',
+                text: notification.title
+              }
+            },
+            {
+              type: 'section',
+              fields: [
+                {
+                  type: 'mrkdwn',
+                  text: `*Type:*\n${notification.type}`
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Severity:*\n${notification.severity.toUpperCase()}`
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Principal:*\n\`${notification.principal}\``
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Time:*\n${new Date(notification.timestamp).toISOString()}`
+                }
+              ]
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*Description:*\n${notification.message}`
+              }
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*Evidence Count:* ${notification.evidence.length}`
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Slack security notification failed: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Send security alert via email (placeholder)
+   */
+  private async sendSecurityEmailNotification(notification: any): Promise<void> {
+    this.logger.info('Security email notification placeholder', {
+      to: process.env.SECURITY_EMAIL_TO,
+      subject: notification.title,
+      type: notification.type,
+      severity: notification.severity
+    });
+    
+    // TODO: Integrate with actual email service
+  }
+
+  /**
+   * Get list of enabled security notification channels
+   */
+  private getEnabledSecurityChannels(): string[] {
+    const channels: string[] = [];
+    
+    if (process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL) {
+      channels.push('slack');
+    }
+    
+    if (process.env.SECURITY_EMAIL_ENABLED === 'true') {
+      channels.push('email');
+    }
+    
+    return channels;
   }
 
   /**
