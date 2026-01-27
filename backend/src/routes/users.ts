@@ -10,7 +10,31 @@ import path from 'path'
 
 const router = Router()
 
-// Get user profile
+/**
+ * @swagger
+ * /api/v1/users/profile/{address}:
+ *   get:
+ *     summary: Get user profile
+ *     description: Retrieves a user's public profile information
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Stacks address of the user
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserProfile'
+ *       403:
+ *         description: Profile is private
+ *       404:
+ *         description: User not found
+ */
 router.get('/profile/:address', optionalAuth, async (req: AuthRequest, res, next) => {
   try {
     const { address } = req.params
@@ -42,7 +66,66 @@ router.get('/profile/:address', optionalAuth, async (req: AuthRequest, res, next
   }
 })
 
-// Update user profile
+/**
+ * @swagger
+ * /api/v1/users/profile:
+ *   put:
+ *     summary: Update user profile
+ *     description: Updates the authenticated user's profile information
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               bio:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *               isPublic:
+ *                 type: boolean
+ *               customUrl:
+ *                 type: string
+ *               socialLinks:
+ *                 type: object
+ *                 properties:
+ *                   twitter:
+ *                     type: string
+ *                   github:
+ *                     type: string
+ *                   linkedin:
+ *                     type: string
+ *                   discord:
+ *                     type: string
+ *                   website:
+ *                     type: string
+ *               themePreferences:
+ *                 type: object
+ *                 properties:
+ *                   mode:
+ *                     type: string
+ *                     enum: [light, dark, system]
+ *                   accentColor:
+ *                     type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserProfile'
+ *       400:
+ *         description: Custom URL is already taken
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
 router.put('/profile', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     const { name, bio, avatar, isPublic, customUrl, socialLinks, themePreferences } = req.body

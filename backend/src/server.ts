@@ -4,6 +4,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv-safe'
+import swaggerJsdoc from 'swagger-jsdoc'
+import swaggerUi from 'swagger-ui-express'
 import { connectDB } from './utils/database'
 import { errorHandler } from './middleware/errorHandler'
 import { requestLogger } from './middleware/monitoring'
@@ -32,6 +34,84 @@ const app = express()
 const httpServer = createServer(app)
 const PORT = process.env.PORT || 3001
 
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'PassportX API',
+      version: '1.0.0',
+      description: 'API documentation for PassportX Achievement Passport',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}/api/v1`,
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'sessionToken',
+        },
+      },
+      schemas: {
+        User: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            stacksAddress: { type: 'string' },
+            name: { type: 'string' },
+            bio: { type: 'string' },
+            avatar: { type: 'string' },
+            email: { type: 'string' },
+            isPublic: { type: 'boolean' },
+            joinDate: { type: 'string', format: 'date-time' },
+            hasPassport: { type: 'boolean' },
+            communities: { type: 'array', items: { type: 'string' } },
+            adminCommunities: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        UserProfile: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            stacksAddress: { type: 'string' },
+            name: { type: 'string' },
+            bio: { type: 'string' },
+            avatar: { type: 'string' },
+            customUrl: { type: 'string' },
+            socialLinks: {
+              type: 'object',
+              properties: {
+                twitter: { type: 'string' },
+                github: { type: 'string' },
+                linkedin: { type: 'string' },
+                discord: { type: 'string' },
+                website: { type: 'string' },
+              },
+            },
+            themePreferences: {
+              type: 'object',
+              properties: {
+                mode: { type: 'string', enum: ['light', 'dark', 'system'] },
+                accentColor: { type: 'string' },
+              },
+            },
+            isPublic: { type: 'boolean' },
+            joinDate: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
+    },
+  },
+  apis: ['./src/routes/*.ts'], // Path to the API routes
+}
+
+const specs = swaggerJsdoc(swaggerOptions)
+
 // Security middleware
 app.use(helmet())
 app.use(cors({
@@ -53,22 +133,25 @@ app.use(express.urlencoded({ extended: true }))
 // Request monitoring
 app.use(requestLogger)
 
+ // Swagger UI
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs))
+
 // Health routes
 app.use('/health', healthRoutes)
 
 // API routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/communities', communityRoutes)
-app.use('/api/badges', badgeRoutes)
-app.use('/api/badges', badgeSearchRoutes)
-app.use('/api/blockchain', blockchainRoutes)
-app.use('/api/verify', verificationRoutes)
-app.use('/api/notifications', notificationRoutes)
-app.use('/api/analytics', analyticsRoutes)
-app.use('/api/activity', activityRoutes)
-app.use('/api/webhooks', webhooksRoutes)
-app.use('/api/reorg', reorgRoutes)
+app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/users', userRoutes)
+app.use('/api/v1/communities', communityRoutes)
+app.use('/api/v1/badges', badgeRoutes)
+app.use('/api/v1/badges', badgeSearchRoutes)
+app.use('/api/v1/blockchain', blockchainRoutes)
+app.use('/api/v1/verify', verificationRoutes)
+app.use('/api/v1/notifications', notificationRoutes)
+app.use('/api/v1/analytics', analyticsRoutes)
+app.use('/api/v1/activity', activityRoutes)
+app.use('/api/v1/webhooks', webhooksRoutes)
+app.use('/api/v1/reorg', reorgRoutes)
 
 // Error handling
 app.use(errorHandler)
