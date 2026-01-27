@@ -25,7 +25,51 @@ export function initializeBadgeMetadataRoutes(
   uiRefreshService = _uiRefreshService
 }
 
-// Create badge template
+/**
+ * @swagger
+ * /api/v1/badges/templates:
+ *   post:
+ *     summary: Create badge template
+ *     description: Creates a new badge template for a community
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               level:
+ *                 type: number
+ *               icon:
+ *                 type: string
+ *               requirements:
+ *                 type: string
+ *               communityId:
+ *                 type: string
+ *             required:
+ *               - name
+ *               - description
+ *               - category
+ *               - level
+ *               - communityId
+ *     responses:
+ *       201:
+ *         description: Badge template created successfully
+ *       400:
+ *         description: Missing required fields
+ *       403:
+ *         description: Only community admin can create badge templates
+ *       404:
+ *         description: Community not found
+ */
 router.post('/templates', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     const { name, description, category, level, icon, requirements, communityId } = req.body

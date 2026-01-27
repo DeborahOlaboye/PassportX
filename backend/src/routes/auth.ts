@@ -6,7 +6,37 @@ import User from '../models/User'
 
 const router = Router()
 
-// Generate authentication message
+/**
+ * @swagger
+ * /api/v1/auth/message:
+ *   post:
+ *     summary: Generate authentication message
+ *     description: Generates a message for user authentication using Stacks address
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stacksAddress:
+ *                 type: string
+ *                 description: The Stacks address of the user
+ *             required:
+ *               - stacksAddress
+ *     responses:
+ *       200:
+ *         description: Authentication message generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request - Stacks address is required
+ */
 router.post('/message', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { stacksAddress } = req.body
@@ -22,7 +52,47 @@ router.post('/message', async (req: Request, res: Response, next: NextFunction) 
   }
 })
 
-// Authenticate with signature
+/**
+ * @swagger
+ * /api/v1/auth/login:
+ *   post:
+ *     summary: Authenticate user with signature
+ *     description: Authenticates a user using Stacks address, message, and signature
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stacksAddress:
+ *                 type: string
+ *                 description: The Stacks address of the user
+ *               message:
+ *                 type: string
+ *                 description: The authentication message
+ *               signature:
+ *                 type: string
+ *                 description: The signature of the message
+ *             required:
+ *               - stacksAddress
+ *               - message
+ *               - signature
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request - Missing required fields
+ */
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { stacksAddress, message, signature } = req.body
@@ -38,7 +108,25 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
   }
 })
 
-// Logout user
+/**
+ * @swagger
+ * /api/v1/auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     description: Logs out the current user by clearing the session
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
 router.post('/logout', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     logoutUser(res)
@@ -51,7 +139,29 @@ router.post('/logout', async (_req: Request, res: Response, next: NextFunction) 
   }
 })
 
-// Verify current session
+/**
+ * @swagger
+ * /api/v1/auth/verify:
+ *   get:
+ *     summary: Verify current session
+ *     description: Verifies the current user session and returns user information
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Session verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: No session token found or invalid/expired session
+ */
 router.get('/verify', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = getSessionToken(req)
