@@ -15,8 +15,17 @@
     ;; Check permissions
     (asserts! (contract-call? .access-control can-issue-badges-in-community community-id tx-sender) err-unauthorized)
     
-    ;; Mint badge through issuer
-    (contract-call? .badge-issuer mint-badge recipient template-id)
+    (let ((mint-result (contract-call? .badge-issuer mint-badge recipient template-id)))
+      (begin
+        (print {
+          event: "badge-created",
+          user: recipient,
+          template: template-id,
+          community: community-id
+        })
+        mint-result
+      )
+    )
   )
 )
 
