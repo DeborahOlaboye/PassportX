@@ -5,7 +5,7 @@ Clarinet.test({
     name: "Platform admin can pause and unpause the contract",
     async fn(chain: Chain, accounts: Map<string, Account>) {
         const deployer = accounts.get('deployer')!;
-        
+
         let block = chain.mineBlock([
             // Check initial state
             Tx.contractCall('access-control', 'is-paused', [], deployer.address),
@@ -20,11 +20,12 @@ Clarinet.test({
         ]);
 
         assertEquals(block.receipts.length, 5);
-        assertEquals(block.receipts[0].result, types.bool(false));
+        // Expect result wrapped in ok because of trait implementation
+        block.receipts[0].result.expectOk().expectBool(false);
         block.receipts[1].result.expectOk();
-        assertEquals(block.receipts[2].result, types.bool(true));
+        block.receipts[2].result.expectOk().expectBool(true);
         block.receipts[3].result.expectOk();
-        assertEquals(block.receipts[4].result, types.bool(false));
+        block.receipts[4].result.expectOk().expectBool(false);
     },
 });
 
@@ -32,7 +33,7 @@ Clarinet.test({
     name: "Non-admin cannot pause the contract",
     async fn(chain: Chain, accounts: Map<string, Account>) {
         const wallet1 = accounts.get('wallet_1')!;
-        
+
         let block = chain.mineBlock([
             Tx.contractCall('access-control', 'set-paused', [types.bool(true)], wallet1.address)
         ]);
@@ -82,7 +83,8 @@ Clarinet.test({
                 types.ascii("Description"),
                 types.uint(1),
                 types.uint(1),
-                types.uint(communityId)
+                types.uint(communityId),
+                types.uint(100) // expiration-duration
             ], deployer.address)
         ]);
 
@@ -106,6 +108,27 @@ Clarinet.test({
             Tx.contractCall('badge-issuer', 'revoke-badge', [
                 types.uint(badgeId),
                 types.uint(communityId)
+            ], deployer.address)
+        ]);
+
+        assertEquals(block.receipts.length, 2);
+        block.receipts[0].result.expectOk();
+        block.receipts[1].result.expectErr().expectUint(110); // ERR-PAUSED
+    },
+});
+
+Clarinet.test({
+    name: "Community creation is blocked when contract is paused",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+
+        let block = chain.mineBlock([
+            // Pause
+            Tx.contractCall('access-control', 'set-paused', [types.bool(true)], deployer.address),
+            // Try to create community
+            Tx.contractCall('community-manager', 'create-community', [
+                types.ascii("Test Community"),
+                types.ascii("Description")
             ], deployer.address)
         ]);
 

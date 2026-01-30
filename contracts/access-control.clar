@@ -1,5 +1,8 @@
 ;; Access Control Contract
 ;; Centralized access control for badge issuance and management
+
+(use-trait pausable-trait .pausable-trait.pausable)
+(impl-trait .pausable-trait.pausable)
 ;;
 ;; Error Codes Used:
 ;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
@@ -328,5 +331,5 @@
 )
 
 (define-read-only (is-paused)
-  (var-get contract-paused)
+  (ok (var-get contract-paused))
 )

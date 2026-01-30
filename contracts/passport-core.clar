@@ -8,15 +8,19 @@
 ;; Constants
 (define-constant contract-owner tx-sender)
 (define-constant err-unauthorized (err u104))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Main passport functions
 (define-public (create-passport-badge (recipient principal) (template-id uint) (community-id uint))
   (begin
+    ;; Check paused state
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    
     ;; Check permissions
     (asserts! (contract-call? .access-control can-issue-badges-in-community community-id tx-sender) err-unauthorized)
     
     ;; Mint badge through issuer
-    (contract-call? .badge-issuer mint-badge recipient template-id)
+    (contract-call? .badge-issuer mint-badge recipient template-id community-id)
   )
 )
 
@@ -36,6 +40,7 @@
 
 (define-public (setup-community-issuer (community-id uint) (issuer principal))
   (begin
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
     (asserts! (contract-call? .access-control can-manage-community-members community-id tx-sender) err-unauthorized)
     (contract-call? .badge-issuer authorize-issuer issuer)
   )
