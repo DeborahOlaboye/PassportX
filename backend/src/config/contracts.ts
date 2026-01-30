@@ -3,6 +3,13 @@
  * Manages contract addresses for different networks
  */
 
+import {
+  validateContractAddress,
+  validateAddressNetwork,
+  validateContractAddresses,
+  formatValidationErrors
+} from '../utils/addressValidation';
+
 export interface ContractConfig {
   address: string
   name: string
@@ -140,23 +147,46 @@ export function getContractId(contract: ContractConfig): string {
  * Verify all contract addresses are configured
  */
 export function verifyContractConfiguration(): boolean {
-  const contracts = getContracts()
-  const network = process.env.STACKS_NETWORK || 'devnet'
+  const contracts = getContracts();
+  const network = (process.env.STACKS_NETWORK || 'devnet').toLowerCase();
 
-  // For mainnet, ensure all addresses are set
-  if (network === 'mainnet') {
-    const allConfigured = Object.values(contracts).every(
-      contract => contract.address && contract.address.startsWith('SP')
-    )
-
-    if (!allConfigured) {
-      console.error('❌ Mainnet contract addresses not fully configured!')
-      return false
+  const contractAddresses: Record<string, string> = {};
+  for (const [key, config] of Object.entries(contracts)) {
+    if (config.address) {
+      contractAddresses[key] = config.address;
     }
   }
 
-  console.log(`✅ Contract configuration verified for ${network}`)
-  return true
+  if (Object.keys(contractAddresses).length === 0) {
+    if (network === 'devnet') {
+      console.warn('Warning: No contract addresses configured for devnet');
+      return true;
+    } else {
+      console.error(`Contract addresses are required for ${network} network`);
+      return false;
+    }
+  }
+
+  const validation = validateContractAddresses(contractAddresses);
+  
+  if (!validation.valid) {
+    console.error(`Contract address validation failed:\n${formatValidationErrors(validation.errors)}`);
+    return false;
+  }
+
+  const expectedNetwork = network === 'mainnet' ? 'mainnet' : 'testnet';
+  if (network !== 'devnet') {
+    for (const [name, address] of Object.entries(contractAddresses)) {
+      const networkValidation = validateAddressNetwork(address, expectedNetwork);
+      if (!networkValidation.valid) {
+        console.error(`${name}: ${networkValidation.error}`);
+        return false;
+      }
+    }
+  }
+
+  console.log(`Contract configuration verified for ${network} network`);
+  return true;
 }
 
 /**
