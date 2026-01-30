@@ -307,3 +307,59 @@ By contributing, you agree that your contributions will be licensed under the sa
 ---
 
 Thank you for contributing to PassportX! 🎉
+
+## TODO Comments Policy
+
+We strongly discourage TODO comments in production code. Instead, follow these guidelines:
+
+### Preferred Approaches
+
+1. **Implement Immediately**: If possible, implement the functionality right away
+   ```typescript
+   // ✅ Good - implemented functionality
+   function validateUser(user: User): boolean {
+     return user.email && user.stacksAddress;
+   }
+   ```
+
+2. **Create a GitHub Issue**: For features that can't be implemented immediately, create an issue and reference it
+   ```typescript
+   // ✅ Good - tracked in issue
+   // FIXME: Add advanced validation - #156
+   function validateUser(user: User): boolean {
+     return !!user.email;
+   }
+   ```
+
+3. **Use FIXME for Known Bugs**: Use FIXME instead of TODO for bugs that need fixing
+   ```typescript
+   // ✅ Good - marks a bug
+   // FIXME: Issue #157 - Handle null case
+   ```
+
+4. **Use NOTE for Documentation**: Use NOTE for explanat4. **Use NOTE for Documentation**: Use NOTE for explanat4. **Uses context
+   // NOTE: This uses a   // NOTE: This uses for   // NOTE: This uses a   // NOTE: This uses for   // NOTE: This uses a   // NOTE: This uoper validation
+
+// ❌ Bad - vague TODO
+// TODO: improve this
+
+// ❌ Bad - TODO without context
+// TODO: fix
+```
+
+### CI Enforcement
+
+Our CI pipeline includes a TODO comOur CI pipeline i will flag pull requests containing untracked TODO comments. Ensure any TODO comments either:
+
+- Are removed before submitting
+- Include a GitHub issue reference (e.g., `// TODO: Feature description - #123`)
+- Are replaced with FIXME or NOTE as appropriate
+
+### Rationale
+
+TODO comments tend to accumulate and become stale. By requiring issue tracking:
+- Features are properly documented and prioritized
+- Progress can be tracked
+- Context is preserved
+- Technical debt is visible
+

@@ -114,8 +114,27 @@ export class AccessControlEventHandler {
       principal: event.principal
     });
 
-    // TODO: Update user permissions in database if needed
-    // This could involve updating User model or a separate Permissions collection
+    try {
+      const User = (await import('../models/User')).default;
+      const user = await User.findOne({ stacksAddress: event.principal });
+      
+      if (user) {
+        if (!user.permissions) {
+          user.permissions = new Map();
+        }
+        user.permissions.set(event.metadata.permission, event.metadata.newValue);
+        user.lastActive = new Date();
+        await user.save();
+        
+        this.logger.info('User global permissions updated in database', {
+          stacksAddress: event.principal,
+          permission: event.metadata.permission,
+          value: event.metadata.newValue
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error updating user global permissions in database', error);
+    }
   }
 
   /**
@@ -153,8 +172,38 @@ export class AccessControlEventHandler {
       targetPrincipal: event.targetPrincipal
     });
 
-    // TODO: Update community member role in database
-    // May need to update Community.members or a separate CommunityMember model
+    try {
+      const Community = (await import('../models/Community')).default;
+      const community = await Community.findOne({ contractId: communityId });
+      
+      if (community && event.targetPrincipal) {
+        const memberIndex = community.members.findIndex(
+          (m: any) => m.address === event.targetPrincipal
+        );
+        
+        if (memberIndex !== -1) {
+          community.members[memberIndex].role = role;
+          community.members[memberIndex].roleAssignedAt = new Date();
+        } else {
+          community.members.push({
+            address: event.targetPrincipal,
+            role,
+            joinedAt: new Date(),
+            roleAssignedAt: new Date()
+          });
+        }
+        
+        await community.save();
+        
+        this.logger.info('Community member role updated in database', {
+          communityId,
+          member: event.targetPrincipal,
+          role
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error updating community member role in database', error);
+    }
   }
 
   /**
@@ -167,7 +216,31 @@ export class AccessControlEventHandler {
       targetPrincipal: event.targetPrincipal
     });
 
-    // TODO: Remove role from community member
+    try {
+      const Community = (await import('../models/Community')).default;
+      const community = await Community.findOne({ contractId: communityId });
+      
+      if (community && event.targetPrincipal) {
+        const memberIndex = community.members.findIndex(
+          (m: any) => m.address === event.targetPrincipal
+        );
+        
+        if (memberIndex !== -1) {
+          community.members[memberIndex].role = null;
+          community.members[memberIndex].roleRevokedAt = new Date();
+        }
+        
+        await community.save();
+        
+        this.logger.info('Community member role revoked in database', {
+          communityId,
+          member: event.targetPrincipal,
+          role
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error revoking community member role in database', error);
+    }
   }
 
   /**
@@ -268,9 +341,26 @@ export class AccessControlEventHandler {
       suspendedBy: event.principal
     });
 
-    // TODO: Update user status in database
-    // Could involve adding a 'suspended' field to User model
-    // Or maintaining a separate SuspendedUsers collection
+    try {
+      const User = (await import('../models/User')).default;
+      const user = await User.findOne({ stacksAddress: suspendedUser });
+      
+      if (user) {
+        (user as any).status = 'suspended';
+        (user as any).suspendedAt = new Date();
+        (user as any).suspendedBy = event.principal;
+        (user as any).suspensionReason = event.metadata.reason;
+        user.lastActive = new Date();
+        await user.save();
+        
+        this.logger.info('User suspension status updated in database', {
+          stacksAddress: suspendedUser,
+          suspendedBy: event.principal
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error updating user suspension status in database', error);
+    }
   }
 
   /**
@@ -288,7 +378,26 @@ export class AccessControlEventHandler {
       unsuspendedBy: event.principal
     });
 
-    // TODO: Update user status in database
+    try {
+      const User = (await import('../models/User')).default;
+      const user = await User.findOne({ stacksAddress: unsuspendedUser });
+      
+      if (user) {
+        (user as any).status = 'active';
+        (user as any).unsuspendedAt = new Date();
+        (user as any).unsuspendedBy = event.principal;
+        (user as any).suspensionReason = null;
+        user.lastActive = new Date();
+        await user.save();
+        
+        this.logger.info('User unsuspension status updated in database', {
+          stacksAddress: unsuspendedUser,
+          unsuspendedBy: event.principal
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error updating user unsuspension status in database', error);
+    }
   }
 
   /**
@@ -304,8 +413,34 @@ export class AccessControlEventHandler {
       authorizedBy: event.principal
     });
 
-    // TODO: Update issuer permissions in database
-    // Could involve a separate Issuers collection or Community.issuers field
+    try {
+      const Community = (await import('../models/Community')).default;
+      const community = await Community.findOne({ contractId: communityId });
+      
+      if (community && issuer) {
+        if (!community.issuers) {
+          community.issuers = [];
+        }
+        
+        if (authorized) {
+          if (!community.issuers.includes(issuer)) {
+            community.issuers.push(issuer);
+          }
+        } else {
+          community.issuers = community.issuers.filter((addr: string) => addr !== issuer);
+        }
+        
+        await community.save();
+        
+        this.logger.info('Issuer permissions updated in database', {
+          communityId,
+          issuer,
+          authorized
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error updating issuer permissions in database', error);
+    }
   }
 
   /**

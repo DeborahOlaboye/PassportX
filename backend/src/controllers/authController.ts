@@ -7,6 +7,8 @@ import {
   verifySessionToken,
   getSessionToken
 } from '../utils/sessionManager';
+import { verifySignature } from '../services/authService';
+import logger from '../utils/logger';
 
 // Helper function to handle errors
 const handleError = (res: Response, error: any, message: string) => {
@@ -33,8 +35,32 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
       });
     }
 
-    // TODO: Verify signature when Stacks signature verification is implemented
-    // For now, we trust the client-side authentication
+    // Verify signature
+    if (!signature || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Signature and message are required for authentication',
+        code: 'MISSING_SIGNATURE'
+      });
+    }
+
+    const isValidSignature = await verifySignature(message, signature, stacksAddress);
+    
+    if (!isValidSignature) {
+      logger.warn('Invalid signature attempt', { 
+        stacksAddress, 
+        messageLength: message?.length,
+        signatureLength: signature?.length  
+      });
+      
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid signature. Please sign the message with your wallet.',
+        code: 'INVALID_SIGNATURE'
+      });
+    }
+
+    logger.info('Signature verified successfully', { stacksAddress });
 
     // Find or create user
     let user = await User.findOne({ stacksAddress });

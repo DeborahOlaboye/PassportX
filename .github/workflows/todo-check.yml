@@ -1,0 +1,60 @@
+name: TODO Comment Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+      - '**/*.jsx'
+
+jobs:
+  check-todos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Check for untracked TODO comments
+        run: |
+          echo "🔍 Checking for TODO comments in source files..."
+          echo ""
+          
+          # Search for TODO comments, excluding node_modules and common ignore patterns
+          TODOS=$(grep -rn "TODO" \
+            --include="*.ts" \
+            --include="*.tsx" \
+            --include="*.js" \
+            --include="*.jsx" \
+            --exclude-dir=node_modules \
+            --exclude-dir=dist \
+            --exclude-dir=build \
+            --exclude-dir=coverage \
+            --exclude-dir=.next \
+            src/ backend/src/ 2>/dev/null || true)
+          
+          if [ -n "$TODOS" ]; then
+            # Check if TODOs have issue references (#123 format)
+            UNTRACKED_TODOS=$(echo "$TODOS" | grep -v "#[0-9]\+" || true)
+            
+            if [ -n "$UNTRACKED_TODOS" ]; then
+              echo "❌ Found TODO comments without issue references:"
+              echo ""
+              echo "$UNTRACKED_TODOS"
+              echo ""
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "📋 Please either:"
+              echo "  1. ✅ Implement the functionality immediately"
+              echo "  2. 🎫 Create a GitHub issue and reference it:"
+              echo "     // TODO: Add proper validation - #123"
+              echo "  3. 🗑️  Remove the TODO if it's obsolete"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              exit 1
+            else
+              echo "✅ All TODO comments have issue references"
+              echo "$TODOS"
+            fi
+          else
+            echo "✅ No TODO comments found - great job!"
+          fi

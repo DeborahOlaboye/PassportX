@@ -252,7 +252,133 @@ export class ErrorMonitoringService {
       this.alerts = this.alerts.slice(-100);
     }
 
-    // TODO: Send notification (email, slack, etc.)
+    // Send notifications for medium, high, and critical alerts
+    if (['medium', 'high', 'critical'].includes(severity)) {
+      this.sendAlertNotification(alert).catch(error => {
+        this.logger.error('Failed to send alert notification', error);
+      });
+    }
+  }
+
+  /**
+   * Send alert notifications via configured channels
+   */
+  private async sendAlertNotification(alert: Alert): Promise<void> {
+    const notificationPayload = {
+      title: `${alert.severity.toUpperCase()} Alert: ${alert.type}`,
+      message: alert.message,
+      severity: alert.severity,
+      timestamp: alert.timestamp,
+      metadata: alert.metadata
+    };
+
+    try {
+      // Send to Slack if configured
+      if (process.env.SLACK_WEBHOOK_URL) {
+        await this.sendSlackNotification(notificationPayload);
+      }
+
+      // Send email if configured
+      if (process.env.ERROR_EMAIL_ENABLED === 'true' && process.env.ERROR_EMAIL_TO) {
+        await this.sendEmailNotification(notificationPayload);
+      }
+
+      this.logger.info('Alert notification sent successfully', {
+        type: alert.type,
+        severity: alert.severity,
+        channels: this.getEnabledChannels()
+      });
+    } catch (error) {
+      this.logger.error('Error sending alert notification', {
+        error,
+        alert: alert.type
+      });
+    }
+  }
+
+  /**
+   * Send notification to Slack
+   */
+  private async sendSlackNotification(notification: any): Promise<void> {
+    const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+    if (!webhookUrl) return;
+
+    const severityEmoji = {
+      low: '🟢',
+      medium: '🟡',
+      high: '🟠',
+      critical: '🔴'
+    };
+
+    const payload = {
+      text: `${severityEmoji[notification.severity as keyof typeof severityEmoji] || '⚠️'} ${notification.title}`,
+      blocks: [
+        {
+          type: 'header',
+          text: {
+            type: 'plain_text',
+            text: notification.title
+          }
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `*Message:* ${notification.message}\n*Severity:* ${notification.severity}\n*Time:* ${new Date(notification.timestamp).toISOString()}`
+          }
+        },
+        {
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: `Environment: ${process.env.NODE_ENV || 'development'}`
+            }
+          ]
+        }
+      ]
+    };
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Slack notification failed: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Send notification via email (placeholder for email service integration)
+   */
+  private async sendEmailNotification(notification: any): Promise<void> {
+    this.logger.info('Email notification placeholder', {
+      to: process.env.ERROR_EMAIL_TO,
+      subject: notification.title,
+      severity: notification.severity
+    });
+    
+    // TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
+    // Example implementation would go here
+  }
+
+  /**
+   * Get list of enabled notification channels
+   */
+  private getEnabledChannels(): string[] {
+    const channels: string[] = [];
+    
+    if (process.env.SLACK_WEBHOOK_URL) {
+      channels.push('slack');
+    }
+    
+    if (process.env.ERROR_EMAIL_ENABLED === 'true') {
+      channels.push('email');
+    }
+    
+    return channels;
   }
 
   /**
