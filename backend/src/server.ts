@@ -3,7 +3,7 @@ import { createServer } from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
-import dotenv from 'dotenv'
+import dotenv from 'dotenv-safe'
 import { connectDB } from './utils/database'
 import { errorHandler } from './middleware/errorHandler'
 import { requestLogger } from './middleware/monitoring'
@@ -32,12 +32,31 @@ const app = express()
 const httpServer = createServer(app)
 const PORT = process.env.PORT || 3001
 
+// CORS configuration with support for multiple origins
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000'];
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
 // Security middleware
 app.use(helmet())
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}))
+app.use(cors(corsOptions))
 
 // Rate limiting
 const limiter = rateLimit({
