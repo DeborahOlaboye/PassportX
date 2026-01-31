@@ -13,6 +13,10 @@ epoch = 2.5
 path = "traits/badge-reader-trait.clar"
 epoch = 2.5
 
+[contracts.pausable-trait]
+path = "traits/pausable-trait.clar"
+epoch = 2.5
+
 [contracts.passport-nft]
 path = "passport-nft.clar"
 epoch = 2.5

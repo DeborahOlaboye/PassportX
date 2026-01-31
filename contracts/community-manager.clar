@@ -14,6 +14,7 @@
 (define-constant ERR-COMMUNITY-NOT-FOUND (err u300))
 (define-constant ERR-NOT-COMMUNITY-OWNER (err u301))
 (define-constant ERR-COMMUNITY-ALREADY-EXISTS (err u304))
+(define-constant ERR-PAUSED (err u110))
 
 ;; Contract constants
 (define-constant contract-owner tx-sender)
@@ -57,7 +58,9 @@
 
 ;; Create a new community
 (define-public (create-community (name (string-ascii 64)) (description (string-ascii 256)))
-  (let
+  (begin
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (let
     (
       (community-id (var-get next-community-id))
     )
@@ -102,6 +105,7 @@
     (ok community-id)
   )
 )
+)
 
 ;; Get community information
 (define-read-only (get-community (community-id uint))
@@ -110,7 +114,9 @@
 
 ;; Add member to community
 (define-public (add-community-member (community-id uint) (member principal) (role (string-ascii 32)))
-  (let
+  (begin
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
@@ -132,6 +138,7 @@
     ))
   )
 )
+)
 
 ;; Check if user is community member
 (define-read-only (is-community-member (community-id uint) (member principal))
@@ -145,7 +152,9 @@
 
 ;; Update community settings
 (define-public (update-community-settings (community-id uint) (settings {public-badges: bool, allow-member-requests: bool, require-approval: bool}))
-  (let
+  (begin
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
@@ -165,10 +174,13 @@
     (ok (map-set community-settings { community-id: community-id } settings))
   )
 )
+)
 
 ;; Deactivate community
 (define-public (deactivate-community (community-id uint))
-  (let
+  (begin
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
@@ -188,10 +200,13 @@
     ))
   )
 )
+)
 
 ;; Transfer community ownership
 (define-public (transfer-community-ownership (community-id uint) (new-owner principal))
-  (let
+  (begin
+    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
     )
@@ -211,4 +226,5 @@
       (merge community { owner: new-owner })
     ))
   )
+)
 )
