@@ -10,14 +10,15 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     return res.status(401).json({ error: 'Access token required' })
   }
 
-  jwt.verify(token, process.env.JWT_SECRET!, (err, decoded: any) => {
+  jwt.verify(token, process.env.JWT_SECRET!, (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid or expired token' })
     }
 
+    const payload = decoded as JWTPayload
     req.user = {
-      stacksAddress: decoded.stacksAddress,
-      userId: decoded.userId
+      stacksAddress: payload.stacksAddress,
+      userId: payload.userId
     }
     next()
   })
