@@ -25,10 +25,13 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
       return res.status(403).json({ error: 'Invalid or expired token' })
     }
 
-    const payload = decoded as JWTPayload
+    if (!isValidJWTPayload(decoded)) {
+      return res.status(403).json({ error: 'Invalid token payload' })
+    }
+
     req.user = {
-      stacksAddress: payload.stacksAddress,
-      userId: payload.userId
+      stacksAddress: decoded.stacksAddress,
+      userId: decoded.userId
     }
     next()
   })
