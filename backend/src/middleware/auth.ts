@@ -12,9 +12,12 @@ const isValidJWTPayload = (decoded: any): decoded is JWTPayload => {
   )
 }
 
+const extractTokenFromHeader = (authHeader: string | undefined): string | undefined => {
+  return authHeader && authHeader.split(' ')[1]
+}
+
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
+  const token = extractTokenFromHeader(req.headers['authorization'])
 
   if (!token) {
     return res.status(401).json({ error: 'Access token required' })
