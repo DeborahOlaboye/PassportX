@@ -26,6 +26,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     }
 
     if (!isValidJWTPayload(decoded)) {
+      console.error('Invalid JWT payload structure:', decoded)
       return res.status(403).json({ error: 'Invalid token payload' })
     }
 
