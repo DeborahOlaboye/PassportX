@@ -2,6 +2,16 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { AuthRequest, JWTPayload } from '../types'
 
+const isValidJWTPayload = (decoded: any): decoded is JWTPayload => {
+  return (
+    decoded &&
+    typeof decoded.userId === 'string' &&
+    typeof decoded.stacksAddress === 'string' &&
+    typeof decoded.iat === 'number' &&
+    typeof decoded.exp === 'number'
+  )
+}
+
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
