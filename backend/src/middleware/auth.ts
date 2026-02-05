@@ -45,7 +45,7 @@ export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction
   const token = extractTokenFromHeader(req.headers['authorization'])
 
   if (token) {
-    jwt.verify(token, process.env.JWT_SECRET!, (err, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET!, (err: jwt.VerifyErrors | null, decoded: any) => {
       if (!err && isValidJWTPayload(decoded)) {
         req.user = {
           stacksAddress: decoded.stacksAddress,
