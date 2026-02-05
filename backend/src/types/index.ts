@@ -136,6 +136,13 @@ export interface IBadge extends Document {
   metadata: IBadgeMetadata
 }
 
+export interface JWTPayload {
+  userId: string
+  stacksAddress: string
+  iat: number
+  exp: number
+}
+
 export interface AuthRequest extends Request {
   user?: {
     stacksAddress: string
