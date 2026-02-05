@@ -43,11 +43,10 @@ export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction
 
   if (token) {
     jwt.verify(token, process.env.JWT_SECRET!, (err, decoded) => {
-      if (!err) {
-        const payload = decoded as JWTPayload
+      if (!err && isValidJWTPayload(decoded)) {
         req.user = {
-          stacksAddress: payload.stacksAddress,
-          userId: payload.userId
+          stacksAddress: decoded.stacksAddress,
+          userId: decoded.userId
         }
       }
     })
