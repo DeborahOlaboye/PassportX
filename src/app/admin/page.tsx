@@ -1,12 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useAuth } from '@/contexts/AuthContext'
-import CommunityCard from '@/components/CommunityCard'
 import { Plus, BarChart3, Users, Award, Loader, Gift } from 'lucide-react'
 import Link from 'next/link'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { CommunityErrorFallback } from '@/components/FallbackUI'
+
+const CommunityCard = dynamic(() => import('@/components/CommunityCard'), {
+  loading: () => <div className="h-64 animate-pulse bg-gray-100 rounded-xl" />
+})
 
 interface BadgeStats {
   totalIssued: number
