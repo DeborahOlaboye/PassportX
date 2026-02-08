@@ -144,6 +144,15 @@ export interface IBadge extends Document {
   metadata: IBadgeMetadata
 }
 
+export interface IPopulatedBadge extends Omit<IBadge, 'templateId' | 'community'> {
+  templateId: IBadgeTemplate
+  community: ICommunity
+}
+
+export interface IPopulatedBadgeTemplate extends Omit<IBadgeTemplate, 'community'> {
+  community: ICommunity
+}
+
 export interface JWTPayload {
   userId: string
   stacksAddress: string
