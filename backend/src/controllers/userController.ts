@@ -130,15 +130,13 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
     // Update settings
     if (isPublic !== undefined) user.isPublic = isPublic;
 
-    // Store additional privacy settings in a settings object
-    const settings = {
-      showEmail: showEmail ?? false,
-      showBadges: showBadges ?? true,
-      showCommunities: showCommunities ?? true
+    // Store additional privacy settings
+    user.settings = {
+      showEmail: showEmail ?? user.settings?.showEmail ?? false,
+      showBadges: showBadges ?? user.settings?.showBadges ?? true,
+      showCommunities: showCommunities ?? user.settings?.showCommunities ?? true
     };
 
-    // Add settings field to user model if needed
-    (user as any).settings = settings;
     user.lastActive = new Date();
 
     await user.save();
@@ -147,7 +145,7 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
       success: true,
       data: {
         isPublic: user.isPublic,
-        settings
+        settings: user.settings
       }
     });
   } catch (error) {
@@ -182,7 +180,7 @@ export const initializePassport = async (req: AuthRequest, res: Response) => {
 
     // Generate passport ID (in real implementation, this would mint an NFT)
     const passportId = `passport_${stacksAddress}_${Date.now()}`;
-    (user as any).passportId = passportId;
+    user.passportId = passportId;
     user.lastActive = new Date();
 
     await user.save();
