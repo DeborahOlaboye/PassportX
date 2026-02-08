@@ -59,7 +59,7 @@ export class TransactionValidator {
     };
   }
 
-  private static validateFunctionArgs(functionName: string, args: any[]): string[] {
+  private static validateFunctionArgs(functionName: string, args: unknown[]): string[] {
     const errors: string[] = [];
 
     switch (functionName) {
@@ -70,7 +70,7 @@ export class TransactionValidator {
           if (typeof args[0] !== 'string' || args[0].trim() === '') {
             errors.push('Badge ID must be a non-empty string');
           }
-          if (!this.isValidAddress(args[1])) {
+          if (typeof args[1] !== 'string' || !this.isValidAddress(args[1])) {
             errors.push('Invalid recipient address for mint-badge');
           }
         }
@@ -83,7 +83,7 @@ export class TransactionValidator {
           if (typeof args[0] !== 'string' || args[0].trim() === '') {
             errors.push('Badge ID must be a non-empty string');
           }
-          if (!this.isValidAddress(args[1])) {
+          if (typeof args[1] !== 'string' || !this.isValidAddress(args[1])) {
             errors.push('Invalid recipient address for transfer-badge');
           }
         }
@@ -96,7 +96,7 @@ export class TransactionValidator {
           if (typeof args[0] !== 'string' || args[0].trim() === '') {
             errors.push('Community ID must be a non-empty string');
           }
-          if (!this.isValidAddress(args[1])) {
+          if (typeof args[1] !== 'string' || !this.isValidAddress(args[1])) {
             errors.push('Invalid user address for join-community');
           }
         }
