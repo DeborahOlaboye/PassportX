@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import CommunityCreationForm from '@/components/forms/CommunityCreationForm'
+import dynamic from 'next/dynamic'
 import { useCreateCommunity } from '@/hooks/useCreateCommunity'
 import { useAuth } from '@/contexts/AuthContext'
 import { ArrowLeft, CheckCircle, AlertCircle, Loader } from 'lucide-react'
 import Link from 'next/link'
+
+const CommunityCreationForm = dynamic(() => import('@/components/forms/CommunityCreationForm'), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-50 rounded-xl" />
+})
 
 interface CreateCommunityFormData {
   name: string
