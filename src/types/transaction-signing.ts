@@ -1,3 +1,5 @@
+import { ClarityValue } from '@stacks/transactions';
+
 export interface TransactionRequest {
   type: 'stx-transfer' | 'contract-call';
   recipient?: string;
@@ -5,14 +7,14 @@ export interface TransactionRequest {
   contractAddress?: string;
   contractName?: string;
   functionName?: string;
-  functionArgs?: any[];
+  functionArgs?: ClarityValue[];
   memo?: string;
 }
 
 export interface SignedTransaction {
   id: string;
   request: TransactionRequest;
-  signedTx: any;
+  signedTx: string;
   timestamp: number;
   status: 'signed' | 'broadcasting' | 'confirmed' | 'failed';
   hash?: string;

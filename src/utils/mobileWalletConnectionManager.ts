@@ -7,19 +7,26 @@ import { MobileUXOptimizer } from './mobileUXOptimizer';
 export type WalletType = 'xverse' | 'hiro' | 'leather';
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'timeout' | 'cancelled';
 
+export interface WalletConnectionData {
+  address?: string;
+  publicKey?: string;
+  network?: string;
+  [key: string]: unknown;
+}
+
 export interface ConnectionOptions {
   walletType: WalletType;
   timeout?: number;
   enableAnalytics?: boolean;
   enableHapticFeedback?: boolean;
   onStatusChange?: (status: ConnectionStatus) => void;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: WalletConnectionData) => void;
   onError?: (error: Error) => void;
 }
 
 export interface ConnectionResult {
   success: boolean;
-  data?: any;
+  data?: WalletConnectionData;
   error?: string;
   sessionId?: string;
   duration: number;
@@ -138,7 +145,7 @@ class MobileWalletConnectionManager {
   private setupDeepLinkHandler(sessionId: string, options: ConnectionOptions): Promise<void> {
     return new Promise((resolve, reject) => {
       const handler = {
-        onDeepLink: (data: any) => {
+        onDeepLink: (data: { result: string; error?: string }) => {
           if (data.result === 'success') {
             resolve();
           } else if (data.result === 'error' || data.result === 'cancelled') {
@@ -159,14 +166,14 @@ class MobileWalletConnectionManager {
     });
   }
 
-  private async waitForResponse(sessionId: string, timeout: number): Promise<{ success: boolean; data?: any; error?: string }> {
+  private async waitForResponse(sessionId: string, timeout: number): Promise<{ success: boolean; data?: WalletConnectionData; error?: string }> {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.activeConnections.get(sessionId)?.onStatusChange?.('timeout');
         reject(new Error('Connection timeout'));
       }, timeout);
 
-      const responseCallback = (response: any) => {
+      const responseCallback = (response: { success: boolean; data?: WalletConnectionData; error?: string }) => {
         clearTimeout(timeoutId);
         resolve(response);
       };

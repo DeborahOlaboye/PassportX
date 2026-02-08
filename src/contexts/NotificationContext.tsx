@@ -3,13 +3,22 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
 
+interface NotificationData {
+  badgeId?: string;
+  communityId?: string;
+  templateId?: string;
+  issuer?: string;
+  url?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
 interface Notification {
   _id: string
   userId: string
   type: 'badge_received' | 'community_update' | 'system_announcement' | 'badge_issued' | 'community_invite' | 'badge_verified'
   title: string
   message: string
-  data?: any
+  data?: NotificationData
   read: boolean
   createdAt: string
 }
@@ -81,7 +90,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     })
 
     // Listen for system announcements
-    socketInstance.on('notification:system', (notification: any) => {
+    socketInstance.on('notification:system', (notification: Notification) => {
       console.log('System announcement received:', notification)
       // Handle system-wide announcements
     })
