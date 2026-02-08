@@ -32,14 +32,18 @@ export const createAuthToken = (
 /**
  * Validate token structure.
  */
-export const validateTokenStructure = (token: any): token is AuthToken => {
+export const validateTokenStructure = (token: unknown): token is AuthToken => {
   return (
     typeof token === 'object' &&
     token !== null &&
-    typeof token.accessToken === 'string' &&
-    typeof token.account === 'string' &&
-    typeof token.issued === 'number' &&
-    typeof token.expiresAt === 'number'
+    'accessToken' in token &&
+    'account' in token &&
+    'issued' in token &&
+    'expiresAt' in token &&
+    typeof (token as AuthToken).accessToken === 'string' &&
+    typeof (token as AuthToken).account === 'string' &&
+    typeof (token as AuthToken).issued === 'number' &&
+    typeof (token as AuthToken).expiresAt === 'number'
   );
 };
 
