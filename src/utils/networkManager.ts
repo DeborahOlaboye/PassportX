@@ -96,7 +96,7 @@ export class NetworkAwareHttpClient {
     this.baseUrl = NETWORK_CONFIGS[networkType].apiUrl;
   }
 
-  async get(endpoint: string, options?: RequestInit): Promise<any> {
+  async get<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const response = await fetch(url, {
       ...options,
@@ -113,7 +113,7 @@ export class NetworkAwareHttpClient {
     return response.json();
   }
 
-  async post(endpoint: string, data: any, options?: RequestInit): Promise<any> {
+  async post<T = unknown>(endpoint: string, data: unknown, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const response = await fetch(url, {
       method: 'POST',
