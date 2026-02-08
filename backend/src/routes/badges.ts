@@ -5,7 +5,7 @@ import Community from '../models/Community'
 import { authenticateToken, optionalAuth } from '../middleware/auth'
 import { validatePagination } from '../middleware/validation'
 import { createError } from '../middleware/errorHandler'
-import { AuthRequest } from '../types'
+import { AuthRequest, IPopulatedBadge, IPopulatedBadgeTemplate } from '../types'
 import { updateMemberCount } from '../services/communityService'
 import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalidator'
 import BadgeUIRefreshService from '../services/badgeUIRefreshService'
@@ -111,12 +111,12 @@ router.post('/issue', authenticateToken, async (req: AuthRequest, res, next) => 
       throw createError('Template ID and recipient address are required', 400)
     }
 
-    const template = await BadgeTemplate.findById(templateId).populate('community')
+    const template = await BadgeTemplate.findById(templateId).populate('community') as IPopulatedBadgeTemplate | null
     if (!template || !template.isActive) {
       throw createError('Badge template not found', 404)
     }
 
-    const community = template.community as any
+    const community = template.community
     if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can issue badges', 403)
     }
@@ -171,7 +171,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const badge = await Badge.findById(req.params.id)
       .populate('templateId')
-      .populate('community')
+      .populate('community') as IPopulatedBadge | null
 
     if (!badge) {
       throw createError('Badge not found', 404)
@@ -179,14 +179,14 @@ router.get('/:id', async (req, res, next) => {
 
     res.json({
       id: badge._id,
-      name: (badge.templateId as any).name,
-      description: (badge.templateId as any).description,
-      community: (badge.community as any).name,
+      name: badge.templateId.name,
+      description: badge.templateId.description,
+      community: badge.community.name,
       owner: badge.owner,
       issuer: badge.issuer,
       level: badge.metadata.level,
       category: badge.metadata.category,
-      icon: (badge.templateId as any).icon,
+      icon: badge.templateId.icon,
       issuedAt: badge.issuedAt,
       tokenId: badge.tokenId,
       transactionId: badge.transactionId
@@ -199,13 +199,13 @@ router.get('/:id', async (req, res, next) => {
 // Update badge template
 router.put('/templates/:id', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
-    const template = await BadgeTemplate.findById(req.params.id).populate('community')
+    const template = await BadgeTemplate.findById(req.params.id).populate('community') as IPopulatedBadgeTemplate | null
     
     if (!template || !template.isActive) {
       throw createError('Badge template not found', 404)
     }
 
-    const community = template.community as any
+    const community = template.community
     if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can update badge templates', 403)
     }
@@ -244,12 +244,12 @@ router.post('/issue/batch', authenticateToken, async (req: AuthRequest, res, nex
       throw createError('Template ID and recipient addresses array are required', 400)
     }
 
-    const template = await BadgeTemplate.findById(templateId).populate('community')
+    const template = await BadgeTemplate.findById(templateId).populate('community') as IPopulatedBadgeTemplate | null
     if (!template || !template.isActive) {
       throw createError('Badge template not found', 404)
     }
 
-    const community = template.community as any
+    const community = template.community
     if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can issue badges', 403)
     }
@@ -318,13 +318,13 @@ router.post('/issue/batch', authenticateToken, async (req: AuthRequest, res, nex
 // Revoke badge
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
-    const badge = await Badge.findById(req.params.id).populate('community')
+    const badge = await Badge.findById(req.params.id).populate('community') as IPopulatedBadge | null
     
     if (!badge) {
       throw createError('Badge not found', 404)
     }
 
-    const community = badge.community as any
+    const community = badge.community
     if (!community.admins.includes(req.user!.stacksAddress)) {
       throw createError('Only community admin can revoke badges', 403)
     }
