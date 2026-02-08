@@ -25,6 +25,12 @@ export interface INotificationPreferences {
   pushNotifications: boolean
 }
 
+export interface IUserSettings {
+  showEmail?: boolean
+  showBadges?: boolean
+  showCommunities?: boolean
+}
+
 export interface IUser extends Document {
   stacksAddress: string
   email?: string
@@ -40,6 +46,8 @@ export interface IUser extends Document {
   lastActive: Date
   communities: string[]
   adminCommunities: string[]
+  passportId?: string
+  settings?: IUserSettings
 }
 
 export interface ICommunityTheme {
