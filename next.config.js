@@ -6,6 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   images: {
     domains: ['localhost'],
+    formats: ['image/avif', 'image/webp'],
   },
   // Enable React Strict Mode
   reactStrictMode: true,
@@ -42,6 +43,8 @@ const nextConfig = {
   // Configure output file tracing
   output: 'standalone',
   experimental: {
+    // Enable automatic CSS optimization
+    optimizeCss: true,
     // Enable modular CSS for better CSS optimization
     modularizeCss: true,
     // Enable server components external packages
