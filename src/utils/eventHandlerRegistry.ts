@@ -6,17 +6,36 @@ import {
 } from '../types/chainhook';
 
 /**
+ * Event context type
+ */
+export interface EventContext {
+  userId?: string;
+  sessionId?: string;
+  metadata?: Record<string, string | number | boolean>;
+  [key: string]: unknown;
+}
+
+/**
+ * Action data type
+ */
+export interface ActionData {
+  event: ChainhookEvent;
+  predicateId: string;
+  [key: string]: unknown;
+}
+
+/**
  * Event handler function type
  */
 export type EventHandler = (
   event: ChainhookEvent,
-  context?: any
+  context?: EventContext
 ) => Promise<void>;
 
 /**
  * Action handler function type
  */
-export type ActionHandler = (data: any) => Promise<any>;
+export type ActionHandler = (data: ActionData) => Promise<unknown>;
 
 /**
  * Event Handler Registry
@@ -59,7 +78,7 @@ export class EventHandlerRegistry {
   async dispatch(
     eventType: string,
     event: ChainhookEvent,
-    context?: any
+    context?: EventContext
   ): Promise<EventHandlerResponse> {
     const startTime = Date.now();
     const actions = [];
@@ -121,9 +140,9 @@ export class EventHandlerRegistry {
    */
   async executeActions(
     predicateResult: PredicateResult,
-    context?: any
-  ): Promise<any[]> {
-    const results = [];
+    context?: EventContext
+  ): Promise<unknown[]> {
+    const results: unknown[] = [];
 
     if (!predicateResult.actions) {
       return results;
