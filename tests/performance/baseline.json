@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-01-01T00:00:00Z",
+  "baselines": {
+    "passport-endpoint": {
+      "p95": 450,
+      "p99": 1200,
+      "errorRate": 0.05
+    },
+    "badge-endpoint": {
+      "p95": 280,
+      "p99": 800,
+      "errorRate": 0.03
+    },
+    "communities-endpoint": {
+      "p95": 380,
+      "p99": 1000,
+      "errorRate": 0.04
+    }
+  },
+  "thresholds": {
+    "degradationTolerance": 0.15,
+    "maxErrorRate": 0.1,
+    "minThroughput": 10
+  }
+}
