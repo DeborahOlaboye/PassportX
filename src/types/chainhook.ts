@@ -39,7 +39,7 @@ export interface ContractCallEvent extends ChainhookEvent {
   type: EventType.TX;
   contract: string;
   function: string;
-  args: Record<string, any>;
+  args: Record<string, string | number | boolean>;
   txIndex: number;
   success: boolean;
 }
@@ -53,7 +53,7 @@ export interface NFTMintEvent extends ChainhookEvent {
   tokenId: string;
   recipient: string;
   contractAddress: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 /**
@@ -64,8 +64,8 @@ export interface MetadataUpdateEvent extends ChainhookEvent {
   type: EventType.TX;
   entityId: string;
   entityType: 'badge' | 'community' | 'profile';
-  changes: Record<string, any>;
-  previousValues?: Record<string, any>;
+  changes: Record<string, string | number | boolean>;
+  previousValues?: Record<string, string | number | boolean>;
 }
 
 /**
@@ -136,7 +136,7 @@ export interface EventHandlerResponse {
   actions: {
     name: string;
     status: 'success' | 'failed' | 'pending';
-    result?: any;
+    result?: unknown;
     error?: string;
   }[];
 }
@@ -179,7 +179,7 @@ export interface CommunityCreationEvent extends ChainhookEvent {
   creatorAddress: string;
   name: string;
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 /**
