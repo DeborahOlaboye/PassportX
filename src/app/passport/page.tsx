@@ -1,10 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import BadgeGrid from '@/components/BadgeGrid'
+import dynamic from 'next/dynamic'
 import { Share2, Download, Eye, EyeOff } from 'lucide-react'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { BadgeErrorFallback } from '@/components/FallbackUI'
+
+const BadgeGrid = dynamic(() => import('@/components/BadgeGrid'), {
+  loading: () => <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {[1, 2, 3].map(i => (
+      <div key={i} className="h-48 animate-pulse bg-gray-100 rounded-xl" />
+    ))}
+  </div>
+})
 
 // Mock data - in real app, this would come from blockchain
 const mockBadges = [
