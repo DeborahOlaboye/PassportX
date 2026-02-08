@@ -79,7 +79,16 @@ const userSchema = new Schema<IUser>({
   adminCommunities: [{
     type: Schema.Types.ObjectId,
     ref: 'Community'
-  }]
+  }],
+  passportId: {
+    type: String,
+    sparse: true
+  },
+  settings: {
+    showEmail: { type: Boolean, default: false },
+    showBadges: { type: Boolean, default: true },
+    showCommunities: { type: Boolean, default: true }
+  }
 }, {
   timestamps: true
 })
