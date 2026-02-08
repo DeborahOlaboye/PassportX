@@ -12,9 +12,27 @@ const CommunityCard = dynamic(() => import('@/components/CommunityCard'), {
   loading: () => <div className="h-64 animate-pulse bg-gray-100 rounded-xl" />
 })
 
+interface Community {
+  _id?: string;
+  id?: string;
+  name: string;
+  memberCount: number;
+  badgeCount: number;
+  [key: string]: unknown;
+}
+
+interface RecentBadge {
+  id: string;
+  recipient?: string;
+  template: string;
+  level: number;
+  community: string;
+  issuedAt: string;
+}
+
 interface BadgeStats {
   totalIssued: number
-  recentBadges: any[]
+  recentBadges: RecentBadge[]
 }
 
 export default function AdminDashboard() {
@@ -27,7 +45,7 @@ export default function AdminDashboard() {
 
 function AdminDashboardInner() {
   const { user } = useAuth()
-  const [communities, setCommunities] = useState<any[]>([])
+  const [communities, setCommunities] = useState<Community[]>([])
   const [badgeStats, setBadgeStats] = useState<BadgeStats>({ totalIssued: 0, recentBadges: [] })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -198,7 +216,7 @@ function AdminDashboardInner() {
                   </tr>
                 </thead>
                 <tbody>
-                  {badgeStats.recentBadges.map((badge: any) => (
+                  {badgeStats.recentBadges.map((badge: RecentBadge) => (
                     <tr key={badge.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4 font-mono text-sm">{badge.recipient?.slice(0, 10)}...</td>
                       <td className="py-3 px-4">{badge.template}</td>
