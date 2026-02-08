@@ -1,9 +1,20 @@
 import Link from 'next/link'
-import WalletConnect from './WalletConnect'
-import MobileMenu from './MobileMenu'
-import { NetworkSelector } from './NetworkSelector'
+import dynamic from 'next/dynamic'
 import ErrorBoundary from './ErrorBoundary'
 import { WalletErrorFallback } from './FallbackUI'
+
+const WalletConnect = dynamic(() => import('./WalletConnect'), {
+  ssr: false,
+  loading: () => <div className="h-10 w-32 animate-pulse bg-gray-200 rounded-lg" />
+})
+const MobileMenu = dynamic(() => import('./MobileMenu'), {
+  ssr: false,
+  loading: () => <div className="h-10 w-10 animate-pulse bg-gray-200 rounded-lg" />
+})
+const NetworkSelector = dynamic(() => import('./NetworkSelector').then(mod => mod.NetworkSelector), {
+  ssr: false,
+  loading: () => <div className="h-8 w-24 animate-pulse bg-gray-200 rounded-lg" />
+})
 
 export default function Header() {
   return (
