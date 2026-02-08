@@ -56,6 +56,17 @@ jobs:
         run: node tests/performance/compare-baseline.js smoke-results.json
         continue-on-error: true
 
+      - name: Generate performance report
+        if: always()
+        run: node tests/performance/generate-report.js smoke-results.json smoke-report.html
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-performance-report
+          path: smoke-report.html
+
       - name: Upload smoke test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -110,6 +121,17 @@ jobs:
 
       - name: Check performance baseline
         run: node tests/performance/compare-baseline.js load-results.json
+
+      - name: Generate performance report
+        if: always()
+        run: node tests/performance/generate-report.js load-results.json load-report.html
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-performance-report
+          path: load-report.html
 
       - name: Upload load test results
         uses: actions/upload-artifact@v4
