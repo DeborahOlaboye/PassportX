@@ -147,16 +147,18 @@ export function refreshSessionIfNeeded(
 
   // Decode without verification to check expiry
   try {
-    const decoded = jwt.decode(token) as any;
-    const exp = decoded.exp * 1000; // Convert to milliseconds
-    const now = Date.now();
-    const timeUntilExpiry = exp - now;
-    const oneDayInMs = 24 * 60 * 60 * 1000;
+    const decoded = jwt.decode(token) as jwt.JwtPayload | null;
+    if (decoded && typeof decoded !== 'string' && decoded.exp) {
+      const exp = decoded.exp * 1000; // Convert to milliseconds
+      const now = Date.now();
+      const timeUntilExpiry = exp - now;
+      const oneDayInMs = 24 * 60 * 60 * 1000;
 
-    // Refresh if less than 1 day until expiry
-    if (timeUntilExpiry < oneDayInMs) {
-      const newToken = generateSessionToken(sessionData);
-      setSessionCookie(res, newToken);
+      // Refresh if less than 1 day until expiry
+      if (timeUntilExpiry < oneDayInMs) {
+        const newToken = generateSessionToken(sessionData);
+        setSessionCookie(res, newToken);
+      }
     }
   } catch (error) {
     // If decoding fails, just return the session data without refreshing
