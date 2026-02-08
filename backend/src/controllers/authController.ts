@@ -75,7 +75,7 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
           email: user.email,
           isPublic: user.isPublic,
           joinDate: user.joinDate,
-          hasPassport: !!(user as any).passportId,
+          hasPassport: !!user.passportId,
           communities: user.communities,
           adminCommunities: user.adminCommunities
         }
@@ -129,7 +129,7 @@ export const verifySession = async (req: Request, res: Response) => {
           email: user.email,
           isPublic: user.isPublic,
           joinDate: user.joinDate,
-          hasPassport: !!(user as any).passportId,
+          hasPassport: !!user.passportId,
           communities: user.communities,
           adminCommunities: user.adminCommunities
         }
