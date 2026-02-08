@@ -139,6 +139,25 @@ console.log(badges);
 
 ---
 
+## 🧪 Testing
+
+### Performance Testing
+
+PassportX includes automated performance testing using K6 to detect performance regressions:
+
+- **Smoke Tests**: Quick validation with 5 concurrent users
+- **Load Tests**: Normal load testing with up to 100 concurrent users
+- **Stress Tests**: High-load testing with up to 200 concurrent users
+
+Performance tests run automatically in CI/CD:
+- On every push and pull request (smoke tests)
+- Daily scheduled runs at 2 AM UTC
+- Performance reports available as CI artifacts
+
+See [Performance Testing Documentation](./tests/performance/README.md) for details.
+
+---
+
 ## 📊 Success Metrics
 
 * Growth in number of communities issuing badges
