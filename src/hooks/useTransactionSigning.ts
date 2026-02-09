@@ -1,5 +1,6 @@
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
 import { TransactionRequest } from '@/types/transaction-signing';
+import { ClarityValue } from '@stacks/transactions';
 
 export function useSTXTransfer() {
   const { signTransaction, broadcastTransaction, estimateGas } = useTransactionSigning();
