@@ -136,7 +136,7 @@ export const useCreateCommunity = () => {
     [user, userSession]
   );
 
-  const registerCommunityOnBackend = async (communityData: any) => {
+  const registerCommunityOnBackend = async (communityData: CommunityBackendPayload) => {
     try {
       const response = await fetch('/api/communities', {
         method: 'POST',
