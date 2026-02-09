@@ -5,7 +5,7 @@ import {
   CreateCommunityParams,
   CommunitySettings
 } from '@/lib/contracts/communityContractUtils';
-import { CommunityBackendPayload } from '@/types/contract';
+import { CommunityBackendPayload, BackendApiResponse } from '@/types/contract';
 
 interface CreateCommunityOptions {
   name: string;
