@@ -17,6 +17,13 @@ export interface BadgeIssuanceBackendPayload {
   createdAt: string;
 }
 
+export interface BackendApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
 export interface CommunityBackendPayload {
   txId: string;
   name: string;
