@@ -5,7 +5,7 @@ import {
   BadgeIssuanceParams,
   BadgeIssuerResponse
 } from '@/lib/contracts/badgeContractUtils'
-import { BadgeIssuanceBackendPayload } from '@/types/contract'
+import { BadgeIssuanceBackendPayload, BackendApiResponse } from '@/types/contract'
 
 interface IssueBadgeOptions {
   recipientAddress: string
