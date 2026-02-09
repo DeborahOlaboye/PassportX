@@ -98,7 +98,8 @@ export class BadgeIssuerManager {
 
       return {
         txId: tx.txId || '',
-        badgeId: params.templateId
+        badgeId: params.templateId,
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
