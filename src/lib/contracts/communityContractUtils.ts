@@ -28,6 +28,10 @@ export interface CommunitySettings {
   requireApproval: boolean;
 }
 
+export interface CommunityContractResponse extends BaseContractResponse {
+  communityId?: number;
+}
+
 export interface CreateCommunityParams {
   name: string;
   description: string;
