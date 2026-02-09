@@ -1,5 +1,6 @@
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
 import { TransactionRequest } from '@/types/transaction-signing';
+import { ClarityValue } from '@stacks/transactions';
 
 export function useSTXTransfer() {
   const { signTransaction, broadcastTransaction, estimateGas } = useTransactionSigning();
@@ -39,7 +40,7 @@ export function useContractCall() {
     contractAddress: string,
     contractName: string,
     functionName: string,
-    functionArgs: any[] = []
+    functionArgs: ClarityValue[] = []
   ) => {
     const request: TransactionRequest = {
       type: 'contract-call',
@@ -58,7 +59,7 @@ export function useContractCall() {
     contractAddress: string,
     contractName: string,
     functionName: string,
-    functionArgs: any[] = []
+    functionArgs: ClarityValue[] = []
   ) => {
     const request: TransactionRequest = {
       type: 'contract-call',

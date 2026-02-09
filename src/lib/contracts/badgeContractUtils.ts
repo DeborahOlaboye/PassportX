@@ -7,6 +7,7 @@ import {
 } from '@stacks/transactions'
 import { StacksTestnet, StacksMainnet } from '@stacks/network'
 import { UserSession } from '@stacks/auth'
+import { BaseContractResponse } from '@/types/contract'
 
 export interface BadgeIssuanceParams {
   recipientAddress: string
@@ -15,8 +16,7 @@ export interface BadgeIssuanceParams {
   network: 'testnet' | 'mainnet'
 }
 
-export interface BadgeIssuerResponse {
-  txId: string
+export interface BadgeIssuerResponse extends BaseContractResponse {
   badgeId?: number
 }
 
@@ -98,7 +98,8 @@ export class BadgeIssuerManager {
 
       return {
         txId: tx.txId || '',
-        badgeId: params.templateId
+        badgeId: params.templateId,
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -145,7 +146,8 @@ export class BadgeIssuerManager {
       }
 
       return {
-        txId: tx.txId || ''
+        txId: tx.txId || '',
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -188,7 +190,8 @@ export class BadgeIssuerManager {
       }
 
       return {
-        txId: tx.txId || ''
+        txId: tx.txId || '',
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -236,7 +239,8 @@ export class BadgeIssuerManager {
 
       return {
         txId: tx.txId || '',
-        badgeId
+        badgeId,
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {

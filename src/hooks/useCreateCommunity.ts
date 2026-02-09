@@ -5,6 +5,7 @@ import {
   CreateCommunityParams,
   CommunitySettings
 } from '@/lib/contracts/communityContractUtils';
+import { CommunityBackendPayload, BackendApiResponse } from '@/types/contract';
 
 interface CreateCommunityOptions {
   name: string;
@@ -135,7 +136,7 @@ export const useCreateCommunity = () => {
     [user, userSession]
   );
 
-  const registerCommunityOnBackend = async (communityData: any) => {
+  const registerCommunityOnBackend = async (communityData: CommunityBackendPayload): Promise<BackendApiResponse> => {
     try {
       const response = await fetch('/api/communities', {
         method: 'POST',
@@ -146,11 +147,18 @@ export const useCreateCommunity = () => {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error: BackendApiResponse = await response.json();
         console.error('Backend registration error:', error);
+        return { success: false, error: error.message || 'Registration failed' };
       }
+
+      return response.json();
     } catch (error) {
       console.error('Failed to register community on backend:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   };
 

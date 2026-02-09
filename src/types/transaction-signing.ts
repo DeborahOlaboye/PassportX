@@ -11,6 +11,13 @@ export interface TransactionRequest {
   memo?: string;
 }
 
+export interface ContractCallArgs {
+  contractAddress: string;
+  contractName: string;
+  functionName: string;
+  functionArgs: ClarityValue[];
+}
+
 export interface SignedTransaction {
   id: string;
   request: TransactionRequest;

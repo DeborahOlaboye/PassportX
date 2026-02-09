@@ -12,6 +12,7 @@ import {
   contractPrincipalCV
 } from '@stacks/transactions';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
+import { BaseContractResponse, TransactionStatusResponse } from '@/types/contract';
 
 export interface CommunityMetadata {
   name: string;
@@ -25,6 +26,10 @@ export interface CommunitySettings {
   publicBadges: boolean;
   allowMemberRequests: boolean;
   requireApproval: boolean;
+}
+
+export interface CommunityContractResponse extends BaseContractResponse {
+  communityId?: number;
 }
 
 export interface CreateCommunityParams {
@@ -307,7 +312,7 @@ export class CommunityContractManager {
         throw new Error(`Failed to fetch transaction status: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: TransactionStatusResponse = await response.json();
       return data.tx_status === 'success';
     } catch (error) {
       console.error('Transaction validation error:', error);
