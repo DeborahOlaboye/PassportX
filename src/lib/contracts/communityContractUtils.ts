@@ -312,7 +312,7 @@ export class CommunityContractManager {
         throw new Error(`Failed to fetch transaction status: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: TransactionStatusResponse = await response.json();
       return data.tx_status === 'success';
     } catch (error) {
       console.error('Transaction validation error:', error);
