@@ -59,7 +59,7 @@ export function useContractCall() {
     contractAddress: string,
     contractName: string,
     functionName: string,
-    functionArgs: any[] = []
+    functionArgs: ClarityValue[] = []
   ) => {
     const request: TransactionRequest = {
       type: 'contract-call',
