@@ -136,7 +136,7 @@ export const useCreateCommunity = () => {
     [user, userSession]
   );
 
-  const registerCommunityOnBackend = async (communityData: CommunityBackendPayload) => {
+  const registerCommunityOnBackend = async (communityData: CommunityBackendPayload): Promise<BackendApiResponse> => {
     try {
       const response = await fetch('/api/communities', {
         method: 'POST',
@@ -147,11 +147,18 @@ export const useCreateCommunity = () => {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error: BackendApiResponse = await response.json();
         console.error('Backend registration error:', error);
+        return { success: false, error: error.message || 'Registration failed' };
       }
+
+      return response.json();
     } catch (error) {
       console.error('Failed to register community on backend:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   };
 
