@@ -1,10 +1,19 @@
+/**
+ * Contract call status types
+ */
 export type ContractCallStatus = 'pending' | 'confirmed' | 'failed';
 
+/**
+ * Base response interface for all contract calls
+ */
 export interface BaseContractResponse {
   txId: string;
   status: ContractCallStatus;
 }
 
+/**
+ * Payload for registering badge issuance on backend
+ */
 export interface BadgeIssuanceBackendPayload {
   txId: string;
   recipientAddress: string;
@@ -17,6 +26,9 @@ export interface BadgeIssuanceBackendPayload {
   createdAt: string;
 }
 
+/**
+ * Generic backend API response wrapper
+ */
 export interface BackendApiResponse<T = unknown> {
   success: boolean;
   data?: T;
