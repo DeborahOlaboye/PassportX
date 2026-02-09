@@ -7,6 +7,7 @@ import {
 } from '@stacks/transactions'
 import { StacksTestnet, StacksMainnet } from '@stacks/network'
 import { UserSession } from '@stacks/auth'
+import { BaseContractResponse } from '@/types/contract'
 
 export interface BadgeIssuanceParams {
   recipientAddress: string
