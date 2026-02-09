@@ -12,7 +12,7 @@ import {
   contractPrincipalCV
 } from '@stacks/transactions';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { BaseContractResponse } from '@/types/contract';
+import { BaseContractResponse, TransactionStatusResponse } from '@/types/contract';
 
 export interface CommunityMetadata {
   name: string;
