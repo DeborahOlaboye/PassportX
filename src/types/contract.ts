@@ -5,6 +5,18 @@ export interface BaseContractResponse {
   status: ContractCallStatus;
 }
 
+export interface BadgeIssuanceBackendPayload {
+  txId: string;
+  recipientAddress: string;
+  templateId: number;
+  communityId: number;
+  issuerAddress: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  network: 'testnet' | 'mainnet';
+  createdAt: string;
+}
+
 export interface CommunityBackendPayload {
   txId: string;
   name: string;
