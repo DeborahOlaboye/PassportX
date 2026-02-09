@@ -16,8 +16,7 @@ export interface BadgeIssuanceParams {
   network: 'testnet' | 'mainnet'
 }
 
-export interface BadgeIssuerResponse {
-  txId: string
+export interface BadgeIssuerResponse extends BaseContractResponse {
   badgeId?: number
 }
 
