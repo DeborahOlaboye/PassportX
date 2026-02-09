@@ -239,7 +239,8 @@ export class BadgeIssuerManager {
 
       return {
         txId: tx.txId || '',
-        badgeId
+        badgeId,
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
