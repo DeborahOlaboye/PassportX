@@ -198,17 +198,7 @@ export const useIssueBadge = () => {
   }
 }
 
-async function registerBadgeIssuance(payload: {
-  txId: string
-  recipientAddress: string
-  templateId: number
-  communityId: number
-  issuerAddress: string
-  recipientName?: string
-  recipientEmail?: string
-  network: 'testnet' | 'mainnet'
-  createdAt: string
-}) {
+async function registerBadgeIssuance(payload: BadgeIssuanceBackendPayload) {
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3001'
 
   const response = await fetch(`${backendUrl}/api/badges/issuance`, {
