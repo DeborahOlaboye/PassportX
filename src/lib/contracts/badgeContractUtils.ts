@@ -146,7 +146,8 @@ export class BadgeIssuerManager {
       }
 
       return {
-        txId: tx.txId || ''
+        txId: tx.txId || '',
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -189,7 +190,8 @@ export class BadgeIssuerManager {
       }
 
       return {
-        txId: tx.txId || ''
+        txId: tx.txId || '',
+        status: 'pending'
       }
     } catch (error) {
       if (error instanceof Error) {
