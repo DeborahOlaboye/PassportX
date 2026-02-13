@@ -153,11 +153,11 @@ export const useCreateCommunity = () => {
       }
 
       return response.json();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to register community on backend:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   };
@@ -178,7 +178,7 @@ export const useCreateCommunity = () => {
         const manager = new CommunityContractManager(contractAddress, userSession, network);
 
         return await manager.validateTransactionStatus(txId);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Transaction status check failed:', error);
         throw error;
       }
