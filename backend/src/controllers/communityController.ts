@@ -2,14 +2,15 @@ import { Request, Response } from 'express'
 import * as communityService from '../services/communityService'
 import { ICommunity } from '../models/Community'
 import { Types } from 'mongoose'
+import { getErrorMessage, getErrorStatusCode } from '../errors'
 
-// Helper function to handle errors
-const handleError = (res: Response, error: any, message: string) => {
+// Helper function to handle errors with type-safe error narrowing
+const handleError = (res: Response, error: unknown, message: string) => {
   console.error(message, error)
-  const status = error.status || 500
+  const status = getErrorStatusCode(error)
   res.status(status).json({
     success: false,
-    message: error.message || 'Internal server error'
+    message: getErrorMessage(error)
   })
 }
 
@@ -39,7 +40,7 @@ export const createCommunity = async (req: Request, res: Response) => {
       success: true,
       data: community
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error creating community:')
   }
 }
@@ -67,7 +68,7 @@ export const getCommunity = async (req: Request, res: Response) => {
       success: true,
       data: community
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching community:')
   }
 }
@@ -84,7 +85,7 @@ export const updateCommunity = async (req: Request, res: Response) => {
     }
 
     const updatedCommunity = await communityService.updateCommunity(id, updates, userAddress)
-    
+
     if (!updatedCommunity) {
       return res.status(404).json({
         success: false,
@@ -96,7 +97,7 @@ export const updateCommunity = async (req: Request, res: Response) => {
       success: true,
       data: updatedCommunity
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error updating community:')
   }
 }
@@ -112,7 +113,7 @@ export const deleteCommunity = async (req: Request, res: Response) => {
     }
 
     const result = await communityService.deleteCommunity(id, userAddress)
-    
+
     if (!result.success) {
       return res.status(400).json({
         success: false,
@@ -124,7 +125,7 @@ export const deleteCommunity = async (req: Request, res: Response) => {
       success: true,
       message: 'Community deleted successfully'
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error deleting community:')
   }
 }
@@ -147,7 +148,7 @@ export const listCommunities = async (req: Request, res: Response) => {
       success: true,
       ...result
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error listing communities:')
   }
 }
@@ -168,7 +169,7 @@ export const addMember = async (req: Request, res: Response) => {
       success: true,
       message: result.message
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error adding member to community:')
   }
 }
@@ -189,7 +190,7 @@ export const removeMember = async (req: Request, res: Response) => {
       success: true,
       message: result.message
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error removing member from community:')
   }
 }
@@ -215,7 +216,7 @@ export const addAdmin = async (req: Request, res: Response) => {
       success: true,
       message: result.message
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error adding admin to community:')
   }
 }
@@ -236,7 +237,7 @@ export const removeAdmin = async (req: Request, res: Response) => {
       success: true,
       message: result.message
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error removing admin from community:')
   }
 }
@@ -252,7 +253,7 @@ export const getAnalytics = async (req: Request, res: Response) => {
       success: true,
       data: analytics
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching community analytics:')
   }
 }
@@ -269,7 +270,7 @@ export const getLeaderboard = async (req: Request, res: Response) => {
       success: true,
       data: leaderboard
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching community leaderboard:')
   }
 }
@@ -290,7 +291,7 @@ export const getMembers = async (req: Request, res: Response) => {
       success: true,
       ...result
     })
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching community members:')
   }
 }
