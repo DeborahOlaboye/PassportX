@@ -2,14 +2,19 @@ import express from 'express'
 import badgeSearchService from '../services/badgeSearchService'
 import { IBadgeSearchQuery } from '../types'
 import { validatePagination } from '../middleware/validation'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { API_READ_RATE_LIMIT } from '../config/rateLimits'
 
 const router = express.Router()
+
+// Rate limiter for search operations (200 requests per 15 minutes)
+const searchLimiter = createRateLimiter(API_READ_RATE_LIMIT)
 
 /**
  * POST /api/badges/search
  * Search and filter badges
  */
-router.post('/search', async (req, res) => {
+router.post('/search', searchLimiter, async (req, res) => {
   try {
     const query: IBadgeSearchQuery = req.body
 
@@ -32,7 +37,7 @@ router.post('/search', async (req, res) => {
  * GET /api/badges/search
  * Search badges with query parameters
  */
-router.get('/search', validatePagination, async (req, res) => {
+router.get('/search', searchLimiter, validatePagination, async (req, res) => {
   try {
     const {
       search,
