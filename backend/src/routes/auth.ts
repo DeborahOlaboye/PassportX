@@ -3,11 +3,16 @@ import { generateAuthMessage, authenticateUser, logoutUser } from '../services/a
 import { createError } from '../middleware/errorHandler'
 import { verifySessionToken, getSessionToken } from '../utils/sessionManager'
 import User from '../models/User'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { AUTH_RATE_LIMIT } from '../config/rateLimits'
 
 const router = Router()
 
+// Apply strict rate limiting to all auth routes (10 requests per 15 minutes)
+const authLimiter = createRateLimiter(AUTH_RATE_LIMIT)
+
 // Generate authentication message
-router.post('/message', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/message', authLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { stacksAddress } = req.body
 
@@ -23,7 +28,7 @@ router.post('/message', async (req: Request, res: Response, next: NextFunction) 
 })
 
 // Authenticate with signature
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', authLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { stacksAddress, message, signature } = req.body
 
