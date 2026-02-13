@@ -65,7 +65,7 @@ export function MultiAccountProvider({
         accounts: [...prev.accounts.filter((a) => a.address !== account.address), account],
         error: null,
       }));
-    } catch (error) {
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to add account';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
@@ -85,7 +85,7 @@ export function MultiAccountProvider({
           error: null,
         };
       });
-    } catch (error) {
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to remove account';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
@@ -134,7 +134,7 @@ export function MultiAccountProvider({
           error: null,
         };
       });
-    } catch (error) {
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to switch account';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
@@ -159,7 +159,7 @@ export function MultiAccountProvider({
           },
           error: null,
         }));
-      } catch (error) {
+      } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to update settings';
         setState((prev) => ({ ...prev, error: errorMessage }));
         throw error;
@@ -173,7 +173,7 @@ export function MultiAccountProvider({
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
       // Placeholder for actual account refresh logic
       // This would normally fetch accounts from wallet provider
-    } catch (error) {
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to refresh accounts';
       setState((prev) => ({ ...prev, error: errorMessage, isLoading: false }));
       throw error;
@@ -238,7 +238,7 @@ export function MultiAccountProvider({
           error: null,
         }));
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load preferences:', error);
     }
   }, []);
@@ -247,7 +247,7 @@ export function MultiAccountProvider({
     try {
       if (typeof window === 'undefined') return;
       localStorage.setItem('account_preferences', JSON.stringify(state.preferences));
-    } catch (error) {
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save preferences';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
