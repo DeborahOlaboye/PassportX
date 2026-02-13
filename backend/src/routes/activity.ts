@@ -1,8 +1,13 @@
 import express, { Request, Response } from 'express'
 import UserActivityService from '../services/userActivityService'
 import { validatePagination } from '../middleware/validation'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { API_READ_RATE_LIMIT } from '../config/rateLimits'
 
 const router = express.Router()
+
+// Rate limiter for activity feed endpoints (200 requests per 15 minutes)
+const activityLimiter = createRateLimiter(API_READ_RATE_LIMIT)
 
 let userActivityService: UserActivityService | null = null
 
@@ -19,7 +24,7 @@ const handleError = (res: Response, error: any, message: string) => {
   })
 }
 
-router.get('/feed', validatePagination, async (req: Request, res: Response) => {
+router.get('/feed', activityLimiter, validatePagination, async (req: Request, res: Response) => {
   try {
     if (!userActivityService) {
       return res.status(503).json({

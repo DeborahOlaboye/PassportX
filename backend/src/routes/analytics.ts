@@ -1,7 +1,12 @@
 import express, { Request, Response } from 'express'
 import AnalyticsAggregator from '../services/analyticsAggregator'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { API_READ_RATE_LIMIT } from '../config/rateLimits'
 
 const router = express.Router()
+
+// Rate limiter for analytics read endpoints (200 requests per 15 minutes)
+const analyticsLimiter = createRateLimiter(API_READ_RATE_LIMIT)
 
 let analyticsAggregator: AnalyticsAggregator | null = null
 
@@ -18,7 +23,7 @@ const handleError = (res: Response, error: any, message: string) => {
   })
 }
 
-router.get('/aggregated', async (req: Request, res: Response) => {
+router.get('/aggregated', analyticsLimiter, async (req: Request, res: Response) => {
   try {
     if (!analyticsAggregator) {
       return res.status(503).json({

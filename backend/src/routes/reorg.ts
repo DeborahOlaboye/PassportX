@@ -2,14 +2,19 @@ import { Router, Request, Response } from 'express'
 import ReorgHandlerService from '../services/ReorgHandlerService'
 import ReorgMonitoringService from '../../src/services/ReorgMonitoringService'
 import { authMiddleware } from '../middleware/auth'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { BLOCKCHAIN_RATE_LIMIT } from '../config/rateLimits'
 
 const router = Router()
+
+// Rate limiter for reorg monitoring endpoints (30 requests per 15 minutes)
+const reorgLimiter = createRateLimiter(BLOCKCHAIN_RATE_LIMIT)
 
 /**
  * GET /api/reorg/status
  * Returns current reorg state and statistics
  */
-router.get('/status', authMiddleware, (req: Request, res: Response) => {
+router.get('/status', reorgLimiter, authMiddleware, (req: Request, res: Response) => {
   try {
     const reorgHandler = ReorgHandlerService.getInstance()
     const reorgMonitor = ReorgMonitoringService.getInstance()

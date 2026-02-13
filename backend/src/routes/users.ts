@@ -7,8 +7,14 @@ import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
 import { uploadAvatar, deleteOldAvatar } from '../middleware/upload'
 import path from 'path'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { USER_WRITE_RATE_LIMIT, API_READ_RATE_LIMIT } from '../config/rateLimits'
 
 const router = Router()
+
+// Rate limiters for user routes
+const userWriteLimiter = createRateLimiter(USER_WRITE_RATE_LIMIT)
+const readLimiter = createRateLimiter(API_READ_RATE_LIMIT)
 
 // Get user profile
 router.get('/profile/:address', optionalAuth, async (req: AuthRequest, res, next) => {
@@ -43,7 +49,7 @@ router.get('/profile/:address', optionalAuth, async (req: AuthRequest, res, next
 })
 
 // Update user profile
-router.put('/profile', authenticateToken, async (req: AuthRequest, res, next) => {
+router.put('/profile', userWriteLimiter, authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     const { name, bio, avatar, isPublic, customUrl, socialLinks, themePreferences } = req.body
 
@@ -113,7 +119,7 @@ router.put('/profile', authenticateToken, async (req: AuthRequest, res, next) =>
 })
 
 // Upload profile picture
-router.post('/profile/avatar', authenticateToken, uploadAvatar.single('avatar'), async (req: AuthRequest, res, next) => {
+router.post('/profile/avatar', userWriteLimiter, authenticateToken, uploadAvatar.single('avatar'), async (req: AuthRequest, res, next) => {
   try {
     if (!req.file) {
       throw createError('No file uploaded', 400)
@@ -276,7 +282,7 @@ router.get('/stats/:address', optionalAuth, async (req: AuthRequest, res, next) 
 })
 
 // Update user privacy settings
-router.put('/settings/:address', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.put('/settings/:address', userWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { address } = req.params
     const { isPublic, showEmail, showBadges, showCommunities } = req.body
@@ -320,7 +326,7 @@ router.put('/settings/:address', authenticateToken, async (req: AuthRequest, res
 })
 
 // Initialize user passport
-router.post('/passport/initialize', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/passport/initialize', userWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const stacksAddress = req.user!.stacksAddress
 

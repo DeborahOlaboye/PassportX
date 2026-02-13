@@ -11,8 +11,13 @@ import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalid
 import BadgeUIRefreshService from '../services/badgeUIRefreshService'
 import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers'
 import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { BADGE_ISSUANCE_RATE_LIMIT } from '../config/rateLimits'
 
 const router = Router()
+
+// Rate limiter for badge issuance operations (20 requests per 15 minutes)
+const badgeIssuanceLimiter = createRateLimiter(BADGE_ISSUANCE_RATE_LIMIT)
 
 let cacheInvalidator: BadgeMetadataCacheInvalidator | null = null
 let uiRefreshService: BadgeUIRefreshService | null = null
@@ -103,7 +108,7 @@ router.get('/templates/community/:communityId', validatePagination, async (req, 
 })
 
 // Issue badge to user
-router.post('/issue', authenticateToken, async (req: AuthRequest, res, next) => {
+router.post('/issue', badgeIssuanceLimiter, authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     const { templateId, recipientAddress, transactionId, tokenId } = req.body
 
@@ -236,7 +241,7 @@ router.put('/templates/:id', authenticateToken, async (req: AuthRequest, res, ne
 })
 
 // Batch issue badges to multiple users
-router.post('/issue/batch', authenticateToken, async (req: AuthRequest, res, next) => {
+router.post('/issue/batch', badgeIssuanceLimiter, authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     const { templateId, recipientAddresses, transactionId } = req.body
 
@@ -316,7 +321,7 @@ router.post('/issue/batch', authenticateToken, async (req: AuthRequest, res, nex
 })
 
 // Revoke badge
-router.delete('/:id', authenticateToken, async (req: AuthRequest, res, next) => {
+router.delete('/:id', badgeIssuanceLimiter, authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     const badge = await Badge.findById(req.params.id).populate('community') as IPopulatedBadge | null
     

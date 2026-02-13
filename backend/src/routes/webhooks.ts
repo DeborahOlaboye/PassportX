@@ -1,14 +1,19 @@
 import { Router, Request, Response } from 'express'
 import WebhookService from '../services/WebhookService'
 import { authMiddleware } from '../middleware/auth'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { WEBHOOK_RATE_LIMIT } from '../config/rateLimits'
 
 const router = Router()
 const webhookService = WebhookService.getInstance()
 
+// Rate limiter for webhook management (20 requests per 15 minutes)
+const webhookLimiter = createRateLimiter(WEBHOOK_RATE_LIMIT)
+
 // Webhook management routes
 
 // Register a new webhook
-router.post('/register', authMiddleware, async (req: Request, res: Response) => {
+router.post('/register', webhookLimiter, authMiddleware, async (req: Request, res: Response) => {
   try {
     const { url, events, secret, categories, levels } = req.body
 
@@ -67,7 +72,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 })
 
 // Update webhook
-router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
+router.put('/:id', webhookLimiter, authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const updates = req.body
@@ -98,7 +103,7 @@ router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
 })
 
 // Delete webhook
-router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
+router.delete('/:id', webhookLimiter, authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
@@ -118,7 +123,7 @@ router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
 })
 
 // Test webhook endpoint
-router.post('/:id/test', authMiddleware, async (req: Request, res: Response) => {
+router.post('/:id/test', webhookLimiter, authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const testPayload = {
@@ -146,7 +151,7 @@ router.post('/:id/test', authMiddleware, async (req: Request, res: Response) => 
 })
 
 // Retry failed webhooks
-router.post('/retry-failed', authMiddleware, async (req: Request, res: Response) => {
+router.post('/retry-failed', webhookLimiter, authMiddleware, async (req: Request, res: Response) => {
   try {
     await webhookService.retryFailedWebhooks()
 

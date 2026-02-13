@@ -5,8 +5,13 @@ import BadgeCacheService from '../services/badgeCacheService';
 import { BadgeMintEvent } from '../chainhook/types/handlers';
 import { authenticateToken } from '../middleware/auth';
 import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation';
+import { createRateLimiter } from '../middleware/rateLimiter';
+import { BADGE_ISSUANCE_RATE_LIMIT } from '../config/rateLimits';
 
 const router = Router();
+
+// Rate limiter for badge mint operations (20 requests per 15 minutes)
+const badgeMintLimiter = createRateLimiter(BADGE_ISSUANCE_RATE_LIMIT);
 
 let badgeMintService: BadgeMintService | null = null;
 let notificationService: BadgeMintNotificationService | null = null;
@@ -142,7 +147,7 @@ router.post('/webhook/mint', validateWebhookSignature(getWebhookValidationConfig
   }
 });
 
-router.post('/sync', authenticateToken, async (req: Request, res: Response) => {
+router.post('/sync', badgeMintLimiter, authenticateToken, async (req: Request, res: Response) => {
   try {
     if (!badgeMintService) {
       return res.status(503).json({
@@ -224,7 +229,7 @@ router.get('/status/:badgeId', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/notifications/test', authenticateToken, async (req: Request, res: Response) => {
+router.post('/notifications/test', badgeMintLimiter, authenticateToken, async (req: Request, res: Response) => {
   try {
     if (!notificationService) {
       return res.status(503).json({

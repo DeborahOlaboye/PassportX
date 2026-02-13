@@ -5,8 +5,13 @@ import CommunityCacheService from '../services/communityCacheService';
 import { CommunityCreationEvent } from '../services/communityCreationService';
 import { authenticateToken } from '../middleware/auth';
 import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation';
+import { createRateLimiter } from '../middleware/rateLimiter';
+import { COMMUNITY_WRITE_RATE_LIMIT } from '../config/rateLimits';
 
 const router = Router();
+
+// Rate limiter for community creation operations (15 requests per 15 minutes)
+const communityCreationLimiter = createRateLimiter(COMMUNITY_WRITE_RATE_LIMIT);
 
 let communityCreationService: CommunityCreationService | null = null;
 let notificationService: CommunityCreationNotificationService | null = null;
@@ -141,7 +146,7 @@ router.post('/webhook/events', validateWebhookSignature(getWebhookValidationConf
   }
 });
 
-router.post('/sync', authenticateToken, async (req: Request, res: Response) => {
+router.post('/sync', communityCreationLimiter, authenticateToken, async (req: Request, res: Response) => {
   try {
     if (!communityCreationService) {
       return res.status(503).json({
@@ -238,7 +243,7 @@ router.get('/status/:blockchainId', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/notifications/test', authenticateToken, async (req: Request, res: Response) => {
+router.post('/notifications/test', communityCreationLimiter, authenticateToken, async (req: Request, res: Response) => {
   try {
     if (!notificationService) {
       return res.status(503).json({
