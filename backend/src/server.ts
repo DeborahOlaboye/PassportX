@@ -2,7 +2,8 @@ import express from 'express'
 import { createServer } from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
-import rateLimit from 'express-rate-limit'
+import { createRateLimiter } from './middleware/rateLimiter'
+import { DEFAULT_RATE_LIMIT } from './config/rateLimits'
 import dotenv from 'dotenv-safe'
 import { connectDB } from './utils/database'
 import { errorHandler } from './middleware/errorHandler'
@@ -58,12 +59,9 @@ const corsOptions = {
 app.use(helmet())
 app.use(cors(corsOptions))
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-})
-app.use(limiter)
+// Global rate limiting (default fallback for routes without specific limiters)
+const globalLimiter = createRateLimiter(DEFAULT_RATE_LIMIT)
+app.use(globalLimiter)
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }))
