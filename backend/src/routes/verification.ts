@@ -1,14 +1,19 @@
 import express from 'express'
 import verificationService from '../services/verificationService'
 import { IVerificationResponse } from '../types'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { VERIFICATION_RATE_LIMIT } from '../config/rateLimits'
 
 const router = express.Router()
+
+// Rate limiter for verification endpoints (50 requests per 15 minutes)
+const verificationLimiter = createRateLimiter(VERIFICATION_RATE_LIMIT)
 
 /**
  * POST /api/verify/badge
  * Verify a single badge
  */
-router.post('/badge', async (req, res) => {
+router.post('/badge', verificationLimiter, async (req, res) => {
   try {
     const { badgeId, claimedOwner } = req.body
 
@@ -45,7 +50,7 @@ router.post('/badge', async (req, res) => {
  * GET /api/verify/badge/:badgeId
  * Get verification status for a badge
  */
-router.get('/badge/:badgeId', async (req, res) => {
+router.get('/badge/:badgeId', verificationLimiter, async (req, res) => {
   try {
     const { badgeId } = req.params
 
@@ -75,7 +80,7 @@ router.get('/badge/:badgeId', async (req, res) => {
  * GET /api/verify/public/:badgeId
  * Get public verification info (for sharing)
  */
-router.get('/public/:badgeId', async (req, res) => {
+router.get('/public/:badgeId', verificationLimiter, async (req, res) => {
   try {
     const { badgeId } = req.params
 
@@ -105,7 +110,7 @@ router.get('/public/:badgeId', async (req, res) => {
  * POST /api/verify/batch
  * Verify multiple badges
  */
-router.post('/batch', async (req, res) => {
+router.post('/batch', verificationLimiter, async (req, res) => {
   try {
     const { badgeIds } = req.body
 
@@ -143,7 +148,7 @@ router.post('/batch', async (req, res) => {
  * GET /api/verify/user/:address
  * Verify all badges for a user
  */
-router.get('/user/:address', async (req, res) => {
+router.get('/user/:address', verificationLimiter, async (req, res) => {
   try {
     const { address } = req.params
 
@@ -167,7 +172,7 @@ router.get('/user/:address', async (req, res) => {
  * GET /api/verify/blockchain/:badgeId
  * Check if badge is verified on blockchain
  */
-router.get('/blockchain/:badgeId', async (req, res) => {
+router.get('/blockchain/:badgeId', verificationLimiter, async (req, res) => {
   try {
     const { badgeId } = req.params
 
