@@ -2,6 +2,8 @@ import express, { Response } from 'express'
 import { AuthRequest } from '../types'
 import { authenticateToken } from '../middleware/auth'
 import { validatePagination } from '../middleware/validation'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { NOTIFICATION_WRITE_RATE_LIMIT } from '../config/rateLimits'
 import {
   getUserNotifications,
   getUnreadCount,
@@ -15,6 +17,9 @@ import {
 } from '../services/notificationService'
 
 const router = express.Router()
+
+// Rate limiter for notification write operations (50 requests per 15 minutes)
+const notificationWriteLimiter = createRateLimiter(NOTIFICATION_WRITE_RATE_LIMIT)
 
 /**
  * GET /api/notifications
@@ -83,7 +88,7 @@ router.get('/stats', authenticateToken, async (req: AuthRequest, res: Response) 
  * PUT /api/notifications/:id/read
  * Mark notification as read
  */
-router.put('/:id/read', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.put('/:id/read', notificationWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.stacksAddress
     const { id } = req.params
@@ -105,7 +110,7 @@ router.put('/:id/read', authenticateToken, async (req: AuthRequest, res: Respons
  * PUT /api/notifications/read-all
  * Mark all notifications as read
  */
-router.put('/read-all', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.put('/read-all', notificationWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.stacksAddress
     const count = await markAllNotificationsAsRead(userId)
@@ -121,7 +126,7 @@ router.put('/read-all', authenticateToken, async (req: AuthRequest, res: Respons
  * DELETE /api/notifications/:id
  * Delete notification
  */
-router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.delete('/:id', notificationWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.stacksAddress
     const { id } = req.params
@@ -143,7 +148,7 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response)
  * DELETE /api/notifications/read
  * Delete all read notifications
  */
-router.delete('/read', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.delete('/read', notificationWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.stacksAddress
     const count = await deleteReadNotifications(userId)
@@ -159,7 +164,7 @@ router.delete('/read', authenticateToken, async (req: AuthRequest, res: Response
  * POST /api/notifications/test
  * Create test notification (development only)
  */
-router.post('/test', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.post('/test', notificationWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     if (process.env.NODE_ENV === 'production') {
       return res.status(403).json({ error: 'Test notifications not available in production' })
@@ -181,7 +186,7 @@ router.post('/test', authenticateToken, async (req: AuthRequest, res: Response) 
  * POST /api/notifications/system-announcement
  * Create system-wide announcement (admin only)
  */
-router.post('/system-announcement', authenticateToken, async (req: AuthRequest, res: Response) => {
+router.post('/system-announcement', notificationWriteLimiter, authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     // TODO: Add admin authorization check
     const { title, message, data, expiresAt } = req.body
