@@ -166,7 +166,7 @@ export class RetryQueueService {
       // Success - mark as succeeded
       item.status = 'succeeded';
       await item.save();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Failure - schedule next retry or move to dead letter
       await this.handleRetryFailure(item, error);
     }
@@ -188,8 +188,8 @@ export class RetryQueueService {
   /**
    * Handle retry failure
    */
-  private async handleRetryFailure(item: IRetryQueueItem, error: any): Promise<void> {
-    item.lastError = error.message || 'Unknown error';
+  private async handleRetryFailure(item: IRetryQueueItem, error: unknown): Promise<void> {
+    item.lastError = error instanceof Error ? error.message : 'Unknown error';
 
     // Classify error type if not already set
     if (!item.errorType || item.errorType === 'unknown') {
@@ -222,9 +222,9 @@ export class RetryQueueService {
   /**
    * Classify error type from error object
    */
-  private classifyError(error: any): 'network' | 'validation' | 'timeout' | 'rate_limit' | 'server_error' | 'unknown' {
-    const errorMessage = error.message?.toLowerCase() || '';
-    const errorCode = error.code || error.status || '';
+  private classifyError(error: unknown): 'network' | 'validation' | 'timeout' | 'rate_limit' | 'server_error' | 'unknown' {
+    const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+    const errorCode = (error instanceof Error && 'code' in error ? (error as NodeJS.ErrnoException).code : '') || '';
 
     if (errorMessage.includes('timeout') || errorCode === 'ETIMEDOUT') {
       return 'timeout';
