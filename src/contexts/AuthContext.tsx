@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               joinDate: userData.joinDate ? new Date(userData.joinDate) : undefined,
             });
             setIsAuthenticated(true);
-          } catch (error) {
+          } catch (error: unknown) {
             if (error instanceof APIClientError && error.status === 404) {
               // User exists in wallet but not in backend - needs registration
               setUser({
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             }
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Auth check failed:', error);
       } finally {
         setIsLoading(false);
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               hasPassport: !!userData.passportId,
               joinDate: userData.joinDate ? new Date(userData.joinDate) : undefined,
             });
-          } catch (error) {
+          } catch (error: unknown) {
             if (error instanceof APIClientError && error.status === 404) {
               // New user - trigger registration
               setUser({
@@ -131,7 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
         userSession,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Wallet connection failed:', error);
       setIsLoading(false);
     }
@@ -162,7 +162,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           ...profileData,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Profile update failed:', error);
       throw error;
     }
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ...user,
         hasPassport: true,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Passport initialization failed:', error);
       throw error;
     }

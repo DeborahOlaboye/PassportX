@@ -9,14 +9,15 @@ import {
 } from '../utils/sessionManager';
 import { verifySignature } from '../services/authService';
 import logger from '../utils/logger';
+import { getErrorMessage, getErrorStatusCode } from '../errors';
 
-// Helper function to handle errors
-const handleError = (res: Response, error: any, message: string) => {
+// Helper function to handle errors with type-safe error narrowing
+const handleError = (res: Response, error: unknown, message: string) => {
   console.error(message, error);
-  const status = error.status || 500;
+  const status = getErrorStatusCode(error);
   res.status(status).json({
     success: false,
-    message: error.message || 'Internal server error'
+    message: getErrorMessage(error)
   });
 };
 
@@ -45,14 +46,14 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
     }
 
     const isValidSignature = await verifySignature(message, signature, stacksAddress);
-    
+
     if (!isValidSignature) {
-      logger.warn('Invalid signature attempt', { 
-        stacksAddress, 
+      logger.warn('Invalid signature attempt', {
+        stacksAddress,
         messageLength: message?.length,
-        signatureLength: signature?.length  
+        signatureLength: signature?.length
       });
-      
+
       return res.status(401).json({
         success: false,
         message: 'Invalid signature. Please sign the message with your wallet.',
@@ -107,7 +108,7 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
         }
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error authenticating user:');
   }
 };
@@ -161,7 +162,7 @@ export const verifySession = async (req: Request, res: Response) => {
         }
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error verifying session:');
   }
 };
@@ -177,7 +178,7 @@ export const logout = async (req: Request, res: Response) => {
       success: true,
       message: 'Logged out successfully'
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error logging out:');
   }
 };
@@ -215,7 +216,7 @@ export const refreshSession = async (req: Request, res: Response) => {
         token: newToken
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error refreshing session:');
   }
 };

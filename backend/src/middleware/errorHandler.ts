@@ -1,18 +1,16 @@
 import { Request, Response, NextFunction } from 'express'
+import { AppError, isAppError, getErrorMessage, getErrorStatusCode } from '../errors'
 
-export interface AppError extends Error {
-  statusCode?: number
-  isOperational?: boolean
-}
+export { AppError }
 
 export const errorHandler = (
-  err: AppError,
+  err: unknown,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const statusCode = err.statusCode || 500
-  const message = err.message || 'Internal Server Error'
+  const statusCode = getErrorStatusCode(err)
+  const message = getErrorMessage(err)
 
   // Log error in development
   if (process.env.NODE_ENV === 'development') {
@@ -21,13 +19,10 @@ export const errorHandler = (
 
   res.status(statusCode).json({
     error: message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack })
   })
 }
 
 export const createError = (message: string, statusCode = 500): AppError => {
-  const error = new Error(message) as AppError
-  error.statusCode = statusCode
-  error.isOperational = true
-  return error
+  return new AppError(message, statusCode)
 }

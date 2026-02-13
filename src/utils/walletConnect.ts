@@ -100,7 +100,7 @@ export async function saveSessionToStorage(sessionKey: string, sessionData: unkn
 
   try {
     localStorage.setItem(`walletconnect_session_${sessionKey}`, JSON.stringify(sessionData));
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to save session to storage:', error);
   }
 }
@@ -111,7 +111,7 @@ export async function loadSessionFromStorage(sessionKey: string): Promise<unknow
   try {
     const data = localStorage.getItem(`walletconnect_session_${sessionKey}`);
     return data ? JSON.parse(data) : null;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to load session from storage:', error);
     return null;
   }
@@ -122,7 +122,7 @@ export async function clearSessionFromStorage(sessionKey: string): Promise<void>
 
   try {
     localStorage.removeItem(`walletconnect_session_${sessionKey}`);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to clear session from storage:', error);
   }
 }

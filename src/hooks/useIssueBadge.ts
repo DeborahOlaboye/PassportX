@@ -107,11 +107,11 @@ export const useIssueBadge = () => {
         })
 
         return result
-      } catch (error) {
-        const errorMessage = error instanceof Error 
-          ? error.message 
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error
+          ? error.message
           : 'Failed to issue badge'
-        
+
         setState(prev => ({
           ...prev,
           isLoading: false,
@@ -169,11 +169,11 @@ export const useIssueBadge = () => {
         }))
 
         return result
-      } catch (error) {
-        const errorMessage = error instanceof Error 
-          ? error.message 
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error
+          ? error.message
           : 'Failed to revoke badge'
-        
+
         setState(prev => ({
           ...prev,
           isLoading: false,

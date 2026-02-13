@@ -119,7 +119,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setNotifications(data.notifications || [])
         setUnreadCount(data.unreadCount || 0)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching notifications:', error)
     }
   }, [])
@@ -140,7 +140,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         const data = await response.json()
         setUnreadCount(data.count || 0)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching unread count:', error)
     }
   }, [])
@@ -169,7 +169,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           socket.emit('notification:read', notificationId)
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error marking notification as read:', error)
     }
   }, [socket])
@@ -198,7 +198,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           socket.emit('notifications:readAll')
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error marking all notifications as read:', error)
     }
   }, [socket])
@@ -225,7 +225,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           return prev.filter(n => n._id !== notificationId)
         })
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting notification:', error)
     }
   }, [])
