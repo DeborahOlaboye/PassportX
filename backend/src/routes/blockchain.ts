@@ -3,11 +3,16 @@ import { badgeService, communityService, passportService } from '../services/sta
 import { authenticateToken } from '../middleware/auth'
 import { createError } from '../middleware/errorHandler'
 import { AuthRequest } from '../types'
+import { createRateLimiter } from '../middleware/rateLimiter'
+import { BLOCKCHAIN_RATE_LIMIT } from '../config/rateLimits'
 
 const router = Router()
 
+// Rate limiter for blockchain API calls (30 requests per 15 minutes)
+const blockchainLimiter = createRateLimiter(BLOCKCHAIN_RATE_LIMIT)
+
 // Get transaction status
-router.get('/transaction/:txId', async (req, res, next) => {
+router.get('/transaction/:txId', blockchainLimiter, async (req, res, next) => {
   try {
     const { txId } = req.params
     const status = await badgeService.getTransactionStatus(txId)
@@ -18,7 +23,7 @@ router.get('/transaction/:txId', async (req, res, next) => {
 })
 
 // Get user badges from blockchain
-router.get('/badges/:address', async (req, res, next) => {
+router.get('/badges/:address', blockchainLimiter, async (req, res, next) => {
   try {
     const { address } = req.params
     
@@ -34,7 +39,7 @@ router.get('/badges/:address', async (req, res, next) => {
 })
 
 // Get account balance
-router.get('/balance/:address', async (req, res, next) => {
+router.get('/balance/:address', blockchainLimiter, async (req, res, next) => {
   try {
     const { address } = req.params
     
@@ -50,7 +55,7 @@ router.get('/balance/:address', async (req, res, next) => {
 })
 
 // Get account transactions
-router.get('/transactions/:address', async (req, res, next) => {
+router.get('/transactions/:address', blockchainLimiter, async (req, res, next) => {
   try {
     const { address } = req.params
     const { limit = 20 } = req.query
@@ -70,7 +75,7 @@ router.get('/transactions/:address', async (req, res, next) => {
 })
 
 // Get contract information
-router.get('/contract/:address/:name', async (req, res, next) => {
+router.get('/contract/:address/:name', blockchainLimiter, async (req, res, next) => {
   try {
     const { address, name } = req.params
     const contractInfo = await badgeService.getContractInfo(address, name)
@@ -81,7 +86,7 @@ router.get('/contract/:address/:name', async (req, res, next) => {
 })
 
 // Validate Stacks address
-router.post('/validate-address', async (req, res, next) => {
+router.post('/validate-address', blockchainLimiter, async (req, res, next) => {
   try {
     const { address } = req.body
     
@@ -97,7 +102,7 @@ router.post('/validate-address', async (req, res, next) => {
 })
 
 // Read contract function (public)
-router.post('/read-function', async (req, res, next) => {
+router.post('/read-function', blockchainLimiter, async (req, res, next) => {
   try {
     const { contractAddress, contractName, functionName, functionArgs = [] } = req.body
     
