@@ -292,10 +292,10 @@ router.post('/issue/batch', authenticateToken, async (req: AuthRequest, res, nex
           badgeId: badge._id,
           success: true
         })
-      } catch (error: any) {
+      } catch (error: unknown) {
         errors.push({
           recipientAddress,
-          error: error.message || 'Failed to issue badge'
+          error: error instanceof Error ? error.message : 'Failed to issue badge'
         })
       }
     }
