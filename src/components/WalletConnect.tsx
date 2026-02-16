@@ -39,7 +39,7 @@ function WalletConnectInner() {
       },
       redirectTo: '/',
       onFinish: () => {
-        setUserData(userSession.loadUserData())
+        setUserData(userSession.loadUserData() as StacksUserData)
       },
       userSession,
     })
