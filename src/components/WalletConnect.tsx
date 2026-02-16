@@ -23,11 +23,11 @@ function WalletConnectInner() {
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((userData) => {
-        setUserData(userData)
+      userSession.handlePendingSignIn().then((data) => {
+        setUserData(data as StacksUserData)
       })
     } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData())
+      setUserData(userSession.loadUserData() as StacksUserData)
     }
   }, [])
 
