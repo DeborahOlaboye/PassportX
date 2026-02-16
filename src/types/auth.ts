@@ -1,6 +1,7 @@
 /**
  * Auth token types and definitions.
  */
+import { UserData } from '@stacks/connect';
 
 export interface AuthToken {
   accessToken: string;
