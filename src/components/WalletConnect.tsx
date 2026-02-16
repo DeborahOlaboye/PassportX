@@ -10,7 +10,7 @@ import { WalletErrorFallback } from './FallbackUI'
 const appConfig = new AppConfig(['store_write', 'publish_data'])
 const userSession = new UserSession({ appConfig })
 
-export default function WalletConnect() {
+export default function WalletConnect(): JSX.Element {
   return (
     <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
       <WalletConnectInner />
