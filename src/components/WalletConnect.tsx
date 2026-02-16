@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { AppConfig, UserSession, showConnect } from '@stacks/connect'
+import { StacksUserData } from '@/types/auth'
 import { Wallet, LogOut } from 'lucide-react'
 import ErrorBoundary from './ErrorBoundary'
 import { WalletErrorFallback } from './FallbackUI'
@@ -9,7 +10,7 @@ import { WalletErrorFallback } from './FallbackUI'
 const appConfig = new AppConfig(['store_write', 'publish_data'])
 const userSession = new UserSession({ appConfig })
 
-export default function WalletConnect() {
+export default function WalletConnect(): JSX.Element {
   return (
     <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
       <WalletConnectInner />
@@ -18,15 +19,16 @@ export default function WalletConnect() {
 }
 
 function WalletConnectInner() {
-  const [userData, setUserData] = useState<any>(null)
+  // Use typed userData state instead of any
+  const [userData, setUserData] = useState<StacksUserData | null>(null)
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((userData) => {
-        setUserData(userData)
+      userSession.handlePendingSignIn().then((data) => {
+        setUserData(data as StacksUserData)
       })
     } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData())
+      setUserData(userSession.loadUserData() as StacksUserData)
     }
   }, [])
 
@@ -38,7 +40,7 @@ function WalletConnectInner() {
       },
       redirectTo: '/',
       onFinish: () => {
-        setUserData(userSession.loadUserData())
+        setUserData(userSession.loadUserData() as StacksUserData)
       },
       userSession,
     })

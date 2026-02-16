@@ -1,6 +1,20 @@
 /**
  * Auth token types and definitions.
  */
+import { UserData } from '@stacks/connect';
+
+/**
+ * Extended UserData interface with typed profile for Stacks.
+ */
+export interface StacksUserData extends UserData {
+  profile: {
+    stxAddress: {
+      mainnet: string;
+      testnet: string;
+    };
+    [key: string]: any;
+  };
+}
 
 export interface AuthToken {
   accessToken: string;
