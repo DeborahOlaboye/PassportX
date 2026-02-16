@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { AppConfig, UserSession, showConnect } from '@stacks/connect'
+import { StacksUserData } from '@/types/auth'
 import { Wallet, LogOut } from 'lucide-react'
 import ErrorBoundary from './ErrorBoundary'
 import { WalletErrorFallback } from './FallbackUI'
