@@ -19,7 +19,7 @@ export default function WalletConnect() {
 }
 
 function WalletConnectInner() {
-  const [userData, setUserData] = useState<any>(null)
+  const [userData, setUserData] = useState<StacksUserData | null>(null)
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
