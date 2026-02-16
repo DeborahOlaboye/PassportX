@@ -19,6 +19,7 @@ export default function WalletConnect() {
 }
 
 function WalletConnectInner() {
+  // Use typed userData state instead of any
   const [userData, setUserData] = useState<StacksUserData | null>(null)
 
   useEffect(() => {
