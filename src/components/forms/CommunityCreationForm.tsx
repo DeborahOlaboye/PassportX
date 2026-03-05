@@ -291,6 +291,9 @@ function CommunityCreationFormInner({
                   />
                 ))}
               </div>
+              {validationErrors.primaryColor && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.primaryColor}</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -307,6 +310,9 @@ function CommunityCreationFormInner({
                 />
                 <span className="text-sm text-gray-600">{formData.secondaryColor}</span>
               </div>
+              {validationErrors.secondaryColor && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.secondaryColor}</p>
+              )}
             </div>
           </div>
 
