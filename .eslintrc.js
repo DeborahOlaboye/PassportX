@@ -19,9 +19,8 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'off',
     'react/display-name': 'off',
     'react/prop-types': 'off',
-    'prefer-const': 'off',
-    'no-var': 'off',
-    // Add any other rules you want to disable here
+    'prefer-const': 'error',
+    'no-var': 'error',
   },
   env: {
     node: true,
