@@ -90,6 +90,18 @@ function CommunityCreationFormInner({
       errors.website = 'Please enter a valid URL'
     }
 
+    // Tags validation
+    if (formData.tags) {
+      const tagList = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+      if (tagList.length > 10) {
+        errors.tags = 'Maximum 10 tags allowed'
+      } else if (tagList.some(t => t.length > 30)) {
+        errors.tags = 'Each tag must be 30 characters or fewer'
+      } else if (tagList.some(t => !/^[a-zA-Z0-9 _-]+$/.test(t))) {
+        errors.tags = 'Tags may only contain letters, numbers, spaces, hyphens, and underscores'
+      }
+    }
+
     if (!isValidHexColor(formData.primaryColor)) {
       errors.primaryColor = 'Primary color must be a valid hex color (e.g. #3b82f6)'
     }
@@ -252,6 +264,10 @@ function CommunityCreationFormInner({
               placeholder="e.g., blockchain, development, education"
               disabled={isLoading}
             />
+            {validationErrors.tags && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.tags}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">Up to 10 tags, max 30 characters each</p>
           </div>
 
           <div className="border-t pt-6">
