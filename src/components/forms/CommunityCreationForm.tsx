@@ -90,6 +90,14 @@ function CommunityCreationFormInner({
       errors.website = 'Please enter a valid URL'
     }
 
+    if (!isValidHexColor(formData.primaryColor)) {
+      errors.primaryColor = 'Primary color must be a valid hex color (e.g. #3b82f6)'
+    }
+
+    if (!isValidHexColor(formData.secondaryColor)) {
+      errors.secondaryColor = 'Secondary color must be a valid hex color (e.g. #10b981)'
+    }
+
     if (formData.stxPayment < 0) {
       errors.stxPayment = 'STX payment must be a positive number'
     } else if (formData.stxPayment > 1000000) {
@@ -99,6 +107,9 @@ function CommunityCreationFormInner({
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
+
+  const isValidHexColor = (color: string): boolean =>
+    /^#[0-9A-Fa-f]{6}$/.test(color)
 
   const isValidUrl = (url: string): boolean => {
     try {
