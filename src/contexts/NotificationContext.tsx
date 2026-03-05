@@ -232,13 +232,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   // Fetch notifications on mount
   useEffect(() => {
-    fetchNotifications()
+    fetchNotifications().catch((err: unknown) => {
+      console.error('Failed to fetch notifications on mount:', err)
+    })
   }, [fetchNotifications])
 
   // Request browser notification permission
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
+      Notification.requestPermission().catch((err: unknown) => {
+        console.warn('Failed to request notification permission:', err)
+      })
     }
   }, [])
 
