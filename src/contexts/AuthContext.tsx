@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppConfig, UserSession, showConnect } from '@stacks/connect';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
 import { apiClient, APIClientError } from '@/lib/api-client';
 
 interface User {
@@ -22,6 +21,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
   userSession: UserSession;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
@@ -42,42 +42,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Check if user is already signed in
   useEffect(() => {
     const checkAuth = async () => {
       try {
         if (userSession.isUserSignedIn()) {
-          const userData = userSession.loadUserData();
-          const stacksAddress = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
+          const walletData = userSession.loadUserData();
+          const stacksAddress = walletData.profile.stxAddress.testnet || walletData.profile.stxAddress.mainnet;
 
           // Fetch user data from backend
           try {
-            const userData = await apiClient.get<any>(`/api/users/${stacksAddress}`);
+            const userData = await apiClient.get<Record<string, unknown>>(`/api/users/${stacksAddress}`);
             setUser({
               stacksAddress,
-              profile: userData.profile,
-              isPublic: userData.isPublic ?? true,
+              profile: userData.profile as User['profile'],
+              isPublic: (userData.isPublic as boolean) ?? true,
               hasPassport: !!userData.passportId,
-              joinDate: userData.joinDate ? new Date(userData.joinDate) : undefined,
+              joinDate: userData.joinDate ? new Date(userData.joinDate as string) : undefined,
             });
             setIsAuthenticated(true);
-          } catch (error: unknown) {
-            if (error instanceof APIClientError && error.status === 404) {
-              // User exists in wallet but not in backend - needs registration
-              setUser({
-                stacksAddress,
-                isPublic: true,
-                hasPassport: false,
-              });
+          } catch (err: unknown) {
+            if (err instanceof APIClientError && err.status === 404) {
+              // User exists in wallet but not in backend – needs registration
+              setUser({ stacksAddress, isPublic: true, hasPassport: false });
               setIsAuthenticated(true);
             } else {
-              console.error('Auth data fetch failed:', error);
+              console.error('Auth data fetch failed:', err);
+              setError('Failed to load your account data. Please refresh the page.');
             }
           }
         }
-      } catch (error: unknown) {
-        console.error('Auth check failed:', error);
+      } catch (err: unknown) {
+        console.error('Auth check failed:', err);
+        setError('Authentication check failed. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -89,6 +88,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const connectWallet = async () => {
     try {
       setIsLoading(true);
+      setError(null);
 
       await showConnect({
         appDetails: {
@@ -97,42 +97,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
         redirectTo: '/',
         onFinish: async () => {
-          const userData = userSession.loadUserData();
-          const stacksAddress = userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet;
-
-          // Check if user exists in backend
           try {
-            const userData = await apiClient.get<any>(`/api/users/${stacksAddress}`);
-            setUser({
-              stacksAddress,
-              profile: userData.profile,
-              isPublic: userData.isPublic ?? true,
-              hasPassport: !!userData.passportId,
-              joinDate: userData.joinDate ? new Date(userData.joinDate) : undefined,
-            });
-          } catch (error: unknown) {
-            if (error instanceof APIClientError && error.status === 404) {
-              // New user - trigger registration
+            const walletData = userSession.loadUserData();
+            const stacksAddress = walletData.profile.stxAddress.testnet || walletData.profile.stxAddress.mainnet;
+
+            // Check if user exists in backend
+            try {
+              const userData = await apiClient.get<Record<string, unknown>>(`/api/users/${stacksAddress}`);
               setUser({
                 stacksAddress,
-                isPublic: true,
-                hasPassport: false,
+                profile: userData.profile as User['profile'],
+                isPublic: (userData.isPublic as boolean) ?? true,
+                hasPassport: !!userData.passportId,
+                joinDate: userData.joinDate ? new Date(userData.joinDate as string) : undefined,
               });
-            } else {
-              console.error('Login backend check failed:', error);
+            } catch (err: unknown) {
+              if (err instanceof APIClientError && err.status === 404) {
+                // New user – trigger registration
+                setUser({ stacksAddress, isPublic: true, hasPassport: false });
+              } else {
+                console.error('Login backend check failed:', err);
+                setError('Connected to wallet but failed to load account. Please refresh.');
+              }
             }
-          }
 
-          setIsAuthenticated(true);
-          setIsLoading(false);
+            setIsAuthenticated(true);
+          } finally {
+            setIsLoading(false);
+          }
         },
         onCancel: () => {
           setIsLoading(false);
         },
         userSession,
       });
-    } catch (error: unknown) {
-      console.error('Wallet connection failed:', error);
+    } catch (err: unknown) {
+      console.error('Wallet connection failed:', err);
+      setError('Wallet connection failed. Please try again.');
       setIsLoading(false);
     }
   };
@@ -141,6 +142,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     userSession.signUserOut();
     setUser(null);
     setIsAuthenticated(false);
+    setError(null);
 
     // Clear session storage
     if (typeof window !== 'undefined') {
@@ -154,17 +156,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       await apiClient.put(`/api/users/${user.stacksAddress}/profile`, profileData);
-      
-      setUser({
-        ...user,
-        profile: {
-          ...user.profile,
-          ...profileData,
-        },
-      });
-    } catch (error: unknown) {
-      console.error('Profile update failed:', error);
-      throw error;
+      setUser({ ...user, profile: { ...user.profile, ...profileData } });
+    } catch (err: unknown) {
+      console.error('Profile update failed:', err);
+      throw err;
     }
   };
 
@@ -176,14 +171,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await apiClient.post('/api/passport/initialize', {
         stacksAddress: user.stacksAddress,
       });
-
-      setUser({
-        ...user,
-        hasPassport: true,
-      });
-    } catch (error: unknown) {
-      console.error('Passport initialization failed:', error);
-      throw error;
+      setUser({ ...user, hasPassport: true });
+    } catch (err: unknown) {
+      console.error('Passport initialization failed:', err);
+      throw err;
     }
   };
 
@@ -191,6 +182,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     isAuthenticated,
     isLoading,
+    error,
     userSession,
     connectWallet,
     disconnectWallet,

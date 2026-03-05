@@ -259,7 +259,9 @@ export function MultiAccountProvider({
   }, []);
 
   useEffect(() => {
-    loadPreferences();
+    loadPreferences().catch((err: unknown) => {
+      console.error('Failed to load account preferences on mount:', err);
+    });
   }, [loadPreferences]);
 
   const value: MultiAccountContextType = {
