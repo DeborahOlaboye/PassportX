@@ -155,7 +155,7 @@ function CommunityCreationFormInner({
 
     // Real-time color validation
     if ((field === 'primaryColor' || field === 'secondaryColor') && typeof value === 'string') {
-      if (value && \!isValidHexColor(value)) {
+      if (value && !isValidHexColor(value)) {
         setValidationErrors(prev => ({
           ...prev,
           [field]: 'Must be a valid hex color (e.g. #3b82f6)'

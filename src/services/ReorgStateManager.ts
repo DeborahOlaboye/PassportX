@@ -1,4 +1,4 @@
-import { ReorgEvent } from '../../backend/src/services/ReorgHandlerService'
+import { ReorgEvent } from './ReorgMonitoringService'
 
 export interface UIStateUpdate {
   type: 'badge_removed' | 'badge_updated' | 'community_removed' | 'notification_removed'
