@@ -16,7 +16,7 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'react/no-unescaped-entities': 'off',
     '@next/next/no-img-element': 'off',
-    'react-hooks/exhaustive-deps': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
     'react/display-name': 'off',
     'react/prop-types': 'off',
     'prefer-const': 'error',
