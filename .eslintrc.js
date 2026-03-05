@@ -2,25 +2,36 @@ module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
-  extends: ['next/core-web-vitals'],
+  extends: [
+    'next/core-web-vitals',
+    'plugin:@typescript-eslint/recommended',
+  ],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
   },
   rules: {
-    // Disable all rules by default
+    // ── Variable hygiene ──────────────────────────────────────────────────────
     'no-unused-vars': 'off', // disabled in favour of the TS-aware version below
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/no-non-null-assertion': 'off',
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'react/no-unescaped-entities': 'off',
-    '@next/next/no-img-element': 'off',
-    'react-hooks/exhaustive-deps': 'warn',
-    'react/display-name': 'off',
-    'react/prop-types': 'off',
     'prefer-const': 'error',
     'no-var': 'error',
+
+    // ── Type safety ───────────────────────────────────────────────────────────
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+
+    // ── Logging / information leakage ─────────────────────────────────────────
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
+
+    // ── React hooks ───────────────────────────────────────────────────────────
+    'react-hooks/exhaustive-deps': 'warn',
+
+    // ── Project-specific suppressions (kept intentionally narrow) ─────────────
+    'react/no-unescaped-entities': 'off',
+    '@next/next/no-img-element': 'off',
+    'react/display-name': 'off',
+    'react/prop-types': 'off',
   },
   env: {
     node: true,
@@ -33,7 +44,6 @@ module.exports = {
       version: 'detect',
     },
   },
-  // Ignore all test files and config files
   ignorePatterns: [
     '**/*.test.*',
     '**/__tests__/*',
