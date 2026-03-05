@@ -287,12 +287,20 @@ function CommunityCreationFormInner({
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={formData.primaryColor}
+                  value={isValidHexColor(formData.primaryColor) ? formData.primaryColor : '#000000'}
                   onChange={(e) => handleChange('primaryColor', e.target.value)}
                   className="w-12 h-12 rounded-lg cursor-pointer"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-600">{formData.primaryColor}</span>
+                <input
+                  type="text"
+                  value={formData.primaryColor}
+                  onChange={(e) => handleChange('primaryColor', e.target.value)}
+                  className={"w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono " + (validationErrors.primaryColor ? "border-red-500" : "border-gray-300")}
+                  placeholder="#3b82f6"
+                  disabled={isLoading}
+                  maxLength={7}
+                />
               </div>
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {colorPresets.map((preset) => (
@@ -323,12 +331,20 @@ function CommunityCreationFormInner({
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={formData.secondaryColor}
+                  value={isValidHexColor(formData.secondaryColor) ? formData.secondaryColor : '#000000'}
                   onChange={(e) => handleChange('secondaryColor', e.target.value)}
                   className="w-12 h-12 rounded-lg cursor-pointer"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-600">{formData.secondaryColor}</span>
+                <input
+                  type="text"
+                  value={formData.secondaryColor}
+                  onChange={(e) => handleChange('secondaryColor', e.target.value)}
+                  className={"w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono " + (validationErrors.secondaryColor ? "border-red-500" : "border-gray-300")}
+                  placeholder="#10b981"
+                  disabled={isLoading}
+                  maxLength={7}
+                />
               </div>
               {validationErrors.secondaryColor && (
                 <p className="mt-1 text-sm text-red-600">{validationErrors.secondaryColor}</p>
