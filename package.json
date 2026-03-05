@@ -2,6 +2,10 @@
   "name": "passportx",
   "version": "1.0.0",
   "description": "PassportX Achievement Passport",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
