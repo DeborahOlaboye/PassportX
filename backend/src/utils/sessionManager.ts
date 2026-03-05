@@ -21,6 +21,18 @@ const DEFAULT_OPTIONS: SessionOptions = {
 };
 
 /**
+ * Returns JWT_SECRET or throws – never falls back to a default so that
+ * misconfigured deployments are caught immediately.
+ */
+function requireJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  return secret;
+}
+
+/**
  * Generate a JWT token for user session
  */
 export function generateSessionToken(
@@ -28,7 +40,7 @@ export function generateSessionToken(
   options: SessionOptions = {}
 ): string {
   const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
-  const secret = process.env.JWT_SECRET || 'default-secret-key';
+  const secret = requireJwtSecret();
 
   return jwt.sign(
     {
@@ -45,7 +57,7 @@ export function generateSessionToken(
  */
 export function verifySessionToken(token: string): SessionData | null {
   try {
-    const secret = process.env.JWT_SECRET || 'default-secret-key';
+    const secret = requireJwtSecret();
     const decoded = jwt.verify(token, secret) as SessionData;
     return {
       stacksAddress: decoded.stacksAddress,
