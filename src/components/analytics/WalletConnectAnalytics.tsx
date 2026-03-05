@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, Title, Text, AreaChart, BarChart, DonutChart } from '@tremor/react';
-import { analyticsService } from '@/lib/analytics/analytics.service';
 
 type TimeRange = '24h' | '7d' | '30d' | '90d' | 'all';
 
@@ -22,30 +21,36 @@ type WalletConnectStats = {
   transactionsByMethod: Array<{ name: string; value: number }>;
 };
 
+const EMPTY_STATS: WalletConnectStats = {
+  totalConnections: 0,
+  uniqueWallets: 0,
+  averageSessionDuration: 0,
+  completionRate: 0,
+  connectionsByDay: [],
+  walletsByType: [],
+  transactionsByMethod: [],
+};
+
 export function WalletConnectAnalytics() {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState<WalletConnectStats>({
-    totalConnections: 0,
-    uniqueWallets: 0,
-    averageSessionDuration: 0,
-    completionRate: 0,
-    connectionsByDay: [],
-    walletsByType: [],
-    transactionsByMethod: [],
-  });
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<WalletConnectStats>(EMPTY_STATS);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        // In a real app, this would be an API call to your backend
-        // For now, we'll simulate data
         const response = await fetch(`/api/analytics/walletconnect?range=${timeRange}`);
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(`Server responded with ${response.status}`);
+        }
+        const data = await response.json() as WalletConnectStats;
         setStats(data);
-      } catch (error) {
-        console.error('Error fetching WalletConnect analytics:', error);
+      } catch (err: unknown) {
+        console.error('Error fetching WalletConnect analytics:', err);
+        setError('Failed to load WalletConnect analytics. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -56,6 +61,14 @@ export function WalletConnectAnalytics() {
 
   if (isLoading) {
     return <div>Loading WalletConnect analytics...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-md bg-red-50 p-4">
+        <p className="text-sm text-red-700">{error}</p>
+      </div>
+    );
   }
 
   return (

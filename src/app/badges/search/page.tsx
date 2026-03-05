@@ -49,10 +49,13 @@ export default function BadgeSearchPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [results, setResults] = useState<SearchResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   // Fetch badges when search parameters change
   useEffect(() => {
-    fetchBadges()
+    fetchBadges().catch((err: unknown) => {
+      console.error('Unhandled error in badge search:', err)
+    })
   }, [searchQuery, sortBy, filters, currentPage])
 
   const fetchBadges = async () => {
@@ -77,8 +80,9 @@ export default function BadgeSearchPage() {
       if (data.success) {
         setResults(data.data)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching badges:', error)
+      setFetchError('Failed to load badges. Please try again.')
     } finally {
       setIsLoading(false)
     }
