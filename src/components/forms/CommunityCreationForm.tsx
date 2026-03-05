@@ -136,6 +136,22 @@ function CommunityCreationFormInner({
 
   const handleChange = (field: keyof CommunityFormData, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+
+    // Real-time color validation
+    if ((field === 'primaryColor' || field === 'secondaryColor') && typeof value === 'string') {
+      if (value && \!isValidHexColor(value)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [field]: 'Must be a valid hex color (e.g. #3b82f6)'
+        }))
+      } else {
+        setValidationErrors(prev => {
+          const next = { ...prev }
+          delete next[field]
+          return next
+        })
+      }
+    }
   }
 
   return (
