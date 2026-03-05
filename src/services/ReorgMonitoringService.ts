@@ -1,5 +1,14 @@
-import { ReorgEvent } from '../backend/src/services/ReorgHandlerService'
-import ReorgAwareDatabase from '../backend/src/services/ReorgAwareDatabase'
+// Types mirrored from backend/src/services/ReorgHandlerService to avoid
+// cross-boundary TypeScript compilation errors
+export interface ReorgEvent {
+  type: 'chain_reorg'
+  rollbackToBlock: number
+  rollbackToHash: string
+  newCanonicalBlock: number
+  newCanonicalHash: string
+  affectedTransactions: string[]
+  timestamp: number
+}
 
 export interface ReorgMetrics {
   totalReorgs: number
