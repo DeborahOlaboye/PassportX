@@ -72,12 +72,16 @@ function CommunityCreationFormInner({
 
     if (!formData.name.trim()) {
       errors.name = 'Community name is required'
+    } else if (formData.name.trim().length < 3) {
+      errors.name = 'Community name must be at least 3 characters'
     } else if (formData.name.length > 100) {
       errors.name = 'Community name must be less than 100 characters'
     }
 
     if (!formData.description.trim()) {
       errors.description = 'Description is required'
+    } else if (formData.description.trim().length < 10) {
+      errors.description = 'Description must be at least 10 characters'
     } else if (formData.description.length > 2000) {
       errors.description = 'Description must be less than 2000 characters'
     }
