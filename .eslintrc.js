@@ -21,6 +21,12 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-non-null-assertion': 'warn',
 
+    // ── Security-critical rules ───────────────────────────────────────────────
+    'no-eval': 'error',
+    'no-implied-eval': 'error',
+    'eqeqeq': ['error', 'always'],
+    'no-new-func': 'error',
+
     // ── Logging / information leakage ─────────────────────────────────────────
     'no-console': ['warn', { allow: ['warn', 'error'] }],
 
