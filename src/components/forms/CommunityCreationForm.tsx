@@ -72,12 +72,16 @@ function CommunityCreationFormInner({
 
     if (!formData.name.trim()) {
       errors.name = 'Community name is required'
+    } else if (formData.name.trim().length < 3) {
+      errors.name = 'Community name must be at least 3 characters'
     } else if (formData.name.length > 100) {
       errors.name = 'Community name must be less than 100 characters'
     }
 
     if (!formData.description.trim()) {
       errors.description = 'Description is required'
+    } else if (formData.description.trim().length < 10) {
+      errors.description = 'Description must be at least 10 characters'
     } else if (formData.description.length > 2000) {
       errors.description = 'Description must be less than 2000 characters'
     }
@@ -90,6 +94,26 @@ function CommunityCreationFormInner({
       errors.website = 'Please enter a valid URL'
     }
 
+    // Tags validation
+    if (formData.tags) {
+      const tagList = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+      if (tagList.length > 10) {
+        errors.tags = 'Maximum 10 tags allowed'
+      } else if (tagList.some(t => t.length > 30)) {
+        errors.tags = 'Each tag must be 30 characters or fewer'
+      } else if (tagList.some(t => !/^[a-zA-Z0-9 _-]+$/.test(t))) {
+        errors.tags = 'Tags may only contain letters, numbers, spaces, hyphens, and underscores'
+      }
+    }
+
+    if (!isValidHexColor(formData.primaryColor)) {
+      errors.primaryColor = 'Primary color must be a valid hex color (e.g. #3b82f6)'
+    }
+
+    if (!isValidHexColor(formData.secondaryColor)) {
+      errors.secondaryColor = 'Secondary color must be a valid hex color (e.g. #10b981)'
+    }
+
     if (formData.stxPayment < 0) {
       errors.stxPayment = 'STX payment must be a positive number'
     } else if (formData.stxPayment > 1000000) {
@@ -99,6 +123,9 @@ function CommunityCreationFormInner({
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
+
+  const isValidHexColor = (color: string): boolean =>
+    /^#[0-9A-Fa-f]{6}$/.test(color)
 
   const isValidUrl = (url: string): boolean => {
     try {
@@ -125,6 +152,22 @@ function CommunityCreationFormInner({
 
   const handleChange = (field: keyof CommunityFormData, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+
+    // Real-time color validation
+    if ((field === 'primaryColor' || field === 'secondaryColor') && typeof value === 'string') {
+      if (value && \!isValidHexColor(value)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [field]: 'Must be a valid hex color (e.g. #3b82f6)'
+        }))
+      } else {
+        setValidationErrors(prev => {
+          const next = { ...prev }
+          delete next[field]
+          return next
+        })
+      }
+    }
   }
 
   return (
@@ -225,6 +268,10 @@ function CommunityCreationFormInner({
               placeholder="e.g., blockchain, development, education"
               disabled={isLoading}
             />
+            {validationErrors.tags && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.tags}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">Up to 10 tags, max 30 characters each</p>
           </div>
 
           <div className="border-t pt-6">
@@ -240,12 +287,20 @@ function CommunityCreationFormInner({
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={formData.primaryColor}
+                  value={isValidHexColor(formData.primaryColor) ? formData.primaryColor : '#000000'}
                   onChange={(e) => handleChange('primaryColor', e.target.value)}
                   className="w-12 h-12 rounded-lg cursor-pointer"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-600">{formData.primaryColor}</span>
+                <input
+                  type="text"
+                  value={formData.primaryColor}
+                  onChange={(e) => handleChange('primaryColor', e.target.value)}
+                  className={"w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono " + (validationErrors.primaryColor ? "border-red-500" : "border-gray-300")}
+                  placeholder="#3b82f6"
+                  disabled={isLoading}
+                  maxLength={7}
+                />
               </div>
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {colorPresets.map((preset) => (
@@ -264,6 +319,9 @@ function CommunityCreationFormInner({
                   />
                 ))}
               </div>
+              {validationErrors.primaryColor && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.primaryColor}</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -273,13 +331,24 @@ function CommunityCreationFormInner({
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={formData.secondaryColor}
+                  value={isValidHexColor(formData.secondaryColor) ? formData.secondaryColor : '#000000'}
                   onChange={(e) => handleChange('secondaryColor', e.target.value)}
                   className="w-12 h-12 rounded-lg cursor-pointer"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-600">{formData.secondaryColor}</span>
+                <input
+                  type="text"
+                  value={formData.secondaryColor}
+                  onChange={(e) => handleChange('secondaryColor', e.target.value)}
+                  className={"w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono " + (validationErrors.secondaryColor ? "border-red-500" : "border-gray-300")}
+                  placeholder="#10b981"
+                  disabled={isLoading}
+                  maxLength={7}
+                />
               </div>
+              {validationErrors.secondaryColor && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.secondaryColor}</p>
+              )}
             </div>
           </div>
 
