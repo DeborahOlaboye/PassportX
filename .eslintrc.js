@@ -9,8 +9,8 @@ module.exports = {
   },
   rules: {
     // Disable all rules by default
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'off',
+    'no-unused-vars': 'off', // disabled in favour of the TS-aware version below
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'no-console': 'off',
