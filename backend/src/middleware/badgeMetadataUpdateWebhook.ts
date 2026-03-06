@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import BadgeMetadataUpdateService from '../services/badgeMetadataUpdateService';
 import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers';
 
@@ -14,6 +15,7 @@ export class BadgeMetadataUpdateWebhookMiddleware {
   private service: BadgeMetadataUpdateService;
   private config: WebhookValidationConfig;
   private logger: any;
+  private secret: string;
   private processingStats = {
     totalWebhooks: 0,
     successfulWebhooks: 0,
@@ -36,6 +38,11 @@ export class BadgeMetadataUpdateWebhookMiddleware {
     };
 
     this.logger = logger || this.getDefaultLogger();
+    this.secret = process.env.BADGE_METADATA_WEBHOOK_SECRET || '';
+
+    if (this.config.validateSignature && (!this.secret || this.secret === 'default-secret')) {
+      throw new Error('BADGE_METADATA_WEBHOOK_SECRET must be configured when signature validation is enabled');
+    }
   }
 
   private getDefaultLogger() {
@@ -140,21 +147,28 @@ export class BadgeMetadataUpdateWebhookMiddleware {
   }
 
   private validateSignature(req: Request): boolean {
-    const signature = req.headers['x-webhook-signature'];
+    const signature = req.headers['x-webhook-signature'] as string;
     if (!signature) {
+      this.logger.warn('Missing webhook signature header');
       return false;
     }
 
     const payload = JSON.stringify(req.body);
     const expectedSignature = this.computeSignature(payload);
 
-    return signature === expectedSignature;
+    try {
+      return crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature)
+      );
+    } catch (error) {
+      this.logger.error('Error during signature comparison', { error });
+      return false;
+    }
   }
 
   private computeSignature(payload: string): string {
-    const crypto = require('crypto');
-    const secret = process.env.BADGE_METADATA_WEBHOOK_SECRET || 'default-secret';
-    return crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    return crypto.createHmac('sha256', this.secret).update(payload).digest('hex');
   }
 
   getStats() {

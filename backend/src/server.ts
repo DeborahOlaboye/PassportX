@@ -5,6 +5,8 @@ import helmet from 'helmet'
 import { createRateLimiter } from './middleware/rateLimiter'
 import { DEFAULT_RATE_LIMIT } from './config/rateLimits'
 import dotenv from 'dotenv-safe'
+import { registerRequiredEnvVars } from './config/env'
+import { EnvValidator } from './utils/envValidation'
 import { connectDB } from './utils/database'
 import { errorHandler } from './middleware/errorHandler'
 import { requestLogger } from './middleware/monitoring'
@@ -30,6 +32,10 @@ import { validateRequiredEnv } from './config/env'
 
 dotenv.config()
 validateRequiredEnv()
+
+// Register and validate environment variables
+registerRequiredEnvVars()
+EnvValidator.ensureValid()
 
 const app = express()
 const httpServer = createServer(app)
