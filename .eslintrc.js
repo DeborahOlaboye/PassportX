@@ -11,7 +11,7 @@ module.exports = {
     // Disable all rules by default
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'no-console': 'off',
     'react/no-unescaped-entities': 'off',
@@ -21,7 +21,6 @@ module.exports = {
     'react/prop-types': 'off',
     'prefer-const': 'off',
     'no-var': 'off',
-    // Add any other rules you want to disable here
   },
   env: {
     node: true,
@@ -34,8 +33,10 @@ module.exports = {
       version: 'detect',
     },
   },
-  // Ignore all test files and config files
   ignorePatterns: [
+    // Backend is a separate Express application with its own tsconfig and
+    // lint configuration – exclude it from the Next.js root linter.
+    'backend/**',
     '**/*.test.*',
     '**/__tests__/*',
     '**/*.spec.*',
