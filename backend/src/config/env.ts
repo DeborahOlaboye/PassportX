@@ -1,4 +1,3 @@
-
 import { EnvValidator } from '../utils/envValidation';
 
 /**
@@ -20,19 +19,35 @@ export function validateRequiredEnv(): void {
 
   if (missing.length > 0) {
     console.error(
-      `❌ [env] Missing or insecure required environment variables: ${missing.join(', ')}`
+      `❌ [env] Missing or insecure required environment variables: ${missing.join(
+        ', '
+      )}`
     );
-    console.error('❌ [env] Copy backend/.env.example to backend/.env and fill in the values.');
+    console.error(
+      '❌ [env] Copy backend/.env.example to backend/.env and fill in the values.'
+    );
     process.exit(1);
   }
 }
 
 export function registerRequiredEnvVars(): void {
-  // Webhook Secrets
+  // Webhook Secrets — required for badge event middleware
   EnvValidator.addRequiredVariable('BADGE_METADATA_WEBHOOK_SECRET');
   EnvValidator.addRequiredVariable('BADGE_REVOCATION_WEBHOOK_SECRET');
 
-  // General Webhook Validation
+  // Chainhook auth token — required when any predicate is active
+  const anyPredicateEnabled =
+    process.env.CHAINHOOK_ENABLE_BADGE_MINT === 'true' ||
+    process.env.CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE === 'true' ||
+    process.env.CHAINHOOK_ENABLE_BADGE_REVOCATION === 'true' ||
+    process.env.CHAINHOOK_ENABLE_EVENT_PREDICATE === 'true';
+
+  if (anyPredicateEnabled) {
+    EnvValidator.addRequiredVariable('CHAINHOOK_AUTH_TOKEN');
+    EnvValidator.addRequiredVariable('CHAINHOOK_NODE_URL');
+  }
+
+  // Webhook signature validation secret
   if (process.env.WEBHOOK_SIGNATURE_VALIDATION === 'true') {
     EnvValidator.addRequiredVariable('WEBHOOK_SECRET_KEY');
   }
