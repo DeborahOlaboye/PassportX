@@ -11,7 +11,25 @@ interface AuthenticatedSocket extends Socket {
   user?: SocketUser
 }
 
+/**
+ * Returns the JWT secret or throws at startup – never falls back to a
+ * hardcoded default so that misconfigured deployments fail fast and
+ * visibly rather than silently accepting forged tokens.
+ */
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error(
+      'JWT_SECRET environment variable is not set. ' +
+      'Set a strong, random secret before starting the server.'
+    )
+  }
+  return secret
+}
+
 export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
+  const jwtSecret = getJwtSecret()
+
   const io = new SocketIOServer(httpServer, {
     cors: {
       origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -29,7 +47,7 @@ export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
         return next(new Error('Authentication error: No token provided'))
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as SocketUser
+      const decoded = jwt.verify(token, jwtSecret) as SocketUser
 
       socket.user = decoded
       next()
@@ -93,14 +111,14 @@ export const getSocketInstance = (): SocketIOServer | null => {
 }
 
 // Utility function to emit notification to a specific user
-export const emitNotificationToUser = (userId: string, notification: any) => {
+export const emitNotificationToUser = (userId: string, notification: unknown) => {
   if (socketInstance) {
     socketInstance.to(`user:${userId}`).emit('notification:new', notification)
   }
 }
 
 // Utility function to emit to multiple users
-export const emitNotificationToUsers = (userIds: string[], notification: any) => {
+export const emitNotificationToUsers = (userIds: string[], notification: unknown) => {
   if (socketInstance) {
     userIds.forEach(userId => {
       socketInstance!.to(`user:${userId}`).emit('notification:new', notification)
@@ -109,14 +127,14 @@ export const emitNotificationToUsers = (userIds: string[], notification: any) =>
 }
 
 // Utility function to broadcast system announcement
-export const broadcastSystemAnnouncement = (notification: any) => {
+export const broadcastSystemAnnouncement = (notification: unknown) => {
   if (socketInstance) {
     socketInstance.emit('notification:system', notification)
   }
 }
 
 // Utility function to broadcast analytics update to all connected clients
-export const broadcastAnalyticsUpdate = (data: any) => {
+export const broadcastAnalyticsUpdate = (data: Record<string, unknown>) => {
   if (socketInstance) {
     socketInstance.emit('analytics:update', {
       timestamp: Date.now(),
@@ -126,7 +144,7 @@ export const broadcastAnalyticsUpdate = (data: any) => {
 }
 
 // Utility function to broadcast activity event to a specific user
-export const broadcastActivityEvent = (userId: string, activity: any) => {
+export const broadcastActivityEvent = (userId: string, activity: unknown) => {
   if (socketInstance) {
     socketInstance.to(`user:${userId}`).emit('activity:new', {
       timestamp: Date.now(),
@@ -136,7 +154,7 @@ export const broadcastActivityEvent = (userId: string, activity: any) => {
 }
 
 // Utility function to broadcast activity event to multiple users
-export const broadcastActivityEventToUsers = (userIds: string[], activity: any) => {
+export const broadcastActivityEventToUsers = (userIds: string[], activity: unknown) => {
   if (socketInstance) {
     userIds.forEach(userId => {
       socketInstance!.to(`user:${userId}`).emit('activity:new', {
@@ -148,7 +166,7 @@ export const broadcastActivityEventToUsers = (userIds: string[], activity: any) 
 }
 
 // Utility function to broadcast activity feed update (mark as read, etc)
-export const broadcastActivityUpdate = (userId: string, event: string, data: any) => {
+export const broadcastActivityUpdate = (userId: string, event: string, data: Record<string, unknown>) => {
   if (socketInstance) {
     socketInstance.to(`user:${userId}`).emit(`activity:${event}`, {
       timestamp: Date.now(),
@@ -158,7 +176,7 @@ export const broadcastActivityUpdate = (userId: string, event: string, data: any
 }
 
 // Utility function to broadcast analytics event to all connected clients
-export const broadcastAnalyticsEvent = (event: string, data: any) => {
+export const broadcastAnalyticsEvent = (event: string, data: Record<string, unknown>) => {
   if (socketInstance) {
     socketInstance.emit(`analytics:${event}`, {
       timestamp: Date.now(),

@@ -65,7 +65,7 @@ export class StacksService {
         txId: broadcastResponse.txid,
         transaction
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error minting badge:', error)
       throw error
     }
@@ -98,7 +98,7 @@ export class StacksService {
         txId: broadcastResponse.txid,
         transaction
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating community:', error)
       throw error
     }
@@ -108,7 +108,7 @@ export class StacksService {
     try {
       const response = await axios.get(`${STACKS_API_URL}/extended/v1/tx/${txId}`)
       return response.data
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting transaction status:', error)
       throw error
     }
@@ -120,7 +120,7 @@ export class StacksService {
         `${STACKS_API_URL}/v2/contracts/interface/${contractAddress}/${contractName}`
       )
       return response.data
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting contract info:', error)
       throw error
     }
@@ -141,7 +141,7 @@ export class StacksService {
         }
       )
       return response.data
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error reading contract function:', error)
       throw error
     }
@@ -156,7 +156,7 @@ export class StacksService {
         [principalCV(userAddress)]
       )
       return response.result
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting user badges:', error)
       throw error
     }
@@ -170,7 +170,7 @@ export class StacksService {
     try {
       const response = await axios.get(`${STACKS_API_URL}/extended/v1/address/${address}/balances`)
       return response.data
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting account balance:', error)
       throw error
     }
@@ -182,7 +182,7 @@ export class StacksService {
         `${STACKS_API_URL}/extended/v1/address/${address}/transactions?limit=${limit}`
       )
       return response.data
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error getting account transactions:', error)
       throw error
     }

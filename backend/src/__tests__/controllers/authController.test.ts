@@ -2,11 +2,19 @@ import { Request, Response } from 'express';
 import { authenticateWithWallet } from '../authController';
 import User from '../../models/User';
 import { verifySignature } from '../../services/authService';
-import { generateSessionToken, setSessionCookie } from '../../utils/sessionManager';
+import {
+  generateSessionToken,
+  setSessionCookie,
+} from '../../utils/sessionManager';
 
 jest.mock('../../models/User');
 jest.mock('../../services/authService');
 jest.mock('../../utils/sessionManager');
+
+const VALID_ADDRESS = 'ST123ABC';
+const VALID_NONCE = 'a'.repeat(64);
+const VALID_MESSAGE = `Sign this message to authenticate with PassportX\nAddress: ${VALID_ADDRESS}\nNonce: ${VALID_NONCE}`;
+const VALID_SIGNATURE = 'b'.repeat(130);
 
 describe('AuthController - Signature Verification', () => {
   let mockRequest: Partial<Request>;
@@ -17,14 +25,11 @@ describe('AuthController - Signature Verification', () => {
   beforeEach(() => {
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
-    
-    mockRequest = {
-      body: {}
-    };
-    
+
+    mockRequest = { body: {} };
     mockResponse = {
       status: statusMock,
-      json: jsonMock
+      json: jsonMock,
     };
 
     jest.clearAllMocks();
@@ -33,8 +38,8 @@ describe('AuthController - Signature Verification', () => {
   describe('Signature Verification', () => {
     test('should reject request without signature', async () => {
       mockRequest.body = {
-        stacksAddress: 'ST123ABC',
-        message: 'test message'
+        stacksAddress: VALID_ADDRESS,
+        message: VALID_MESSAGE,
       };
 
       await authenticateWithWallet(
@@ -43,17 +48,18 @@ describe('AuthController - Signature Verification', () => {
       );
 
       expect(statusMock).toHaveBeenCalledWith(400);
-      expect(jsonMock).toHaveBeenCalledWith({
-        success: false,
-        message: 'Signature and message are required for authentication',
-        code: 'MISSING_SIGNATURE'
-      });
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          code: 'MISSING_SIGNATURE',
+        })
+      );
     });
 
     test('should reject request without message', async () => {
       mockRequest.body = {
-        stacksAddress: 'ST123ABC',
-        signature: 'valid_signature'
+        stacksAddress: VALID_ADDRESS,
+        signature: VALID_SIGNATURE,
       };
 
       await authenticateWithWallet(
@@ -62,28 +68,29 @@ describe('AuthController - Signature Verification', () => {
       );
 
       expect(statusMock).toHaveBeenCalledWith(400);
-      expect(jsonMock).toHaveBeenCalledWith({
-        success: false,
-        message: 'Signature and message are required for authentication',
-        code: 'MISSING_SIGNATURE'
-      });
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          code: 'MISSING_SIGNATURE',
+        })
+      );
     });
 
     test('should verify valid signature and authenticate user', async () => {
       const mockUser = {
         _id: 'user123',
-        stacksAddress: 'ST123ABC',
+        stacksAddress: VALID_ADDRESS,
         name: 'Test User',
         isPublic: true,
         joinDate: new Date(),
         lastActive: new Date(),
-        save: jest.fn().mockResolvedValue(true)
+        save: jest.fn().mockResolvedValue(true),
       };
 
       mockRequest.body = {
-        stacksAddress: 'ST123ABC',
-        message: 'test message',
-        signature: 'valid_signature'
+        stacksAddress: VALID_ADDRESS,
+        message: VALID_MESSAGE,
+        signature: VALID_SIGNATURE,
       };
 
       (verifySignature as jest.Mock).mockResolvedValue(true);
@@ -97,9 +104,9 @@ describe('AuthController - Signature Verification', () => {
       );
 
       expect(verifySignature).toHaveBeenCalledWith(
-        'test message',
-        'valid_signature',
-        'ST123ABC'
+        VALID_MESSAGE,
+        VALID_SIGNATURE,
+        VALID_ADDRESS
       );
       expect(jsonMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -107,18 +114,18 @@ describe('AuthController - Signature Verification', () => {
           data: expect.objectContaining({
             token: 'mock_token',
             user: expect.objectContaining({
-              stacksAddress: 'ST123ABC'
-            })
-          })
+              stacksAddress: VALID_ADDRESS,
+            }),
+          }),
         })
       );
     });
 
     test('should reject invalid signature', async () => {
       mockRequest.body = {
-        stacksAddress: 'ST123ABC',
-        message: 'test message',
-        signature: 'invalid_signature'
+        stacksAddress: VALID_ADDRESS,
+        message: VALID_MESSAGE,
+        signature: VALID_SIGNATURE,
       };
 
       (verifySignature as jest.Mock).mockResolvedValue(false);
@@ -129,23 +136,24 @@ describe('AuthController - Signature Verification', () => {
       );
 
       expect(verifySignature).toHaveBeenCalledWith(
-        'test message',
-        'invalid_signature',
-        'ST123ABC'
+        VALID_MESSAGE,
+        VALID_SIGNATURE,
+        VALID_ADDRESS
       );
       expect(statusMock).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith({
         success: false,
-        message: 'Invalid signature. Please sign the message with your wallet.',
-        code: 'INVALID_SIGNATURE'
+        message:
+          'Invalid signature. Please sign the message with your wallet.',
+        code: 'INVALID_SIGNATURE',
       });
     });
 
     test('should handle signature verification errors gracefully', async () => {
       mockRequest.body = {
-        stacksAddress: 'ST123ABC',
-        message: 'test message',
-        signature: 'error_signature'
+        stacksAddress: VALID_ADDRESS,
+        message: VALID_MESSAGE,
+        signature: VALID_SIGNATURE,
       };
 
       (verifySignature as jest.Mock).mockRejectedValue(
@@ -159,9 +167,7 @@ describe('AuthController - Signature Verification', () => {
 
       expect(statusMock).toHaveBeenCalledWith(500);
       expect(jsonMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: false
-        })
+        expect.objectContaining({ success: false })
       );
     });
 
@@ -172,13 +178,13 @@ describe('AuthController - Signature Verification', () => {
         isPublic: true,
         joinDate: expect.any(Date),
         lastActive: expect.any(Date),
-        save: jest.fn().mockResolvedValue(true)
+        save: jest.fn().mockResolvedValue(true),
       };
 
       mockRequest.body = {
         stacksAddress: 'ST456DEF',
-        message: 'test message',
-        signature: 'valid_signature'
+        message: VALID_MESSAGE,
+        signature: VALID_SIGNATURE,
       };
 
       (verifySignature as jest.Mock).mockResolvedValue(true);

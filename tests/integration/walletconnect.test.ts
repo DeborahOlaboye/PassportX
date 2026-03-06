@@ -199,8 +199,9 @@ describe('WalletConnect Integration Tests', () => {
       try {
         await provider.connect();
         fail('Expected error to be thrown');
-      } catch (error: any) {
-        expect(error.message).toBe('Connection failed');
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe('Connection failed');
       }
     });
 
@@ -211,8 +212,9 @@ describe('WalletConnect Integration Tests', () => {
       try {
         await provider.request({ method: 'eth_sendTransaction' });
         fail('Expected error to be thrown');
-      } catch (error: any) {
-        expect(error.message).toBe('Transaction rejected by user');
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe('Transaction rejected by user');
       }
     });
 
@@ -223,8 +225,9 @@ describe('WalletConnect Integration Tests', () => {
       try {
         await provider.request({ method: 'personal_sign' });
         fail('Expected error to be thrown');
-      } catch (error: any) {
-        expect(error.message).toBe('User denied message signature');
+      } catch (error: unknown) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe('User denied message signature');
       }
     });
   });

@@ -28,8 +28,10 @@ import AnalyticsAggregator from './services/analyticsAggregator'
 import AnalyticsEventProcessor from './services/analyticsEventProcessor'
 import UserActivityService from './services/userActivityService'
 import WebhookService from './services/WebhookService'
+import { validateRequiredEnv } from './config/env'
 
 dotenv.config()
+validateRequiredEnv()
 
 // Register and validate environment variables
 registerRequiredEnvVars()

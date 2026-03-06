@@ -34,8 +34,13 @@ function NotificationCenterInner() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await fetchNotifications()
-    setTimeout(() => setIsRefreshing(false), 500)
+    try {
+      await fetchNotifications()
+    } catch (err: unknown) {
+      console.error('Failed to refresh notifications:', err)
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500)
+    }
   }
 
   const getNotificationIcon = (type: string) => {

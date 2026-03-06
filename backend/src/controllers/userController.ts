@@ -1,14 +1,15 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import { AuthRequest } from '../types';
+import { getErrorMessage, getErrorStatusCode } from '../errors';
 
-// Helper function to handle errors
-const handleError = (res: Response, error: any, message: string) => {
+// Helper function to handle errors with type-safe error narrowing
+const handleError = (res: Response, error: unknown, message: string) => {
   console.error(message, error);
-  const status = error.status || 500;
+  const status = getErrorStatusCode(error);
   res.status(status).json({
     success: false,
-    message: error.message || 'Internal server error'
+    message: getErrorMessage(error)
   });
 };
 
@@ -43,7 +44,7 @@ export const getUserByAddress = async (req: Request, res: Response) => {
         adminCommunities: user.adminCommunities
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching user:');
   }
 };
@@ -99,7 +100,7 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
         }
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error updating profile:');
   }
 };
@@ -148,7 +149,7 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
         settings: user.settings
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error updating settings:');
   }
 };
@@ -192,7 +193,7 @@ export const initializePassport = async (req: AuthRequest, res: Response) => {
         stacksAddress: user.stacksAddress
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error initializing passport:');
   }
 };
@@ -215,7 +216,7 @@ export const getUserBadges = async (req: Request, res: Response) => {
         hasMore: false
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching user badges:');
   }
 };
@@ -243,7 +244,7 @@ export const getUserCommunities = async (req: Request, res: Response) => {
         adminCommunities: user.adminCommunities || []
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     handleError(res, error, 'Error fetching user communities:');
   }
 };

@@ -176,9 +176,9 @@ router.post('/test', notificationWriteLimiter, authenticateToken, async (req: Au
     const notification = await createNotification(userId, type, title, message, data)
 
     res.json({ message: 'Test notification created', notification })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating test notification:', error)
-    res.status(500).json({ error: error.message || 'Failed to create test notification' })
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create test notification' })
   }
 })
 
