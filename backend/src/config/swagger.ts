@@ -1,14 +1,18 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import path from 'path';
 
+export const API_VERSION = '1.0.0';
+
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
       title: 'PassportX API',
-      version: '1.0.0',
+      version: API_VERSION,
       description:
-        'PassportX backend API for managing digital identity passports, badges, communities, and blockchain-based verifications on the Stacks network.',
+        'PassportX backend API (v1) for managing digital identity passports, badges, communities, and blockchain-based verifications on the Stacks network.\n\n' +
+        '**Authentication**: Most write endpoints require a session cookie obtained via `POST /api/auth/login`.\n\n' +
+        '**Versioning**: The current API version is `v1`. The version is reflected in the `info.version` field of this spec.',
       contact: {
         name: 'PassportX Team',
       },
@@ -19,11 +23,11 @@ const options: swaggerJsdoc.Options = {
     servers: [
       {
         url: 'http://localhost:3001',
-        description: 'Development server',
+        description: 'Development server (v1)',
       },
       {
         url: 'https://api.passportx.io',
-        description: 'Production server',
+        description: 'Production server (v1)',
       },
     ],
     components: {
@@ -62,7 +66,10 @@ const options: swaggerJsdoc.Options = {
           type: 'object',
           properties: {
             id: { type: 'string', example: '64a1b2c3d4e5f6a7b8c9d0e1' },
-            stacksAddress: { type: 'string', example: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9' },
+            stacksAddress: {
+              type: 'string',
+              example: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+            },
             name: { type: 'string', example: 'Alice Smith' },
             bio: { type: 'string', example: 'Blockchain enthusiast' },
             avatar: { type: 'string', example: '/uploads/avatars/avatar.jpg' },
@@ -86,10 +93,19 @@ const options: swaggerJsdoc.Options = {
           properties: {
             id: { type: 'string', example: '64a1b2c3d4e5f6a7b8c9d0e1' },
             name: { type: 'string', example: 'Early Contributor' },
-            description: { type: 'string', example: 'Awarded to early contributors' },
+            description: {
+              type: 'string',
+              example: 'Awarded to early contributors',
+            },
             community: { type: 'string', example: 'PassportX Community' },
-            owner: { type: 'string', example: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9' },
-            issuer: { type: 'string', example: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE' },
+            owner: {
+              type: 'string',
+              example: 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9',
+            },
+            issuer: {
+              type: 'string',
+              example: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+            },
             level: { type: 'integer', example: 1 },
             category: { type: 'string', example: 'contribution' },
             icon: { type: 'string', example: '🏆' },
@@ -103,12 +119,18 @@ const options: swaggerJsdoc.Options = {
           properties: {
             id: { type: 'string', example: '64a1b2c3d4e5f6a7b8c9d0e1' },
             name: { type: 'string', example: 'Early Contributor' },
-            description: { type: 'string', example: 'Awarded to early contributors' },
+            description: {
+              type: 'string',
+              example: 'Awarded to early contributors',
+            },
             category: { type: 'string', example: 'contribution' },
             level: { type: 'integer', example: 1 },
             icon: { type: 'string', example: '🏆' },
             requirements: { type: 'string', example: 'Must contribute 5+ PRs' },
-            creator: { type: 'string', example: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE' },
+            creator: {
+              type: 'string',
+              example: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+            },
             createdAt: { type: 'string', format: 'date-time' },
           },
         },
@@ -117,8 +139,14 @@ const options: swaggerJsdoc.Options = {
           properties: {
             id: { type: 'string', example: '64a1b2c3d4e5f6a7b8c9d0e1' },
             name: { type: 'string', example: 'PassportX DAO' },
-            description: { type: 'string', example: 'The official PassportX community' },
-            creator: { type: 'string', example: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE' },
+            description: {
+              type: 'string',
+              example: 'The official PassportX community',
+            },
+            creator: {
+              type: 'string',
+              example: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+            },
             admins: { type: 'array', items: { type: 'string' } },
             memberCount: { type: 'integer', example: 42 },
             isActive: { type: 'boolean', example: true },
@@ -141,7 +169,10 @@ const options: swaggerJsdoc.Options = {
     tags: [
       { name: 'Auth', description: 'Authentication and session management' },
       { name: 'Users', description: 'User profiles and passport management' },
-      { name: 'Badges', description: 'Badge templates, issuance, and management' },
+      {
+        name: 'Badges',
+        description: 'Badge templates, issuance, and management',
+      },
       { name: 'Communities', description: 'Community creation and membership' },
       { name: 'Verification', description: 'Badge and ownership verification' },
       { name: 'Notifications', description: 'User notification management' },
