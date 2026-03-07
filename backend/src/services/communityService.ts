@@ -403,19 +403,22 @@ export const getCommunityLeaderboard = async (communityId: string, limit = 10) =
 
   const leaderboard = await Badge.aggregate(pipeline)
 
-  return Promise.all(
-    leaderboard.map(async (entry) => {
-      const user = await User.findOne({ stacksAddress: entry._id })
-      return {
-        stacksAddress: entry._id,
-        name: user?.name || 'Anonymous',
-        avatar: user?.avatar,
-        badgeCount: entry.badgeCount,
-        highestLevel: entry.highestLevel,
-        latestBadge: entry.latestBadge
-      }
-    })
-  )
+  // Batch-fetch all users in a single query instead of one per entry (N+1).
+  const addresses = leaderboard.map((e) => e._id)
+  const users = await User.find({ stacksAddress: { $in: addresses } }).select('stacksAddress name avatar')
+  const userByAddress = new Map(users.map((u) => [u.stacksAddress, u]))
+
+  return leaderboard.map((entry) => {
+    const user = userByAddress.get(entry._id)
+    return {
+      stacksAddress: entry._id,
+      name: user?.name || 'Anonymous',
+      avatar: user?.avatar,
+      badgeCount: entry.badgeCount,
+      highestLevel: entry.highestLevel,
+      latestBadge: entry.latestBadge,
+    }
+  })
 }
 
 export const getCommunityAnalytics = async (communityId: string) => {
