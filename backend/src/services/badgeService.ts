@@ -1,7 +1,7 @@
-import Badge from '../models/Badge'
-import BadgeTemplate from '../models/BadgeTemplate'
-import Community from '../models/Community'
-import User from '../models/User'
+import Badge from '../models/Badge';
+import BadgeTemplate from '../models/BadgeTemplate';
+import Community from '../models/Community';
+import User from '../models/User';
 
 export const validateBadgeIssuance = async (
   templateId: string,
@@ -9,38 +9,40 @@ export const validateBadgeIssuance = async (
   issuerAddress: string
 ) => {
   // Check if template exists and is active
-  const template = await BadgeTemplate.findById(templateId).populate('community')
+  const template = await BadgeTemplate.findById(templateId).populate(
+    'community'
+  );
   if (!template || !template.isActive) {
-    throw new Error('Badge template not found or inactive')
+    throw new Error('Badge template not found or inactive');
   }
 
   // Check if issuer is community admin
-  const community = template.community as any
+  const community = template.community as any;
   if (community.admin !== issuerAddress) {
-    throw new Error('Only community admin can issue badges')
+    throw new Error('Only community admin can issue badges');
   }
 
   // Check if recipient already has this badge
   const existingBadge = await Badge.findOne({
     templateId,
-    owner: recipientAddress
-  })
+    owner: recipientAddress,
+  });
 
   if (existingBadge) {
-    throw new Error('Badge already issued to this recipient')
+    throw new Error('Badge already issued to this recipient');
   }
 
-  return { template, community }
-}
+  return { template, community };
+};
 
 export const getBadgesByCategory = async (category: string, limit = 20) => {
   const badges = await Badge.find({ 'metadata.category': category })
     .populate('templateId')
     .populate('community')
     .sort({ issuedAt: -1 })
-    .limit(limit)
+    .limit(limit);
 
-  return badges.map(badge => ({
+  return badges.map((badge) => ({
     id: badge._id,
     name: (badge.templateId as any).name,
     description: (badge.templateId as any).description,
@@ -48,18 +50,18 @@ export const getBadgesByCategory = async (category: string, limit = 20) => {
     owner: badge.owner,
     level: badge.metadata.level,
     icon: (badge.templateId as any).icon,
-    issuedAt: badge.issuedAt
-  }))
-}
+    issuedAt: badge.issuedAt,
+  }));
+};
 
 export const getBadgesByLevel = async (level: number, limit = 20) => {
   const badges = await Badge.find({ 'metadata.level': level })
     .populate('templateId')
     .populate('community')
     .sort({ issuedAt: -1 })
-    .limit(limit)
+    .limit(limit);
 
-  return badges.map(badge => ({
+  return badges.map((badge) => ({
     id: badge._id,
     name: (badge.templateId as any).name,
     description: (badge.templateId as any).description,
@@ -67,25 +69,30 @@ export const getBadgesByLevel = async (level: number, limit = 20) => {
     owner: badge.owner,
     category: badge.metadata.category,
     icon: (badge.templateId as any).icon,
-    issuedAt: badge.issuedAt
-  }))
-}
+    issuedAt: badge.issuedAt,
+  }));
+};
+
+const MAX_BADGE_LIMIT = 100;
 
 export const getRecentBadges = async (limit = 20) => {
+  const safeLimit = Math.min(Math.max(1, limit), MAX_BADGE_LIMIT);
   const badges = await Badge.find()
     .populate('templateId')
     .populate('community')
     .sort({ issuedAt: -1 })
-    .limit(limit)
+    .limit(safeLimit);
 
   // Collect unique owner addresses and fetch all users in a single query
   // instead of issuing one User.findOne per badge (N+1 anti-pattern).
-  const ownerAddresses = [...new Set(badges.map((b) => b.owner))]
-  const users = await User.find({ stacksAddress: { $in: ownerAddresses } }).select('stacksAddress name')
-  const userByAddress = new Map(users.map((u) => [u.stacksAddress, u]))
+  const ownerAddresses = [...new Set(badges.map((b) => b.owner))];
+  const users = await User.find({
+    stacksAddress: { $in: ownerAddresses },
+  }).select('stacksAddress name');
+  const userByAddress = new Map(users.map((u) => [u.stacksAddress, u]));
 
   return badges.map((badge) => {
-    const user = userByAddress.get(badge.owner)
+    const user = userByAddress.get(badge.owner);
     return {
       id: badge._id,
       name: (badge.templateId as any).name,
@@ -96,55 +103,55 @@ export const getRecentBadges = async (limit = 20) => {
       level: badge.metadata.level,
       category: badge.metadata.category,
       icon: (badge.templateId as any).icon,
-      issuedAt: badge.issuedAt
-    }
-  })
-}
+      issuedAt: badge.issuedAt,
+    };
+  });
+};
 
 export const getBadgeStatistics = async () => {
-  const totalBadges = await Badge.countDocuments()
-  const totalTemplates = await BadgeTemplate.countDocuments({ isActive: true })
-  const totalCommunities = await Community.countDocuments({ isActive: true })
+  const totalBadges = await Badge.countDocuments();
+  const totalTemplates = await BadgeTemplate.countDocuments({ isActive: true });
+  const totalCommunities = await Community.countDocuments({ isActive: true });
 
   const categoryStats = await Badge.aggregate([
     { $group: { _id: '$metadata.category', count: { $sum: 1 } } },
-    { $sort: { count: -1 } }
-  ])
+    { $sort: { count: -1 } },
+  ]);
 
   const levelStats = await Badge.aggregate([
     { $group: { _id: '$metadata.level', count: { $sum: 1 } } },
-    { $sort: { _id: 1 } }
-  ])
+    { $sort: { _id: 1 } },
+  ]);
 
   const monthlyStats = await Badge.aggregate([
     {
       $group: {
         _id: {
           year: { $year: '$issuedAt' },
-          month: { $month: '$issuedAt' }
+          month: { $month: '$issuedAt' },
         },
-        count: { $sum: 1 }
-      }
+        count: { $sum: 1 },
+      },
     },
     { $sort: { '_id.year': -1, '_id.month': -1 } },
-    { $limit: 12 }
-  ])
+    { $limit: 12 },
+  ]);
 
   return {
     totalBadges,
     totalTemplates,
     totalCommunities,
     categoryBreakdown: categoryStats.reduce((acc, stat) => {
-      acc[stat._id] = stat.count
-      return acc
+      acc[stat._id] = stat.count;
+      return acc;
     }, {} as Record<string, number>),
     levelBreakdown: levelStats.reduce((acc, stat) => {
-      acc[stat._id] = stat.count
-      return acc
+      acc[stat._id] = stat.count;
+      return acc;
     }, {} as Record<number, number>),
-    monthlyIssuance: monthlyStats.map(stat => ({
+    monthlyIssuance: monthlyStats.map((stat) => ({
       month: `${stat._id.year}-${stat._id.month.toString().padStart(2, '0')}`,
-      count: stat.count
-    }))
-  }
-}
+      count: stat.count,
+    })),
+  };
+};
