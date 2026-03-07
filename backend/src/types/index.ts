@@ -48,6 +48,7 @@ export interface IUser extends Document {
   adminCommunities: string[]
   passportId?: string
   settings?: IUserSettings
+  isAdmin: boolean
 }
 
 export interface ICommunityTheme {
