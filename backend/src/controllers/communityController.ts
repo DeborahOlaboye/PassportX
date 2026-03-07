@@ -44,10 +44,17 @@ export const createCommunity = async (req: Request, res: Response) => {
     if (name.trim().length > 100) {
       return res
         .status(400)
-        .json({ success: false, message: 'Community name must not exceed 100 characters' });
+        .json({
+          success: false,
+          message: 'Community name must not exceed 100 characters',
+        });
     }
 
-    if (!description || typeof description !== 'string' || description.trim().length === 0) {
+    if (
+      !description ||
+      typeof description !== 'string' ||
+      description.trim().length === 0
+    ) {
       return res
         .status(400)
         .json({ success: false, message: 'Community description is required' });
@@ -56,7 +63,29 @@ export const createCommunity = async (req: Request, res: Response) => {
     if (description.trim().length > 1000) {
       return res
         .status(400)
-        .json({ success: false, message: 'Community description must not exceed 1000 characters' });
+        .json({
+          success: false,
+          message: 'Community description must not exceed 1000 characters',
+        });
+    }
+
+    if (tags !== undefined) {
+      if (!Array.isArray(tags)) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Tags must be an array of strings' });
+      }
+      if (tags.length > 20) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'A community may have at most 20 tags' });
+      }
+      const invalidTag = tags.find((t: unknown) => typeof t !== 'string' || (t as string).trim().length === 0);
+      if (invalidTag !== undefined) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Each tag must be a non-empty string' });
+      }
     }
 
     const community = await communityService.createCommunity({
