@@ -78,12 +78,10 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
           .json({ success: false, message: 'Name must be a non-empty string' });
       }
       if (name.length > 100) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: 'Name must not exceed 100 characters',
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Name must not exceed 100 characters',
+        });
       }
     }
 
@@ -95,12 +93,10 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
           .json({ success: false, message: 'Bio must be a string' });
       }
       if (bio.length > 500) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: 'Bio must not exceed 500 characters',
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Bio must not exceed 500 characters',
+        });
       }
     }
 
@@ -116,6 +112,25 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
         return res
           .status(400)
           .json({ success: false, message: 'Invalid email address format' });
+      }
+    }
+
+    // Validate avatar URL
+    if (avatar !== undefined) {
+      if (typeof avatar !== 'string') {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Avatar must be a string URL' });
+      }
+      try {
+        const parsed = new URL(avatar);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+          throw new Error('Invalid protocol');
+        }
+      } catch {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Avatar must be a valid URL (http or https)' });
       }
     }
 
