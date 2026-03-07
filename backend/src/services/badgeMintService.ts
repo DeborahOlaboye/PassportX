@@ -87,7 +87,7 @@ export class BadgeMintService {
   }
 
   getAuditLogs(limit: number = 100, offset: number = 0): AuditLog[] {
-    return this.auditLogs.slice(-offset - limit, offset === 0 ? undefined : -offset);
+    return this.auditLogs.slice(offset, offset + limit);
   }
 
   getAuditLogsByRecipient(recipientAddress: string): AuditLog[] {
