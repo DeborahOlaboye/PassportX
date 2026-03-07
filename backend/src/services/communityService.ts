@@ -490,39 +490,55 @@ export const getCommunityAnalytics = async (communityId: string) => {
   const community = await Community.findById(communityId);
   if (!community) throw new Error('Community not found');
 
-  const badges = await Badge.find({ community: communityId });
-  const templates = await BadgeTemplate.find({
-    community: communityId,
-    isActive: true,
-  });
+  // Run all three aggregations and the template count in parallel.
+  // Previously Badge.find loaded every badge document into Node.js memory
+  // and iterated them three times; the aggregation pipeline keeps all
+  // computation inside MongoDB and transfers only the small result sets.
+  const [categoryStats, levelStats, monthlyStats, templateCount] = await Promise.all([
+    Badge.aggregate([
+      { $match: { community: communityId } },
+      { $group: { _id: '$metadata.category', count: { $sum: 1 } } },
+    ]),
+    Badge.aggregate([
+      { $match: { community: communityId } },
+      { $group: { _id: '$metadata.level', count: { $sum: 1 } } },
+    ]),
+    Badge.aggregate([
+      { $match: { community: communityId } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m', date: '$issuedAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: -1 } },
+      { $limit: 24 },
+    ]),
+    BadgeTemplate.countDocuments({ community: communityId, isActive: true }),
+  ]);
 
-  const badgesByCategory = badges.reduce((acc, badge) => {
-    const category = badge.metadata.category;
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const badgesByLevel = badges.reduce((acc, badge) => {
-    const level = badge.metadata.level;
-    acc[level] = (acc[level] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
-
-  const monthlyIssuance = badges.reduce((acc, badge) => {
-    const month = badge.issuedAt.toISOString().slice(0, 7); // YYYY-MM
-    acc[month] = (acc[month] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const totalIssuedBadges = categoryStats.reduce(
+    (sum: number, s: { count: number }) => sum + s.count,
+    0
+  );
 
   return {
     totalMembers: community.memberCount,
-    totalBadgeTemplates: templates.length,
-    totalIssuedBadges: badges.length,
-    badgesByCategory,
-    badgesByLevel,
-    monthlyIssuance,
+    totalBadgeTemplates: templateCount,
+    totalIssuedBadges,
+    badgesByCategory: Object.fromEntries(
+      categoryStats.map((s: { _id: string; count: number }) => [s._id, s.count])
+    ) as Record<string, number>,
+    badgesByLevel: Object.fromEntries(
+      levelStats.map((s: { _id: number; count: number }) => [s._id, s.count])
+    ) as Record<number, number>,
+    monthlyIssuance: Object.fromEntries(
+      monthlyStats.map((s: { _id: string; count: number }) => [s._id, s.count])
+    ) as Record<string, number>,
     averageBadgesPerMember:
-      community.memberCount > 0 ? badges.length / community.memberCount : 0,
+      community.memberCount > 0 ? totalIssuedBadges / community.memberCount : 0,
   };
 };
 
@@ -558,7 +574,9 @@ export const getCommunityMembers = async (
     // Batch-fetch users and per-member badge counts in two queries
     // instead of one User.findOne + one Badge.countDocuments per member (2N queries).
     const [users, badgeCounts] = await Promise.all([
-      User.find({ stacksAddress: { $in: paginatedOwners } }).select('stacksAddress name avatar joinDate'),
+      User.find({ stacksAddress: { $in: paginatedOwners } }).select(
+        'stacksAddress name avatar joinDate'
+      ),
       Badge.aggregate([
         { $match: { community: communityId, owner: { $in: paginatedOwners } } },
         { $group: { _id: '$owner', count: { $sum: 1 } } },
@@ -567,7 +585,10 @@ export const getCommunityMembers = async (
 
     const userByAddress = new Map(users.map((u) => [u.stacksAddress, u]));
     const countByAddress = new Map(
-      (badgeCounts as { _id: string; count: number }[]).map((b) => [b._id, b.count])
+      (badgeCounts as { _id: string; count: number }[]).map((b) => [
+        b._id,
+        b.count,
+      ])
     );
 
     const members = paginatedOwners.map((address) => {
