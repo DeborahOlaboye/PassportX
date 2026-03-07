@@ -11,25 +11,38 @@ const minLevel: LogLevel = resolveMinLevel();
 
 const isEnabled = (level: LogLevel) => LEVELS[level] <= LEVELS[minLevel];
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const timestamp = () => new Date().toISOString();
 
 const formatArgs = (message: string, meta?: any): [string, ...any[]] => {
   return meta !== undefined ? [`${message}`, meta] : [message];
 };
 
+function emit(level: LogLevel, message: string, meta?: any): void {
+  if (!isEnabled(level)) return;
+
+  if (isProduction) {
+    const entry: Record<string, unknown> = { level, time: timestamp(), message };
+    if (meta !== undefined) entry.meta = meta;
+    process.stdout.write(JSON.stringify(entry) + '\n');
+    return;
+  }
+
+  const prefix = `[${level.toUpperCase()}] ${timestamp()}`;
+  switch (level) {
+    case 'error': console.error(prefix, ...formatArgs(message, meta)); break;
+    case 'warn':  console.warn(prefix,  ...formatArgs(message, meta)); break;
+    case 'debug': console.debug(prefix, ...formatArgs(message, meta)); break;
+    default:      console.log(prefix,   ...formatArgs(message, meta)); break;
+  }
+}
+
 const logger = {
-  info: (message: string, meta?: any) => {
-    if (isEnabled('info')) console.log(`[INFO] ${timestamp()}`, ...formatArgs(message, meta));
-  },
-  warn: (message: string, meta?: any) => {
-    if (isEnabled('warn')) console.warn(`[WARN] ${timestamp()}`, ...formatArgs(message, meta));
-  },
-  error: (message: string, meta?: any) => {
-    if (isEnabled('error')) console.error(`[ERROR] ${timestamp()}`, ...formatArgs(message, meta));
-  },
-  debug: (message: string, meta?: any) => {
-    if (isEnabled('debug')) console.debug(`[DEBUG] ${timestamp()}`, ...formatArgs(message, meta));
-  },
+  info:  (message: string, meta?: any) => emit('info',  message, meta),
+  warn:  (message: string, meta?: any) => emit('warn',  message, meta),
+  error: (message: string, meta?: any) => emit('error', message, meta),
+  debug: (message: string, meta?: any) => emit('debug', message, meta),
 };
 
 export default logger;
