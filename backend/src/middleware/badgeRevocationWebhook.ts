@@ -21,7 +21,7 @@ export class BadgeRevocationWebhookMiddleware {
     validationErrors: 0,
     lastProcessedTime: 0,
     softRevokes: 0,
-    hardRevokes: 0
+    hardRevokes: 0,
   };
 
   constructor(
@@ -34,7 +34,7 @@ export class BadgeRevocationWebhookMiddleware {
       enabled: config.enabled ?? true,
       validateSignature: config.validateSignature ?? true,
       validateContentType: config.validateContentType ?? true,
-      validatePayload: config.validatePayload ?? true
+      validatePayload: config.validatePayload ?? true,
     };
 
     this.logger = logger || this.getDefaultLogger();
@@ -42,10 +42,14 @@ export class BadgeRevocationWebhookMiddleware {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeRevocationWebhook] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeRevocationWebhook] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeRevocationWebhook] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeRevocationWebhook] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeRevocationWebhook] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeRevocationWebhook] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeRevocationWebhook] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeRevocationWebhook] ${msg}`, ...args),
     };
   }
 
@@ -59,25 +63,28 @@ export class BadgeRevocationWebhookMiddleware {
         this.processingStats.totalWebhooks++;
         const startTime = Date.now();
 
-        if (this.config.validateContentType && req.headers['content-type'] !== 'application/json') {
+        if (
+          this.config.validateContentType &&
+          req.headers['content-type'] !== 'application/json'
+        ) {
           this.processingStats.validationErrors++;
           this.logger.warn('Invalid content type for revocation webhook', {
-            contentType: req.headers['content-type']
+            contentType: req.headers['content-type'],
           });
           return res.status(400).json({
             success: false,
-            error: 'Invalid content type. Expected application/json'
+            error: 'Invalid content type. Expected application/json',
           });
         }
 
         if (this.config.validatePayload && !this.isValidPayload(req.body)) {
           this.processingStats.validationErrors++;
           this.logger.warn('Invalid revocation webhook payload structure', {
-            body: req.body
+            body: req.body,
           });
           return res.status(400).json({
             success: false,
-            error: 'Invalid payload structure'
+            error: 'Invalid payload structure',
           });
         }
 
@@ -86,7 +93,7 @@ export class BadgeRevocationWebhookMiddleware {
           this.logger.warn('Revocation webhook signature validation failed');
           return res.status(401).json({
             success: false,
-            error: 'Signature validation failed'
+            error: 'Signature validation failed',
           });
         }
 
@@ -112,7 +119,7 @@ export class BadgeRevocationWebhookMiddleware {
           userId: event.userId,
           revocationType: event.revocationType,
           success: result.success,
-          processingTime: this.processingStats.lastProcessedTime
+          processingTime: this.processingStats.lastProcessedTime,
         });
 
         return res.status(200).json({
@@ -123,19 +130,20 @@ export class BadgeRevocationWebhookMiddleware {
           auditLogged: result.auditLogged,
           cacheInvalidated: result.cacheInvalidated,
           notified: result.notified,
-          countUpdated: result.countUpdated
+          countUpdated: result.countUpdated,
         });
       } catch (error) {
         this.processingStats.failedWebhooks++;
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
 
         this.logger.error('Error processing revocation webhook', {
-          error: errorMessage
+          error: errorMessage,
         });
 
         return res.status(500).json({
           success: false,
-          error: 'Failed to process revocation webhook'
+          error: 'Failed to process revocation webhook',
         });
       }
     };
@@ -146,8 +154,14 @@ export class BadgeRevocationWebhookMiddleware {
       return false;
     }
 
-    const requiredFields = ['userId', 'badgeId', 'revocationType', 'transactionHash', 'blockHeight'];
-    return requiredFields.every(field => field in payload);
+    const requiredFields = [
+      'userId',
+      'badgeId',
+      'revocationType',
+      'transactionHash',
+      'blockHeight',
+    ];
+    return requiredFields.every((field) => field in payload);
   }
 
   private validateSignature(req: Request): boolean {
@@ -164,7 +178,13 @@ export class BadgeRevocationWebhookMiddleware {
 
   private computeSignature(payload: string): string {
     const crypto = require('crypto');
-    const secret = process.env.BADGE_REVOCATION_WEBHOOK_SECRET || 'default-secret';
+    const secret = process.env.BADGE_REVOCATION_WEBHOOK_SECRET;
+    if (!secret) {
+      throw new Error(
+        'BADGE_REVOCATION_WEBHOOK_SECRET is not set. ' +
+          'Configure it in backend/.env before starting the server.'
+      );
+    }
     return crypto.createHmac('sha256', secret).update(payload).digest('hex');
   }
 
@@ -173,14 +193,21 @@ export class BadgeRevocationWebhookMiddleware {
       ...this.processingStats,
       failureRate:
         this.processingStats.totalWebhooks > 0
-          ? ((this.processingStats.failedWebhooks + this.processingStats.validationErrors) /
-              this.processingStats.totalWebhooks *
-              100).toFixed(2) + '%'
+          ? (
+              ((this.processingStats.failedWebhooks +
+                this.processingStats.validationErrors) /
+                this.processingStats.totalWebhooks) *
+              100
+            ).toFixed(2) + '%'
           : '0%',
       softRevokePercentage:
         this.processingStats.totalWebhooks > 0
-          ? ((this.processingStats.softRevokes / this.processingStats.totalWebhooks) * 100).toFixed(2) + '%'
-          : '0%'
+          ? (
+              (this.processingStats.softRevokes /
+                this.processingStats.totalWebhooks) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
     };
   }
 
@@ -192,7 +219,7 @@ export class BadgeRevocationWebhookMiddleware {
       validationErrors: 0,
       lastProcessedTime: 0,
       softRevokes: 0,
-      hardRevokes: 0
+      hardRevokes: 0,
     };
     this.logger.info('Revocation webhook processing statistics reset');
   }

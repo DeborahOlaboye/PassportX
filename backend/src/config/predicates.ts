@@ -36,15 +36,35 @@ export interface ChainhookPredicateSpec {
   updatedAt: Date;
 }
 
+/**
+ * Returns the Chainhook auth token from the environment.
+ * Throws at predicate-build time if the variable is missing, ensuring
+ * predicates are never registered with an empty authorization header.
+ */
+function getChainhookAuthToken(): string {
+  const token = process.env.CHAINHOOK_AUTH_TOKEN;
+  if (!token) {
+    throw new Error(
+      'CHAINHOOK_AUTH_TOKEN is not set. ' +
+        'Configure it in backend/.env before registering predicates.'
+    );
+  }
+  return token;
+}
+
 function getCommunityManagerContractId(): string {
   const contracts = getContracts();
   return `${contracts.communityManager.address}.${contracts.communityManager.name}`;
 }
 
-function buildCommunityCreationPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildCommunityCreationPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getCommunityManagerContractId();
-  const webhookUrl = process.env.CHAINHOOK_WEBHOOK_URL || 'http://localhost:3010/api/community-creation/webhook/events';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.CHAINHOOK_WEBHOOK_URL ||
+    'http://localhost:3010/api/community-creation/webhook/events';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_community_creation_call',
@@ -54,24 +74,28 @@ function buildCommunityCreationPredicate(network: 'mainnet' | 'testnet' | 'devne
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      method: 'create-community'
+      method: 'create-community',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
-function buildCommunityCreationEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildCommunityCreationEventPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getCommunityManagerContractId();
-  const webhookUrl = process.env.CHAINHOOK_WEBHOOK_URL || 'http://localhost:3010/api/community-creation/webhook/events';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.CHAINHOOK_WEBHOOK_URL ||
+    'http://localhost:3010/api/community-creation/webhook/events';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_community_creation_event',
@@ -81,17 +105,17 @@ function buildCommunityCreationEventPredicate(network: 'mainnet' | 'testnet' | '
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      print_event_type: 'community-created'
+      print_event_type: 'community-created',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
@@ -100,10 +124,14 @@ function getBadgeNftContractId(): string {
   return `${contracts.passportNft.address}.${contracts.passportNft.name}`;
 }
 
-function buildBadgeMintPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildBadgeMintPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getBadgeNftContractId();
-  const webhookUrl = process.env.BADGE_MINT_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/mint';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.BADGE_MINT_WEBHOOK_URL ||
+    'http://localhost:3010/api/badges/webhook/mint';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_badge_mint_call',
@@ -113,24 +141,28 @@ function buildBadgeMintPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Pre
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      method: 'mint'
+      method: 'mint',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
-function buildBadgeMintEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildBadgeMintEventPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getBadgeNftContractId();
-  const webhookUrl = process.env.BADGE_MINT_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/mint';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.BADGE_MINT_WEBHOOK_URL ||
+    'http://localhost:3010/api/badges/webhook/mint';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_badge_mint_event',
@@ -140,17 +172,17 @@ function buildBadgeMintEventPredicate(network: 'mainnet' | 'testnet' | 'devnet')
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      print_event_type: 'badge-minted'
+      print_event_type: 'badge-minted',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
@@ -159,10 +191,14 @@ function getBadgeMetadataContractId(): string {
   return 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata';
 }
 
-function buildBadgeMetadataUpdatePredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildBadgeMetadataUpdatePredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getBadgeMetadataContractId();
-  const webhookUrl = process.env.BADGE_METADATA_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/metadata';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.BADGE_METADATA_WEBHOOK_URL ||
+    'http://localhost:3010/api/badges/webhook/metadata';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_badge_metadata_update_call',
@@ -172,24 +208,28 @@ function buildBadgeMetadataUpdatePredicate(network: 'mainnet' | 'testnet' | 'dev
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      method: 'update-metadata'
+      method: 'update-metadata',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
-function buildBadgeMetadataUpdateEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildBadgeMetadataUpdateEventPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getBadgeMetadataContractId();
-  const webhookUrl = process.env.BADGE_METADATA_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/metadata';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.BADGE_METADATA_WEBHOOK_URL ||
+    'http://localhost:3010/api/badges/webhook/metadata';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_badge_metadata_update_event',
@@ -199,17 +239,17 @@ function buildBadgeMetadataUpdateEventPredicate(network: 'mainnet' | 'testnet' |
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      print_event_type: 'metadata-updated'
+      print_event_type: 'metadata-updated',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
@@ -218,10 +258,14 @@ function getBadgeIssuerContractId(): string {
   return `${contracts.badgeIssuer.address}.${contracts.badgeIssuer.name}`;
 }
 
-function buildBadgeRevocationPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildBadgeRevocationPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getBadgeIssuerContractId();
-  const webhookUrl = process.env.BADGE_REVOCATION_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/revocation';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.BADGE_REVOCATION_WEBHOOK_URL ||
+    'http://localhost:3010/api/badges/webhook/revocation';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_badge_revocation_call',
@@ -231,24 +275,28 @@ function buildBadgeRevocationPredicate(network: 'mainnet' | 'testnet' | 'devnet'
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      method: 'revoke-badge'
+      method: 'revoke-badge',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
-function buildBadgeRevocationEventPredicate(network: 'mainnet' | 'testnet' | 'devnet'): Predicate {
+function buildBadgeRevocationEventPredicate(
+  network: 'mainnet' | 'testnet' | 'devnet'
+): Predicate {
   const contractId = getBadgeIssuerContractId();
-  const webhookUrl = process.env.BADGE_REVOCATION_WEBHOOK_URL || 'http://localhost:3010/api/badges/webhook/revocation';
-  const authToken = process.env.CHAINHOOK_AUTH_TOKEN || '';
+  const webhookUrl =
+    process.env.BADGE_REVOCATION_WEBHOOK_URL ||
+    'http://localhost:3010/api/badges/webhook/revocation';
+  const authToken = getChainhookAuthToken();
 
   return {
     uuid: 'pred_badge_revocation_event',
@@ -258,36 +306,48 @@ function buildBadgeRevocationEventPredicate(network: 'mainnet' | 'testnet' | 'de
     if_this: {
       scope: 'contract',
       contract_identifier: contractId,
-      print_event_type: 'badge-revoked'
+      print_event_type: 'badge-revoked',
     },
     then_that: {
       http_post: {
         url: webhookUrl,
-        authorization_header: authToken
-      }
+        authorization_header: authToken,
+      },
     },
     active: true,
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
-export function getPredicateConfigs(enableEventPredicate: boolean = false): PredicateConfig {
-  const network = (process.env.STACKS_NETWORK || 'devnet') as 'mainnet' | 'testnet' | 'devnet';
+export function getPredicateConfigs(
+  enableEventPredicate: boolean = false
+): PredicateConfig {
+  const network = (process.env.STACKS_NETWORK || 'devnet') as
+    | 'mainnet'
+    | 'testnet'
+    | 'devnet';
 
   const config: PredicateConfig = {
-    communityCreation: buildCommunityCreationPredicate(network)
+    communityCreation: buildCommunityCreationPredicate(network),
   };
 
-  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_EVENT_PREDICATE === 'true') {
-    config.communityCreationEvent = buildCommunityCreationEventPredicate(network);
+  if (
+    enableEventPredicate ||
+    process.env.CHAINHOOK_ENABLE_EVENT_PREDICATE === 'true'
+  ) {
+    config.communityCreationEvent =
+      buildCommunityCreationEventPredicate(network);
   }
 
   if (process.env.CHAINHOOK_ENABLE_BADGE_MINT === 'true') {
     config.badgeMint = buildBadgeMintPredicate(network);
   }
 
-  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_MINT_EVENT === 'true') {
+  if (
+    enableEventPredicate ||
+    process.env.CHAINHOOK_ENABLE_BADGE_MINT_EVENT === 'true'
+  ) {
     config.badgeMintEvent = buildBadgeMintEventPredicate(network);
   }
 
@@ -295,15 +355,22 @@ export function getPredicateConfigs(enableEventPredicate: boolean = false): Pred
     config.badgeMetadataUpdate = buildBadgeMetadataUpdatePredicate(network);
   }
 
-  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE_EVENT === 'true') {
-    config.badgeMetadataUpdateEvent = buildBadgeMetadataUpdateEventPredicate(network);
+  if (
+    enableEventPredicate ||
+    process.env.CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE_EVENT === 'true'
+  ) {
+    config.badgeMetadataUpdateEvent =
+      buildBadgeMetadataUpdateEventPredicate(network);
   }
 
   if (process.env.CHAINHOOK_ENABLE_BADGE_REVOCATION === 'true') {
     config.badgeRevocation = buildBadgeRevocationPredicate(network);
   }
 
-  if (enableEventPredicate || process.env.CHAINHOOK_ENABLE_BADGE_REVOCATION_EVENT === 'true') {
+  if (
+    enableEventPredicate ||
+    process.env.CHAINHOOK_ENABLE_BADGE_REVOCATION_EVENT === 'true'
+  ) {
     config.badgeRevocationEvent = buildBadgeRevocationEventPredicate(network);
   }
 
@@ -334,18 +401,25 @@ export function getPredicateByUuid(uuid: string): Predicate | null {
   return null;
 }
 
-export function getAllPredicates(includeInactive: boolean = false): Predicate[] {
+export function getAllPredicates(
+  includeInactive: boolean = false
+): Predicate[] {
   const configs = getPredicateConfigs(true);
-  const predicates = Object.values(configs).filter((p): p is Predicate => p !== undefined);
+  const predicates = Object.values(configs).filter(
+    (p): p is Predicate => p !== undefined
+  );
 
   if (!includeInactive) {
-    return predicates.filter(p => p.active !== false);
+    return predicates.filter((p) => p.active !== false);
   }
 
   return predicates;
 }
 
-export function validatePredicateConfig(): { valid: boolean; errors: string[] } {
+export function validatePredicateConfig(): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   try {
@@ -361,7 +435,11 @@ export function validatePredicateConfig(): { valid: boolean; errors: string[] } 
         errors.push(`Invalid predicate configuration: missing uuid or name`);
       }
 
-      if (!['stacks-contract-call', 'stacks-block', 'stacks-print'].includes(predicate.type)) {
+      if (
+        !['stacks-contract-call', 'stacks-block', 'stacks-print'].includes(
+          predicate.type
+        )
+      ) {
         errors.push(`Invalid predicate type: ${predicate.type}`);
       }
 
@@ -369,30 +447,48 @@ export function validatePredicateConfig(): { valid: boolean; errors: string[] } 
         errors.push(`Predicate ${predicate.name} missing webhook URL`);
       }
 
-      if (!predicate.network || !['mainnet', 'testnet', 'devnet'].includes(predicate.network)) {
-        errors.push(`Predicate ${predicate.name} has invalid network: ${predicate.network}`);
+      if (
+        !predicate.network ||
+        !['mainnet', 'testnet', 'devnet'].includes(predicate.network)
+      ) {
+        errors.push(
+          `Predicate ${predicate.name} has invalid network: ${predicate.network}`
+        );
       }
 
-      if (predicate.type === 'stacks-contract-call' && !predicate.if_this?.contract_identifier) {
-        errors.push(`Contract call predicate ${predicate.name} missing contract_identifier`);
+      if (
+        predicate.type === 'stacks-contract-call' &&
+        !predicate.if_this?.contract_identifier
+      ) {
+        errors.push(
+          `Contract call predicate ${predicate.name} missing contract_identifier`
+        );
       }
 
-      if (predicate.type === 'stacks-contract-call' && !predicate.if_this?.method) {
+      if (
+        predicate.type === 'stacks-contract-call' &&
+        !predicate.if_this?.method
+      ) {
         errors.push(`Contract call predicate ${predicate.name} missing method`);
       }
     }
 
     if (errors.length === 0) {
-      console.log(`✅ Predicate configuration valid (${predicates.length} predicates)`);
-      console.log(`📋 Active predicates: ${predicates.filter(p => p.active).length}`);
-      for (const predicate of predicates.filter(p => p.active)) {
+      console.log(
+        `✅ Predicate configuration valid (${predicates.length} predicates)`
+      );
+      console.log(
+        `📋 Active predicates: ${predicates.filter((p) => p.active).length}`
+      );
+      for (const predicate of predicates.filter((p) => p.active)) {
         console.log(`   - ${predicate.name} (${predicate.uuid})`);
       }
     }
 
     return { valid: errors.length === 0, errors };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     errors.push(`Failed to validate predicate configuration: ${errorMessage}`);
     console.error('Failed to validate predicate configuration:', error);
     return { valid: false, errors };
@@ -404,5 +500,5 @@ export default {
   getPredicateByName,
   getPredicateByUuid,
   getAllPredicates,
-  validatePredicateConfig
+  validatePredicateConfig,
 };
