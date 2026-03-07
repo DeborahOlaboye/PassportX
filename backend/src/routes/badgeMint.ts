@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 import BadgeMintService from '../services/badgeMintService';
 import BadgeMintNotificationService from '../services/badgeMintNotificationService';
@@ -17,6 +17,22 @@ const router = Router();
 
 // Rate limiter for badge mint operations (20 requests per 15 minutes)
 const badgeMintLimiter = createRateLimiter(BADGE_ISSUANCE_RATE_LIMIT);
+
+/**
+ * Restrict a route to admin addresses listed in the ADMIN_ADDRESSES env var
+ * (comma-separated Stacks addresses).  Must be used after authenticateToken.
+ */
+function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
+  const adminAddresses = (process.env.ADMIN_ADDRESSES || '')
+    .split(',')
+    .map((a) => a.trim())
+    .filter(Boolean);
+
+  if (!req.user || !adminAddresses.includes(req.user.stacksAddress)) {
+    return res.status(403).json({ error: 'Forbidden: admin access required' });
+  }
+  next()
+}
 
 let badgeMintService: BadgeMintService | null = null;
 let notificationService: BadgeMintNotificationService | null = null;
@@ -347,6 +363,7 @@ router.get('/cache/stats', authenticateToken, (req: Request, res: Response) => {
 router.post(
   '/cache/clear',
   authenticateToken,
+  requireAdmin,
   (req: Request, res: Response) => {
     try {
       if (!cacheService) {
@@ -381,8 +398,12 @@ router.get('/audit-logs', authenticateToken, (req: Request, res: Response) => {
       });
     }
 
-    const rawLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : 100;
-    const rawOffset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+    const rawLimit = req.query.limit
+      ? parseInt(req.query.limit as string, 10)
+      : 100;
+    const rawOffset = req.query.offset
+      ? parseInt(req.query.offset as string, 10)
+      : 0;
 
     if (isNaN(rawLimit) || rawLimit < 1 || rawLimit > MAX_AUDIT_LOG_LIMIT) {
       return res.status(400).json({
