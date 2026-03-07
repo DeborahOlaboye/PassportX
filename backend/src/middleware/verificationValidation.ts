@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import mongoose from 'mongoose'
+import { createRateLimiter } from './rateLimiter'
+import { VERIFICATION_RATE_LIMIT } from '../config/rateLimits'
 
 /**
  * Validate badge ID format
@@ -121,13 +123,10 @@ export function handleVerificationError(
 }
 
 /**
- * Rate limiting for verification endpoints
+ * Rate limiter for verification endpoints.
+ * Allows 50 requests per 15-minute window per IP.
  */
-export function verificationRateLimit(req: Request, res: Response, next: NextFunction) {
-  // This is a placeholder - you should use a proper rate limiting library
-  // like express-rate-limit with Redis for production
-  next()
-}
+export const verificationRateLimit = createRateLimiter(VERIFICATION_RATE_LIMIT)
 
 /**
  * Sanitize verification response
