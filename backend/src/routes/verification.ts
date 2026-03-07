@@ -1,13 +1,11 @@
 import express from 'express';
 import verificationService from '../services/verificationService';
 import { IVerificationResponse } from '../types';
-import { createRateLimiter } from '../middleware/rateLimiter';
-import { VERIFICATION_RATE_LIMIT } from '../config/rateLimits';
+import { verificationRateLimit } from '../middleware/verificationValidation';
 
 const router = express.Router();
 
-// Rate limiter for verification endpoints (50 requests per 15 minutes)
-const verificationLimiter = createRateLimiter(VERIFICATION_RATE_LIMIT);
+const verificationLimiter = verificationRateLimit;
 
 /**
  * @swagger
