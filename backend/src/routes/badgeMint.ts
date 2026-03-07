@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { AuthRequest } from '../types';
 import BadgeMintService from '../services/badgeMintService';
 import BadgeMintNotificationService from '../services/badgeMintNotificationService';
 import BadgeCacheService from '../services/badgeCacheService';
@@ -370,6 +371,8 @@ router.post(
   }
 );
 
+const MAX_AUDIT_LOG_LIMIT = 500;
+
 router.get('/audit-logs', authenticateToken, (req: Request, res: Response) => {
   try {
     if (!badgeMintService) {
@@ -378,8 +381,23 @@ router.get('/audit-logs', authenticateToken, (req: Request, res: Response) => {
       });
     }
 
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-    const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+    const rawLimit = req.query.limit ? parseInt(req.query.limit as string, 10) : 100;
+    const rawOffset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+
+    if (isNaN(rawLimit) || rawLimit < 1 || rawLimit > MAX_AUDIT_LOG_LIMIT) {
+      return res.status(400).json({
+        error: `limit must be between 1 and ${MAX_AUDIT_LOG_LIMIT}`,
+      });
+    }
+
+    if (isNaN(rawOffset) || rawOffset < 0) {
+      return res.status(400).json({
+        error: 'offset must be a non-negative integer',
+      });
+    }
+
+    const limit = rawLimit;
+    const offset = rawOffset;
 
     const logs = badgeMintService.getAuditLogs(limit, offset);
 
@@ -402,7 +420,7 @@ router.get('/audit-logs', authenticateToken, (req: Request, res: Response) => {
 router.get(
   '/audit-logs/user/:userId',
   authenticateToken,
-  (req: Request, res: Response) => {
+  (req: AuthRequest, res: Response) => {
     try {
       if (!badgeMintService) {
         return res.status(503).json({
@@ -415,6 +433,13 @@ router.get(
       if (!userId) {
         return res.status(400).json({
           error: 'userId is required',
+        });
+      }
+
+      // Users may only retrieve their own audit logs
+      if (req.user?.stacksAddress !== userId) {
+        return res.status(403).json({
+          error: 'Forbidden: you may only view your own audit logs',
         });
       }
 
