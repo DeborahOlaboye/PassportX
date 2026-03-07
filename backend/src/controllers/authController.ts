@@ -156,6 +156,9 @@ export const verifySession = async (req: Request, res: Response) => {
       });
     }
 
+    const showEmail = user.settings?.showEmail ?? false;
+    const showCommunities = user.settings?.showCommunities ?? true;
+
     res.json({
       success: true,
       data: {
@@ -164,12 +167,14 @@ export const verifySession = async (req: Request, res: Response) => {
           name: user.name,
           bio: user.bio,
           avatar: user.avatar,
-          email: user.email,
+          ...(showEmail && { email: user.email }),
           isPublic: user.isPublic,
           joinDate: user.joinDate,
           hasPassport: !!user.passportId,
-          communities: user.communities,
-          adminCommunities: user.adminCommunities,
+          ...(showCommunities && {
+            communities: user.communities,
+            adminCommunities: user.adminCommunities,
+          }),
         },
       },
     });
