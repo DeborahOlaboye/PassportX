@@ -70,6 +70,26 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
     const { address } = req.params;
     const { name, bio, avatar, email } = req.body;
 
+    // Validate name length
+    if (name !== undefined) {
+      if (typeof name !== 'string' || name.trim().length === 0) {
+        return res.status(400).json({ success: false, message: 'Name must be a non-empty string' });
+      }
+      if (name.length > 100) {
+        return res.status(400).json({ success: false, message: 'Name must not exceed 100 characters' });
+      }
+    }
+
+    // Validate bio length
+    if (bio !== undefined) {
+      if (typeof bio !== 'string') {
+        return res.status(400).json({ success: false, message: 'Bio must be a string' });
+      }
+      if (bio.length > 500) {
+        return res.status(400).json({ success: false, message: 'Bio must not exceed 500 characters' });
+      }
+    }
+
     // Verify user is updating their own profile
     if (req.user?.stacksAddress !== address) {
       return res.status(403).json({
