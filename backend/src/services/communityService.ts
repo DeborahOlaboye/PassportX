@@ -446,10 +446,14 @@ export const updateMemberCount = async (communityId: string) => {
   }
 };
 
+const MAX_LEADERBOARD_LIMIT = 100;
+const MAX_TRENDING_LIMIT = 50;
+
 export const getCommunityLeaderboard = async (
   communityId: string,
   limit = 10
 ) => {
+  const safeLimit = Math.min(Math.max(1, limit), MAX_LEADERBOARD_LIMIT);
   const pipeline = [
     { $match: { community: communityId } },
     {
@@ -461,7 +465,7 @@ export const getCommunityLeaderboard = async (
       },
     },
     { $sort: { badgeCount: -1, highestLevel: -1, latestBadge: -1 } },
-    { $limit: limit },
+    { $limit: safeLimit },
   ];
 
   const leaderboard = await Badge.aggregate(pipeline);
@@ -494,30 +498,31 @@ export const getCommunityAnalytics = async (communityId: string) => {
   // Previously Badge.find loaded every badge document into Node.js memory
   // and iterated them three times; the aggregation pipeline keeps all
   // computation inside MongoDB and transfers only the small result sets.
-  const [categoryStats, levelStats, monthlyStats, templateCount] = await Promise.all([
-    Badge.aggregate([
-      { $match: { community: communityId } },
-      { $group: { _id: '$metadata.category', count: { $sum: 1 } } },
-    ]),
-    Badge.aggregate([
-      { $match: { community: communityId } },
-      { $group: { _id: '$metadata.level', count: { $sum: 1 } } },
-    ]),
-    Badge.aggregate([
-      { $match: { community: communityId } },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m', date: '$issuedAt' },
+  const [categoryStats, levelStats, monthlyStats, templateCount] =
+    await Promise.all([
+      Badge.aggregate([
+        { $match: { community: communityId } },
+        { $group: { _id: '$metadata.category', count: { $sum: 1 } } },
+      ]),
+      Badge.aggregate([
+        { $match: { community: communityId } },
+        { $group: { _id: '$metadata.level', count: { $sum: 1 } } },
+      ]),
+      Badge.aggregate([
+        { $match: { community: communityId } },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m', date: '$issuedAt' },
+            },
+            count: { $sum: 1 },
           },
-          count: { $sum: 1 },
         },
-      },
-      { $sort: { _id: -1 } },
-      { $limit: 24 },
-    ]),
-    BadgeTemplate.countDocuments({ community: communityId, isActive: true }),
-  ]);
+        { $sort: { _id: -1 } },
+        { $limit: 24 },
+      ]),
+      BadgeTemplate.countDocuments({ community: communityId, isActive: true }),
+    ]);
 
   const totalIssuedBadges = categoryStats.reduce(
     (sum: number, s: { count: number }) => sum + s.count,
@@ -543,9 +548,10 @@ export const getCommunityAnalytics = async (communityId: string) => {
 };
 
 export const getTrendingCommunities = async (limit = 10) => {
+  const safeLimit = Math.min(Math.max(1, limit), MAX_TRENDING_LIMIT);
   const communities = await Community.find({ isActive: true })
     .sort({ memberCount: -1, createdAt: -1 })
-    .limit(limit);
+    .limit(safeLimit);
 
   return communities.map((community) => ({
     id: community._id,
