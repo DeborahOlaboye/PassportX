@@ -36,11 +36,12 @@ export const validateBadgeIssuance = async (
 };
 
 export const getBadgesByCategory = async (category: string, limit = 20) => {
+  const safeLimit = Math.min(Math.max(1, limit), MAX_BADGE_LIMIT);
   const badges = await Badge.find({ 'metadata.category': category })
     .populate('templateId')
     .populate('community')
     .sort({ issuedAt: -1 })
-    .limit(limit);
+    .limit(safeLimit);
 
   return badges.map((badge) => ({
     id: badge._id,
@@ -55,11 +56,12 @@ export const getBadgesByCategory = async (category: string, limit = 20) => {
 };
 
 export const getBadgesByLevel = async (level: number, limit = 20) => {
+  const safeLimit = Math.min(Math.max(1, limit), MAX_BADGE_LIMIT);
   const badges = await Badge.find({ 'metadata.level': level })
     .populate('templateId')
     .populate('community')
     .sort({ issuedAt: -1 })
-    .limit(limit);
+    .limit(safeLimit);
 
   return badges.map((badge) => ({
     id: badge._id,
