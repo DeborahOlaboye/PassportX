@@ -130,7 +130,10 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
       } catch {
         return res
           .status(400)
-          .json({ success: false, message: 'Avatar must be a valid URL (http or https)' });
+          .json({
+            success: false,
+            message: 'Avatar must be a valid URL (http or https)',
+          });
       }
     }
 
@@ -314,6 +317,13 @@ export const getUserCommunities = async (req: Request, res: Response) => {
       return res.status(404).json({
         success: false,
         message: 'User not found',
+      });
+    }
+
+    if (!user.settings?.showCommunities) {
+      return res.status(403).json({
+        success: false,
+        message: 'This user has made their communities private',
       });
     }
 
