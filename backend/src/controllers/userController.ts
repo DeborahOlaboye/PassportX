@@ -28,6 +28,7 @@ export const getUserByAddress = async (req: Request, res: Response) => {
     }
 
     const showEmail = user.settings?.showEmail ?? false;
+    const showCommunities = user.settings?.showCommunities ?? true;
 
     res.json({
       success: true,
@@ -42,8 +43,10 @@ export const getUserByAddress = async (req: Request, res: Response) => {
         isPublic: user.isPublic,
         joinDate: user.joinDate,
         passportId: user.passportId,
-        communities: user.communities,
-        adminCommunities: user.adminCommunities,
+        ...(showCommunities && {
+          communities: user.communities,
+          adminCommunities: user.adminCommunities,
+        }),
       },
     });
   } catch (error: unknown) {
