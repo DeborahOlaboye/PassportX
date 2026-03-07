@@ -73,20 +73,49 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
     // Validate name length
     if (name !== undefined) {
       if (typeof name !== 'string' || name.trim().length === 0) {
-        return res.status(400).json({ success: false, message: 'Name must be a non-empty string' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Name must be a non-empty string' });
       }
       if (name.length > 100) {
-        return res.status(400).json({ success: false, message: 'Name must not exceed 100 characters' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: 'Name must not exceed 100 characters',
+          });
       }
     }
 
     // Validate bio length
     if (bio !== undefined) {
       if (typeof bio !== 'string') {
-        return res.status(400).json({ success: false, message: 'Bio must be a string' });
+        return res
+          .status(400)
+          .json({ success: false, message: 'Bio must be a string' });
       }
       if (bio.length > 500) {
-        return res.status(400).json({ success: false, message: 'Bio must not exceed 500 characters' });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: 'Bio must not exceed 500 characters',
+          });
+      }
+    }
+
+    // Validate email format
+    if (email !== undefined) {
+      if (typeof email !== 'string') {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Email must be a string' });
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid email address format' });
       }
     }
 
