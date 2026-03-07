@@ -27,6 +27,16 @@ export const getUserByAddress = async (req: Request, res: Response) => {
       });
     }
 
+    if (!user.isPublic) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          stacksAddress: user.stacksAddress,
+          isPublic: false,
+        },
+      });
+    }
+
     const showEmail = user.settings?.showEmail ?? false;
     const showCommunities = user.settings?.showCommunities ?? true;
 
