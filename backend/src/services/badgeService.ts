@@ -78,24 +78,27 @@ export const getRecentBadges = async (limit = 20) => {
     .sort({ issuedAt: -1 })
     .limit(limit)
 
-  return Promise.all(
-    badges.map(async (badge) => {
-      const user = await User.findOne({ stacksAddress: badge.owner })
-      
-      return {
-        id: badge._id,
-        name: (badge.templateId as any).name,
-        description: (badge.templateId as any).description,
-        community: (badge.community as any).name,
-        owner: badge.owner,
-        ownerName: user?.name || 'Anonymous',
-        level: badge.metadata.level,
-        category: badge.metadata.category,
-        icon: (badge.templateId as any).icon,
-        issuedAt: badge.issuedAt
-      }
-    })
-  )
+  // Collect unique owner addresses and fetch all users in a single query
+  // instead of issuing one User.findOne per badge (N+1 anti-pattern).
+  const ownerAddresses = [...new Set(badges.map((b) => b.owner))]
+  const users = await User.find({ stacksAddress: { $in: ownerAddresses } }).select('stacksAddress name')
+  const userByAddress = new Map(users.map((u) => [u.stacksAddress, u]))
+
+  return badges.map((badge) => {
+    const user = userByAddress.get(badge.owner)
+    return {
+      id: badge._id,
+      name: (badge.templateId as any).name,
+      description: (badge.templateId as any).description,
+      community: (badge.community as any).name,
+      owner: badge.owner,
+      ownerName: user?.name || 'Anonymous',
+      level: badge.metadata.level,
+      category: badge.metadata.category,
+      icon: (badge.templateId as any).icon,
+      issuedAt: badge.issuedAt
+    }
+  })
 }
 
 export const getBadgeStatistics = async () => {
