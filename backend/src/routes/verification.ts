@@ -1,13 +1,14 @@
 import express from 'express';
 import verificationService from '../services/verificationService';
 import { IVerificationResponse } from '../types';
+import { verificationRateLimit } from '../middleware/verificationValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
-import { VERIFICATION_RATE_LIMIT } from '../config/rateLimits';
+import { BATCH_VERIFICATION_RATE_LIMIT } from '../config/rateLimits';
 
 const router = express.Router();
 
-// Rate limiter for verification endpoints (50 requests per 15 minutes)
-const verificationLimiter = createRateLimiter(VERIFICATION_RATE_LIMIT);
+const verificationLimiter = verificationRateLimit;
+const batchVerificationLimiter = createRateLimiter(BATCH_VERIFICATION_RATE_LIMIT);
 
 /**
  * @swagger
@@ -218,7 +219,7 @@ router.get('/public/:badgeId', verificationLimiter, async (req, res) => {
  *                 success: { type: boolean }
  *                 verified: { type: boolean }
  */
-router.post('/batch', verificationLimiter, async (req, res) => {
+router.post('/batch', batchVerificationLimiter, async (req, res) => {
   try {
     const { badgeIds } = req.body;
 

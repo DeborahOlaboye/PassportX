@@ -29,7 +29,8 @@ export interface RateLimitConfig {
 export const AUTH_RATE_LIMIT: RateLimitConfig = {
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,
-  message: 'Too many authentication attempts, please try again after 15 minutes',
+  message:
+    'Too many authentication attempts, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
 };
@@ -111,6 +112,16 @@ export const VERIFICATION_RATE_LIMIT: RateLimitConfig = {
   windowMs: 15 * 60 * 1000,
   max: 50,
   message: 'Too many verification requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+};
+
+// Batch verification — stricter because each request fans out to N DB calls
+export const BATCH_VERIFICATION_RATE_LIMIT: RateLimitConfig = {
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message:
+    'Too many batch verification requests, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
 };
