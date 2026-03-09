@@ -255,6 +255,13 @@ export const getUserCommunities = async (req: Request, res: Response) => {
       });
     }
 
+    if (!user.isPublic || !(user.settings?.showCommunities ?? true)) {
+      return res.status(403).json({
+        success: false,
+        message: 'This user has made their communities private',
+      });
+    }
+
     res.json({
       success: true,
       data: {
