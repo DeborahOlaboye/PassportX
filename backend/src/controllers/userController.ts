@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import User from '../models/User';
 import { AuthRequest } from '../types';
 import { getErrorMessage, getErrorStatusCode } from '../errors';
+import logger from '../utils/logger';
 
 // Helper function to handle errors with type-safe error narrowing
 const handleError = (res: Response, error: unknown, message: string) => {
-  console.error(message, error);
+  logger.error(message, error);
   const status = getErrorStatusCode(error);
   res.status(status).json({
     success: false,
@@ -27,8 +28,9 @@ export const getUserByAddress = async (req: Request, res: Response) => {
       });
     }
 
+    // Private profiles return only the address and the isPublic flag
     if (!user.isPublic) {
-      return res.status(200).json({
+      return res.json({
         success: true,
         data: {
           stacksAddress: user.stacksAddress,
@@ -320,7 +322,7 @@ export const getUserCommunities = async (req: Request, res: Response) => {
       });
     }
 
-    if (!user.settings?.showCommunities) {
+    if (!user.isPublic || !(user.settings?.showCommunities ?? true)) {
       return res.status(403).json({
         success: false,
         message: 'This user has made their communities private',
