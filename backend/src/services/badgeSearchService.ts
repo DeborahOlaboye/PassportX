@@ -3,6 +3,8 @@ import BadgeTemplate from '../models/BadgeTemplate'
 import { IBadgeSearchQuery, IBadgeSearchResult } from '../types'
 import { FilterQuery } from 'mongoose'
 
+const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 export class BadgeSearchService {
   /**
    * Search and filter badges
@@ -26,10 +28,11 @@ export class BadgeSearchService {
 
     // Text search on badge template name and description
     if (search) {
+      const safeSearch = escapeRegex(search)
       const templates = await BadgeTemplate.find({
         $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } }
+          { name: { $regex: safeSearch, $options: 'i' } },
+          { description: { $regex: safeSearch, $options: 'i' } }
         ]
       }).select('_id')
 
