@@ -72,6 +72,73 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
     const { address } = req.params;
     const { name, bio, avatar, email } = req.body;
 
+    // Validate name length
+    if (name !== undefined) {
+      if (typeof name !== 'string' || name.trim().length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Name must be a non-empty string' });
+      }
+      if (name.length > 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name must not exceed 100 characters',
+        });
+      }
+    }
+
+    // Validate bio length
+    if (bio !== undefined) {
+      if (typeof bio !== 'string') {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Bio must be a string' });
+      }
+      if (bio.length > 500) {
+        return res.status(400).json({
+          success: false,
+          message: 'Bio must not exceed 500 characters',
+        });
+      }
+    }
+
+    // Validate email format
+    if (email !== undefined) {
+      if (typeof email !== 'string') {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Email must be a string' });
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Invalid email address format' });
+      }
+    }
+
+    // Validate avatar URL
+    if (avatar !== undefined) {
+      if (typeof avatar !== 'string') {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Avatar must be a string URL' });
+      }
+      try {
+        const parsed = new URL(avatar);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+          throw new Error('Invalid protocol');
+        }
+      } catch {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: 'Avatar must be a valid URL (http or https)',
+          });
+      }
+    }
+
     // Verify user is updating their own profile
     if (req.user?.stacksAddress !== address) {
       return res.status(403).json({

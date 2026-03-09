@@ -69,7 +69,7 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public
+# public is intentionally NOT ignored — Next.js serves static assets from it
 
 # Storybook build outputs
 .out
