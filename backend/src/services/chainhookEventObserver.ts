@@ -370,7 +370,14 @@ export class ChainhookEventObserverService extends EventEmitter {
   }
 
   private generateAuthToken(): string {
-    return process.env.CHAINHOOK_AUTH_TOKEN || 'default-auth-token'
+    const token = process.env.CHAINHOOK_AUTH_TOKEN
+    if (!token) {
+      throw new Error(
+        'CHAINHOOK_AUTH_TOKEN environment variable is not set. ' +
+          'Set it in backend/.env before starting the server.'
+      )
+    }
+    return token
   }
 }
 

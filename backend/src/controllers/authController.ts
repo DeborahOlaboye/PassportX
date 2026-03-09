@@ -5,7 +5,7 @@ import {
   setSessionCookie,
   clearSessionCookie,
   verifySessionToken,
-  getSessionToken
+  getSessionToken,
 } from '../utils/sessionManager';
 import { verifySignature } from '../services/authService';
 import logger from '../utils/logger';
@@ -17,7 +17,7 @@ const handleError = (res: Response, error: unknown, message: string) => {
   const status = getErrorStatusCode(error);
   res.status(status).json({
     success: false,
-    message: getErrorMessage(error)
+    message: getErrorMessage(error),
   });
 };
 
@@ -32,7 +32,7 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
     if (!stacksAddress) {
       return res.status(400).json({
         success: false,
-        message: 'Stacks address is required'
+        message: 'Stacks address is required',
       });
     }
 
@@ -41,23 +41,27 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         message: 'Signature and message are required for authentication',
-        code: 'MISSING_SIGNATURE'
+        code: 'MISSING_SIGNATURE',
       });
     }
 
-    const isValidSignature = await verifySignature(message, signature, stacksAddress);
+    const isValidSignature = await verifySignature(
+      message,
+      signature,
+      stacksAddress
+    );
 
     if (!isValidSignature) {
       logger.warn('Invalid signature attempt', {
         stacksAddress,
         messageLength: message?.length,
-        signatureLength: signature?.length
+        signatureLength: signature?.length,
       });
 
       return res.status(401).json({
         success: false,
         message: 'Invalid signature. Please sign the message with your wallet.',
-        code: 'INVALID_SIGNATURE'
+        code: 'INVALID_SIGNATURE',
       });
     }
 
@@ -72,7 +76,7 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
         stacksAddress,
         isPublic: true,
         joinDate: new Date(),
-        lastActive: new Date()
+        lastActive: new Date(),
       });
       await user.save();
     } else {
@@ -84,11 +88,14 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
     // Generate session token
     const token = generateSessionToken({
       stacksAddress: user.stacksAddress,
-      userId: user._id.toString()
+      userId: user._id.toString(),
     });
 
     // Set session cookie
     setSessionCookie(res, token);
+
+    const showEmail = user.settings?.showEmail ?? false;
+    const showCommunities = user.settings?.showCommunities ?? true;
 
     res.json({
       success: true,
@@ -99,14 +106,16 @@ export const authenticateWithWallet = async (req: Request, res: Response) => {
           name: user.name,
           bio: user.bio,
           avatar: user.avatar,
-          email: user.email,
+          ...(showEmail && { email: user.email }),
           isPublic: user.isPublic,
           joinDate: user.joinDate,
           hasPassport: !!user.passportId,
-          communities: user.communities,
-          adminCommunities: user.adminCommunities
-        }
-      }
+          ...(showCommunities && {
+            communities: user.communities,
+            adminCommunities: user.adminCommunities,
+          }),
+        },
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error authenticating user:');
@@ -123,7 +132,7 @@ export const verifySession = async (req: Request, res: Response) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'No session token found'
+        message: 'No session token found',
       });
     }
 
@@ -132,18 +141,23 @@ export const verifySession = async (req: Request, res: Response) => {
     if (!sessionData) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid or expired session'
+        message: 'Invalid or expired session',
       });
     }
 
-    const user = await User.findOne({ stacksAddress: sessionData.stacksAddress });
+    const user = await User.findOne({
+      stacksAddress: sessionData.stacksAddress,
+    });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
+
+    const showEmail = user.settings?.showEmail ?? false;
+    const showCommunities = user.settings?.showCommunities ?? true;
 
     res.json({
       success: true,
@@ -153,14 +167,16 @@ export const verifySession = async (req: Request, res: Response) => {
           name: user.name,
           bio: user.bio,
           avatar: user.avatar,
-          email: user.email,
+          ...(showEmail && { email: user.email }),
           isPublic: user.isPublic,
           joinDate: user.joinDate,
           hasPassport: !!user.passportId,
-          communities: user.communities,
-          adminCommunities: user.adminCommunities
-        }
-      }
+          ...(showCommunities && {
+            communities: user.communities,
+            adminCommunities: user.adminCommunities,
+          }),
+        },
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error verifying session:');
@@ -176,7 +192,7 @@ export const logout = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      message: 'Logged out successfully'
+      message: 'Logged out successfully',
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error logging out:');
@@ -193,7 +209,7 @@ export const refreshSession = async (req: Request, res: Response) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'No session token found'
+        message: 'No session token found',
       });
     }
 
@@ -202,7 +218,7 @@ export const refreshSession = async (req: Request, res: Response) => {
     if (!sessionData) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid or expired session'
+        message: 'Invalid or expired session',
       });
     }
 
@@ -213,8 +229,8 @@ export const refreshSession = async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: {
-        token: newToken
-      }
+        token: newToken,
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error refreshing session:');

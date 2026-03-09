@@ -133,7 +133,8 @@ export function handleVerificationError(
 }
 
 /**
- * Rate limiting for verification endpoints
+ * Rate limiter for verification endpoints.
+ * Allows 50 requests per 15-minute window per IP.
  */
 export function verificationRateLimit(
   req: Request,

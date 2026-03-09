@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
 import { AuthRequest } from '../types';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { validatePagination } from '../middleware/validation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { NOTIFICATION_WRITE_RATE_LIMIT } from '../config/rateLimits';
@@ -344,9 +344,9 @@ router.post(
   '/system-announcement',
   notificationWriteLimiter,
   authenticateToken,
+  requireAdmin,
   async (req: AuthRequest, res: Response) => {
     try {
-      // TODO: Add admin authorization check
       const { title, message, data, expiresAt } = req.body;
 
       if (!title || !message) {

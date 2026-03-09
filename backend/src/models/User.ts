@@ -88,6 +88,11 @@ const userSchema = new Schema<IUser>({
     showEmail: { type: Boolean, default: false },
     showBadges: { type: Boolean, default: true },
     showCommunities: { type: Boolean, default: true }
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+    index: true
   }
 }, {
   timestamps: true
