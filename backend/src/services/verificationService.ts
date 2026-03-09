@@ -1,30 +1,34 @@
-import Badge from '../models/Badge'
-import BadgeTemplate from '../models/BadgeTemplate'
-import Community from '../models/Community'
-import { IBadgeVerification } from '../types'
+import Badge from '../models/Badge';
+import BadgeTemplate from '../models/BadgeTemplate';
+import Community from '../models/Community';
+import { IBadgeVerification } from '../types';
+import logger from '../utils/logger';
 
 export class VerificationService {
   /**
    * Verify badge authenticity and ownership
    */
-  async verifyBadge(badgeId: string, claimedOwner?: string): Promise<IBadgeVerification | null> {
+  async verifyBadge(
+    badgeId: string,
+    claimedOwner?: string
+  ): Promise<IBadgeVerification | null> {
     try {
       const badge = await Badge.findById(badgeId)
         .populate('templateId')
         .populate('community')
-        .lean()
+        .lean();
 
       if (!badge) {
-        return null
+        return null;
       }
 
-      const template = badge.templateId as any
-      const community = badge.community as any
+      const template = badge.templateId as any;
+      const community = badge.community as any;
 
       // Check ownership if claimed owner is provided
       const ownershipVerified = claimedOwner
         ? badge.owner.toLowerCase() === claimedOwner.toLowerCase()
-        : true
+        : true;
 
       const verification: IBadgeVerification = {
         badgeId: badge._id.toString(),
@@ -38,13 +42,13 @@ export class VerificationService {
         templateName: template?.name,
         templateDescription: template?.description,
         communityName: community?.name,
-        verifiedAt: new Date()
-      }
+        verifiedAt: new Date(),
+      };
 
-      return verification
+      return verification;
     } catch (error) {
-      console.error('Error verifying badge:', error)
-      return null
+      logger.error('Error verifying badge:', error);
+      return null;
     }
   }
 
@@ -53,10 +57,10 @@ export class VerificationService {
    */
   async verifyBadgeBatch(badgeIds: string[]): Promise<IBadgeVerification[]> {
     const verifications = await Promise.all(
-      badgeIds.map(id => this.verifyBadge(id))
-    )
+      badgeIds.map((id) => this.verifyBadge(id))
+    );
 
-    return verifications.filter((v): v is IBadgeVerification => v !== null)
+    return verifications.filter((v): v is IBadgeVerification => v !== null);
   }
 
   /**
@@ -67,16 +71,35 @@ export class VerificationService {
       const badges = await Badge.find({ owner: ownerAddress })
         .populate('templateId')
         .populate('community')
-        .lean()
+        .lean();
 
-      const verifications = await Promise.all(
-        badges.map(badge => this.verifyBadge(badge._id.toString(), ownerAddress))
-      )
+      // Build verifications from already-populated documents instead of
+      // calling verifyBadge() per badge, which would re-query the DB each time.
+      return badges.map((badge) => {
+        const template = badge.templateId as any;
+        const community = badge.community as any;
 
-      return verifications.filter((v): v is IBadgeVerification => v !== null)
+        return {
+          badgeId: badge._id.toString(),
+          verified:
+            badge.owner.toLowerCase() === ownerAddress.toLowerCase() &&
+            !!badge.tokenId &&
+            !!badge.transactionId,
+          active: badge.metadata?.timestamp ? true : false,
+          owner: badge.owner,
+          issuer: badge.issuer,
+          level: badge.metadata.level,
+          category: badge.metadata.category,
+          timestamp: badge.metadata.timestamp,
+          templateName: template?.name,
+          templateDescription: template?.description,
+          communityName: community?.name,
+          verifiedAt: new Date(),
+        } as IBadgeVerification;
+      });
     } catch (error) {
-      console.error('Error verifying user badges:', error)
-      return []
+      logger.error('Error verifying user badges:', error);
+      return [];
     }
   }
 
@@ -85,17 +108,17 @@ export class VerificationService {
    */
   async checkBlockchainVerification(badgeId: string): Promise<boolean> {
     try {
-      const badge = await Badge.findById(badgeId).lean()
+      const badge = await Badge.findById(badgeId).lean();
 
       if (!badge) {
-        return false
+        return false;
       }
 
       // Badge is verified on blockchain if it has both tokenId and transactionId
-      return !!(badge.tokenId && badge.transactionId)
+      return !!(badge.tokenId && badge.transactionId);
     } catch (error) {
-      console.error('Error checking blockchain verification:', error)
-      return false
+      logger.error('Error checking blockchain verification:', error);
+      return false;
     }
   }
 
@@ -104,17 +127,17 @@ export class VerificationService {
    */
   async checkBadgeNotRevoked(badgeId: string): Promise<boolean> {
     try {
-      const badge = await Badge.findById(badgeId).lean()
+      const badge = await Badge.findById(badgeId).lean();
 
       if (!badge) {
-        return false
+        return false;
       }
 
       // Check if badge metadata indicates it's still active
-      return badge.metadata?.timestamp > 0
+      return badge.metadata?.timestamp > 0;
     } catch (error) {
-      console.error('Error checking badge revocation:', error)
-      return false
+      logger.error('Error checking badge revocation:', error);
+      return false;
     }
   }
 
@@ -123,10 +146,10 @@ export class VerificationService {
    */
   async getPublicVerificationInfo(badgeId: string) {
     try {
-      const verification = await this.verifyBadge(badgeId)
+      const verification = await this.verifyBadge(badgeId);
 
       if (!verification) {
-        return null
+        return null;
       }
 
       // Return only public information
@@ -139,13 +162,13 @@ export class VerificationService {
         level: verification.level,
         category: verification.category,
         issuedAt: new Date(verification.timestamp * 1000),
-        verifiedAt: verification.verifiedAt
-      }
+        verifiedAt: verification.verifiedAt,
+      };
     } catch (error) {
-      console.error('Error getting public verification info:', error)
-      return null
+      logger.error('Error getting public verification info:', error);
+      return null;
     }
   }
 }
 
-export default new VerificationService()
+export default new VerificationService();
