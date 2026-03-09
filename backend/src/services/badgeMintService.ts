@@ -37,24 +37,33 @@ export class BadgeMintService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeMintService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeMintService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeMintService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeMintService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeMintService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeMintService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeMintService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeMintService] ${msg}`, ...args),
     };
   }
 
-  private validateBadgeEvent(event: BadgeMintEvent): { valid: boolean; errors: string[] } {
+  private validateBadgeEvent(event: BadgeMintEvent): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!event) {
       errors.push('Event is required');
     } else {
-      if (!event.userId || typeof event.userId !== 'string' || event.userId.length === 0) {
+      if (
+        !event.userId ||
+        typeof event.userId !== 'string' ||
+        event.userId.length === 0
+      ) {
         errors.push('Valid userId is required');
-      }
-
-      if (!event.userId.match(/^[a-zA-Z0-9]+$/)) {
+      } else if (!event.userId.match(/^[a-zA-Z0-9]+$/)) {
         errors.push('Invalid userId format');
       }
 
@@ -91,11 +100,13 @@ export class BadgeMintService {
   }
 
   getAuditLogsByRecipient(recipientAddress: string): AuditLog[] {
-    return this.auditLogs.filter(log => log.recipientAddress === recipientAddress);
+    return this.auditLogs.filter(
+      (log) => log.recipientAddress === recipientAddress
+    );
   }
 
   getAuditLogsByBadge(badgeId: string): AuditLog[] {
-    return this.auditLogs.filter(log => log.badgeId === badgeId);
+    return this.auditLogs.filter((log) => log.badgeId === badgeId);
   }
 
   async processBadgeMintEvent(event: BadgeMintEvent): Promise<BadgeMintResult> {
@@ -103,12 +114,14 @@ export class BadgeMintService {
       this.logger.debug('Processing badge mint event', {
         badgeId: event.badgeId,
         recipientAddress: event.userId,
-        contractAddress: event.contractAddress
+        contractAddress: event.contractAddress,
       });
 
       const validation = this.validateBadgeEvent(event);
       if (!validation.valid) {
-        this.logger.warn('Invalid badge mint event', { errors: validation.errors });
+        this.logger.warn('Invalid badge mint event', {
+          errors: validation.errors,
+        });
 
         this.logAudit({
           timestamp: new Date(),
@@ -120,13 +133,13 @@ export class BadgeMintService {
           transactionHash: event.transactionHash || 'unknown',
           blockHeight: event.blockHeight || 0,
           status: 'failure',
-          errorMessage: 'Validation failed: ' + validation.errors.join(', ')
+          errorMessage: 'Validation failed: ' + validation.errors.join(', '),
         });
 
         return {
           success: false,
           message: 'Invalid badge mint event: ' + validation.errors.join(', '),
-          error: 'Validation failed'
+          error: 'Validation failed',
         };
       }
 
@@ -143,19 +156,25 @@ export class BadgeMintService {
               adminCommunities: [],
               notifications: [],
               createdAt: new Date(),
-              updatedAt: new Date()
+              updatedAt: new Date(),
             });
 
             this.logger.info('Created new user from badge minting event', {
               stacksAddress: event.userId,
-              userId: recipientUser._id
+              userId: recipientUser._id,
             });
           } catch (userError) {
-            this.logger.error('Failed to create user for badge recipient', userError);
+            this.logger.error(
+              'Failed to create user for badge recipient',
+              userError
+            );
             return {
               success: false,
               message: 'Failed to create user record for badge recipient',
-              error: userError instanceof Error ? userError.message : 'Unknown error'
+              error:
+                userError instanceof Error
+                  ? userError.message
+                  : 'Unknown error',
             };
           }
         }
@@ -164,25 +183,28 @@ export class BadgeMintService {
         return {
           success: false,
           message: 'Failed to look up recipient user',
-          error: userLookupError instanceof Error ? userLookupError.message : 'Unknown error'
+          error:
+            userLookupError instanceof Error
+              ? userLookupError.message
+              : 'Unknown error',
         };
       }
 
       const checkExisting = await Badge.findOne({
         owner: event.userId,
         contractAddress: event.contractAddress,
-        transactionId: event.transactionHash
+        transactionId: event.transactionHash,
       });
 
       if (checkExisting) {
         this.logger.warn('Badge already exists in database', {
           badgeId: event.badgeId,
-          recipientAddress: event.userId
+          recipientAddress: event.userId,
         });
         return {
           success: true,
           badgeId: checkExisting._id?.toString(),
-          message: 'Badge already exists'
+          message: 'Badge already exists',
         };
       }
 
@@ -194,19 +216,22 @@ export class BadgeMintService {
         metadata: {
           level: 1,
           category: 'achievement',
-          timestamp: event.timestamp
+          timestamp: event.timestamp,
         },
-        issuedAt: new Date(event.timestamp)
+        issuedAt: new Date(event.timestamp),
       };
 
       if (event.badgeId && event.badgeId.length > 0) {
         try {
-          const template = await BadgeTemplate.findOne({ externalId: event.badgeId });
+          const template = await BadgeTemplate.findOne({
+            externalId: event.badgeId,
+          });
           if (template) {
             badgeData.templateId = template._id;
             badgeData.community = template.community;
             badgeData.metadata.level = (template as any).level || 1;
-            badgeData.metadata.category = (template as any).category || 'achievement';
+            badgeData.metadata.category =
+              (template as any).category || 'achievement';
           } else {
             badgeData.templateId = null;
           }
@@ -224,14 +249,15 @@ export class BadgeMintService {
           badgeId: badge._id,
           externalBadgeId: event.badgeId,
           recipientAddress: event.userId,
-          contractAddress: event.contractAddress
+          contractAddress: event.contractAddress,
         });
       } catch (badgeError) {
         this.logger.error('Failed to create badge in database', badgeError);
         return {
           success: false,
           message: 'Failed to create badge in database',
-          error: badgeError instanceof Error ? badgeError.message : 'Unknown error'
+          error:
+            badgeError instanceof Error ? badgeError.message : 'Unknown error',
         };
       }
 
@@ -240,23 +266,26 @@ export class BadgeMintService {
           recipientUser._id,
           {
             $addToSet: {
-              badges: badge._id
-            }
+              badges: badge._id,
+            },
           },
           { new: true }
         );
 
         this.logger.info('User updated with new badge', {
           userId: recipientUser._id,
-          badgeId: badge._id
+          badgeId: badge._id,
         });
       } catch (updateError) {
         this.logger.error('Failed to update user with badge', updateError);
         return {
           success: false,
           message: 'Badge minted but failed to link to user',
-          error: updateError instanceof Error ? updateError.message : 'Unknown error',
-          badgeId: badge._id?.toString()
+          error:
+            updateError instanceof Error
+              ? updateError.message
+              : 'Unknown error',
+          badgeId: badge._id?.toString(),
         };
       }
 
@@ -269,16 +298,17 @@ export class BadgeMintService {
         contractAddress: event.contractAddress,
         transactionHash: event.transactionHash,
         blockHeight: event.blockHeight,
-        status: 'success'
+        status: 'success',
       });
 
       return {
         success: true,
         badgeId: badge._id?.toString(),
-        message: `Badge "${event.badgeName}" minted successfully for ${event.userId}`
+        message: `Badge "${event.badgeName}" minted successfully for ${event.userId}`,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Failed to process badge mint event', error);
 
       this.logAudit({
@@ -291,13 +321,13 @@ export class BadgeMintService {
         transactionHash: event.transactionHash,
         blockHeight: event.blockHeight,
         status: 'failure',
-        errorMessage
+        errorMessage,
       });
 
       return {
         success: false,
         message: 'Failed to process badge mint event',
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -318,18 +348,19 @@ export class BadgeMintService {
         contractAddress,
         transactionHash: '',
         blockHeight: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       return await this.processBadgeMintEvent(event);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Failed to sync badge from blockchain', error);
 
       return {
         success: false,
         message: 'Failed to sync badge from blockchain',
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
