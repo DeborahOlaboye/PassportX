@@ -41,12 +41,15 @@ export const getPublicPassports = async (limit = 10, skip = 0) => {
   return passports.filter((passport) => passport.badgeCount > 0);
 };
 
+const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export const searchPassports = async (query: string, limit = 10) => {
+  const safeQuery = escapeRegex(query);
   const users = await User.find({
     isPublic: true,
     $or: [
-      { name: { $regex: query, $options: 'i' } },
-      { bio: { $regex: query, $options: 'i' } },
+      { name: { $regex: safeQuery, $options: 'i' } },
+      { bio: { $regex: safeQuery, $options: 'i' } },
     ],
   }).limit(limit);
 
