@@ -2,6 +2,7 @@ import Badge from '../models/Badge';
 import BadgeTemplate from '../models/BadgeTemplate';
 import Community from '../models/Community';
 import { IBadgeVerification } from '../types';
+import logger from '../utils/logger';
 
 export class VerificationService {
   /**
@@ -46,7 +47,7 @@ export class VerificationService {
 
       return verification;
     } catch (error) {
-      console.error('Error verifying badge:', error);
+      logger.error('Error verifying badge:', error);
       return null;
     }
   }
@@ -97,7 +98,7 @@ export class VerificationService {
         } as IBadgeVerification;
       });
     } catch (error) {
-      console.error('Error verifying user badges:', error);
+      logger.error('Error verifying user badges:', error);
       return [];
     }
   }
@@ -116,7 +117,7 @@ export class VerificationService {
       // Badge is verified on blockchain if it has both tokenId and transactionId
       return !!(badge.tokenId && badge.transactionId);
     } catch (error) {
-      console.error('Error checking blockchain verification:', error);
+      logger.error('Error checking blockchain verification:', error);
       return false;
     }
   }
@@ -135,7 +136,7 @@ export class VerificationService {
       // Check if badge metadata indicates it's still active
       return badge.metadata?.timestamp > 0;
     } catch (error) {
-      console.error('Error checking badge revocation:', error);
+      logger.error('Error checking badge revocation:', error);
       return false;
     }
   }
@@ -164,7 +165,7 @@ export class VerificationService {
         verifiedAt: verification.verifiedAt,
       };
     } catch (error) {
-      console.error('Error getting public verification info:', error);
+      logger.error('Error getting public verification info:', error);
       return null;
     }
   }
