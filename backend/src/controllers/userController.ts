@@ -2,14 +2,15 @@ import { Request, Response } from 'express';
 import User from '../models/User';
 import { AuthRequest } from '../types';
 import { getErrorMessage, getErrorStatusCode } from '../errors';
+import logger from '../utils/logger';
 
 // Helper function to handle errors with type-safe error narrowing
 const handleError = (res: Response, error: unknown, message: string) => {
-  console.error(message, error);
+  logger.error(message, error);
   const status = getErrorStatusCode(error);
   res.status(status).json({
     success: false,
-    message: getErrorMessage(error)
+    message: getErrorMessage(error),
   });
 };
 
@@ -23,7 +24,7 @@ export const getUserByAddress = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -35,14 +36,14 @@ export const getUserByAddress = async (req: Request, res: Response) => {
           name: user.name,
           bio: user.bio,
           avatar: user.avatar,
-          email: user.email
+          email: user.email,
         },
         isPublic: user.isPublic,
         joinDate: user.joinDate,
         passportId: user.passportId,
         communities: user.communities,
-        adminCommunities: user.adminCommunities
-      }
+        adminCommunities: user.adminCommunities,
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error fetching user:');
@@ -59,7 +60,7 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
     if (req.user?.stacksAddress !== address) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to update this profile'
+        message: 'Unauthorized to update this profile',
       });
     }
 
@@ -75,7 +76,7 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
         email,
         isPublic: true,
         joinDate: new Date(),
-        lastActive: new Date()
+        lastActive: new Date(),
       });
     } else {
       // Update existing user
@@ -96,9 +97,9 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
           name: user.name,
           bio: user.bio,
           avatar: user.avatar,
-          email: user.email
-        }
-      }
+          email: user.email,
+        },
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error updating profile:');
@@ -115,7 +116,7 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
     if (req.user?.stacksAddress !== address) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to update these settings'
+        message: 'Unauthorized to update these settings',
       });
     }
 
@@ -124,7 +125,7 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -135,7 +136,8 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
     user.settings = {
       showEmail: showEmail ?? user.settings?.showEmail ?? false,
       showBadges: showBadges ?? user.settings?.showBadges ?? true,
-      showCommunities: showCommunities ?? user.settings?.showCommunities ?? true
+      showCommunities:
+        showCommunities ?? user.settings?.showCommunities ?? true,
     };
 
     user.lastActive = new Date();
@@ -146,8 +148,8 @@ export const updateUserSettings = async (req: AuthRequest, res: Response) => {
       success: true,
       data: {
         isPublic: user.isPublic,
-        settings: user.settings
-      }
+        settings: user.settings,
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error updating settings:');
@@ -163,7 +165,7 @@ export const initializePassport = async (req: AuthRequest, res: Response) => {
     if (req.user?.stacksAddress !== stacksAddress) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to initialize this passport'
+        message: 'Unauthorized to initialize this passport',
       });
     }
 
@@ -175,7 +177,7 @@ export const initializePassport = async (req: AuthRequest, res: Response) => {
         stacksAddress,
         isPublic: true,
         joinDate: new Date(),
-        lastActive: new Date()
+        lastActive: new Date(),
       });
     }
 
@@ -190,8 +192,8 @@ export const initializePassport = async (req: AuthRequest, res: Response) => {
       success: true,
       data: {
         passportId,
-        stacksAddress: user.stacksAddress
-      }
+        stacksAddress: user.stacksAddress,
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error initializing passport:');
@@ -213,8 +215,8 @@ export const getUserBadges = async (req: Request, res: Response) => {
         total: 0,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
-        hasMore: false
-      }
+        hasMore: false,
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error fetching user badges:');
@@ -233,7 +235,7 @@ export const getUserCommunities = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -241,8 +243,8 @@ export const getUserCommunities = async (req: Request, res: Response) => {
       success: true,
       data: {
         communities: user.communities || [],
-        adminCommunities: user.adminCommunities || []
-      }
+        adminCommunities: user.adminCommunities || [],
+      },
     });
   } catch (error: unknown) {
     handleError(res, error, 'Error fetching user communities:');
