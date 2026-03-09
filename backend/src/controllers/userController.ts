@@ -28,6 +28,20 @@ export const getUserByAddress = async (req: Request, res: Response) => {
       });
     }
 
+    // Private profiles return only the address and the isPublic flag
+    if (!user.isPublic) {
+      return res.json({
+        success: true,
+        data: {
+          stacksAddress: user.stacksAddress,
+          isPublic: false,
+        },
+      });
+    }
+
+    const showEmail = user.settings?.showEmail ?? false;
+    const showCommunities = user.settings?.showCommunities ?? true;
+
     res.json({
       success: true,
       data: {
@@ -36,13 +50,15 @@ export const getUserByAddress = async (req: Request, res: Response) => {
           name: user.name,
           bio: user.bio,
           avatar: user.avatar,
-          email: user.email,
+          ...(showEmail && { email: user.email }),
         },
         isPublic: user.isPublic,
         joinDate: user.joinDate,
         passportId: user.passportId,
-        communities: user.communities,
-        adminCommunities: user.adminCommunities,
+        ...(showCommunities && {
+          communities: user.communities,
+          adminCommunities: user.adminCommunities,
+        }),
       },
     });
   } catch (error: unknown) {
