@@ -18,10 +18,13 @@ export class BadgeSearchService {
       community,
       startDate,
       endDate,
-      page = 1,
-      limit = 20,
       sortBy = 'newest',
     } = query;
+
+    // Clamp pagination to safe bounds
+    const MAX_LIMIT = 100
+    const page = Math.max(1, Number.isInteger(query.page) && query.page > 0 ? query.page : 1)
+    const limit = Math.min(MAX_LIMIT, Math.max(1, Number.isInteger(query.limit) && query.limit > 0 ? query.limit : 20))
 
     // Build MongoDB filter
     const filter: FilterQuery<any> = {};
@@ -242,7 +245,7 @@ export class BadgeSearchService {
       return [];
     }
 
-    const safeQuery = escapeRegex(query)
+    const safeQuery = escapeRegex(query);
     const templates = await BadgeTemplate.find({
       $or: [
         { name: { $regex: safeQuery, $options: 'i' } },
