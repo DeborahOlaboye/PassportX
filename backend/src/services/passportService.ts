@@ -25,7 +25,7 @@ export const getPublicPassports = async (limit = 10, skip = 0) => {
         name: user.name || 'Anonymous User',
         badgeCount: totalBadges,
         communities: communities.length,
-        recentBadge: badges[0] ? (badges[0].templateId as any).name : null,
+        recentBadge: badges[0] ? ((badges[0].templateId as any)?.name ?? null) : null,
         avatar: user.avatar,
         joinDate: user.joinDate
       }
