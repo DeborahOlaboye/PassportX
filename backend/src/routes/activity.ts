@@ -3,6 +3,7 @@ import UserActivityService from '../services/userActivityService'
 import { validatePagination } from '../middleware/validation'
 import { createRateLimiter } from '../middleware/rateLimiter'
 import { API_READ_RATE_LIMIT } from '../config/rateLimits'
+import logger from '../utils/logger'
 
 const router = express.Router()
 
@@ -15,8 +16,8 @@ export function setUserActivityService(service: UserActivityService) {
   userActivityService = service
 }
 
-const handleError = (res: Response, error: any, message: string) => {
-  console.error(message, error)
+const handleError = (res: Response, error: unknown, message: string) => {
+  logger.error(message, error)
   res.status(500).json({
     success: false,
     error: message,
