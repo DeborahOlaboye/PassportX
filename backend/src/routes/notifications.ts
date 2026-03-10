@@ -15,6 +15,7 @@ import {
   createNotification,
   createSystemAnnouncement,
 } from '../services/notificationService';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
@@ -82,7 +83,7 @@ router.get(
 
       res.json(result);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      logger.error('Error fetching notifications:', error);
       res.status(500).json({ error: 'Failed to fetch notifications' });
     }
   }
@@ -172,7 +173,7 @@ router.get(
 
       res.json({ count });
     } catch (error) {
-      console.error('Error fetching unread count:', error);
+      logger.error('Error fetching unread count:', error);
       res.status(500).json({ error: 'Failed to fetch unread count' });
     }
   }
@@ -192,7 +193,7 @@ router.get(
 
       res.json(stats);
     } catch (error) {
-      console.error('Error fetching notification stats:', error);
+      logger.error('Error fetching notification stats:', error);
       res.status(500).json({ error: 'Failed to fetch notification stats' });
     }
   }
@@ -219,7 +220,7 @@ router.put(
 
       res.json({ message: 'Notification marked as read', notification });
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logger.error('Error marking notification as read:', error);
       res.status(500).json({ error: 'Failed to mark notification as read' });
     }
   }
@@ -240,7 +241,7 @@ router.put(
 
       res.json({ message: `${count} notifications marked as read`, count });
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      logger.error('Error marking all notifications as read:', error);
       res
         .status(500)
         .json({ error: 'Failed to mark all notifications as read' });
@@ -269,7 +270,7 @@ router.delete(
 
       res.json({ message: 'Notification deleted successfully' });
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      logger.error('Error deleting notification:', error);
       res.status(500).json({ error: 'Failed to delete notification' });
     }
   }
@@ -290,7 +291,7 @@ router.delete(
 
       res.json({ message: `${count} read notifications deleted`, count });
     } catch (error) {
-      console.error('Error deleting read notifications:', error);
+      logger.error('Error deleting read notifications:', error);
       res.status(500).json({ error: 'Failed to delete read notifications' });
     }
   }
@@ -325,7 +326,7 @@ router.post(
 
       res.json({ message: 'Test notification created', notification });
     } catch (error: unknown) {
-      console.error('Error creating test notification:', error);
+      logger.error('Error creating test notification:', error);
       res.status(500).json({
         error:
           error instanceof Error
@@ -364,7 +365,7 @@ router.post(
 
       res.json({ message: 'System announcement sent successfully' });
     } catch (error) {
-      console.error('Error creating system announcement:', error);
+      logger.error('Error creating system announcement:', error);
       res.status(500).json({ error: 'Failed to create system announcement' });
     }
   }
