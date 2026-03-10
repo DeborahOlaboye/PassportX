@@ -175,37 +175,44 @@ router.post('/mark-all-as-read', async (req: Request, res: Response) => {
   }
 });
 
-router.delete('/:activityId', authenticateToken, async (req: AuthRequest, res: Response) => {
-  try {
-    if (!userActivityService) {
-      return res.status(503).json({
-        success: false,
-        error: 'Activity service not initialized',
+router.delete(
+  '/:activityId',
+  authenticateToken,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!userActivityService) {
+        return res.status(503).json({
+          success: false,
+          error: 'Activity service not initialized',
+        });
+      }
+
+      const { activityId } = req.params;
+      const requesterId = req.user!.stacksAddress;
+
+      const result = await userActivityService.deleteActivityForUser(
+        activityId,
+        requesterId
+      );
+
+      if (result === null) {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: you do not own this activity',
+        });
+      }
+
+      res.json({
+        success: result,
+        data: result ? { deleted: true } : { deleted: false },
       });
+    } catch (error) {
+      handleError(res, error, 'Error deleting activity');
     }
-
-    const { activityId } = req.params;
-    const requesterId = req.user!.stacksAddress;
-
-    const result = await userActivityService.deleteActivityForUser(activityId, requesterId);
-
-    if (result === null) {
-      return res.status(403).json({
-        success: false,
-        error: 'Forbidden: you do not own this activity',
-      });
-    }
-
-    res.json({
-      success: result,
-      data: result ? { deleted: true } : { deleted: false },
-    });
-  } catch (error) {
-    handleError(res, error, 'Error deleting activity');
   }
-});
+);
 
-router.delete('/user/:userId', async (req: Request, res: Response) => {
+router.delete('/user/:userId', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     if (!userActivityService) {
       return res.status(503).json({
@@ -216,10 +223,10 @@ router.delete('/user/:userId', async (req: Request, res: Response) => {
 
     const { userId } = req.params;
 
-    if (!userId) {
-      return res.status(400).json({
+    if (req.user!.stacksAddress !== userId) {
+      return res.status(403).json({
         success: false,
-        error: 'userId is required',
+        error: 'Forbidden: you can only clear your own activities',
       });
     }
 
