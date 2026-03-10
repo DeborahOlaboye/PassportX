@@ -3,11 +3,19 @@ import BadgeTemplate from '../models/BadgeTemplate';
 import Community from '../models/Community';
 import User from '../models/User';
 
+const MAX_PASSPORT_LIMIT = 100;
+
 export const getPublicPassports = async (limit = 10, skip = 0) => {
+  const safeLimit = Math.min(
+    MAX_PASSPORT_LIMIT,
+    Math.max(1, Number.isFinite(limit) ? limit : 10)
+  );
+  const safeSkip = Math.max(0, Number.isFinite(skip) ? skip : 0);
+
   const users = await User.find({ isPublic: true })
     .sort({ lastActive: -1 })
-    .limit(limit)
-    .skip(skip);
+    .limit(safeLimit)
+    .skip(safeSkip);
 
   if (users.length === 0) return [];
 
@@ -86,14 +94,19 @@ export const getPublicPassports = async (limit = 10, skip = 0) => {
 const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export const searchPassports = async (query: string, limit = 10) => {
+  if (!query || query.trim().length === 0) return [];
   const safeQuery = escapeRegex(query);
+  const safeLimit = Math.min(
+    MAX_PASSPORT_LIMIT,
+    Math.max(1, Number.isFinite(limit) ? limit : 10)
+  );
   const users = await User.find({
     isPublic: true,
     $or: [
       { name: { $regex: safeQuery, $options: 'i' } },
       { bio: { $regex: safeQuery, $options: 'i' } },
     ],
-  }).limit(limit);
+  }).limit(safeLimit);
 
   if (users.length === 0) return [];
 
