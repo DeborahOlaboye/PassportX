@@ -18,7 +18,7 @@ export const validateBadgeIssuance = async (
 
   // Check if issuer is community admin
   const community = template.community as any;
-  if (community.admin !== issuerAddress) {
+  if (!Array.isArray(community.admins) || !community.admins.includes(issuerAddress)) {
     throw new Error('Only community admin can issue badges');
   }
 
