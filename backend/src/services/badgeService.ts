@@ -18,7 +18,10 @@ export const validateBadgeIssuance = async (
 
   // Check if issuer is community admin
   const community = template.community as any;
-  if (!Array.isArray(community.admins) || !community.admins.includes(issuerAddress)) {
+  if (
+    !Array.isArray(community.admins) ||
+    !community.admins.includes(issuerAddress)
+  ) {
     throw new Error('Only community admin can issue badges');
   }
 
@@ -45,12 +48,12 @@ export const getBadgesByCategory = async (category: string, limit = 20) => {
 
   return badges.map((badge) => ({
     id: badge._id,
-    name: (badge.templateId as any).name,
-    description: (badge.templateId as any).description,
-    community: (badge.community as any).name,
+    name: (badge.templateId as any)?.name ?? null,
+    description: (badge.templateId as any)?.description ?? null,
+    community: (badge.community as any)?.name ?? null,
     owner: badge.owner,
     level: badge.metadata.level,
-    icon: (badge.templateId as any).icon,
+    icon: (badge.templateId as any)?.icon ?? null,
     issuedAt: badge.issuedAt,
   }));
 };
