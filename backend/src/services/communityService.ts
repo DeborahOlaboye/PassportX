@@ -564,11 +564,16 @@ export const getTrendingCommunities = async (limit = 10) => {
   }));
 };
 
+const MAX_MEMBERS_LIMIT = 200;
+
 export const getCommunityMembers = async (
   communityId: string,
   limit = 50,
   offset = 0
 ) => {
+  const safeLimit = Math.min(Math.max(1, Number.isFinite(limit) ? limit : 50), MAX_MEMBERS_LIMIT);
+  const safeOffset = Math.max(0, Number.isFinite(offset) ? offset : 0);
+
   try {
     // Get unique badge owners for this community
     const badges = await Badge.find({ community: communityId }).distinct(
@@ -576,7 +581,7 @@ export const getCommunityMembers = async (
     );
 
     // Paginate the results
-    const paginatedOwners = badges.slice(offset, offset + limit);
+    const paginatedOwners = badges.slice(safeOffset, safeOffset + safeLimit);
 
     // Batch-fetch users and per-member badge counts in two queries
     // instead of one User.findOne + one Badge.countDocuments per member (2N queries).
@@ -613,9 +618,9 @@ export const getCommunityMembers = async (
       data: members,
       pagination: {
         total: badges.length,
-        limit,
-        offset,
-        hasMore: offset + members.length < badges.length,
+        limit: safeLimit,
+        offset: safeOffset,
+        hasMore: safeOffset + members.length < badges.length,
       },
     };
   } catch (error) {
