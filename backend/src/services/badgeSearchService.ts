@@ -22,9 +22,18 @@ export class BadgeSearchService {
     } = query;
 
     // Clamp pagination to safe bounds
-    const MAX_LIMIT = 100
-    const page = Math.max(1, Number.isInteger(query.page) && query.page > 0 ? query.page : 1)
-    const limit = Math.min(MAX_LIMIT, Math.max(1, Number.isInteger(query.limit) && query.limit > 0 ? query.limit : 20))
+    const MAX_LIMIT = 100;
+    const page = Math.max(
+      1,
+      Number.isInteger(query.page) && query.page > 0 ? query.page : 1
+    );
+    const limit = Math.min(
+      MAX_LIMIT,
+      Math.max(
+        1,
+        Number.isInteger(query.limit) && query.limit > 0 ? query.limit : 20
+      )
+    );
 
     // Build MongoDB filter
     const filter: FilterQuery<any> = {};
@@ -199,8 +208,10 @@ export class BadgeSearchService {
    * Get trending badges (most issued recently)
    */
   async getTrendingBadges(days = 7, limit = 10) {
+    const safeDays = Math.min(365, Math.max(1, Number.isFinite(days) ? days : 7));
+    const safeLimit = Math.min(50, Math.max(1, Number.isFinite(limit) ? limit : 10));
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    startDate.setDate(startDate.getDate() - safeDays);
 
     const trending = await Badge.aggregate([
       {
@@ -219,7 +230,7 @@ export class BadgeSearchService {
         $sort: { count: -1, lastIssued: -1 },
       },
       {
-        $limit: limit,
+        $limit: safeLimit,
       },
       {
         $lookup: {
