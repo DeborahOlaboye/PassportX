@@ -4,6 +4,8 @@ import { validatePagination } from '../middleware/validation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { API_READ_RATE_LIMIT } from '../config/rateLimits';
 import logger from '../utils/logger';
+import { authenticateToken } from '../middleware/auth';
+import { AuthRequest } from '../types';
 
 const router = express.Router();
 
@@ -42,7 +44,8 @@ router.get(
       const rawPage = parseInt(req.query.page as string, 10);
       const rawLimit = parseInt(req.query.limit as string, 10);
       const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-      const limit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
       const eventType = req.query.eventType as string | undefined;
       const isRead = req.query.isRead as string;
 
@@ -172,7 +175,7 @@ router.post('/mark-all-as-read', async (req: Request, res: Response) => {
   }
 });
 
-router.delete('/:activityId', async (req: Request, res: Response) => {
+router.delete('/:activityId', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     if (!userActivityService) {
       return res.status(503).json({
@@ -182,19 +185,20 @@ router.delete('/:activityId', async (req: Request, res: Response) => {
     }
 
     const { activityId } = req.params;
+    const requesterId = req.user!.stacksAddress;
 
-    if (!activityId) {
-      return res.status(400).json({
+    const result = await userActivityService.deleteActivityForUser(activityId, requesterId);
+
+    if (result === null) {
+      return res.status(403).json({
         success: false,
-        error: 'activityId is required',
+        error: 'Forbidden: you do not own this activity',
       });
     }
 
-    const success = await userActivityService.deleteActivity(activityId);
-
     res.json({
-      success,
-      data: success ? { deleted: true } : { deleted: false },
+      success: result,
+      data: result ? { deleted: true } : { deleted: false },
     });
   } catch (error) {
     handleError(res, error, 'Error deleting activity');
