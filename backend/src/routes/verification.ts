@@ -4,11 +4,14 @@ import { IVerificationResponse } from '../types';
 import { verificationRateLimit } from '../middleware/verificationValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { BATCH_VERIFICATION_RATE_LIMIT } from '../config/rateLimits';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
 const verificationLimiter = verificationRateLimit;
-const batchVerificationLimiter = createRateLimiter(BATCH_VERIFICATION_RATE_LIMIT);
+const batchVerificationLimiter = createRateLimiter(
+  BATCH_VERIFICATION_RATE_LIMIT
+);
 
 /**
  * @swagger
@@ -63,7 +66,7 @@ router.post('/badge', verificationLimiter, async (req, res) => {
       verification,
     } as IVerificationResponse);
   } catch (error) {
-    console.error('Error verifying badge:', error);
+    logger.error('Error verifying badge:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -107,7 +110,7 @@ router.get('/badge/:badgeId', verificationLimiter, async (req, res) => {
       verification,
     } as IVerificationResponse);
   } catch (error) {
-    console.error('Error getting verification status:', error);
+    logger.error('Error getting verification status:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -153,7 +156,7 @@ router.get('/public/:badgeId', verificationLimiter, async (req, res) => {
       data: publicInfo,
     });
   } catch (error) {
-    console.error('Error getting public verification info:', error);
+    logger.error('Error getting public verification info:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -245,7 +248,7 @@ router.post('/batch', batchVerificationLimiter, async (req, res) => {
       count: verifications.length,
     });
   } catch (error) {
-    console.error('Error verifying badges in batch:', error);
+    logger.error('Error verifying badges in batch:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -269,7 +272,7 @@ router.get('/user/:address', verificationLimiter, async (req, res) => {
       count: verifications.length,
     });
   } catch (error) {
-    console.error('Error verifying user badges:', error);
+    logger.error('Error verifying user badges:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
@@ -294,7 +297,7 @@ router.get('/blockchain/:badgeId', verificationLimiter, async (req, res) => {
       verified: isVerified,
     });
   } catch (error) {
-    console.error('Error checking blockchain verification:', error);
+    logger.error('Error checking blockchain verification:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',

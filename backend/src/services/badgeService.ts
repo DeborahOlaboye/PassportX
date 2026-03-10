@@ -18,7 +18,10 @@ export const validateBadgeIssuance = async (
 
   // Check if issuer is community admin
   const community = template.community as any;
-  if (community.admin !== issuerAddress) {
+  if (
+    !Array.isArray(community.admins) ||
+    !community.admins.includes(issuerAddress)
+  ) {
     throw new Error('Only community admin can issue badges');
   }
 
@@ -45,12 +48,12 @@ export const getBadgesByCategory = async (category: string, limit = 20) => {
 
   return badges.map((badge) => ({
     id: badge._id,
-    name: (badge.templateId as any).name,
-    description: (badge.templateId as any).description,
-    community: (badge.community as any).name,
+    name: (badge.templateId as any)?.name ?? null,
+    description: (badge.templateId as any)?.description ?? null,
+    community: (badge.community as any)?.name ?? null,
     owner: badge.owner,
     level: badge.metadata.level,
-    icon: (badge.templateId as any).icon,
+    icon: (badge.templateId as any)?.icon ?? null,
     issuedAt: badge.issuedAt,
   }));
 };
@@ -65,12 +68,12 @@ export const getBadgesByLevel = async (level: number, limit = 20) => {
 
   return badges.map((badge) => ({
     id: badge._id,
-    name: (badge.templateId as any).name,
-    description: (badge.templateId as any).description,
-    community: (badge.community as any).name,
+    name: (badge.templateId as any)?.name ?? null,
+    description: (badge.templateId as any)?.description ?? null,
+    community: (badge.community as any)?.name ?? null,
     owner: badge.owner,
     category: badge.metadata.category,
-    icon: (badge.templateId as any).icon,
+    icon: (badge.templateId as any)?.icon ?? null,
     issuedAt: badge.issuedAt,
   }));
 };
@@ -97,14 +100,14 @@ export const getRecentBadges = async (limit = 20) => {
     const user = userByAddress.get(badge.owner);
     return {
       id: badge._id,
-      name: (badge.templateId as any).name,
-      description: (badge.templateId as any).description,
-      community: (badge.community as any).name,
+      name: (badge.templateId as any)?.name ?? null,
+      description: (badge.templateId as any)?.description ?? null,
+      community: (badge.community as any)?.name ?? null,
       owner: badge.owner,
       ownerName: user?.name || 'Anonymous',
       level: badge.metadata.level,
       category: badge.metadata.category,
-      icon: (badge.templateId as any).icon,
+      icon: (badge.templateId as any)?.icon ?? null,
       issuedAt: badge.issuedAt,
     };
   });
