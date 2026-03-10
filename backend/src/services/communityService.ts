@@ -9,6 +9,7 @@ import {
   ICommunityTheme,
   ISocialLinks,
 } from '../types';
+import logger from '../utils/logger';
 
 // Helper function to generate slug from name
 const generateSlug = (name: string): string => {
@@ -86,7 +87,7 @@ export const createCommunity = async (data: {
 
     return community;
   } catch (error) {
-    console.error('Error creating community:', error);
+    logger.error('Error creating community:', error);
     throw error;
   }
 };
@@ -143,7 +144,7 @@ export const updateCommunity = async (
 
     return updatedCommunity;
   } catch (error) {
-    console.error('Error updating community:', error);
+    logger.error('Error updating community:', error);
     throw error;
   }
 };
@@ -155,7 +156,7 @@ export const getCommunityBySlug = async (slug: string) => {
       'name description icon category level'
     );
   } catch (error) {
-    console.error('Error fetching community by slug:', error);
+    logger.error('Error fetching community by slug:', error);
     throw error;
   }
 };
@@ -170,7 +171,7 @@ export const getCommunityById = async (id: string) => {
       'name description icon category level'
     );
   } catch (error) {
-    console.error('Error fetching community by ID:', error);
+    logger.error('Error fetching community by ID:', error);
     throw error;
   }
 };
@@ -226,7 +227,7 @@ export const listCommunities = async (filters: {
       },
     };
   } catch (error) {
-    console.error('Error listing communities:', error);
+    logger.error('Error listing communities:', error);
     throw error;
   }
 };
@@ -255,7 +256,7 @@ export const deleteCommunity = async (
 
     return { success: true, message: 'Community deleted successfully' };
   } catch (error) {
-    console.error('Error deleting community:', error);
+    logger.error('Error deleting community:', error);
     throw error;
   }
 };
@@ -289,7 +290,7 @@ export const addCommunityMember = async (
 
     return { success: true, message: 'Successfully joined community' };
   } catch (error) {
-    console.error('Error adding community member:', error);
+    logger.error('Error adding community member:', error);
     throw error;
   }
 };
@@ -345,7 +346,7 @@ export const removeCommunityMember = async (
       message: 'Successfully removed member from community',
     };
   } catch (error) {
-    console.error('Error removing community member:', error);
+    logger.error('Error removing community member:', error);
     throw error;
   }
 };
@@ -385,7 +386,7 @@ export const addCommunityAdmin = async (
 
     return { success: true, message: 'Successfully added admin to community' };
   } catch (error) {
-    console.error('Error adding community admin:', error);
+    logger.error('Error adding community admin:', error);
     throw error;
   }
 };
@@ -428,7 +429,7 @@ export const removeCommunityAdmin = async (
       message: 'Successfully removed admin from community',
     };
   } catch (error) {
-    console.error('Error removing community admin:', error);
+    logger.error('Error removing community admin:', error);
     throw error;
   }
 };
@@ -442,7 +443,7 @@ export const updateMemberCount = async (communityId: string) => {
       memberCount: uniqueMembers.length,
     });
   } catch (error) {
-    console.error('Error updating member count:', error);
+    logger.error('Error updating member count:', error);
   }
 };
 
@@ -618,7 +619,7 @@ export const getCommunityMembers = async (
       },
     };
   } catch (error) {
-    console.error('Error fetching community members:', error);
+    logger.error('Error fetching community members:', error);
     throw error;
   }
 };
