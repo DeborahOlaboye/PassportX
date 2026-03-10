@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, JWTPayload } from '../types';
 import User from '../models/User';
+import logger from '../utils/logger';
 
 const isValidJWTPayload = (decoded: any): decoded is JWTPayload => {
   return (
@@ -39,7 +40,7 @@ export const authenticateToken = (
       }
 
       if (!isValidJWTPayload(decoded)) {
-        console.error('Invalid JWT payload structure:', decoded);
+        logger.error('Invalid JWT payload structure detected');
         return res.status(403).json({ error: 'Invalid token payload' });
       }
 
