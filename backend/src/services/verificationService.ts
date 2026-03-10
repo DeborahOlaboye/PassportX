@@ -56,8 +56,10 @@ export class VerificationService {
    * Verify multiple badges in batch
    */
   async verifyBadgeBatch(badgeIds: string[]): Promise<IBadgeVerification[]> {
+    const MAX_BATCH_SIZE = 50;
+    const safeBadgeIds = badgeIds.slice(0, MAX_BATCH_SIZE);
     const verifications = await Promise.all(
-      badgeIds.map((id) => this.verifyBadge(id))
+      safeBadgeIds.map((id) => this.verifyBadge(id))
     );
 
     return verifications.filter((v): v is IBadgeVerification => v !== null);
