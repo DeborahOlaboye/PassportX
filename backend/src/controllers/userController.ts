@@ -220,7 +220,11 @@ export const initializePassport = async (req: AuthRequest, res: Response) => {
 export const getUserBadges = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const { limit = '20', offset = '0' } = req.query;
+    const MAX_BADGE_LIMIT = 100;
+    const rawLimit = parseInt(limit as string, 10);
+    const rawOffset = parseInt(offset as string, 10);
+    const safeLimit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, MAX_BADGE_LIMIT);
+    const safeOffset = isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset;
 
     // This would integrate with the badge service
     // For now, return empty array
@@ -229,8 +233,8 @@ export const getUserBadges = async (req: Request, res: Response) => {
       data: [],
       pagination: {
         total: 0,
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string),
+        limit: safeLimit,
+        offset: safeOffset,
         hasMore: false,
       },
     });
