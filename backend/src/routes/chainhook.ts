@@ -49,12 +49,14 @@ router.post('/start', authMiddleware, async (req: Request, res: Response) => {
     }
 
     await chainhookManager.start();
+    logger.info('Chainhook manager started');
 
     res.json({
       message: 'Chainhook manager started successfully',
       status: chainhookManager.getStatus(),
     });
   } catch (error) {
+    logger.error('Failed to start Chainhook manager', { error });
     res.status(500).json({
       error: 'Failed to start Chainhook manager',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -77,11 +79,13 @@ router.post('/stop', authMiddleware, async (req: Request, res: Response) => {
     }
 
     await chainhookManager.stop();
+    logger.info('Chainhook manager stopped');
 
     res.json({
       message: 'Chainhook manager stopped successfully',
     });
   } catch (error) {
+    logger.error('Failed to stop Chainhook manager', { error });
     res.status(500).json({
       error: 'Failed to stop Chainhook manager',
       message: error instanceof Error ? error.message : 'Unknown error',
