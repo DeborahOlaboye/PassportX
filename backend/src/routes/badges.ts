@@ -18,6 +18,7 @@ import {
   validateWebhookSignature,
   getWebhookValidationConfig,
 } from '../middleware/webhookValidation';
+import { isValidStacksAddress } from '../utils/addressValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { BADGE_ISSUANCE_RATE_LIMIT } from '../config/rateLimits';
 
@@ -464,6 +465,17 @@ router.post(
       if (nonStringIndex !== -1) {
         throw createError(
           `recipientAddresses[${nonStringIndex}] must be a non-empty string`,
+          400
+        );
+      }
+
+      // Pre-flight: validate Stacks address format for all elements
+      const invalidAddressIndex = recipientAddresses.findIndex(
+        (addr) => !isValidStacksAddress(addr)
+      );
+      if (invalidAddressIndex !== -1) {
+        throw createError(
+          `recipientAddresses[${invalidAddressIndex}] is not a valid Stacks address`,
           400
         );
       }
