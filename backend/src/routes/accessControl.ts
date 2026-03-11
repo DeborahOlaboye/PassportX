@@ -15,6 +15,11 @@ const router = express.Router();
 // Rate limiter for read-only audit and security endpoints
 const auditReadLimiter = createRateLimiter(API_READ_RATE_LIMIT);
 
+/** Validates that the incoming chainhook event body is a non-null object. */
+function validateWebhookBody(body: unknown): body is Record<string, unknown> {
+  return typeof body === 'object' && body !== null && !Array.isArray(body);
+}
+
 /**
  * Webhook endpoints for Chainhook access control events
  */
@@ -27,6 +32,9 @@ router.post(
   '/webhook/global-permission',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       // Transform Chainhook event to AccessControlEvent
@@ -53,6 +61,9 @@ router.post(
   '/webhook/community-permission',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -76,6 +87,9 @@ router.post(
  */
 router.post('/webhook/user-suspended', async (req: Request, res: Response) => {
   try {
+    if (!validateWebhookBody(req.body)) {
+      return res.status(400).json({ error: 'Request body must be a JSON object' });
+    }
     const chainhookEvent = req.body;
 
     const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -100,6 +114,9 @@ router.post(
   '/webhook/user-unsuspended',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -125,6 +142,9 @@ router.post(
   '/webhook/issuer-authorized',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -148,6 +168,9 @@ router.post(
  */
 router.post('/webhook/issuer-revoked', async (req: Request, res: Response) => {
   try {
+    if (!validateWebhookBody(req.body)) {
+      return res.status(400).json({ error: 'Request body must be a JSON object' });
+    }
     const chainhookEvent = req.body;
 
     const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -172,6 +195,9 @@ router.post(
   '/webhook/permission-group-created',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -199,6 +225,9 @@ router.post(
   '/webhook/member-role-changed',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       // Determine if it's an assignment or revocation based on the payload
@@ -225,6 +254,9 @@ router.post(
   '/webhook/ownership-transferred',
   async (req: Request, res: Response) => {
     try {
+      if (!validateWebhookBody(req.body)) {
+        return res.status(400).json({ error: 'Request body must be a JSON object' });
+      }
       const chainhookEvent = req.body;
 
       const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -250,79 +282,95 @@ router.post(
  * GET /access-control/audit/logs
  * Query audit logs
  */
-router.get('/audit/logs', auditReadLimiter, async (req: Request, res: Response) => {
-  try {
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const rawSkip = parseInt(req.query.skip as string, 10);
-    const filters = {
-      principal: req.query.principal as string,
-      targetPrincipal: req.query.targetPrincipal as string,
-      communityId: req.query.communityId as string,
-      eventType: req.query.eventType as AccessControlEventType,
-      suspicious: req.query.suspicious === 'true',
-      limit: isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500),
-      skip: isNaN(rawSkip) || rawSkip < 0 ? 0 : rawSkip,
-    };
+router.get(
+  '/audit/logs',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const rawSkip = parseInt(req.query.skip as string, 10);
+      const filters = {
+        principal: req.query.principal as string,
+        targetPrincipal: req.query.targetPrincipal as string,
+        communityId: req.query.communityId as string,
+        eventType: req.query.eventType as AccessControlEventType,
+        suspicious: req.query.suspicious === 'true',
+        limit: isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500),
+        skip: isNaN(rawSkip) || rawSkip < 0 ? 0 : rawSkip,
+      };
 
-    const logs = await AccessControlAuditService.queryLogs(filters);
-    res.json(logs);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+      const logs = await AccessControlAuditService.queryLogs(filters);
+      res.json(logs);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/audit/statistics
  * Get audit statistics
  */
-router.get('/audit/statistics', auditReadLimiter, async (req: Request, res: Response) => {
-  try {
-    const stats = await AccessControlAuditService.getStatistics();
-    res.json(stats);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/audit/statistics',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const stats = await AccessControlAuditService.getStatistics();
+      res.json(stats);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/audit/suspicious
  * Get suspicious activity
  */
-router.get('/audit/suspicious', auditReadLimiter, async (req: Request, res: Response) => {
-  try {
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
-    const logs = await AccessControlAuditService.getSuspiciousActivity(limit);
-    res.json(logs);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/audit/suspicious',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+      const logs = await AccessControlAuditService.getSuspiciousActivity(limit);
+      res.json(logs);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/audit/user/:principal
  * Get user's access control history
  */
-router.get('/audit/user/:principal', auditReadLimiter, async (req: Request, res: Response) => {
-  try {
-    const { principal } = req.params;
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
-    const history = await AccessControlAuditService.getUserHistory(
-      principal,
-      limit
-    );
-    res.json(history);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/audit/user/:principal',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const { principal } = req.params;
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
+      const history = await AccessControlAuditService.getUserHistory(
+        principal,
+        limit
+      );
+      res.json(history);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/audit/community/:communityId
@@ -353,49 +401,57 @@ router.get(
  * GET /access-control/audit/export
  * Export audit logs
  */
-router.get('/audit/export', auditReadLimiter, async (req: Request, res: Response) => {
-  try {
-    const filters = {
-      principal: req.query.principal as string,
-      communityId: req.query.communityId as string,
-      eventType: req.query.eventType as AccessControlEventType,
-    };
+router.get(
+  '/audit/export',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const filters = {
+        principal: req.query.principal as string,
+        communityId: req.query.communityId as string,
+        eventType: req.query.eventType as AccessControlEventType,
+      };
 
-    const exportData = await AccessControlAuditService.exportLogs(filters);
+      const exportData = await AccessControlAuditService.exportLogs(filters);
 
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="access-control-audit-${Date.now()}.json"`
-    );
-    res.send(exportData);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="access-control-audit-${Date.now()}.json"`
+      );
+      res.send(exportData);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/security/alerts
  * Get security alerts
  */
-router.get('/security/alerts', auditReadLimiter, (req: Request, res: Response) => {
-  try {
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const filters = {
-      type: req.query.type as any,
-      severity: req.query.severity as any,
-      acknowledged: req.query.acknowledged === 'true',
-      limit: isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200),
-    };
+router.get(
+  '/security/alerts',
+  auditReadLimiter,
+  (req: Request, res: Response) => {
+    try {
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const filters = {
+        type: req.query.type as any,
+        severity: req.query.severity as any,
+        acknowledged: req.query.acknowledged === 'true',
+        limit: isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200),
+      };
 
-    const alerts = AccessControlSecurityMonitor.getAlerts(filters);
-    res.json(alerts);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+      const alerts = AccessControlSecurityMonitor.getAlerts(filters);
+      res.json(alerts);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * POST /access-control/security/alerts/:alertId/acknowledge
@@ -424,15 +480,19 @@ router.post(
  * GET /access-control/security/metrics
  * Get security metrics
  */
-router.get('/security/metrics', auditReadLimiter, async (req: Request, res: Response) => {
-  try {
-    const metrics = await AccessControlSecurityMonitor.getMetrics();
-    res.json(metrics);
-  } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/security/metrics',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const metrics = await AccessControlSecurityMonitor.getMetrics();
+      res.json(metrics);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * Helper function to transform Chainhook event to AccessControlEvent
