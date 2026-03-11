@@ -140,8 +140,17 @@ router.get('/filters', publicReadLimiter, async (req, res) => {
  */
 router.get('/trending', publicReadLimiter, async (req, res) => {
   try {
-    const days = req.query.days ? Number(req.query.days) : 7;
-    const limit = req.query.limit ? Number(req.query.limit) : 10;
+    const rawDays = parseInt(req.query.days as string, 10);
+    const days =
+      !req.query.days || isNaN(rawDays) || rawDays < 1
+        ? 7
+        : Math.min(rawDays, 365);
+
+    const rawLimit = parseInt(req.query.limit as string, 10);
+    const limit =
+      !req.query.limit || isNaN(rawLimit) || rawLimit < 1
+        ? 10
+        : Math.min(rawLimit, 50);
 
     const trending = await badgeSearchService.getTrendingBadges(days, limit);
 
