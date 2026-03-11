@@ -33,7 +33,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -62,7 +64,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -88,7 +92,9 @@ router.post(
 router.post('/webhook/user-suspended', async (req: Request, res: Response) => {
   try {
     if (!validateWebhookBody(req.body)) {
-      return res.status(400).json({ error: 'Request body must be a JSON object' });
+      return res
+        .status(400)
+        .json({ error: 'Request body must be a JSON object' });
     }
     const chainhookEvent = req.body;
 
@@ -115,7 +121,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -143,7 +151,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -169,7 +179,9 @@ router.post(
 router.post('/webhook/issuer-revoked', async (req: Request, res: Response) => {
   try {
     if (!validateWebhookBody(req.body)) {
-      return res.status(400).json({ error: 'Request body must be a JSON object' });
+      return res
+        .status(400)
+        .json({ error: 'Request body must be a JSON object' });
     }
     const chainhookEvent = req.body;
 
@@ -196,7 +208,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -226,7 +240,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -255,7 +271,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!validateWebhookBody(req.body)) {
-        return res.status(400).json({ error: 'Request body must be a JSON object' });
+        return res
+          .status(400)
+          .json({ error: 'Request body must be a JSON object' });
       }
       const chainhookEvent = req.body;
 
@@ -504,7 +522,7 @@ function transformChainhookEvent(
   const transaction = chainhookEvent.transactions?.[0] || chainhookEvent;
 
   return {
-    eventType,
+    eventType: eventType as AnyAccessControlEvent['eventType'],
     transactionHash:
       transaction.transaction_hash ||
       chainhookEvent.transaction_hash ||
@@ -516,8 +534,8 @@ function transformChainhookEvent(
     contractAddress: extractContractAddress(transaction),
     method: extractMethod(transaction),
     data: chainhookEvent,
-    metadata: extractMetadata(transaction, eventType),
-  };
+    metadata: extractMetadata(transaction, eventType) as AnyAccessControlEvent['metadata'],
+  } as AnyAccessControlEvent;
 }
 
 function extractTargetPrincipal(transaction: any): string | undefined {
