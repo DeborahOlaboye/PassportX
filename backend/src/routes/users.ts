@@ -459,12 +459,15 @@ router.get(
         throw createError('Profile is private', 403);
       }
 
-      const badges = await Badge.find({ owner: address })
-        .populate('templateId')
-        .populate('community')
-        .sort({ issuedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+      const [badges, total] = await Promise.all([
+        Badge.find({ owner: address })
+          .populate('templateId')
+          .populate('community')
+          .sort({ issuedAt: -1 })
+          .skip(skip)
+          .limit(limit),
+        Badge.countDocuments({ owner: address }),
+      ]);
 
       const formattedBadges = badges.map((badge) => ({
         id: badge._id,
@@ -480,7 +483,10 @@ router.get(
         transactionId: badge.transactionId,
       }));
 
-      res.json(formattedBadges);
+      res.json({
+        data: formattedBadges,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      });
     } catch (error) {
       next(error);
     }
