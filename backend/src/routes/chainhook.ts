@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import ChainhookManager from '../services/chainhookManager';
-import { authMiddleware } from '../middleware/auth';
+import { authenticateToken as authMiddleware } from '../middleware/auth';
 import EventReplayService from '../services/EventReplayService';
 import ChainhookEventProcessor from '../services/chainhookEventProcessor';
 import logger from '../utils/logger';
@@ -42,7 +42,7 @@ router.post('/start', authMiddleware, async (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    if (chainhookManager.isRunning()) {
+    if (chainhookManager.isActive()) {
       return res
         .status(400)
         .json({ error: 'Chainhook manager is already running' });
@@ -72,7 +72,7 @@ router.post('/stop', authMiddleware, async (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    if (!chainhookManager.isRunning()) {
+    if (!chainhookManager.isActive()) {
       return res
         .status(400)
         .json({ error: 'Chainhook manager is not running' });
@@ -148,10 +148,14 @@ router.post('/subscriptions', authMiddleware, (req: Request, res: Response) => {
       return res.status(400).json({ error: 'name and eventType are required' });
     }
     if (typeof name !== 'string' || name.length > 200) {
-      return res.status(400).json({ error: 'name must be a string of at most 200 characters' });
+      return res
+        .status(400)
+        .json({ error: 'name must be a string of at most 200 characters' });
     }
     if (typeof eventType !== 'string' || eventType.length > 100) {
-      return res.status(400).json({ error: 'eventType must be a string of at most 100 characters' });
+      return res.status(400).json({
+        error: 'eventType must be a string of at most 100 characters',
+      });
     }
 
     const subscriptionManager = chainhookManager.getSubscriptionManager();
@@ -244,18 +248,22 @@ router.post('/predicates', authMiddleware, (req: Request, res: Response) => {
       });
     }
     if (typeof name !== 'string' || name.length > 200) {
-      return res.status(400).json({ error: 'name must be a string of at most 200 characters' });
+      return res
+        .status(400)
+        .json({ error: 'name must be a string of at most 200 characters' });
     }
     const VALID_NETWORKS = new Set(['mainnet', 'testnet']);
     if (typeof network !== 'string' || !VALID_NETWORKS.has(network)) {
-      return res.status(400).json({ error: 'network must be "mainnet" or "testnet"' });
+      return res
+        .status(400)
+        .json({ error: 'network must be "mainnet" or "testnet"' });
     }
 
     const predicateManager = chainhookManager.getPredicateManager();
     const predicate = predicateManager.createPredicate(
       name,
       type,
-      network,
+      network as 'mainnet' | 'testnet' | 'devnet',
       if_this,
       then_that
     );
@@ -367,8 +375,8 @@ function safeDate(value: unknown): Date | undefined {
 
 /** Returns a validated non-negative integer or undefined. */
 function safeBlock(value: unknown): number | undefined {
-  if (!value) return undefined;
-  const n = parseInt(value as string, 10);
+  if (value === undefined || value === null || value === '') return undefined;
+  const n = typeof value === 'number' ? value : parseInt(value as string, 10);
   return isNaN(n) || n < 0 ? undefined : n;
 }
 
@@ -503,11 +511,7 @@ router.post(
       }
 
       const replayService = new EventReplayService();
-      const eventProcessor = chainhookManager.getEventProcessor();
-
-      if (!eventProcessor) {
-        return res.status(503).json({ error: 'Event processor not available' });
-      }
+      const eventProcessor = new ChainhookEventProcessor();
 
       const startBlock = safeBlock(req.body.startBlock);
       const endBlock = safeBlock(req.body.endBlock);
