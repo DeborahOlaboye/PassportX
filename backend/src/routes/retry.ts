@@ -89,19 +89,31 @@ router.delete(
  * POST /retry/queue/cleanup
  * Clean up old completed items
  */
-router.post('/queue/cleanup', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { olderThanDays = 7 } = req.body;
-    const deletedCount = await RetryQueueService.cleanupOldItems(olderThanDays);
-    res.json({
-      message: 'Cleanup completed',
-      deletedCount,
-    });
-  } catch (error) {
-    console.error('Error cleaning up retry queue:', error);
-    res.status(500).json({ error: 'Failed to clean up retry queue' });
+router.post(
+  '/queue/cleanup',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { olderThanDays } = req.body;
+      const rawDays = parseInt(olderThanDays, 10);
+      if (isNaN(rawDays) || rawDays < 1) {
+        return res.status(400).json({
+          error: 'olderThanDays must be a positive integer (minimum 1)',
+        });
+      }
+      const safeDays = Math.min(rawDays, 365);
+      const deletedCount = await RetryQueueService.cleanupOldItems(safeDays);
+      res.json({
+        message: 'Cleanup completed',
+        deletedCount,
+      });
+    } catch (error) {
+      console.error('Error cleaning up retry queue:', error);
+      res.status(500).json({ error: 'Failed to clean up retry queue' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/dead-letter/stats
