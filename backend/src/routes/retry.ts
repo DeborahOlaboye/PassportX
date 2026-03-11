@@ -204,18 +204,23 @@ router.get('/dead-letter/analysis', authenticateToken, async (req, res) => {
  * GET /retry/dead-letter/manual-review
  * Get items requiring manual review
  */
-router.get('/dead-letter/manual-review', authenticateToken, async (req, res) => {
-  try {
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
-    const items = await DeadLetterQueueService.getItemsForManualReview(limit);
-    res.json(items);
-  } catch (error) {
-    logger.error('Error getting items for manual review:', error);
-    res.status(500).json({ error: 'Failed to get items for manual review' });
+router.get(
+  '/dead-letter/manual-review',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+      const items = await DeadLetterQueueService.getItemsForManualReview(limit);
+      res.json(items);
+    } catch (error) {
+      logger.error('Error getting items for manual review:', error);
+      res.status(500).json({ error: 'Failed to get items for manual review' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/metrics
@@ -256,21 +261,25 @@ router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
  * GET /retry/metrics/error-distribution
  * Get error distribution time series
  */
-router.get('/metrics/error-distribution', authenticateToken, async (req, res) => {
-  try {
-    const rawHours2 = parseInt(req.query.hours as string, 10);
-    const hoursBack =
-      !req.query.hours || isNaN(rawHours2) || rawHours2 < 1
-        ? 24
-        : Math.min(rawHours2, 168);
-    const distribution =
-      await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
-    res.json(distribution);
-  } catch (error) {
-    logger.error('Error fetching error distribution:', error);
-    res.status(500).json({ error: 'Failed to fetch error distribution' });
+router.get(
+  '/metrics/error-distribution',
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const rawHours2 = parseInt(req.query.hours as string, 10);
+      const hoursBack =
+        !req.query.hours || isNaN(rawHours2) || rawHours2 < 1
+          ? 24
+          : Math.min(rawHours2, 168);
+      const distribution =
+        await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
+      res.json(distribution);
+    } catch (error) {
+      logger.error('Error fetching error distribution:', error);
+      res.status(500).json({ error: 'Failed to fetch error distribution' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/metrics/top-failing
@@ -293,7 +302,7 @@ router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
  * GET /retry/metrics/export
  * Export metrics as JSON
  */
-router.get('/metrics/export', authenticateToken, async (req, res) => {
+router.get('/metrics/export', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const exportData = await RetryMetricsService.exportMetrics();
     res.setHeader('Content-Type', 'application/json');
