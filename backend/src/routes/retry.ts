@@ -172,7 +172,9 @@ router.post(
         });
       }
       const safeDays = Math.min(rawDays, 365);
-      const archivedCount = await DeadLetterQueueService.archiveOldItems(safeDays);
+      const archivedCount = await DeadLetterQueueService.archiveOldItems(
+        safeDays
+      );
       res.json({
         message: 'Archival completed',
         archivedCount,
@@ -367,7 +369,7 @@ router.get('/circuit-breakers', (req, res) => {
  * POST /retry/circuit-breakers/:name/reset
  * Reset a specific circuit breaker
  */
-router.post('/circuit-breakers/:name/reset', (req, res) => {
+router.post('/circuit-breakers/:name/reset', authenticateToken, requireAdmin, (req, res) => {
   try {
     const { name } = req.params;
     const breaker = CircuitBreakerRegistry.getBreaker(name);
