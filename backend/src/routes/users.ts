@@ -13,6 +13,7 @@ import {
   API_READ_RATE_LIMIT,
 } from '../config/rateLimits';
 import logger from '../utils/logger';
+import { isValidStacksAddress } from '../utils/addressValidation';
 
 const router = Router();
 
@@ -53,6 +54,9 @@ router.get(
   async (req: AuthRequest, res, next) => {
     try {
       const { address } = req.params;
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
       const user = await User.findOne({ stacksAddress: address });
 
       if (!user) {
@@ -431,6 +435,9 @@ router.get(
   async (req: AuthRequest, res, next) => {
     try {
       const { address } = req.params;
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
       const MAX_BADGE_LIMIT = 100;
       const rawPage = parseInt(req.query.page as string, 10);
       const rawLimit = parseInt(req.query.limit as string, 10);
@@ -488,6 +495,9 @@ router.get(
   async (req: AuthRequest, res, next) => {
     try {
       const { address } = req.params;
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
       const user = await User.findOne({ stacksAddress: address });
 
       if (!user) {
@@ -539,6 +549,10 @@ router.put(
     try {
       const { address } = req.params;
       const { isPublic, showEmail, showBadges, showCommunities } = req.body;
+
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
 
       // Verify user is updating their own settings
       if (req.user!.stacksAddress !== address) {
@@ -645,6 +659,9 @@ router.get(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { address } = req.params;
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
       const MAX_COMMUNITY_LIMIT = 100;
       const rawPage = parseInt(req.query.page as string, 10);
       const rawLimit = parseInt(req.query.limit as string, 10);
