@@ -139,11 +139,20 @@ router.put(
       } = req.body;
 
       // Validate field lengths before touching the DB
-      if (name !== undefined && (typeof name !== 'string' || name.length > 100)) {
-        throw createError('Name must be a string of at most 100 characters', 400);
+      if (
+        name !== undefined &&
+        (typeof name !== 'string' || name.length > 100)
+      ) {
+        throw createError(
+          'Name must be a string of at most 100 characters',
+          400
+        );
       }
       if (bio !== undefined && (typeof bio !== 'string' || bio.length > 500)) {
-        throw createError('Bio must be a string of at most 500 characters', 400);
+        throw createError(
+          'Bio must be a string of at most 500 characters',
+          400
+        );
       }
       if (isPublic !== undefined && typeof isPublic !== 'boolean') {
         throw createError('isPublic must be a boolean', 400);
@@ -520,6 +529,20 @@ router.put(
       // Verify user is updating their own settings
       if (req.user!.stacksAddress !== address) {
         throw createError('Unauthorized to update these settings', 403);
+      }
+
+      // Validate boolean fields
+      if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+        throw createError('isPublic must be a boolean', 400);
+      }
+      if (showEmail !== undefined && typeof showEmail !== 'boolean') {
+        throw createError('showEmail must be a boolean', 400);
+      }
+      if (showBadges !== undefined && typeof showBadges !== 'boolean') {
+        throw createError('showBadges must be a boolean', 400);
+      }
+      if (showCommunities !== undefined && typeof showCommunities !== 'boolean') {
+        throw createError('showCommunities must be a boolean', 400);
       }
 
       const user = await User.findOne({ stacksAddress: address });
