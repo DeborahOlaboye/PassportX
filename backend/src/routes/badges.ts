@@ -11,6 +11,7 @@ import {
   IPopulatedBadgeTemplate,
 } from '../types';
 import { updateMemberCount } from '../services/communityService';
+import { issueSingleBadge } from '../services/badgeService';
 import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalidator';
 import BadgeUIRefreshService from '../services/badgeUIRefreshService';
 import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers';
@@ -515,39 +516,13 @@ router.post(
 
       for (const recipientAddress of uniqueAddresses) {
         try {
-          // Check if badge already issued to this user
-          const existingBadge = await Badge.findOne({
-            templateId,
-            owner: recipientAddress,
-          });
-
-          if (existingBadge) {
-            errors.push({
-              recipientAddress,
-              error: 'Badge already issued to this user',
-            });
-            continue;
-          }
-
-          const badge = new Badge({
-            templateId,
-            owner: recipientAddress,
-            issuer: req.user!.stacksAddress,
-            community: community._id,
-            transactionId,
-            metadata: {
-              level: template.level,
-              category: template.category,
-              timestamp: Math.floor(Date.now() / 1000),
-            },
-          });
-
-          await badge.save();
-          results.push({
+          const issued = await issueSingleBadge(
+            template,
             recipientAddress,
-            badgeId: badge._id,
-            success: true,
-          });
+            req.user!.stacksAddress,
+            transactionId
+          );
+          results.push({ ...issued, success: true });
         } catch (error: unknown) {
           errors.push({
             recipientAddress,
