@@ -534,24 +534,23 @@ router.post(
     try {
       const stacksAddress = req.user!.stacksAddress;
 
-      let user = await User.findOne({ stacksAddress });
-
-      if (!user) {
-        // Create new user if doesn't exist
-        user = new User({
-          stacksAddress,
-          isPublic: true,
-          joinDate: new Date(),
-          lastActive: new Date(),
-        });
-      }
-
       // Generate passport ID (in real implementation, this would mint an NFT)
       const passportId = `passport_${stacksAddress}_${Date.now()}`;
-      (user as any).passportId = passportId;
-      user.lastActive = new Date();
 
-      await user.save();
+      // Atomic upsert prevents race condition where two concurrent requests
+      // both see null from findOne() and each attempt to create a new User doc.
+      const user = await User.findOneAndUpdate(
+        { stacksAddress },
+        {
+          $set: { passportId, lastActive: new Date() },
+          $setOnInsert: {
+            stacksAddress,
+            isPublic: true,
+            joinDate: new Date(),
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
 
       res.json({
         success: true,
