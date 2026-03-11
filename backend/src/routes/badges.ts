@@ -23,6 +23,9 @@ import { BADGE_ISSUANCE_RATE_LIMIT } from '../config/rateLimits';
 
 const router = Router();
 
+/** Maximum number of recipients allowed in a single batch-issuance request. */
+const MAX_BATCH_SIZE = 100;
+
 // Rate limiter for badge issuance operations (20 requests per 15 minutes)
 const badgeIssuanceLimiter = createRateLimiter(BADGE_ISSUANCE_RATE_LIMIT);
 
