@@ -272,6 +272,16 @@ router.post(
         );
       }
 
+      if (
+        tokenId !== undefined &&
+        (typeof tokenId !== 'string' || tokenId.length > 128)
+      ) {
+        throw createError(
+          'tokenId must be a string of at most 128 characters',
+          400
+        );
+      }
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
