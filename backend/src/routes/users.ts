@@ -12,6 +12,8 @@ import {
   USER_WRITE_RATE_LIMIT,
   API_READ_RATE_LIMIT,
 } from '../config/rateLimits';
+import logger from '../utils/logger';
+import { isValidStacksAddress } from '../utils/addressValidation';
 
 const router = Router();
 
@@ -47,10 +49,14 @@ const readLimiter = createRateLimiter(API_READ_RATE_LIMIT);
  */
 router.get(
   '/profile/:address',
+  readLimiter,
   optionalAuth,
   async (req: AuthRequest, res, next) => {
     try {
       const { address } = req.params;
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
       const user = await User.findOne({ stacksAddress: address });
 
       if (!user) {
@@ -136,6 +142,26 @@ router.put(
         themePreferences,
       } = req.body;
 
+      // Validate field lengths before touching the DB
+      if (
+        name !== undefined &&
+        (typeof name !== 'string' || name.length > 100)
+      ) {
+        throw createError(
+          'Name must be a string of at most 100 characters',
+          400
+        );
+      }
+      if (bio !== undefined && (typeof bio !== 'string' || bio.length > 500)) {
+        throw createError(
+          'Bio must be a string of at most 500 characters',
+          400
+        );
+      }
+      if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+        throw createError('isPublic must be a boolean', 400);
+      }
+
       const user = await User.findOne({
         stacksAddress: req.user!.stacksAddress,
       });
@@ -152,6 +178,18 @@ router.put(
       // Update custom URL with validation
       if (customUrl !== undefined) {
         if (customUrl) {
+          const urlRegex = /^[a-z0-9-]+$/;
+          if (
+            typeof customUrl !== 'string' ||
+            !urlRegex.test(customUrl) ||
+            customUrl.length < 3 ||
+            customUrl.length > 30
+          ) {
+            throw createError(
+              'Custom URL must be 3-30 characters and contain only lowercase letters, numbers, and hyphens',
+              400
+            );
+          }
           // Check if custom URL is already taken by another user
           const existingUser = await User.findOne({
             customUrl,
@@ -164,22 +202,36 @@ router.put(
         user.customUrl = customUrl;
       }
 
-      // Update social links
+      // Update social links - strip non-string values, truncate to 200 chars
       if (socialLinks !== undefined) {
+        if (typeof socialLinks !== 'object' || Array.isArray(socialLinks)) {
+          throw createError('socialLinks must be an object', 400);
+        }
+        const sanitize = (val: unknown) =>
+          typeof val === 'string' ? val.slice(0, 200) || undefined : undefined;
         user.socialLinks = {
-          twitter: socialLinks.twitter || undefined,
-          github: socialLinks.github || undefined,
-          linkedin: socialLinks.linkedin || undefined,
-          discord: socialLinks.discord || undefined,
-          website: socialLinks.website || undefined,
+          twitter: sanitize(socialLinks.twitter),
+          github: sanitize(socialLinks.github),
+          linkedin: sanitize(socialLinks.linkedin),
+          discord: sanitize(socialLinks.discord),
+          website: sanitize(socialLinks.website),
         };
       }
 
       // Update theme preferences
       if (themePreferences !== undefined) {
+        const VALID_MODES = new Set(['light', 'dark', 'system']);
+        const mode =
+          typeof themePreferences.mode === 'string' &&
+          VALID_MODES.has(themePreferences.mode)
+            ? themePreferences.mode
+            : 'system';
         user.themePreferences = {
-          mode: themePreferences.mode || 'system',
-          accentColor: themePreferences.accentColor || undefined,
+          mode: mode as 'light' | 'dark' | 'system',
+          accentColor:
+            typeof themePreferences.accentColor === 'string'
+              ? themePreferences.accentColor.slice(0, 20) || undefined
+              : undefined,
         };
       }
 
@@ -299,40 +351,45 @@ router.post(
  *                 available: { type: boolean, example: true }
  *                 message: { type: string, example: "Custom URL is available" }
  */
-router.get('/profile/check-url/:customUrl', async (req, res, next) => {
-  try {
-    const { customUrl } = req.params;
+router.get(
+  '/profile/check-url/:customUrl',
+  readLimiter,
+  async (req, res, next) => {
+    try {
+      const { customUrl } = req.params;
 
-    // Validate format
-    const urlRegex = /^[a-z0-9-]+$/;
-    if (
-      !urlRegex.test(customUrl) ||
-      customUrl.length < 3 ||
-      customUrl.length > 30
-    ) {
-      return res.json({
-        available: false,
-        message:
-          'Custom URL must be 3-30 characters long and contain only lowercase letters, numbers, and hyphens',
+      // Validate format
+      const urlRegex = /^[a-z0-9-]+$/;
+      if (
+        !urlRegex.test(customUrl) ||
+        customUrl.length < 3 ||
+        customUrl.length > 30
+      ) {
+        return res.json({
+          available: false,
+          message:
+            'Custom URL must be 3-30 characters long and contain only lowercase letters, numbers, and hyphens',
+        });
+      }
+
+      const existingUser = await User.findOne({ customUrl });
+
+      res.json({
+        available: !existingUser,
+        message: existingUser
+          ? 'Custom URL is already taken'
+          : 'Custom URL is available',
       });
+    } catch (error) {
+      next(error);
     }
-
-    const existingUser = await User.findOne({ customUrl });
-
-    res.json({
-      available: !existingUser,
-      message: existingUser
-        ? 'Custom URL is already taken'
-        : 'Custom URL is available',
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // Get user profile by custom URL
 router.get(
   '/profile/u/:customUrl',
+  readLimiter,
   optionalAuth,
   async (req: AuthRequest, res, next) => {
     try {
@@ -372,13 +429,23 @@ router.get(
 // Get user badges (passport)
 router.get(
   '/badges/:address',
+  readLimiter,
   optionalAuth,
   validatePagination,
   async (req: AuthRequest, res, next) => {
     try {
       const { address } = req.params;
-      const page = Number(req.query.page);
-      const limit = Number(req.query.limit);
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
+      const MAX_BADGE_LIMIT = 100;
+      const rawPage = parseInt(req.query.page as string, 10);
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1
+          ? 20
+          : Math.min(rawLimit, MAX_BADGE_LIMIT);
       const skip = (page - 1) * limit;
 
       const user = await User.findOne({ stacksAddress: address });
@@ -392,12 +459,15 @@ router.get(
         throw createError('Profile is private', 403);
       }
 
-      const badges = await Badge.find({ owner: address })
-        .populate('templateId')
-        .populate('community')
-        .sort({ issuedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+      const [badges, total] = await Promise.all([
+        Badge.find({ owner: address })
+          .populate('templateId')
+          .populate('community')
+          .sort({ issuedAt: -1 })
+          .skip(skip)
+          .limit(limit),
+        Badge.countDocuments({ owner: address }),
+      ]);
 
       const formattedBadges = badges.map((badge) => ({
         id: badge._id,
@@ -413,7 +483,10 @@ router.get(
         transactionId: badge.transactionId,
       }));
 
-      res.json(formattedBadges);
+      res.json({
+        data: formattedBadges,
+        pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      });
     } catch (error) {
       next(error);
     }
@@ -423,10 +496,14 @@ router.get(
 // Get user statistics
 router.get(
   '/stats/:address',
+  readLimiter,
   optionalAuth,
   async (req: AuthRequest, res, next) => {
     try {
       const { address } = req.params;
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
       const user = await User.findOne({ stacksAddress: address });
 
       if (!user) {
@@ -437,19 +514,30 @@ router.get(
         throw createError('Profile is private', 403);
       }
 
-      const badges = await Badge.find({ owner: address }).populate('community');
-      const communities = new Set(
-        badges.map((badge) => (badge.community as any)._id.toString())
-      );
-      const maxLevel =
-        badges.length > 0
-          ? Math.max(...badges.map((badge) => badge.metadata.level))
-          : 0;
+      const [stats] = await Badge.aggregate([
+        { $match: { owner: address } },
+        {
+          $group: {
+            _id: null,
+            totalBadges: { $sum: 1 },
+            highestLevel: { $max: '$metadata.level' },
+            distinctCommunities: { $addToSet: '$community' },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            totalBadges: 1,
+            highestLevel: { $ifNull: ['$highestLevel', 0] },
+            communities: { $size: '$distinctCommunities' },
+          },
+        },
+      ]);
 
       res.json({
-        totalBadges: badges.length,
-        communities: communities.size,
-        highestLevel: maxLevel,
+        totalBadges: stats?.totalBadges ?? 0,
+        communities: stats?.communities ?? 0,
+        highestLevel: stats?.highestLevel ?? 0,
         joinDate: user.joinDate,
       });
     } catch (error) {
@@ -468,9 +556,30 @@ router.put(
       const { address } = req.params;
       const { isPublic, showEmail, showBadges, showCommunities } = req.body;
 
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
+
       // Verify user is updating their own settings
       if (req.user!.stacksAddress !== address) {
         throw createError('Unauthorized to update these settings', 403);
+      }
+
+      // Validate boolean fields
+      if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+        throw createError('isPublic must be a boolean', 400);
+      }
+      if (showEmail !== undefined && typeof showEmail !== 'boolean') {
+        throw createError('showEmail must be a boolean', 400);
+      }
+      if (showBadges !== undefined && typeof showBadges !== 'boolean') {
+        throw createError('showBadges must be a boolean', 400);
+      }
+      if (
+        showCommunities !== undefined &&
+        typeof showCommunities !== 'boolean'
+      ) {
+        throw createError('showCommunities must be a boolean', 400);
       }
 
       const user = await User.findOne({ stacksAddress: address });
@@ -516,24 +625,25 @@ router.post(
     try {
       const stacksAddress = req.user!.stacksAddress;
 
-      let user = await User.findOne({ stacksAddress });
-
-      if (!user) {
-        // Create new user if doesn't exist
-        user = new User({
-          stacksAddress,
-          isPublic: true,
-          joinDate: new Date(),
-          lastActive: new Date(),
-        });
-      }
-
       // Generate passport ID (in real implementation, this would mint an NFT)
       const passportId = `passport_${stacksAddress}_${Date.now()}`;
-      (user as any).passportId = passportId;
-      user.lastActive = new Date();
 
-      await user.save();
+      // Atomic upsert prevents race condition where two concurrent requests
+      // both see null from findOne() and each attempt to create a new User doc.
+      const user = await User.findOneAndUpdate(
+        { stacksAddress },
+        {
+          $set: { passportId, lastActive: new Date() },
+          $setOnInsert: {
+            stacksAddress,
+            isPublic: true,
+            joinDate: new Date(),
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+
+      logger.info('Passport initialized', { stacksAddress, passportId });
 
       res.json({
         success: true,
@@ -543,6 +653,7 @@ router.post(
         },
       });
     } catch (error) {
+      logger.error('Failed to initialize passport', { error });
       next(error);
     }
   }
@@ -551,13 +662,23 @@ router.post(
 // Get user's communities
 router.get(
   '/communities/:address',
+  readLimiter,
   optionalAuth,
   validatePagination,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { address } = req.params;
-      const page = Number(req.query.page);
-      const limit = Number(req.query.limit);
+      if (!isValidStacksAddress(address)) {
+        throw createError('Invalid Stacks address format', 400);
+      }
+      const MAX_COMMUNITY_LIMIT = 100;
+      const rawPage = parseInt(req.query.page as string, 10);
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1
+          ? 20
+          : Math.min(rawLimit, MAX_COMMUNITY_LIMIT);
       const skip = (page - 1) * limit;
 
       const user = await User.findOne({ stacksAddress: address })
@@ -579,11 +700,15 @@ router.get(
         throw createError('Profile is private', 403);
       }
 
+      const communities = (user.communities as unknown[]) || [];
+      const adminCommunities = (user.adminCommunities as unknown[]) || [];
+
       res.json({
         success: true,
         data: {
-          communities: user.communities || [],
-          adminCommunities: user.adminCommunities || [],
+          communities,
+          adminCommunities,
+          pagination: { page, limit, skip },
         },
       });
     } catch (error) {
