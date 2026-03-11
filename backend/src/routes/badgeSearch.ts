@@ -174,7 +174,11 @@ router.get('/trending', publicReadLimiter, async (req, res) => {
 router.get('/suggestions', suggestionsLimiter, async (req, res) => {
   try {
     const query = req.query.q as string;
-    const limit = req.query.limit ? Number(req.query.limit) : 10;
+    const rawLimit = parseInt(req.query.limit as string, 10);
+    const limit =
+      !req.query.limit || isNaN(rawLimit) || rawLimit < 1
+        ? 10
+        : Math.min(rawLimit, 20);
 
     if (!query) {
       return res.json({
