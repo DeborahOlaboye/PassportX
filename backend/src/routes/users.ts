@@ -48,6 +48,7 @@ const readLimiter = createRateLimiter(API_READ_RATE_LIMIT);
  */
 router.get(
   '/profile/:address',
+  readLimiter,
   optionalAuth,
   async (req: AuthRequest, res, next) => {
     try {
@@ -300,7 +301,7 @@ router.post(
  *                 available: { type: boolean, example: true }
  *                 message: { type: string, example: "Custom URL is available" }
  */
-router.get('/profile/check-url/:customUrl', async (req, res, next) => {
+router.get('/profile/check-url/:customUrl', readLimiter, async (req, res, next) => {
   try {
     const { customUrl } = req.params;
 
@@ -373,6 +374,7 @@ router.get(
 // Get user badges (passport)
 router.get(
   '/badges/:address',
+  readLimiter,
   optionalAuth,
   validatePagination,
   async (req: AuthRequest, res, next) => {
@@ -430,6 +432,7 @@ router.get(
 // Get user statistics
 router.get(
   '/stats/:address',
+  readLimiter,
   optionalAuth,
   async (req: AuthRequest, res, next) => {
     try {
@@ -568,6 +571,7 @@ router.post(
 // Get user's communities
 router.get(
   '/communities/:address',
+  readLimiter,
   optionalAuth,
   validatePagination,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
