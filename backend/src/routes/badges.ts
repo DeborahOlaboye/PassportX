@@ -446,6 +446,17 @@ router.post(
         );
       }
 
+      if (recipientAddresses.length === 0) {
+        throw createError('recipientAddresses must be a non-empty array', 400);
+      }
+
+      if (recipientAddresses.length > MAX_BATCH_SIZE) {
+        throw createError(
+          `Batch size cannot exceed ${MAX_BATCH_SIZE} recipients`,
+          400
+        );
+      }
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
