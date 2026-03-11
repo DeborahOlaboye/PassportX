@@ -126,7 +126,7 @@ router.post(
       await template.save();
 
       // Add template to community
-      community.badgeTemplates.push(template._id);
+      community.badgeTemplates.push(template._id as any);
       await community.save();
 
       res.status(201).json({
@@ -301,7 +301,7 @@ router.post(
       await badge.save();
 
       // Update community member count
-      await updateMemberCount(community._id);
+      await updateMemberCount(String(community._id));
 
       res.status(201).json({
         id: badge._id,
@@ -534,7 +534,7 @@ router.post(
       }
 
       // Update community member count
-      await updateMemberCount(community._id);
+      await updateMemberCount(String(community._id));
 
       res.status(201).json({
         success: true,
@@ -572,7 +572,7 @@ router.delete(
       await Badge.findByIdAndDelete(req.params.id);
 
       // Update community member count
-      await updateMemberCount(community._id);
+      await updateMemberCount(String(community._id));
 
       res.json({ message: 'Badge revoked successfully' });
     } catch (error) {
