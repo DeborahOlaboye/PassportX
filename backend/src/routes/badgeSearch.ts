@@ -79,8 +79,14 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
       community: community as string,
       startDate: startDate ? new Date(startDate as string) : undefined,
       endDate: endDate ? new Date(endDate as string) : undefined,
-      page: Number(page),
-      limit: Number(limit),
+      page: (() => {
+        const p = parseInt(page as string, 10);
+        return isNaN(p) || p < 1 ? 1 : p;
+      })(),
+      limit: (() => {
+        const l = parseInt(limit as string, 10);
+        return isNaN(l) || l < 1 ? 20 : Math.min(l, 100);
+      })(),
       sortBy: sortBy as any,
     };
 
