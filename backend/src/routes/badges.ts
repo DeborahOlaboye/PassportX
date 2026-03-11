@@ -480,6 +480,9 @@ router.post(
         );
       }
 
+      // Deduplicate within the request to avoid double-writes
+      const uniqueAddresses = [...new Set(recipientAddresses as string[])];
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
@@ -495,7 +498,7 @@ router.post(
       const results = [];
       const errors = [];
 
-      for (const recipientAddress of recipientAddresses) {
+      for (const recipientAddress of uniqueAddresses) {
         try {
           // Check if badge already issued to this user
           const existingBadge = await Badge.findOne({
