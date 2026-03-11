@@ -206,7 +206,8 @@ router.get('/dead-letter/analysis', async (req, res) => {
  */
 router.get('/dead-letter/manual-review', async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+    const rawLimit = parseInt(req.query.limit as string, 10);
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
     const items = await DeadLetterQueueService.getItemsForManualReview(limit);
     res.json(items);
   } catch (error) {
@@ -235,9 +236,8 @@ router.get('/metrics', async (req, res) => {
  */
 router.get('/metrics/success-rate', async (req, res) => {
   try {
-    const hoursBack = req.query.hours
-      ? parseInt(req.query.hours as string)
-      : 24;
+    const rawHours = parseInt(req.query.hours as string, 10);
+    const hoursBack = !req.query.hours || isNaN(rawHours) || rawHours < 1 ? 24 : Math.min(rawHours, 168);
     const timeSeries = await RetryMetricsService.getSuccessRateTimeSeries(
       hoursBack
     );
@@ -254,9 +254,8 @@ router.get('/metrics/success-rate', async (req, res) => {
  */
 router.get('/metrics/error-distribution', async (req, res) => {
   try {
-    const hoursBack = req.query.hours
-      ? parseInt(req.query.hours as string)
-      : 24;
+    const rawHours2 = parseInt(req.query.hours as string, 10);
+    const hoursBack = !req.query.hours || isNaN(rawHours2) || rawHours2 < 1 ? 24 : Math.min(rawHours2, 168);
     const distribution =
       await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
     res.json(distribution);
@@ -272,7 +271,8 @@ router.get('/metrics/error-distribution', async (req, res) => {
  */
 router.get('/metrics/top-failing', async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const rawTopLimit = parseInt(req.query.limit as string, 10);
+    const limit = isNaN(rawTopLimit) || rawTopLimit < 1 ? 10 : Math.min(rawTopLimit, 100);
     const items = await RetryMetricsService.getTopFailingItems(limit);
     res.json(items);
   } catch (error) {
@@ -320,7 +320,8 @@ router.get('/monitoring/health', async (req, res) => {
  */
 router.get('/monitoring/alerts', async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+    const rawAlertLimit = parseInt(req.query.limit as string, 10);
+    const limit = isNaN(rawAlertLimit) || rawAlertLimit < 1 ? 50 : Math.min(rawAlertLimit, 200);
     const severity = req.query.severity as
       | 'low'
       | 'medium'
@@ -369,16 +370,21 @@ router.get('/circuit-breakers', (req, res) => {
  * POST /retry/circuit-breakers/:name/reset
  * Reset a specific circuit breaker
  */
-router.post('/circuit-breakers/:name/reset', authenticateToken, requireAdmin, (req, res) => {
-  try {
-    const { name } = req.params;
-    const breaker = CircuitBreakerRegistry.getBreaker(name);
-    breaker.forceClose();
-    res.json({ message: `Circuit breaker '${name}' has been reset` });
-  } catch (error) {
-    console.error('Error resetting circuit breaker:', error);
-    res.status(500).json({ error: 'Failed to reset circuit breaker' });
+router.post(
+  '/circuit-breakers/:name/reset',
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    try {
+      const { name } = req.params;
+      const breaker = CircuitBreakerRegistry.getBreaker(name);
+      breaker.forceClose();
+      res.json({ message: `Circuit breaker '${name}' has been reset` });
+    } catch (error) {
+      console.error('Error resetting circuit breaker:', error);
+      res.status(500).json({ error: 'Failed to reset circuit breaker' });
+    }
   }
-});
+);
 
 export default router;
