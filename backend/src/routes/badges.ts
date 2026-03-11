@@ -457,6 +457,17 @@ router.post(
         );
       }
 
+      // Pre-flight: every element must be a non-empty string before any DB write
+      const nonStringIndex = recipientAddresses.findIndex(
+        (addr) => typeof addr !== 'string' || addr.trim() === ''
+      );
+      if (nonStringIndex !== -1) {
+        throw createError(
+          `recipientAddresses[${nonStringIndex}] must be a non-empty string`,
+          400
+        );
+      }
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
