@@ -573,8 +573,14 @@ router.get(
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const { address } = req.params;
-      const page = Number(req.query.page);
-      const limit = Number(req.query.limit);
+      const MAX_COMMUNITY_LIMIT = 100;
+      const rawPage = parseInt(req.query.page as string, 10);
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1
+          ? 20
+          : Math.min(rawLimit, MAX_COMMUNITY_LIMIT);
       const skip = (page - 1) * limit;
 
       const user = await User.findOne({ stacksAddress: address })
