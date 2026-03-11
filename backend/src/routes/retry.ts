@@ -135,7 +135,7 @@ router.get('/dead-letter/stats', async (req, res) => {
  * POST /retry/dead-letter/recover
  * Attempt to recover items from dead letter queue
  */
-router.post('/dead-letter/recover', async (req, res) => {
+router.post('/dead-letter/recover', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const filter = req.body;
     const result = await DeadLetterQueueService.recoverItems(filter);
