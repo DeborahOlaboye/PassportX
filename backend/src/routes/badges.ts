@@ -447,6 +447,10 @@ router.post(
         );
       }
 
+      if (typeof templateId !== 'string' || templateId.trim() === '') {
+        throw createError('templateId must be a non-empty string', 400);
+      }
+
       if (recipientAddresses.length === 0) {
         throw createError('recipientAddresses must be a non-empty array', 400);
       }
