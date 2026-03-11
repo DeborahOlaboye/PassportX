@@ -295,7 +295,8 @@ router.get('/logs', authMiddleware, (req: Request, res: Response) => {
 
     const chainhookLogger = chainhookManager.getLogger();
     const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 1000);
+    const limit =
+      isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 1000);
     const logs = chainhookLogger.getLogs(undefined, limit);
 
     res.json({
@@ -321,7 +322,8 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
 
     const chainhookLogger = chainhookManager.getLogger();
     const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 500);
+    const limit =
+      isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 500);
     const errorLogs = chainhookLogger.getErrorLogs(limit);
 
     res.json({
@@ -336,6 +338,23 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
   }
 });
 
+const MAX_BLOCK_RANGE = 100_000;
+const MAX_HISTORICAL_LIMIT = 1000;
+
+/** Returns a valid Date or undefined; never returns an Invalid Date object. */
+function safeDate(value: unknown): Date | undefined {
+  if (!value || typeof value !== 'string') return undefined;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
+/** Returns a validated non-negative integer or undefined. */
+function safeBlock(value: unknown): number | undefined {
+  if (!value) return undefined;
+  const n = parseInt(value as string, 10);
+  return isNaN(n) || n < 0 ? undefined : n;
+}
+
 router.get(
   '/events/historical',
   authMiddleware,
@@ -343,29 +362,46 @@ router.get(
     try {
       const replayService = new EventReplayService();
 
+      const startBlock = safeBlock(req.query.startBlock);
+      const endBlock = safeBlock(req.query.endBlock);
+
+      // Reject requests where endBlock < startBlock or range exceeds cap
+      if (
+        startBlock !== undefined &&
+        endBlock !== undefined &&
+        endBlock < startBlock
+      ) {
+        return res
+          .status(400)
+          .json({ error: 'endBlock must be >= startBlock' });
+      }
+      if (
+        startBlock !== undefined &&
+        endBlock !== undefined &&
+        endBlock - startBlock > MAX_BLOCK_RANGE
+      ) {
+        return res.status(400).json({
+          error: `Block range must not exceed ${MAX_BLOCK_RANGE.toLocaleString()} blocks`,
+        });
+      }
+
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const rawOffset = parseInt(req.query.offset as string, 10);
+
       const filters = {
         eventType: req.query.eventType as string,
         contractAddress: req.query.contractAddress as string,
         method: req.query.method as string,
-        startDate: req.query.startDate
-          ? new Date(req.query.startDate as string)
-          : undefined,
-        endDate: req.query.endDate
-          ? new Date(req.query.endDate as string)
-          : undefined,
-        startBlock: req.query.startBlock
-          ? parseInt(req.query.startBlock as string)
-          : undefined,
-        endBlock: req.query.endBlock
-          ? parseInt(req.query.endBlock as string)
-          : undefined,
+        startDate: safeDate(req.query.startDate),
+        endDate: safeDate(req.query.endDate),
+        startBlock,
+        endBlock,
         transactionHash: req.query.transactionHash as string,
-        limit: req.query.limit
-          ? parseInt(req.query.limit as string)
-          : undefined,
-        offset: req.query.offset
-          ? parseInt(req.query.offset as string)
-          : undefined,
+        limit:
+          isNaN(rawLimit) || rawLimit < 1
+            ? 100
+            : Math.min(rawLimit, MAX_HISTORICAL_LIMIT),
+        offset: isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset,
       };
 
       const events = await replayService.getHistoricalEvents(filters);
@@ -376,6 +412,7 @@ router.get(
         filters,
       });
     } catch (error) {
+      logger.error('Failed to fetch historical events', { error });
       res.status(500).json({
         error: 'Failed to fetch historical events',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -391,22 +428,36 @@ router.get(
     try {
       const replayService = new EventReplayService();
 
+      const startBlock = safeBlock(req.query.startBlock);
+      const endBlock = safeBlock(req.query.endBlock);
+
+      if (
+        startBlock !== undefined &&
+        endBlock !== undefined &&
+        endBlock < startBlock
+      ) {
+        return res
+          .status(400)
+          .json({ error: 'endBlock must be >= startBlock' });
+      }
+      if (
+        startBlock !== undefined &&
+        endBlock !== undefined &&
+        endBlock - startBlock > MAX_BLOCK_RANGE
+      ) {
+        return res.status(400).json({
+          error: `Block range must not exceed ${MAX_BLOCK_RANGE.toLocaleString()} blocks`,
+        });
+      }
+
       const filters = {
         eventType: req.query.eventType as string,
         contractAddress: req.query.contractAddress as string,
         method: req.query.method as string,
-        startDate: req.query.startDate
-          ? new Date(req.query.startDate as string)
-          : undefined,
-        endDate: req.query.endDate
-          ? new Date(req.query.endDate as string)
-          : undefined,
-        startBlock: req.query.startBlock
-          ? parseInt(req.query.startBlock as string)
-          : undefined,
-        endBlock: req.query.endBlock
-          ? parseInt(req.query.endBlock as string)
-          : undefined,
+        startDate: safeDate(req.query.startDate),
+        endDate: safeDate(req.query.endDate),
+        startBlock,
+        endBlock,
         transactionHash: req.query.transactionHash as string,
       };
 
@@ -414,6 +465,7 @@ router.get(
 
       res.json(statistics);
     } catch (error) {
+      logger.error('Failed to get event statistics', { error });
       res.status(500).json({
         error: 'Failed to get event statistics',
         message: error instanceof Error ? error.message : 'Unknown error',
