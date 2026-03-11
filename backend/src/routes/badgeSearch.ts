@@ -209,11 +209,13 @@ router.get('/suggestions', suggestionsLimiter, async (req, res) => {
  * GET /api/badges/issuer/:address
  * Search badges by issuer
  */
-router.get('/issuer/:address', validatePagination, async (req, res) => {
+router.get('/issuer/:address', searchLimiter, validatePagination, async (req, res) => {
   try {
     const { address } = req.params;
-    const page = Number(req.query.page);
-    const limit = Number(req.query.limit);
+    const rawPage = parseInt(req.query.page as string, 10);
+    const rawLimit = parseInt(req.query.limit as string, 10);
+    const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
 
     const result = await badgeSearchService.searchByIssuer(
       address,
