@@ -208,8 +208,14 @@ export class BadgeSearchService {
    * Get trending badges (most issued recently)
    */
   async getTrendingBadges(days = 7, limit = 10) {
-    const safeDays = Math.min(365, Math.max(1, Number.isFinite(days) ? days : 7));
-    const safeLimit = Math.min(50, Math.max(1, Number.isFinite(limit) ? limit : 10));
+    const safeDays = Math.min(
+      365,
+      Math.max(1, Number.isFinite(days) ? days : 7)
+    );
+    const safeLimit = Math.min(
+      50,
+      Math.max(1, Number.isFinite(limit) ? limit : 10)
+    );
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - safeDays);
 
@@ -252,11 +258,14 @@ export class BadgeSearchService {
    * Autocomplete search suggestions
    */
   async getSearchSuggestions(query: string, limit = 10) {
-    if (!query || query.length < 2) {
+    if (!query || query.trim().length < 2) {
       return [];
     }
 
-    const safeQuery = escapeRegex(query);
+    const MAX_QUERY_LENGTH = 100;
+    const trimmed = query.trim().slice(0, MAX_QUERY_LENGTH);
+    const safeLimit = Number.isFinite(limit) && limit >= 1 ? Math.min(limit, 20) : 10;
+    const safeQuery = escapeRegex(trimmed);
     const templates = await BadgeTemplate.find({
       $or: [
         { name: { $regex: safeQuery, $options: 'i' } },
@@ -264,7 +273,7 @@ export class BadgeSearchService {
       ],
     })
       .select('name description category')
-      .limit(limit)
+      .limit(safeLimit)
       .lean();
 
     return templates.map((t) => ({
