@@ -492,18 +492,46 @@ router.post(
         return res.status(503).json({ error: 'Event processor not available' });
       }
 
+      const startBlock = safeBlock(req.body.startBlock);
+      const endBlock = safeBlock(req.body.endBlock);
+
+      if (
+        startBlock !== undefined &&
+        endBlock !== undefined &&
+        endBlock < startBlock
+      ) {
+        return res
+          .status(400)
+          .json({ error: 'endBlock must be >= startBlock' });
+      }
+      if (
+        startBlock !== undefined &&
+        endBlock !== undefined &&
+        endBlock - startBlock > MAX_BLOCK_RANGE
+      ) {
+        return res.status(400).json({
+          error: `Block range must not exceed ${MAX_BLOCK_RANGE.toLocaleString()} blocks`,
+        });
+      }
+
+      const rawLimit =
+        typeof req.body.limit === 'number'
+          ? req.body.limit
+          : parseInt(req.body.limit, 10);
+
       const filters = {
         eventType: req.body.eventType,
         contractAddress: req.body.contractAddress,
         method: req.body.method,
-        startDate: req.body.startDate
-          ? new Date(req.body.startDate)
-          : undefined,
-        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
-        startBlock: req.body.startBlock,
-        endBlock: req.body.endBlock,
+        startDate: safeDate(req.body.startDate),
+        endDate: safeDate(req.body.endDate),
+        startBlock,
+        endBlock,
         transactionHash: req.body.transactionHash,
-        limit: req.body.limit || 100,
+        limit:
+          isNaN(rawLimit) || rawLimit < 1
+            ? 100
+            : Math.min(rawLimit, MAX_HISTORICAL_LIMIT),
       };
 
       const result = await replayService.replayEvents(filters, eventProcessor);
@@ -513,6 +541,7 @@ router.post(
         ...result,
       });
     } catch (error) {
+      logger.error('Failed to replay events', { error });
       res.status(500).json({
         error: 'Failed to replay events',
         message: error instanceof Error ? error.message : 'Unknown error',
