@@ -293,14 +293,15 @@ router.get('/logs', authMiddleware, (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    const logger = chainhookManager.getLogger();
-    const limit = parseInt(req.query.limit as string) || 100;
-    const logs = logger.getLogs(undefined, limit);
+    const chainhookLogger = chainhookManager.getLogger();
+    const rawLimit = parseInt(req.query.limit as string, 10);
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 1000);
+    const logs = chainhookLogger.getLogs(undefined, limit);
 
     res.json({
       logs,
-      total: logger.getLogCount(),
-      statistics: logger.getLogStatistics(),
+      total: chainhookLogger.getLogCount(),
+      statistics: chainhookLogger.getLogStatistics(),
     });
   } catch (error) {
     res.status(500).json({
@@ -318,9 +319,10 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    const logger = chainhookManager.getLogger();
-    const limit = parseInt(req.query.limit as string) || 50;
-    const errorLogs = logger.getErrorLogs(limit);
+    const chainhookLogger = chainhookManager.getLogger();
+    const rawLimit = parseInt(req.query.limit as string, 10);
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 500);
+    const errorLogs = chainhookLogger.getErrorLogs(limit);
 
     res.json({
       logs: errorLogs,
