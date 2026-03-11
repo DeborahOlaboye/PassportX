@@ -138,6 +138,17 @@ router.put(
         themePreferences,
       } = req.body;
 
+      // Validate field lengths before touching the DB
+      if (name !== undefined && (typeof name !== 'string' || name.length > 100)) {
+        throw createError('Name must be a string of at most 100 characters', 400);
+      }
+      if (bio !== undefined && (typeof bio !== 'string' || bio.length > 500)) {
+        throw createError('Bio must be a string of at most 500 characters', 400);
+      }
+      if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+        throw createError('isPublic must be a boolean', 400);
+      }
+
       const user = await User.findOne({
         stacksAddress: req.user!.stacksAddress,
       });
@@ -154,6 +165,18 @@ router.put(
       // Update custom URL with validation
       if (customUrl !== undefined) {
         if (customUrl) {
+          const urlRegex = /^[a-z0-9-]+$/;
+          if (
+            typeof customUrl !== 'string' ||
+            !urlRegex.test(customUrl) ||
+            customUrl.length < 3 ||
+            customUrl.length > 30
+          ) {
+            throw createError(
+              'Custom URL must be 3-30 characters and contain only lowercase letters, numbers, and hyphens',
+              400
+            );
+          }
           // Check if custom URL is already taken by another user
           const existingUser = await User.findOne({
             customUrl,
