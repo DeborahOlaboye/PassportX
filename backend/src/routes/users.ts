@@ -637,6 +637,8 @@ router.post(
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
 
+      logger.info('Passport initialized', { stacksAddress, passportId });
+
       res.json({
         success: true,
         data: {
@@ -645,6 +647,7 @@ router.post(
         },
       });
     } catch (error) {
+      logger.error('Failed to initialize passport', { error });
       next(error);
     }
   }
