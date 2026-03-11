@@ -13,7 +13,7 @@ const router = express.Router();
  * GET /retry/queue/stats
  * Get retry queue statistics
  */
-router.get('/queue/stats', async (req, res) => {
+router.get('/queue/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await RetryQueueService.getStatistics();
     res.json(stats);
@@ -119,7 +119,7 @@ router.post(
  * GET /retry/dead-letter/stats
  * Get dead letter queue statistics
  */
-router.get('/dead-letter/stats', async (req, res) => {
+router.get('/dead-letter/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await DeadLetterQueueService.getStatistics();
     res.json(stats);
@@ -190,7 +190,7 @@ router.post(
  * GET /retry/dead-letter/analysis
  * Get error analysis from dead letter queue
  */
-router.get('/dead-letter/analysis', async (req, res) => {
+router.get('/dead-letter/analysis', authenticateToken, async (req, res) => {
   try {
     const analysis = await DeadLetterQueueService.getErrorAnalysis();
     res.json(analysis);
@@ -204,7 +204,7 @@ router.get('/dead-letter/analysis', async (req, res) => {
  * GET /retry/dead-letter/manual-review
  * Get items requiring manual review
  */
-router.get('/dead-letter/manual-review', async (req, res) => {
+router.get('/dead-letter/manual-review', authenticateToken, async (req, res) => {
   try {
     const rawLimit = parseInt(req.query.limit as string, 10);
     const limit =
@@ -221,7 +221,7 @@ router.get('/dead-letter/manual-review', async (req, res) => {
  * GET /retry/metrics
  * Get comprehensive retry metrics
  */
-router.get('/metrics', async (req, res) => {
+router.get('/metrics', authenticateToken, async (req, res) => {
   try {
     const metrics = await RetryMetricsService.getMetrics();
     res.json(metrics);
@@ -235,7 +235,7 @@ router.get('/metrics', async (req, res) => {
  * GET /retry/metrics/success-rate
  * Get success rate time series
  */
-router.get('/metrics/success-rate', async (req, res) => {
+router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
   try {
     const rawHours = parseInt(req.query.hours as string, 10);
     const hoursBack =
@@ -256,7 +256,7 @@ router.get('/metrics/success-rate', async (req, res) => {
  * GET /retry/metrics/error-distribution
  * Get error distribution time series
  */
-router.get('/metrics/error-distribution', async (req, res) => {
+router.get('/metrics/error-distribution', authenticateToken, async (req, res) => {
   try {
     const rawHours2 = parseInt(req.query.hours as string, 10);
     const hoursBack =
@@ -276,7 +276,7 @@ router.get('/metrics/error-distribution', async (req, res) => {
  * GET /retry/metrics/top-failing
  * Get top failing items
  */
-router.get('/metrics/top-failing', async (req, res) => {
+router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
   try {
     const rawTopLimit = parseInt(req.query.limit as string, 10);
     const limit =
@@ -293,7 +293,7 @@ router.get('/metrics/top-failing', async (req, res) => {
  * GET /retry/metrics/export
  * Export metrics as JSON
  */
-router.get('/metrics/export', async (req, res) => {
+router.get('/metrics/export', authenticateToken, async (req, res) => {
   try {
     const exportData = await RetryMetricsService.exportMetrics();
     res.setHeader('Content-Type', 'application/json');
@@ -312,7 +312,7 @@ router.get('/metrics/export', async (req, res) => {
  * GET /retry/monitoring/health
  * Get system health status
  */
-router.get('/monitoring/health', async (req, res) => {
+router.get('/monitoring/health', authenticateToken, async (req, res) => {
   try {
     const health = await ErrorMonitoringService.getHealthStatus();
     res.json(health);
@@ -326,7 +326,7 @@ router.get('/monitoring/health', async (req, res) => {
  * GET /retry/monitoring/alerts
  * Get recent alerts
  */
-router.get('/monitoring/alerts', async (req, res) => {
+router.get('/monitoring/alerts', authenticateToken, async (req, res) => {
   try {
     const rawAlertLimit = parseInt(req.query.limit as string, 10);
     const limit =
@@ -351,7 +351,7 @@ router.get('/monitoring/alerts', async (req, res) => {
  * GET /retry/monitoring/statistics
  * Get comprehensive monitoring statistics
  */
-router.get('/monitoring/statistics', async (req, res) => {
+router.get('/monitoring/statistics', authenticateToken, async (req, res) => {
   try {
     const stats = await ErrorMonitoringService.getStatistics();
     res.json(stats);
@@ -365,7 +365,7 @@ router.get('/monitoring/statistics', async (req, res) => {
  * GET /retry/circuit-breakers
  * Get all circuit breaker statistics
  */
-router.get('/circuit-breakers', (req, res) => {
+router.get('/circuit-breakers', authenticateToken, (req, res) => {
   try {
     const stats = CircuitBreakerRegistry.getAllStats();
     res.json(stats);
