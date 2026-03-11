@@ -375,11 +375,14 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { principal } = req.params;
+      if (!principal || typeof principal !== 'string' || principal.trim() === '') {
+        return res.status(400).json({ error: 'principal is required' });
+      }
       const rawLimit = parseInt(req.query.limit as string, 10);
       const limit =
         isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
       const history = await AccessControlAuditService.getUserHistory(
-        principal,
+        principal.trim(),
         limit
       );
       res.json(history);
@@ -400,11 +403,14 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { communityId } = req.params;
+      if (!communityId || typeof communityId !== 'string' || communityId.trim() === '') {
+        return res.status(400).json({ error: 'communityId is required' });
+      }
       const rawLimit = parseInt(req.query.limit as string, 10);
       const limit =
         isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
       const history = await AccessControlAuditService.getCommunityHistory(
-        communityId,
+        communityId.trim(),
         limit
       );
       res.json(history);
@@ -534,7 +540,10 @@ function transformChainhookEvent(
     contractAddress: extractContractAddress(transaction),
     method: extractMethod(transaction),
     data: chainhookEvent,
-    metadata: extractMetadata(transaction, eventType) as AnyAccessControlEvent['metadata'],
+    metadata: extractMetadata(
+      transaction,
+      eventType
+    ) as AnyAccessControlEvent['metadata'],
   } as AnyAccessControlEvent;
 }
 
