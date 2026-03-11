@@ -3,6 +3,7 @@ import { AccessControlEventType, AnyAccessControlEvent } from '../types/accessCo
 import AccessControlEventHandler from '../services/AccessControlEventHandler';
 import AccessControlAuditService from '../services/AccessControlAuditService';
 import AccessControlSecurityMonitor from '../services/AccessControlSecurityMonitor';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
