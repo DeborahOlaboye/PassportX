@@ -382,7 +382,10 @@ router.get(
       const rawPage = parseInt(req.query.page as string, 10);
       const rawLimit = parseInt(req.query.limit as string, 10);
       const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-      const limit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, MAX_BADGE_LIMIT);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1
+          ? 20
+          : Math.min(rawLimit, MAX_BADGE_LIMIT);
       const skip = (page - 1) * limit;
 
       const user = await User.findOne({ stacksAddress: address });
@@ -441,19 +444,30 @@ router.get(
         throw createError('Profile is private', 403);
       }
 
-      const badges = await Badge.find({ owner: address }).populate('community');
-      const communities = new Set(
-        badges.map((badge) => (badge.community as any)._id.toString())
-      );
-      const maxLevel =
-        badges.length > 0
-          ? Math.max(...badges.map((badge) => badge.metadata.level))
-          : 0;
+      const [stats] = await Badge.aggregate([
+        { $match: { owner: address } },
+        {
+          $group: {
+            _id: null,
+            totalBadges: { $sum: 1 },
+            highestLevel: { $max: '$metadata.level' },
+            distinctCommunities: { $addToSet: '$community' },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            totalBadges: 1,
+            highestLevel: { $ifNull: ['$highestLevel', 0] },
+            communities: { $size: '$distinctCommunities' },
+          },
+        },
+      ]);
 
       res.json({
-        totalBadges: badges.length,
-        communities: communities.size,
-        highestLevel: maxLevel,
+        totalBadges: stats?.totalBadges ?? 0,
+        communities: stats?.communities ?? 0,
+        highestLevel: stats?.highestLevel ?? 0,
         joinDate: user.joinDate,
       });
     } catch (error) {
