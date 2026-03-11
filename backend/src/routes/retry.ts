@@ -4,6 +4,8 @@ import DeadLetterQueueService from '../services/DeadLetterQueueService';
 import RetryMetricsService from '../services/RetryMetricsService';
 import ErrorMonitoringService from '../services/ErrorMonitoringService';
 import CircuitBreakerRegistry from '../services/CircuitBreakerService';
+import { authenticateToken, requireAdmin } from '../middleware/auth';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
