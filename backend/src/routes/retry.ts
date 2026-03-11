@@ -135,25 +135,30 @@ router.get('/dead-letter/stats', async (req, res) => {
  * POST /retry/dead-letter/recover
  * Attempt to recover items from dead letter queue
  */
-router.post('/dead-letter/recover', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const filter = req.body;
-    const result = await DeadLetterQueueService.recoverItems(filter);
-    res.json({
-      message: 'Recovery attempt completed',
-      ...result,
-    });
-  } catch (error) {
-    console.error('Error recovering items:', error);
-    res.status(500).json({ error: 'Failed to recover items' });
+router.post(
+  '/dead-letter/recover',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const filter = req.body;
+      const result = await DeadLetterQueueService.recoverItems(filter);
+      res.json({
+        message: 'Recovery attempt completed',
+        ...result,
+      });
+    } catch (error) {
+      console.error('Error recovering items:', error);
+      res.status(500).json({ error: 'Failed to recover items' });
+    }
   }
-});
+);
 
 /**
  * POST /retry/dead-letter/archive
  * Archive old dead letter items
  */
-router.post('/dead-letter/archive', async (req, res) => {
+router.post('/dead-letter/archive', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { olderThanDays = 7 } = req.body;
     const archivedCount = await DeadLetterQueueService.archiveOldItems(
