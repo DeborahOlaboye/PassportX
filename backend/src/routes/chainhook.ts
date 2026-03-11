@@ -147,6 +147,12 @@ router.post('/subscriptions', authMiddleware, (req: Request, res: Response) => {
     if (!name || !eventType) {
       return res.status(400).json({ error: 'name and eventType are required' });
     }
+    if (typeof name !== 'string' || name.length > 200) {
+      return res.status(400).json({ error: 'name must be a string of at most 200 characters' });
+    }
+    if (typeof eventType !== 'string' || eventType.length > 100) {
+      return res.status(400).json({ error: 'eventType must be a string of at most 100 characters' });
+    }
 
     const subscriptionManager = chainhookManager.getSubscriptionManager();
     const subscription = subscriptionManager.createSubscription(
@@ -236,6 +242,13 @@ router.post('/predicates', authMiddleware, (req: Request, res: Response) => {
       return res.status(400).json({
         error: 'name, type, network, if_this, and then_that are required',
       });
+    }
+    if (typeof name !== 'string' || name.length > 200) {
+      return res.status(400).json({ error: 'name must be a string of at most 200 characters' });
+    }
+    const VALID_NETWORKS = new Set(['mainnet', 'testnet']);
+    if (typeof network !== 'string' || !VALID_NETWORKS.has(network)) {
+      return res.status(400).json({ error: 'network must be "mainnet" or "testnet"' });
     }
 
     const predicateManager = chainhookManager.getPredicateManager();
