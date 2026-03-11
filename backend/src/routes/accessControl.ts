@@ -34,7 +34,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing global permission webhook:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -59,7 +59,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing community permission webhook:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -82,7 +82,7 @@ router.post('/webhook/user-suspended', async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error processing user suspension webhook:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -106,7 +106,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing user unsuspension webhook:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -131,7 +131,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing issuer authorization webhook:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -154,7 +154,7 @@ router.post('/webhook/issuer-revoked', async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error processing issuer revocation webhook:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -178,10 +178,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error(
-        'Error processing permission group creation webhook:',
-        error
-      );
+      logger.error('Error processing permission group creation webhook:', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -207,7 +204,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing member role change webhook:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -232,7 +229,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing ownership transfer webhook:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -263,7 +260,7 @@ router.get('/audit/logs', async (req: Request, res: Response) => {
     const logs = await AccessControlAuditService.queryLogs(filters);
     res.json(logs);
   } catch (error) {
-    console.error('Error fetching audit logs:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -277,7 +274,7 @@ router.get('/audit/statistics', async (req: Request, res: Response) => {
     const stats = await AccessControlAuditService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching audit statistics:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -289,11 +286,12 @@ router.get('/audit/statistics', async (req: Request, res: Response) => {
 router.get('/audit/suspicious', async (req: Request, res: Response) => {
   try {
     const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+    const limit =
+      isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
     const logs = await AccessControlAuditService.getSuspiciousActivity(limit);
     res.json(logs);
   } catch (error) {
-    console.error('Error fetching suspicious activity:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -306,14 +304,15 @@ router.get('/audit/user/:principal', async (req: Request, res: Response) => {
   try {
     const { principal } = req.params;
     const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
+    const limit =
+      isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
     const history = await AccessControlAuditService.getUserHistory(
       principal,
       limit
     );
     res.json(history);
   } catch (error) {
-    console.error('Error fetching user history:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -328,14 +327,15 @@ router.get(
     try {
       const { communityId } = req.params;
       const rawLimit = parseInt(req.query.limit as string, 10);
-      const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
       const history = await AccessControlAuditService.getCommunityHistory(
         communityId,
         limit
       );
       res.json(history);
     } catch (error) {
-      console.error('Error fetching community history:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -362,7 +362,7 @@ router.get('/audit/export', async (req: Request, res: Response) => {
     );
     res.send(exportData);
   } catch (error) {
-    console.error('Error exporting audit logs:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -384,7 +384,7 @@ router.get('/security/alerts', (req: Request, res: Response) => {
     const alerts = AccessControlSecurityMonitor.getAlerts(filters);
     res.json(alerts);
   } catch (error) {
-    console.error('Error fetching security alerts:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -406,7 +406,7 @@ router.post(
         res.status(404).json({ error: 'Alert not found' });
       }
     } catch (error) {
-      console.error('Error acknowledging alert:', error);
+      logger.error('\1', { error });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -421,7 +421,7 @@ router.get('/security/metrics', async (req: Request, res: Response) => {
     const metrics = await AccessControlSecurityMonitor.getMetrics();
     res.json(metrics);
   } catch (error) {
-    console.error('Error fetching security metrics:', error);
+    logger.error('\1', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
