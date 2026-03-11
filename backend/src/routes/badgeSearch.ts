@@ -36,7 +36,7 @@ router.post('/search', searchLimiter, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error('Error searching badges:', error);
+    logger.error('Error searching badges:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to search badges',
@@ -105,7 +105,7 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    console.error('Error searching badges:', error);
+    logger.error('Error searching badges:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to search badges',
@@ -126,7 +126,7 @@ router.get('/filters', publicReadLimiter, async (req, res) => {
       data: filters,
     });
   } catch (error) {
-    console.error('Error getting filter options:', error);
+    logger.error('Error getting filter options:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get filter options',
@@ -159,7 +159,7 @@ router.get('/trending', publicReadLimiter, async (req, res) => {
       data: trending,
     });
   } catch (error) {
-    console.error('Error getting trending badges:', error);
+    logger.error('Error getting trending badges:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get trending badges',
@@ -197,7 +197,7 @@ router.get('/suggestions', suggestionsLimiter, async (req, res) => {
       data: suggestions,
     });
   } catch (error) {
-    console.error('Error getting search suggestions:', error);
+    logger.error('Error getting search suggestions:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get search suggestions',
@@ -209,31 +209,37 @@ router.get('/suggestions', suggestionsLimiter, async (req, res) => {
  * GET /api/badges/issuer/:address
  * Search badges by issuer
  */
-router.get('/issuer/:address', searchLimiter, validatePagination, async (req, res) => {
-  try {
-    const { address } = req.params;
-    const rawPage = parseInt(req.query.page as string, 10);
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-    const limit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
+router.get(
+  '/issuer/:address',
+  searchLimiter,
+  validatePagination,
+  async (req, res) => {
+    try {
+      const { address } = req.params;
+      const rawPage = parseInt(req.query.page as string, 10);
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
 
-    const result = await badgeSearchService.searchByIssuer(
-      address,
-      page,
-      limit
-    );
+      const result = await badgeSearchService.searchByIssuer(
+        address,
+        page,
+        limit
+      );
 
-    res.json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    console.error('Error searching badges by issuer:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search badges by issuer',
-    });
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error('Error searching badges by issuer:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to search badges by issuer',
+      });
+    }
   }
-});
+);
 
 export default router;
