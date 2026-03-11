@@ -158,21 +158,31 @@ router.post(
  * POST /retry/dead-letter/archive
  * Archive old dead letter items
  */
-router.post('/dead-letter/archive', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { olderThanDays = 7 } = req.body;
-    const archivedCount = await DeadLetterQueueService.archiveOldItems(
-      olderThanDays
-    );
-    res.json({
-      message: 'Archival completed',
-      archivedCount,
-    });
-  } catch (error) {
-    console.error('Error archiving items:', error);
-    res.status(500).json({ error: 'Failed to archive items' });
+router.post(
+  '/dead-letter/archive',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { olderThanDays } = req.body;
+      const rawDays = parseInt(olderThanDays, 10);
+      if (isNaN(rawDays) || rawDays < 1) {
+        return res.status(400).json({
+          error: 'olderThanDays must be a positive integer (minimum 1)',
+        });
+      }
+      const safeDays = Math.min(rawDays, 365);
+      const archivedCount = await DeadLetterQueueService.archiveOldItems(safeDays);
+      res.json({
+        message: 'Archival completed',
+        archivedCount,
+      });
+    } catch (error) {
+      console.error('Error archiving items:', error);
+      res.status(500).json({ error: 'Failed to archive items' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/dead-letter/analysis
