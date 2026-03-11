@@ -69,22 +69,27 @@ router.post(
  * DELETE /retry/queue/:itemId
  * Cancel retry for a specific item
  */
-router.delete('/queue/:itemId', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    await RetryQueueService.cancelRetry(itemId);
-    res.json({ message: 'Retry cancelled and moved to dead letter queue' });
-  } catch (error) {
-    console.error('Error cancelling retry:', error);
-    res.status(500).json({ error: 'Failed to cancel retry' });
+router.delete(
+  '/queue/:itemId',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { itemId } = req.params;
+      await RetryQueueService.cancelRetry(itemId);
+      res.json({ message: 'Retry cancelled and moved to dead letter queue' });
+    } catch (error) {
+      console.error('Error cancelling retry:', error);
+      res.status(500).json({ error: 'Failed to cancel retry' });
+    }
   }
-});
+);
 
 /**
  * POST /retry/queue/cleanup
  * Clean up old completed items
  */
-router.post('/queue/cleanup', async (req, res) => {
+router.post('/queue/cleanup', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { olderThanDays = 7 } = req.body;
     const deletedCount = await RetryQueueService.cleanupOldItems(olderThanDays);
