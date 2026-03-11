@@ -124,7 +124,7 @@ router.get('/filters', publicReadLimiter, async (req, res) => {
  * GET /api/badges/trending
  * Get trending badges
  */
-router.get('/trending', async (req, res) => {
+router.get('/trending', publicReadLimiter, async (req, res) => {
   try {
     const days = req.query.days ? Number(req.query.days) : 7;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
