@@ -15,6 +15,8 @@
  * VERIFICATION_RATE_LIMIT     50   - Badge and user verification
  * DEFAULT_RATE_LIMIT         100   - Global fallback for unlisted routes
  * API_READ_RATE_LIMIT        200   - Search, analytics, activity feeds
+ * BADGE_SUGGESTIONS_RATE_LIMIT 60  - Autocomplete suggestions (stricter due to regex DB hit)
+ * BADGE_PUBLIC_READ_RATE_LIMIT 120 - Filters and trending (cheaper reads, still bounded)
  */
 
 export interface RateLimitConfig {
@@ -122,6 +124,24 @@ export const BATCH_VERIFICATION_RATE_LIMIT: RateLimitConfig = {
   max: 10,
   message:
     'Too many batch verification requests, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+};
+
+// Badge autocomplete suggestions — tighter limit due to regex MongoDB hit (ReDoS risk)
+export const BADGE_SUGGESTIONS_RATE_LIMIT: RateLimitConfig = {
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: 'Too many suggestion requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+};
+
+// Badge public read endpoints (filters, trending) — cheaper aggregations, still bounded
+export const BADGE_PUBLIC_READ_RATE_LIMIT: RateLimitConfig = {
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  message: 'Too many badge read requests, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
 };
