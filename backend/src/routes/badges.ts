@@ -11,6 +11,8 @@ import {
   IPopulatedBadgeTemplate,
 } from '../types';
 import { updateMemberCount } from '../services/communityService';
+import { issueSingleBadge } from '../services/badgeService';
+import logger from '../utils/logger';
 import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalidator';
 import BadgeUIRefreshService from '../services/badgeUIRefreshService';
 import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers';
@@ -18,10 +20,14 @@ import {
   validateWebhookSignature,
   getWebhookValidationConfig,
 } from '../middleware/webhookValidation';
+import { isValidStacksAddress } from '../utils/addressValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { BADGE_ISSUANCE_RATE_LIMIT } from '../config/rateLimits';
 
 const router = Router();
+
+/** Maximum number of recipients allowed in a single batch-issuance request. */
+const MAX_BATCH_SIZE = 100;
 
 // Rate limiter for badge issuance operations (20 requests per 15 minutes)
 const badgeIssuanceLimiter = createRateLimiter(BADGE_ISSUANCE_RATE_LIMIT);
@@ -120,7 +126,7 @@ router.post(
       await template.save();
 
       // Add template to community
-      community.badgeTemplates.push(template._id);
+      community.badgeTemplates.push(template._id as any);
       await community.save();
 
       res.status(201).json({
@@ -245,6 +251,37 @@ router.post(
         );
       }
 
+      if (typeof templateId !== 'string' || templateId.trim() === '') {
+        throw createError('templateId must be a non-empty string', 400);
+      }
+
+      if (!isValidStacksAddress(recipientAddress)) {
+        throw createError(
+          'recipientAddress is not a valid Stacks address',
+          400
+        );
+      }
+
+      if (
+        transactionId !== undefined &&
+        (typeof transactionId !== 'string' || transactionId.length > 256)
+      ) {
+        throw createError(
+          'transactionId must be a string of at most 256 characters',
+          400
+        );
+      }
+
+      if (
+        tokenId !== undefined &&
+        (typeof tokenId !== 'string' || tokenId.length > 128)
+      ) {
+        throw createError(
+          'tokenId must be a string of at most 128 characters',
+          400
+        );
+      }
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
@@ -284,7 +321,7 @@ router.post(
       await badge.save();
 
       // Update community member count
-      await updateMemberCount(community._id);
+      await updateMemberCount(String(community._id));
 
       res.status(201).json({
         id: badge._id,
@@ -443,6 +480,56 @@ router.post(
         );
       }
 
+      if (typeof templateId !== 'string' || templateId.trim() === '') {
+        throw createError('templateId must be a non-empty string', 400);
+      }
+
+      if (
+        transactionId !== undefined &&
+        (typeof transactionId !== 'string' || transactionId.length > 256)
+      ) {
+        throw createError(
+          'transactionId must be a string of at most 256 characters',
+          400
+        );
+      }
+
+      if (recipientAddresses.length === 0) {
+        throw createError('recipientAddresses must be a non-empty array', 400);
+      }
+
+      if (recipientAddresses.length > MAX_BATCH_SIZE) {
+        throw createError(
+          `Batch size cannot exceed ${MAX_BATCH_SIZE} recipients`,
+          400
+        );
+      }
+
+      // Pre-flight: every element must be a non-empty string before any DB write
+      const nonStringIndex = recipientAddresses.findIndex(
+        (addr) => typeof addr !== 'string' || addr.trim() === ''
+      );
+      if (nonStringIndex !== -1) {
+        throw createError(
+          `recipientAddresses[${nonStringIndex}] must be a non-empty string`,
+          400
+        );
+      }
+
+      // Pre-flight: validate Stacks address format for all elements
+      const invalidAddressIndex = recipientAddresses.findIndex(
+        (addr) => !isValidStacksAddress(addr)
+      );
+      if (invalidAddressIndex !== -1) {
+        throw createError(
+          `recipientAddresses[${invalidAddressIndex}] is not a valid Stacks address`,
+          400
+        );
+      }
+
+      // Deduplicate within the request to avoid double-writes
+      const uniqueAddresses = [...new Set(recipientAddresses as string[])];
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
@@ -458,41 +545,15 @@ router.post(
       const results = [];
       const errors = [];
 
-      for (const recipientAddress of recipientAddresses) {
+      for (const recipientAddress of uniqueAddresses) {
         try {
-          // Check if badge already issued to this user
-          const existingBadge = await Badge.findOne({
-            templateId,
-            owner: recipientAddress,
-          });
-
-          if (existingBadge) {
-            errors.push({
-              recipientAddress,
-              error: 'Badge already issued to this user',
-            });
-            continue;
-          }
-
-          const badge = new Badge({
-            templateId,
-            owner: recipientAddress,
-            issuer: req.user!.stacksAddress,
-            community: community._id,
-            transactionId,
-            metadata: {
-              level: template.level,
-              category: template.category,
-              timestamp: Math.floor(Date.now() / 1000),
-            },
-          });
-
-          await badge.save();
-          results.push({
+          const issued = await issueSingleBadge(
+            template,
             recipientAddress,
-            badgeId: badge._id,
-            success: true,
-          });
+            req.user!.stacksAddress,
+            transactionId
+          );
+          results.push({ ...issued, success: true });
         } catch (error: unknown) {
           errors.push({
             recipientAddress,
@@ -503,7 +564,7 @@ router.post(
       }
 
       // Update community member count
-      await updateMemberCount(community._id);
+      await updateMemberCount(String(community._id));
 
       res.status(201).json({
         success: true,
@@ -541,7 +602,7 @@ router.delete(
       await Badge.findByIdAndDelete(req.params.id);
 
       // Update community member count
-      await updateMemberCount(community._id);
+      await updateMemberCount(String(community._id));
 
       res.json({ message: 'Badge revoked successfully' });
     } catch (error) {
@@ -557,7 +618,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!cacheInvalidator || !uiRefreshService) {
-        console.error('Badge metadata services not initialized');
+        logger.error('Badge metadata services not initialized');
         return res.status(503).json({
           success: false,
           error: 'Badge metadata services not initialized',
@@ -607,7 +668,7 @@ router.post(
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error('Error processing badge metadata webhook:', error);
+      logger.error('Error processing badge metadata webhook', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to process badge metadata update',
