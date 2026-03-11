@@ -103,7 +103,7 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
  * GET /api/badges/filters
  * Get available filter options
  */
-router.get('/filters', async (req, res) => {
+router.get('/filters', publicReadLimiter, async (req, res) => {
   try {
     const filters = await badgeSearchService.getFilterOptions();
 
