@@ -249,6 +249,17 @@ router.post(
         );
       }
 
+      if (typeof templateId !== 'string' || templateId.trim() === '') {
+        throw createError('templateId must be a non-empty string', 400);
+      }
+
+      if (!isValidStacksAddress(recipientAddress)) {
+        throw createError(
+          'recipientAddress is not a valid Stacks address',
+          400
+        );
+      }
+
       const template = (await BadgeTemplate.findById(templateId).populate(
         'community'
       )) as IPopulatedBadgeTemplate | null;
