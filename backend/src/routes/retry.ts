@@ -27,24 +27,29 @@ router.get('/queue/stats', async (req, res) => {
  * POST /retry/queue/process
  * Manually trigger retry queue processing
  */
-router.post('/queue/process', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const result = await RetryQueueService.processQueue();
-    res.json({
-      message: 'Retry queue processing completed',
-      ...result,
-    });
-  } catch (error) {
-    console.error('Error processing retry queue:', error);
-    res.status(500).json({ error: 'Failed to process retry queue' });
+router.post(
+  '/queue/process',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const result = await RetryQueueService.processQueue();
+      res.json({
+        message: 'Retry queue processing completed',
+        ...result,
+      });
+    } catch (error) {
+      console.error('Error processing retry queue:', error);
+      res.status(500).json({ error: 'Failed to process retry queue' });
+    }
   }
-});
+);
 
 /**
  * POST /retry/queue/:itemId/retry
  * Retry a specific item immediately
  */
-router.post('/queue/:itemId/retry', async (req, res) => {
+router.post('/queue/:itemId/retry', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { itemId } = req.params;
     await RetryQueueService.retryNow(itemId);
