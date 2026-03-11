@@ -49,22 +49,27 @@ router.post(
  * POST /retry/queue/:itemId/retry
  * Retry a specific item immediately
  */
-router.post('/queue/:itemId/retry', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    await RetryQueueService.retryNow(itemId);
-    res.json({ message: 'Item scheduled for immediate retry' });
-  } catch (error) {
-    console.error('Error scheduling retry:', error);
-    res.status(500).json({ error: 'Failed to schedule retry' });
+router.post(
+  '/queue/:itemId/retry',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { itemId } = req.params;
+      await RetryQueueService.retryNow(itemId);
+      res.json({ message: 'Item scheduled for immediate retry' });
+    } catch (error) {
+      console.error('Error scheduling retry:', error);
+      res.status(500).json({ error: 'Failed to schedule retry' });
+    }
   }
-});
+);
 
 /**
  * DELETE /retry/queue/:itemId
  * Cancel retry for a specific item
  */
-router.delete('/queue/:itemId', async (req, res) => {
+router.delete('/queue/:itemId', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { itemId } = req.params;
     await RetryQueueService.cancelRetry(itemId);
