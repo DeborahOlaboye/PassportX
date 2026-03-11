@@ -65,11 +65,19 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
 
     const query: IBadgeSearchQuery = {
       search: search as string,
-      level: level
-        ? level.toString().includes(',')
-          ? level.toString().split(',').map(Number)
-          : Number(level)
-        : undefined,
+      level: (() => {
+        if (!level) return undefined;
+        const raw = level.toString();
+        if (raw.includes(',')) {
+          const parsed = raw
+            .split(',')
+            .map((v) => parseInt(v.trim(), 10))
+            .filter((v) => !isNaN(v) && v >= 1);
+          return parsed.length > 0 ? parsed : undefined;
+        }
+        const single = parseInt(raw, 10);
+        return !isNaN(single) && single >= 1 ? single : undefined;
+      })(),
       category: category
         ? category.toString().includes(',')
           ? category.toString().split(',')
