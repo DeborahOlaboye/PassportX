@@ -700,11 +700,15 @@ router.get(
         throw createError('Profile is private', 403);
       }
 
+      const communities = (user.communities as unknown[]) || [];
+      const adminCommunities = (user.adminCommunities as unknown[]) || [];
+
       res.json({
         success: true,
         data: {
-          communities: user.communities || [],
-          adminCommunities: user.adminCommunities || [],
+          communities,
+          adminCommunities,
+          pagination: { page, limit, skip },
         },
       });
     } catch (error) {
