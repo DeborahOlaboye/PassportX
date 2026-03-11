@@ -12,6 +12,7 @@ import {
 } from '../types';
 import { updateMemberCount } from '../services/communityService';
 import { issueSingleBadge } from '../services/badgeService';
+import logger from '../utils/logger';
 import BadgeMetadataCacheInvalidator from '../services/badgeMetadataCacheInvalidator';
 import BadgeUIRefreshService from '../services/badgeUIRefreshService';
 import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers';
@@ -587,7 +588,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!cacheInvalidator || !uiRefreshService) {
-        console.error('Badge metadata services not initialized');
+        logger.error('Badge metadata services not initialized');
         return res.status(503).json({
           success: false,
           error: 'Badge metadata services not initialized',
@@ -637,7 +638,7 @@ router.post(
         timestamp: Date.now(),
       });
     } catch (error) {
-      console.error('Error processing badge metadata webhook:', error);
+      logger.error('Error processing badge metadata webhook', { error });
       res.status(500).json({
         success: false,
         error: 'Failed to process badge metadata update',
