@@ -198,22 +198,36 @@ router.put(
         user.customUrl = customUrl;
       }
 
-      // Update social links
+      // Update social links - strip non-string values, truncate to 200 chars
       if (socialLinks !== undefined) {
+        if (typeof socialLinks !== 'object' || Array.isArray(socialLinks)) {
+          throw createError('socialLinks must be an object', 400);
+        }
+        const sanitize = (val: unknown) =>
+          typeof val === 'string' ? val.slice(0, 200) || undefined : undefined;
         user.socialLinks = {
-          twitter: socialLinks.twitter || undefined,
-          github: socialLinks.github || undefined,
-          linkedin: socialLinks.linkedin || undefined,
-          discord: socialLinks.discord || undefined,
-          website: socialLinks.website || undefined,
+          twitter: sanitize(socialLinks.twitter),
+          github: sanitize(socialLinks.github),
+          linkedin: sanitize(socialLinks.linkedin),
+          discord: sanitize(socialLinks.discord),
+          website: sanitize(socialLinks.website),
         };
       }
 
       // Update theme preferences
       if (themePreferences !== undefined) {
+        const VALID_MODES = new Set(['light', 'dark', 'system']);
+        const mode =
+          typeof themePreferences.mode === 'string' &&
+          VALID_MODES.has(themePreferences.mode)
+            ? themePreferences.mode
+            : 'system';
         user.themePreferences = {
-          mode: themePreferences.mode || 'system',
-          accentColor: themePreferences.accentColor || undefined,
+          mode: mode as 'light' | 'dark' | 'system',
+          accentColor:
+            typeof themePreferences.accentColor === 'string'
+              ? themePreferences.accentColor.slice(0, 20) || undefined
+              : undefined,
         };
       }
 
@@ -541,7 +555,10 @@ router.put(
       if (showBadges !== undefined && typeof showBadges !== 'boolean') {
         throw createError('showBadges must be a boolean', 400);
       }
-      if (showCommunities !== undefined && typeof showCommunities !== 'boolean') {
+      if (
+        showCommunities !== undefined &&
+        typeof showCommunities !== 'boolean'
+      ) {
         throw createError('showCommunities must be a boolean', 400);
       }
 
