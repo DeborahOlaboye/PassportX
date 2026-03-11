@@ -301,40 +301,45 @@ router.post(
  *                 available: { type: boolean, example: true }
  *                 message: { type: string, example: "Custom URL is available" }
  */
-router.get('/profile/check-url/:customUrl', readLimiter, async (req, res, next) => {
-  try {
-    const { customUrl } = req.params;
+router.get(
+  '/profile/check-url/:customUrl',
+  readLimiter,
+  async (req, res, next) => {
+    try {
+      const { customUrl } = req.params;
 
-    // Validate format
-    const urlRegex = /^[a-z0-9-]+$/;
-    if (
-      !urlRegex.test(customUrl) ||
-      customUrl.length < 3 ||
-      customUrl.length > 30
-    ) {
-      return res.json({
-        available: false,
-        message:
-          'Custom URL must be 3-30 characters long and contain only lowercase letters, numbers, and hyphens',
+      // Validate format
+      const urlRegex = /^[a-z0-9-]+$/;
+      if (
+        !urlRegex.test(customUrl) ||
+        customUrl.length < 3 ||
+        customUrl.length > 30
+      ) {
+        return res.json({
+          available: false,
+          message:
+            'Custom URL must be 3-30 characters long and contain only lowercase letters, numbers, and hyphens',
+        });
+      }
+
+      const existingUser = await User.findOne({ customUrl });
+
+      res.json({
+        available: !existingUser,
+        message: existingUser
+          ? 'Custom URL is already taken'
+          : 'Custom URL is available',
       });
+    } catch (error) {
+      next(error);
     }
-
-    const existingUser = await User.findOne({ customUrl });
-
-    res.json({
-      available: !existingUser,
-      message: existingUser
-        ? 'Custom URL is already taken'
-        : 'Custom URL is available',
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // Get user profile by custom URL
 router.get(
   '/profile/u/:customUrl',
+  readLimiter,
   optionalAuth,
   async (req: AuthRequest, res, next) => {
     try {
