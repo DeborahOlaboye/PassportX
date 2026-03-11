@@ -12,6 +12,15 @@ import logger from '../utils/logger';
 
 const router = express.Router();
 
+const VALID_SORT_BY = new Set([
+  'newest',
+  'oldest',
+  'level-high',
+  'level-low',
+  'name-asc',
+  'name-desc',
+]);
+
 // Rate limiter for search operations (200 requests per 15 minutes)
 const searchLimiter = createRateLimiter(API_READ_RATE_LIMIT);
 
@@ -103,7 +112,9 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
         const l = parseInt(limit as string, 10);
         return isNaN(l) || l < 1 ? 20 : Math.min(l, 100);
       })(),
-      sortBy: sortBy as any,
+      sortBy: VALID_SORT_BY.has(sortBy as string)
+        ? (sortBy as IBadgeSearchQuery['sortBy'])
+        : 'newest',
     };
 
     const result = await badgeSearchService.searchBadges(query);
