@@ -12,6 +12,7 @@ import {
   USER_WRITE_RATE_LIMIT,
   API_READ_RATE_LIMIT,
 } from '../config/rateLimits';
+import logger from '../utils/logger';
 
 const router = Router();
 
