@@ -148,7 +148,7 @@ router.get('/trending', publicReadLimiter, async (req, res) => {
  * GET /api/badges/suggestions
  * Get search suggestions (autocomplete)
  */
-router.get('/suggestions', async (req, res) => {
+router.get('/suggestions', suggestionsLimiter, async (req, res) => {
   try {
     const query = req.query.q as string;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
