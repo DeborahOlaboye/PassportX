@@ -18,7 +18,7 @@ router.get('/queue/stats', async (req, res) => {
     const stats = await RetryQueueService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching retry queue stats:', error);
+    logger.error('Error fetching retry queue stats:', error);
     res.status(500).json({ error: 'Failed to fetch retry queue statistics' });
   }
 });
@@ -39,7 +39,7 @@ router.post(
         ...result,
       });
     } catch (error) {
-      console.error('Error processing retry queue:', error);
+      logger.error('Error processing retry queue:', error);
       res.status(500).json({ error: 'Failed to process retry queue' });
     }
   }
@@ -59,7 +59,7 @@ router.post(
       await RetryQueueService.retryNow(itemId);
       res.json({ message: 'Item scheduled for immediate retry' });
     } catch (error) {
-      console.error('Error scheduling retry:', error);
+      logger.error('Error scheduling retry:', error);
       res.status(500).json({ error: 'Failed to schedule retry' });
     }
   }
@@ -79,7 +79,7 @@ router.delete(
       await RetryQueueService.cancelRetry(itemId);
       res.json({ message: 'Retry cancelled and moved to dead letter queue' });
     } catch (error) {
-      console.error('Error cancelling retry:', error);
+      logger.error('Error cancelling retry:', error);
       res.status(500).json({ error: 'Failed to cancel retry' });
     }
   }
@@ -109,7 +109,7 @@ router.post(
         deletedCount,
       });
     } catch (error) {
-      console.error('Error cleaning up retry queue:', error);
+      logger.error('Error cleaning up retry queue:', error);
       res.status(500).json({ error: 'Failed to clean up retry queue' });
     }
   }
@@ -124,7 +124,7 @@ router.get('/dead-letter/stats', async (req, res) => {
     const stats = await DeadLetterQueueService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching dead letter queue stats:', error);
+    logger.error('Error fetching dead letter queue stats:', error);
     res
       .status(500)
       .json({ error: 'Failed to fetch dead letter queue statistics' });
@@ -148,7 +148,7 @@ router.post(
         ...result,
       });
     } catch (error) {
-      console.error('Error recovering items:', error);
+      logger.error('Error recovering items:', error);
       res.status(500).json({ error: 'Failed to recover items' });
     }
   }
@@ -180,7 +180,7 @@ router.post(
         archivedCount,
       });
     } catch (error) {
-      console.error('Error archiving items:', error);
+      logger.error('Error archiving items:', error);
       res.status(500).json({ error: 'Failed to archive items' });
     }
   }
@@ -195,7 +195,7 @@ router.get('/dead-letter/analysis', async (req, res) => {
     const analysis = await DeadLetterQueueService.getErrorAnalysis();
     res.json(analysis);
   } catch (error) {
-    console.error('Error getting error analysis:', error);
+    logger.error('Error getting error analysis:', error);
     res.status(500).json({ error: 'Failed to get error analysis' });
   }
 });
@@ -207,11 +207,12 @@ router.get('/dead-letter/analysis', async (req, res) => {
 router.get('/dead-letter/manual-review', async (req, res) => {
   try {
     const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+    const limit =
+      isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
     const items = await DeadLetterQueueService.getItemsForManualReview(limit);
     res.json(items);
   } catch (error) {
-    console.error('Error getting items for manual review:', error);
+    logger.error('Error getting items for manual review:', error);
     res.status(500).json({ error: 'Failed to get items for manual review' });
   }
 });
@@ -225,7 +226,7 @@ router.get('/metrics', async (req, res) => {
     const metrics = await RetryMetricsService.getMetrics();
     res.json(metrics);
   } catch (error) {
-    console.error('Error fetching metrics:', error);
+    logger.error('Error fetching metrics:', error);
     res.status(500).json({ error: 'Failed to fetch metrics' });
   }
 });
@@ -237,13 +238,16 @@ router.get('/metrics', async (req, res) => {
 router.get('/metrics/success-rate', async (req, res) => {
   try {
     const rawHours = parseInt(req.query.hours as string, 10);
-    const hoursBack = !req.query.hours || isNaN(rawHours) || rawHours < 1 ? 24 : Math.min(rawHours, 168);
+    const hoursBack =
+      !req.query.hours || isNaN(rawHours) || rawHours < 1
+        ? 24
+        : Math.min(rawHours, 168);
     const timeSeries = await RetryMetricsService.getSuccessRateTimeSeries(
       hoursBack
     );
     res.json(timeSeries);
   } catch (error) {
-    console.error('Error fetching success rate:', error);
+    logger.error('Error fetching success rate:', error);
     res.status(500).json({ error: 'Failed to fetch success rate time series' });
   }
 });
@@ -255,12 +259,15 @@ router.get('/metrics/success-rate', async (req, res) => {
 router.get('/metrics/error-distribution', async (req, res) => {
   try {
     const rawHours2 = parseInt(req.query.hours as string, 10);
-    const hoursBack = !req.query.hours || isNaN(rawHours2) || rawHours2 < 1 ? 24 : Math.min(rawHours2, 168);
+    const hoursBack =
+      !req.query.hours || isNaN(rawHours2) || rawHours2 < 1
+        ? 24
+        : Math.min(rawHours2, 168);
     const distribution =
       await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
     res.json(distribution);
   } catch (error) {
-    console.error('Error fetching error distribution:', error);
+    logger.error('Error fetching error distribution:', error);
     res.status(500).json({ error: 'Failed to fetch error distribution' });
   }
 });
@@ -272,11 +279,12 @@ router.get('/metrics/error-distribution', async (req, res) => {
 router.get('/metrics/top-failing', async (req, res) => {
   try {
     const rawTopLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawTopLimit) || rawTopLimit < 1 ? 10 : Math.min(rawTopLimit, 100);
+    const limit =
+      isNaN(rawTopLimit) || rawTopLimit < 1 ? 10 : Math.min(rawTopLimit, 100);
     const items = await RetryMetricsService.getTopFailingItems(limit);
     res.json(items);
   } catch (error) {
-    console.error('Error fetching top failing items:', error);
+    logger.error('Error fetching top failing items:', error);
     res.status(500).json({ error: 'Failed to fetch top failing items' });
   }
 });
@@ -295,7 +303,7 @@ router.get('/metrics/export', async (req, res) => {
     );
     res.send(exportData);
   } catch (error) {
-    console.error('Error exporting metrics:', error);
+    logger.error('Error exporting metrics:', error);
     res.status(500).json({ error: 'Failed to export metrics' });
   }
 });
@@ -309,7 +317,7 @@ router.get('/monitoring/health', async (req, res) => {
     const health = await ErrorMonitoringService.getHealthStatus();
     res.json(health);
   } catch (error) {
-    console.error('Error fetching health status:', error);
+    logger.error('Error fetching health status:', error);
     res.status(500).json({ error: 'Failed to fetch health status' });
   }
 });
@@ -321,7 +329,10 @@ router.get('/monitoring/health', async (req, res) => {
 router.get('/monitoring/alerts', async (req, res) => {
   try {
     const rawAlertLimit = parseInt(req.query.limit as string, 10);
-    const limit = isNaN(rawAlertLimit) || rawAlertLimit < 1 ? 50 : Math.min(rawAlertLimit, 200);
+    const limit =
+      isNaN(rawAlertLimit) || rawAlertLimit < 1
+        ? 50
+        : Math.min(rawAlertLimit, 200);
     const severity = req.query.severity as
       | 'low'
       | 'medium'
@@ -331,7 +342,7 @@ router.get('/monitoring/alerts', async (req, res) => {
     const alerts = ErrorMonitoringService.getAlerts(limit, severity);
     res.json(alerts);
   } catch (error) {
-    console.error('Error fetching alerts:', error);
+    logger.error('Error fetching alerts:', error);
     res.status(500).json({ error: 'Failed to fetch alerts' });
   }
 });
@@ -345,7 +356,7 @@ router.get('/monitoring/statistics', async (req, res) => {
     const stats = await ErrorMonitoringService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching monitoring statistics:', error);
+    logger.error('Error fetching monitoring statistics:', error);
     res.status(500).json({ error: 'Failed to fetch monitoring statistics' });
   }
 });
@@ -359,7 +370,7 @@ router.get('/circuit-breakers', (req, res) => {
     const stats = CircuitBreakerRegistry.getAllStats();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching circuit breaker stats:', error);
+    logger.error('Error fetching circuit breaker stats:', error);
     res
       .status(500)
       .json({ error: 'Failed to fetch circuit breaker statistics' });
@@ -381,7 +392,7 @@ router.post(
       breaker.forceClose();
       res.json({ message: `Circuit breaker '${name}' has been reset` });
     } catch (error) {
-      console.error('Error resetting circuit breaker:', error);
+      logger.error('Error resetting circuit breaker:', error);
       res.status(500).json({ error: 'Failed to reset circuit breaker' });
     }
   }
