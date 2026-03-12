@@ -73,7 +73,9 @@ Clarinet.test({
       ),
     ]);
 
-    const metadata = metadataBlock.receipts[0].result.expectSome().expectTuple();
+    const metadata = metadataBlock.receipts[0].result
+      .expectSome()
+      .expectTuple();
     assertEquals(metadata['expiration-height'], types.uint(expectedExpiration));
     assertEquals(metadataBlock.receipts[1].result, types.bool(false)); // Not expired yet
     assertEquals(metadataBlock.receipts[2].result, types.bool(true)); // Valid
