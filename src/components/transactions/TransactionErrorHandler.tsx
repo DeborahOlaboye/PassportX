@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export interface TransactionError {
   id: string;
   type: 'validation' | 'signing' | 'broadcasting' | 'network' | 'unknown';
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: number;
   retryable: boolean;
   transactionId?: string;

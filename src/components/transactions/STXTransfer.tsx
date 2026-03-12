@@ -15,7 +15,10 @@ export function STXTransfer({ onSuccess, onError }: STXTransferProps) {
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<any>(null);
+  const [gasEstimate, setGasEstimate] = useState<{
+    breakdown: { base: number; priority: number };
+    total: number;
+  } | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {

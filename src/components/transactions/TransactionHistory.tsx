@@ -17,7 +17,7 @@ export function TransactionHistory() {
 }
 
 function TransactionHistoryInner() {
-  const [filter, setFilter] = useState('all');
+  const [filter] = useState('all');
 
   return (
     <div>

@@ -18,7 +18,10 @@ export function BadgeContractCall({
   const [functionName, setFunctionName] = useState('mint-badge');
   const [badgeId, setBadgeId] = useState('');
   const [recipient, setRecipient] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<any>(null);
+  const [gasEstimate, setGasEstimate] = useState<{
+    breakdown: { base: number; priority: number };
+    total: number;
+  } | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {
