@@ -92,7 +92,7 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
  * GET /api/badges/filters
  * Get available filter options
  */
-router.get('/filters', async (req, res) => {
+router.get('/filters', publicReadLimiter, async (req, res) => {
   try {
     const filters = await badgeSearchService.getFilterOptions();
 
@@ -113,7 +113,7 @@ router.get('/filters', async (req, res) => {
  * GET /api/badges/trending
  * Get trending badges
  */
-router.get('/trending', async (req, res) => {
+router.get('/trending', publicReadLimiter, async (req, res) => {
   try {
     const days = req.query.days ? Number(req.query.days) : 7;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
@@ -137,7 +137,7 @@ router.get('/trending', async (req, res) => {
  * GET /api/badges/suggestions
  * Get search suggestions (autocomplete)
  */
-router.get('/suggestions', async (req, res) => {
+router.get('/suggestions', suggestionsLimiter, async (req, res) => {
   try {
     const query = req.query.q as string;
     const limit = req.query.limit ? Number(req.query.limit) : 10;

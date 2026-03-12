@@ -258,11 +258,14 @@ export class BadgeSearchService {
    * Autocomplete search suggestions
    */
   async getSearchSuggestions(query: string, limit = 10) {
-    if (!query || query.length < 2) {
+    if (!query || query.trim().length < 2) {
       return [];
     }
 
-    const safeQuery = escapeRegex(query);
+    const MAX_QUERY_LENGTH = 100;
+    const trimmed = query.trim().slice(0, MAX_QUERY_LENGTH);
+    const safeLimit = Number.isFinite(limit) && limit >= 1 ? Math.min(limit, 20) : 10;
+    const safeQuery = escapeRegex(trimmed);
     const templates = await BadgeTemplate.find({
       $or: [
         { name: { $regex: safeQuery, $options: 'i' } },
@@ -270,7 +273,7 @@ export class BadgeSearchService {
       ],
     })
       .select('name description category')
-      .limit(limit)
+      .limit(safeLimit)
       .lean();
 
     return templates.map((t) => ({

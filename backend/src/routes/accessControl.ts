@@ -6,8 +6,19 @@ import {
 import AccessControlEventHandler from '../services/AccessControlEventHandler';
 import AccessControlAuditService from '../services/AccessControlAuditService';
 import AccessControlSecurityMonitor from '../services/AccessControlSecurityMonitor';
+import logger from '../utils/logger';
+import { createRateLimiter } from '../middleware/rateLimiter';
+import { API_READ_RATE_LIMIT } from '../config/rateLimits';
 
 const router = express.Router();
+
+// Rate limiter for read-only audit and security endpoints
+const auditReadLimiter = createRateLimiter(API_READ_RATE_LIMIT);
+
+/** Validates that the incoming chainhook event body is a non-null object. */
+function validateWebhookBody(body: unknown): body is Record<string, unknown> {
+  return typeof body === 'object' && body !== null && !Array.isArray(body);
+}
 
 /**
  * Webhook endpoints for Chainhook access control events
@@ -70,6 +81,11 @@ router.post(
  */
 router.post('/webhook/user-suspended', async (req: Request, res: Response) => {
   try {
+    if (!validateWebhookBody(req.body)) {
+      return res
+        .status(400)
+        .json({ error: 'Request body must be a JSON object' });
+    }
     const chainhookEvent = req.body;
 
     const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -81,7 +97,7 @@ router.post('/webhook/user-suspended', async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error processing user suspension webhook:', error);
+    logger.error('Access control route error', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -142,6 +158,11 @@ router.post(
  */
 router.post('/webhook/issuer-revoked', async (req: Request, res: Response) => {
   try {
+    if (!validateWebhookBody(req.body)) {
+      return res
+        .status(400)
+        .json({ error: 'Request body must be a JSON object' });
+    }
     const chainhookEvent = req.body;
 
     const event: AnyAccessControlEvent = transformChainhookEvent(
@@ -153,7 +174,7 @@ router.post('/webhook/issuer-revoked', async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error processing issuer revocation webhook:', error);
+    logger.error('Access control route error', { error });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -263,36 +284,46 @@ router.get('/audit/logs', async (req: Request, res: Response) => {
     console.error('Error fetching audit logs:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+);
 
 /**
  * GET /access-control/audit/statistics
  * Get audit statistics
  */
-router.get('/audit/statistics', async (req: Request, res: Response) => {
-  try {
-    const stats = await AccessControlAuditService.getStatistics();
-    res.json(stats);
-  } catch (error) {
-    console.error('Error fetching audit statistics:', error);
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/audit/statistics',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const stats = await AccessControlAuditService.getStatistics();
+      res.json(stats);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/audit/suspicious
  * Get suspicious activity
  */
-router.get('/audit/suspicious', async (req: Request, res: Response) => {
-  try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-    const logs = await AccessControlAuditService.getSuspiciousActivity(limit);
-    res.json(logs);
-  } catch (error) {
-    console.error('Error fetching suspicious activity:', error);
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/audit/suspicious',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+      const logs = await AccessControlAuditService.getSuspiciousActivity(limit);
+      res.json(logs);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * GET /access-control/audit/user/:principal
@@ -311,7 +342,7 @@ router.get('/audit/user/:principal', async (req: Request, res: Response) => {
     console.error('Error fetching user history:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+);
 
 /**
  * GET /access-control/audit/community/:communityId
@@ -359,7 +390,7 @@ router.get('/audit/export', async (req: Request, res: Response) => {
     console.error('Error exporting audit logs:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+);
 
 /**
  * GET /access-control/security/alerts
@@ -380,7 +411,7 @@ router.get('/security/alerts', (req: Request, res: Response) => {
     console.error('Error fetching security alerts:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+);
 
 /**
  * POST /access-control/security/alerts/:alertId/acknowledge
@@ -409,15 +440,19 @@ router.post(
  * GET /access-control/security/metrics
  * Get security metrics
  */
-router.get('/security/metrics', async (req: Request, res: Response) => {
-  try {
-    const metrics = await AccessControlSecurityMonitor.getMetrics();
-    res.json(metrics);
-  } catch (error) {
-    console.error('Error fetching security metrics:', error);
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/security/metrics',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const metrics = await AccessControlSecurityMonitor.getMetrics();
+      res.json(metrics);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 /**
  * Helper function to transform Chainhook event to AccessControlEvent

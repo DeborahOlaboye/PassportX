@@ -26,6 +26,7 @@ router.get('/status', authMiddleware, (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
+    logger.error('Failed to get Chainhook status', { error });
     res.status(500).json({
       error: 'Failed to get Chainhook status',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -54,6 +55,7 @@ router.post('/start', authMiddleware, async (req: Request, res: Response) => {
       status: chainhookManager.getStatus(),
     });
   } catch (error) {
+    logger.error('Failed to start Chainhook manager', { error });
     res.status(500).json({
       error: 'Failed to start Chainhook manager',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -81,6 +83,7 @@ router.post('/stop', authMiddleware, async (req: Request, res: Response) => {
       message: 'Chainhook manager stopped successfully',
     });
   } catch (error) {
+    logger.error('Failed to stop Chainhook manager', { error });
     res.status(500).json({
       error: 'Failed to stop Chainhook manager',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -98,6 +101,7 @@ router.get('/health', (req: Request, res: Response) => {
 
     res.status(health.status === 'healthy' ? 200 : 503).json(health);
   } catch (error) {
+    logger.error('Failed to get health status', { error });
     res.status(500).json({
       error: 'Failed to get health status',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -122,6 +126,7 @@ router.get('/subscriptions', authMiddleware, (req: Request, res: Response) => {
       statistics: subscriptionManager.getStatistics(),
     });
   } catch (error) {
+    logger.error('Failed to get subscriptions', { error });
     res.status(500).json({
       error: 'Failed to get subscriptions',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -156,6 +161,7 @@ router.post('/subscriptions', authMiddleware, (req: Request, res: Response) => {
       message: 'Subscription created successfully',
     });
   } catch (error) {
+    logger.error('Failed to create subscription', { error });
     res.status(500).json({
       error: 'Failed to create subscription',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -210,6 +216,7 @@ router.get('/predicates', authMiddleware, (req: Request, res: Response) => {
       statistics: predicateManager.getStatistics(),
     });
   } catch (error) {
+    logger.error('Failed to get predicates', { error });
     res.status(500).json({
       error: 'Failed to get predicates',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -247,6 +254,7 @@ router.post('/predicates', authMiddleware, (req: Request, res: Response) => {
       message: 'Predicate created successfully',
     });
   } catch (error) {
+    logger.error('Failed to create predicate', { error });
     res.status(500).json({
       error: 'Failed to create predicate',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -302,6 +310,7 @@ router.get('/logs', authMiddleware, (req: Request, res: Response) => {
       statistics: logger.getLogStatistics(),
     });
   } catch (error) {
+    logger.error('Failed to get logs', { error });
     res.status(500).json({
       error: 'Failed to get logs',
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -326,6 +335,7 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
       total: errorLogs.length,
     });
   } catch (error) {
+    logger.error('Failed to get error logs', { error });
     res.status(500).json({
       error: 'Failed to get error logs',
       message: error instanceof Error ? error.message : 'Unknown error',

@@ -4,6 +4,8 @@ import DeadLetterQueueService from '../services/DeadLetterQueueService';
 import RetryMetricsService from '../services/RetryMetricsService';
 import ErrorMonitoringService from '../services/ErrorMonitoringService';
 import CircuitBreakerRegistry from '../services/CircuitBreakerService';
+import { authenticateToken, requireAdmin } from '../middleware/auth';
+import logger from '../utils/logger';
 
 const router = express.Router();
 
@@ -11,12 +13,12 @@ const router = express.Router();
  * GET /retry/queue/stats
  * Get retry queue statistics
  */
-router.get('/queue/stats', async (req, res) => {
+router.get('/queue/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await RetryQueueService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching retry queue stats:', error);
+    logger.error('Error fetching retry queue stats:', error);
     res.status(500).json({ error: 'Failed to fetch retry queue statistics' });
   }
 });
@@ -36,37 +38,47 @@ router.post('/queue/process', async (req, res) => {
     console.error('Error processing retry queue:', error);
     res.status(500).json({ error: 'Failed to process retry queue' });
   }
-});
+);
 
 /**
  * POST /retry/queue/:itemId/retry
  * Retry a specific item immediately
  */
-router.post('/queue/:itemId/retry', async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    await RetryQueueService.retryNow(itemId);
-    res.json({ message: 'Item scheduled for immediate retry' });
-  } catch (error) {
-    console.error('Error scheduling retry:', error);
-    res.status(500).json({ error: 'Failed to schedule retry' });
+router.post(
+  '/queue/:itemId/retry',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { itemId } = req.params;
+      await RetryQueueService.retryNow(itemId);
+      res.json({ message: 'Item scheduled for immediate retry' });
+    } catch (error) {
+      logger.error('Error scheduling retry:', error);
+      res.status(500).json({ error: 'Failed to schedule retry' });
+    }
   }
-});
+);
 
 /**
  * DELETE /retry/queue/:itemId
  * Cancel retry for a specific item
  */
-router.delete('/queue/:itemId', async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    await RetryQueueService.cancelRetry(itemId);
-    res.json({ message: 'Retry cancelled and moved to dead letter queue' });
-  } catch (error) {
-    console.error('Error cancelling retry:', error);
-    res.status(500).json({ error: 'Failed to cancel retry' });
+router.delete(
+  '/queue/:itemId',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { itemId } = req.params;
+      await RetryQueueService.cancelRetry(itemId);
+      res.json({ message: 'Retry cancelled and moved to dead letter queue' });
+    } catch (error) {
+      logger.error('Error cancelling retry:', error);
+      res.status(500).json({ error: 'Failed to cancel retry' });
+    }
   }
-});
+);
 
 /**
  * POST /retry/queue/cleanup
@@ -84,13 +96,13 @@ router.post('/queue/cleanup', async (req, res) => {
     console.error('Error cleaning up retry queue:', error);
     res.status(500).json({ error: 'Failed to clean up retry queue' });
   }
-});
+);
 
 /**
  * GET /retry/dead-letter/stats
  * Get dead letter queue statistics
  */
-router.get('/dead-letter/stats', async (req, res) => {
+router.get('/dead-letter/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await DeadLetterQueueService.getStatistics();
     res.json(stats);
@@ -118,7 +130,7 @@ router.post('/dead-letter/recover', async (req, res) => {
     console.error('Error recovering items:', error);
     res.status(500).json({ error: 'Failed to recover items' });
   }
-});
+);
 
 /**
  * POST /retry/dead-letter/archive
@@ -138,18 +150,18 @@ router.post('/dead-letter/archive', async (req, res) => {
     console.error('Error archiving items:', error);
     res.status(500).json({ error: 'Failed to archive items' });
   }
-});
+);
 
 /**
  * GET /retry/dead-letter/analysis
  * Get error analysis from dead letter queue
  */
-router.get('/dead-letter/analysis', async (req, res) => {
+router.get('/dead-letter/analysis', authenticateToken, async (req, res) => {
   try {
     const analysis = await DeadLetterQueueService.getErrorAnalysis();
     res.json(analysis);
   } catch (error) {
-    console.error('Error getting error analysis:', error);
+    logger.error('Error getting error analysis:', error);
     res.status(500).json({ error: 'Failed to get error analysis' });
   }
 });
@@ -158,27 +170,34 @@ router.get('/dead-letter/analysis', async (req, res) => {
  * GET /retry/dead-letter/manual-review
  * Get items requiring manual review
  */
-router.get('/dead-letter/manual-review', async (req, res) => {
-  try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-    const items = await DeadLetterQueueService.getItemsForManualReview(limit);
-    res.json(items);
-  } catch (error) {
-    console.error('Error getting items for manual review:', error);
-    res.status(500).json({ error: 'Failed to get items for manual review' });
+router.get(
+  '/dead-letter/manual-review',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+      const items = await DeadLetterQueueService.getItemsForManualReview(limit);
+      res.json(items);
+    } catch (error) {
+      logger.error('Error getting items for manual review:', error);
+      res.status(500).json({ error: 'Failed to get items for manual review' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/metrics
  * Get comprehensive retry metrics
  */
-router.get('/metrics', async (req, res) => {
+router.get('/metrics', authenticateToken, async (req, res) => {
   try {
     const metrics = await RetryMetricsService.getMetrics();
     res.json(metrics);
   } catch (error) {
-    console.error('Error fetching metrics:', error);
+    logger.error('Error fetching metrics:', error);
     res.status(500).json({ error: 'Failed to fetch metrics' });
   }
 });
@@ -187,7 +206,7 @@ router.get('/metrics', async (req, res) => {
  * GET /retry/metrics/success-rate
  * Get success rate time series
  */
-router.get('/metrics/success-rate', async (req, res) => {
+router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
   try {
     const hoursBack = req.query.hours
       ? parseInt(req.query.hours as string)
@@ -197,7 +216,7 @@ router.get('/metrics/success-rate', async (req, res) => {
     );
     res.json(timeSeries);
   } catch (error) {
-    console.error('Error fetching success rate:', error);
+    logger.error('Error fetching success rate:', error);
     res.status(500).json({ error: 'Failed to fetch success rate time series' });
   }
 });
@@ -218,19 +237,21 @@ router.get('/metrics/error-distribution', async (req, res) => {
     console.error('Error fetching error distribution:', error);
     res.status(500).json({ error: 'Failed to fetch error distribution' });
   }
-});
+);
 
 /**
  * GET /retry/metrics/top-failing
  * Get top failing items
  */
-router.get('/metrics/top-failing', async (req, res) => {
+router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const rawTopLimit = parseInt(req.query.limit as string, 10);
+    const limit =
+      isNaN(rawTopLimit) || rawTopLimit < 1 ? 10 : Math.min(rawTopLimit, 100);
     const items = await RetryMetricsService.getTopFailingItems(limit);
     res.json(items);
   } catch (error) {
-    console.error('Error fetching top failing items:', error);
+    logger.error('Error fetching top failing items:', error);
     res.status(500).json({ error: 'Failed to fetch top failing items' });
   }
 });
@@ -239,7 +260,7 @@ router.get('/metrics/top-failing', async (req, res) => {
  * GET /retry/metrics/export
  * Export metrics as JSON
  */
-router.get('/metrics/export', async (req, res) => {
+router.get('/metrics/export', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const exportData = await RetryMetricsService.exportMetrics();
     res.setHeader('Content-Type', 'application/json');
@@ -249,7 +270,7 @@ router.get('/metrics/export', async (req, res) => {
     );
     res.send(exportData);
   } catch (error) {
-    console.error('Error exporting metrics:', error);
+    logger.error('Error exporting metrics:', error);
     res.status(500).json({ error: 'Failed to export metrics' });
   }
 });
@@ -258,12 +279,12 @@ router.get('/metrics/export', async (req, res) => {
  * GET /retry/monitoring/health
  * Get system health status
  */
-router.get('/monitoring/health', async (req, res) => {
+router.get('/monitoring/health', authenticateToken, async (req, res) => {
   try {
     const health = await ErrorMonitoringService.getHealthStatus();
     res.json(health);
   } catch (error) {
-    console.error('Error fetching health status:', error);
+    logger.error('Error fetching health status:', error);
     res.status(500).json({ error: 'Failed to fetch health status' });
   }
 });
@@ -272,7 +293,7 @@ router.get('/monitoring/health', async (req, res) => {
  * GET /retry/monitoring/alerts
  * Get recent alerts
  */
-router.get('/monitoring/alerts', async (req, res) => {
+router.get('/monitoring/alerts', authenticateToken, async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
     const severity = req.query.severity as
@@ -284,7 +305,7 @@ router.get('/monitoring/alerts', async (req, res) => {
     const alerts = ErrorMonitoringService.getAlerts(limit, severity);
     res.json(alerts);
   } catch (error) {
-    console.error('Error fetching alerts:', error);
+    logger.error('Error fetching alerts:', error);
     res.status(500).json({ error: 'Failed to fetch alerts' });
   }
 });
@@ -293,12 +314,12 @@ router.get('/monitoring/alerts', async (req, res) => {
  * GET /retry/monitoring/statistics
  * Get comprehensive monitoring statistics
  */
-router.get('/monitoring/statistics', async (req, res) => {
+router.get('/monitoring/statistics', authenticateToken, async (req, res) => {
   try {
     const stats = await ErrorMonitoringService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching monitoring statistics:', error);
+    logger.error('Error fetching monitoring statistics:', error);
     res.status(500).json({ error: 'Failed to fetch monitoring statistics' });
   }
 });
@@ -307,7 +328,7 @@ router.get('/monitoring/statistics', async (req, res) => {
  * GET /retry/circuit-breakers
  * Get all circuit breaker statistics
  */
-router.get('/circuit-breakers', (req, res) => {
+router.get('/circuit-breakers', authenticateToken, (req, res) => {
   try {
     const stats = CircuitBreakerRegistry.getAllStats();
     res.json(stats);
@@ -323,16 +344,21 @@ router.get('/circuit-breakers', (req, res) => {
  * POST /retry/circuit-breakers/:name/reset
  * Reset a specific circuit breaker
  */
-router.post('/circuit-breakers/:name/reset', (req, res) => {
-  try {
-    const { name } = req.params;
-    const breaker = CircuitBreakerRegistry.getBreaker(name);
-    breaker.forceClose();
-    res.json({ message: `Circuit breaker '${name}' has been reset` });
-  } catch (error) {
-    console.error('Error resetting circuit breaker:', error);
-    res.status(500).json({ error: 'Failed to reset circuit breaker' });
+router.post(
+  '/circuit-breakers/:name/reset',
+  authenticateToken,
+  requireAdmin,
+  (req, res) => {
+    try {
+      const { name } = req.params;
+      const breaker = CircuitBreakerRegistry.getBreaker(name);
+      breaker.forceClose();
+      res.json({ message: `Circuit breaker '${name}' has been reset` });
+    } catch (error) {
+      logger.error('Error resetting circuit breaker:', error);
+      res.status(500).json({ error: 'Failed to reset circuit breaker' });
+    }
   }
-});
+);
 
 export default router;
