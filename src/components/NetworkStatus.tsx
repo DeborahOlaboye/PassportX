@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useNetwork } from '@/contexts/NetworkContext';
-import { networkManager } from '@/utils/networkManager';
 
 interface NetworkStatusProps {
   showDetails?: boolean;

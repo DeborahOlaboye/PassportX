@@ -139,7 +139,7 @@ export function NetworkSelector({
 
 // Compact version for header/status bar
 export function NetworkStatus({ className = '' }: { className?: string }) {
-  const { currentNetwork, config, isSwitching } = useNetwork();
+  const { config, isSwitching } = useNetwork();
 
   return (
     <div className={`flex items-center space-x-2 text-sm ${className}`}>
