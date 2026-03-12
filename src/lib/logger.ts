@@ -7,7 +7,11 @@ interface LogContext {
 class Logger {
   private isProduction = process.env.NODE_ENV === 'production';
 
-  private formatLog(level: LogLevel, message: string, context?: LogContext): string {
+  private formatLog(
+    level: LogLevel,
+    message: string,
+    context?: LogContext
+  ): string {
     const timestamp = new Date().toISOString();
     const logEntry = {
       timestamp,
