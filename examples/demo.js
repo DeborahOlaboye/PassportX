@@ -22,16 +22,18 @@ if (sdk.PassportX) {
   console.log('- Network: mainnet');
   console.log('- API URL: https://api.passportx.app');
   console.log('\nAvailable methods:');
-  const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(client)).filter(
-    (m) => m !== 'constructor'
-  );
+  const methods = Object.getOwnPropertyNames(
+    Object.getPrototypeOf(client)
+  ).filter((m) => m !== 'constructor');
   methods.forEach((method) => console.log(`  - ${method}()`));
 }
 
 // Demonstrate error class
 if (sdk.PassportXError) {
   console.log('\nPassportXError class available for error handling');
-  console.log('Usage: catch (error) { if (error instanceof PassportXError) { ... } }');
+  console.log(
+    'Usage: catch (error) { if (error instanceof PassportXError) { ... } }'
+  );
 }
 
 console.log('\n=== Demo Complete ===');

@@ -73,7 +73,9 @@ const client = new PassportX({
 });
 
 // Get all badges for a user
-const badges = await client.getUserBadges('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+const badges = await client.getUserBadges(
+  'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+);
 console.log(`User has ${badges.length} badges`);
 
 // Get community leaderboard
