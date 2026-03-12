@@ -10,11 +10,6 @@ import {
   storeAuthToken,
   clearAuthToken,
 } from '../utils/tokenStorage';
-import {
-  verifySignature,
-  isSignatureExpired,
-  SignedMessage,
-} from '../utils/signatureVerification';
 import { createAuthToken } from '../utils/sessionTokens';
 import { logInfo, logError } from '../utils/logger';
 

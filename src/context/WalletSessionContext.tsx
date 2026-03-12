@@ -6,7 +6,6 @@ import {
   clearSession,
   isExpired,
 } from '../utils/walletSession';
-import { WalletError } from '../utils/errorTypes';
 import { logError, logInfo } from '../utils/logger';
 import retry from '../utils/retry';
 
@@ -42,8 +41,8 @@ export const WalletSessionProvider: React.FC<
   const save = useCallback(
     async (s: WalletSession) => {
       try {
-        const ok = await saveSession(s as any, {
-          area: storageArea as any,
+        const ok = await saveSession(s, {
+          area: storageArea,
           encrypt,
         });
         if (ok) setSession(s);
@@ -65,7 +64,7 @@ export const WalletSessionProvider: React.FC<
 
   const recover = useCallback(async () => {
     try {
-      const s = await recoverSession({ area: storageArea as any, decrypt });
+      const s = await recoverSession({ area: storageArea, decrypt });
       if (!s) return;
       if (isExpired(s)) {
         clearSession();
