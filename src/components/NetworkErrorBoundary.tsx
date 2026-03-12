@@ -15,7 +15,10 @@ interface NetworkErrorBoundaryProps {
   maxRetries?: number;
 }
 
-export class NetworkErrorBoundary extends Component<NetworkErrorBoundaryProps, NetworkErrorBoundaryState> {
+export class NetworkErrorBoundary extends Component<
+  NetworkErrorBoundaryProps,
+  NetworkErrorBoundaryState
+> {
   private retryTimeouts: NodeJS.Timeout[] = [];
 
   constructor(props: NetworkErrorBoundaryProps) {
@@ -61,10 +64,14 @@ export class NetworkErrorBoundary extends Component<NetworkErrorBoundaryProps, N
 
   componentWillUnmount() {
     // Clear any pending retry timeouts
-    this.retryTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.retryTimeouts.forEach((timeout) => clearTimeout(timeout));
   }
 
-  private logErrorDetails(error: Error, errorInfo: ErrorInfo, network?: NetworkType) {
+  private logErrorDetails(
+    error: Error,
+    errorInfo: ErrorInfo,
+    network?: NetworkType
+  ) {
     const errorDetails = {
       message: error.message,
       stack: error.stack,
@@ -80,7 +87,9 @@ export class NetworkErrorBoundary extends Component<NetworkErrorBoundaryProps, N
 
     // Store in localStorage for debugging (limited to last 10 errors)
     try {
-      const existingErrors = JSON.parse(localStorage.getItem('network-errors') || '[]');
+      const existingErrors = JSON.parse(
+        localStorage.getItem('network-errors') || '[]'
+      );
       existingErrors.push(errorDetails);
       if (existingErrors.length > 10) {
         existingErrors.shift(); // Remove oldest error
@@ -133,8 +142,18 @@ export class NetworkErrorBoundary extends Component<NetworkErrorBoundaryProps, N
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center mb-4">
               <div className="flex-shrink-0">
-                <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                <svg
+                  className="h-8 w-8 text-red-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
                 </svg>
               </div>
               <h2 className="ml-3 text-xl font-semibold text-gray-900">
@@ -144,18 +163,23 @@ export class NetworkErrorBoundary extends Component<NetworkErrorBoundaryProps, N
 
             <div className="mb-6">
               <p className="text-sm text-gray-600 mb-3">
-                Something went wrong with the network connection or configuration.
+                Something went wrong with the network connection or
+                configuration.
               </p>
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-3">
-                  <p className="text-sm text-red-800 font-medium">Error Details:</p>
+                  <p className="text-sm text-red-800 font-medium">
+                    Error Details:
+                  </p>
                   <p className="text-sm text-red-700 mt-1">{error.message}</p>
                 </div>
               )}
 
               <div className="text-sm text-gray-500">
-                <p>Retry attempts: {retryCount} / {maxRetries}</p>
+                <p>
+                  Retry attempts: {retryCount} / {maxRetries}
+                </p>
               </div>
             </div>
 
@@ -195,12 +219,15 @@ export class NetworkErrorBoundary extends Component<NetworkErrorBoundaryProps, N
 
 // Hook for using network error boundary in functional components
 export const useNetworkErrorHandler = () => {
-  const handleError = React.useCallback((error: Error, network?: NetworkType) => {
-    console.error('Network error handled:', error, 'Network:', network);
+  const handleError = React.useCallback(
+    (error: Error, network?: NetworkType) => {
+      console.error('Network error handled:', error, 'Network:', network);
 
-    // You can add additional error handling logic here
-    // For example, sending to error reporting service, updating analytics, etc.
-  }, []);
+      // You can add additional error handling logic here
+      // For example, sending to error reporting service, updating analytics, etc.
+    },
+    []
+  );
 
   return { handleError };
 };

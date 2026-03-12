@@ -17,7 +17,7 @@ const DEFAULT_OPTIONS: SessionOptions = {
   expiresIn: '7d',
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict'
+  sameSite: 'strict',
 };
 
 /**
@@ -45,7 +45,7 @@ export function generateSessionToken(
   return jwt.sign(
     {
       stacksAddress: data.stacksAddress,
-      userId: data.userId
+      userId: data.userId,
     },
     secret,
     { expiresIn: mergedOptions.expiresIn }
@@ -61,7 +61,7 @@ export function verifySessionToken(token: string): SessionData | null {
     const decoded = jwt.verify(token, secret) as SessionData;
     return {
       stacksAddress: decoded.stacksAddress,
-      userId: decoded.userId
+      userId: decoded.userId,
     };
   } catch (error) {
     return null;
@@ -85,7 +85,7 @@ export function setSessionCookie(
     httpOnly: mergedOptions.httpOnly,
     secure: mergedOptions.secure,
     sameSite: mergedOptions.sameSite,
-    maxAge
+    maxAge,
   });
 }
 
@@ -96,7 +96,7 @@ export function clearSessionCookie(res: Response): void {
   res.clearCookie('session_token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    sameSite: 'strict',
   });
 }
 

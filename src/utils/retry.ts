@@ -1,6 +1,9 @@
 export type RetryOptions = { retries?: number; delayMs?: number };
 
-export const retry = async <T>(fn: () => Promise<T>, opts?: RetryOptions): Promise<T> => {
+export const retry = async <T>(
+  fn: () => Promise<T>,
+  opts?: RetryOptions
+): Promise<T> => {
   const retries = opts?.retries ?? 3;
   const delayMs = opts?.delayMs ?? 500;
   let lastErr: Error | unknown;

@@ -8,7 +8,7 @@ global.console = {
   ...originalConsole,
   error: jest.fn(),
   warn: jest.fn(),
-  debug: jest.fn()
+  debug: jest.fn(),
 };
 
 // Global test timeout

@@ -11,7 +11,7 @@ export {
   getErrorCategory,
   isPermissionError,
   isValidationError,
-  formatError
-} from './errorCodes'
+  formatError,
+} from './errorCodes';
 
-export type { ErrorCode, ErrorCategory } from './errorCodes'
+export type { ErrorCode, ErrorCategory } from './errorCodes';

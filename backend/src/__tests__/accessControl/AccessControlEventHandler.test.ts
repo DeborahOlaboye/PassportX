@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { AccessControlEventHandler } from '../../services/AccessControlEventHandler';
-import { AccessControlEventType, AdminChangeEvent } from '../../types/accessControl';
+import {
+  AccessControlEventType,
+  AdminChangeEvent,
+} from '../../types/accessControl';
 import { Community } from '../../models/Community';
 import { AccessControlAuditLog } from '../../models/AccessControlAuditLog';
 
@@ -22,7 +25,7 @@ describe('AccessControlEventHandler', () => {
         name: 'Test Community',
         communityId: 'test-community-1',
         creator: 'SP1PRINCIPAL',
-        admins: ['SP1PRINCIPAL']
+        admins: ['SP1PRINCIPAL'],
       });
 
       const event: AdminChangeEvent = {
@@ -37,8 +40,8 @@ describe('AccessControlEventHandler', () => {
         data: {},
         metadata: {
           communityId: 'test-community-1',
-          role: 'admin' as any
-        }
+          role: 'admin' as any,
+        },
       };
 
       await handler.handleEvent(event);
@@ -54,7 +57,7 @@ describe('AccessControlEventHandler', () => {
         name: 'Test Community',
         communityId: 'test-community-2',
         creator: 'SP1PRINCIPAL',
-        admins: ['SP1PRINCIPAL', 'SP2ADMIN']
+        admins: ['SP1PRINCIPAL', 'SP2ADMIN'],
       });
 
       const event: AdminChangeEvent = {
@@ -69,8 +72,8 @@ describe('AccessControlEventHandler', () => {
         data: {},
         metadata: {
           communityId: 'test-community-2',
-          role: 'admin' as any
-        }
+          role: 'admin' as any,
+        },
       };
 
       await handler.handleEvent(event);
@@ -95,14 +98,14 @@ describe('AccessControlEventHandler', () => {
         data: {},
         metadata: {
           communityId: 'test-community-3',
-          role: 'admin' as any
-        }
+          role: 'admin' as any,
+        },
       };
 
       await handler.handleEvent(event);
 
       const auditLog = await AccessControlAuditLog.findOne({
-        transactionHash: 'tx125'
+        transactionHash: 'tx125',
       });
 
       expect(auditLog).toBeDefined();

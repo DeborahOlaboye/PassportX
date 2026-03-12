@@ -1,7 +1,10 @@
 import { Account, AccountPreferences } from '@/types/multi-account';
 import { ACCOUNT_VALIDATION_RULES } from '@/constants/multi-account';
 
-export function formatAccountAddress(address: string, chars: number = 4): string {
+export function formatAccountAddress(
+  address: string,
+  chars: number = 4
+): string {
   if (!address) return '';
   return `${address.slice(0, chars)}...${address.slice(-chars)}`;
 }
@@ -59,7 +62,9 @@ export function compareAccounts(a: Account, b: Account): number {
   return nameA.localeCompare(nameB);
 }
 
-export function groupAccountsByChain(accounts: Account[]): Map<number, Account[]> {
+export function groupAccountsByChain(
+  accounts: Account[]
+): Map<number, Account[]> {
   const grouped = new Map<number, Account[]>();
 
   for (const account of accounts) {
@@ -93,7 +98,10 @@ export function getRandomColor(): string {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-export function shouldRefreshAccounts(lastRefresh?: number, intervalMs: number = 60000): boolean {
+export function shouldRefreshAccounts(
+  lastRefresh?: number,
+  intervalMs: number = 60000
+): boolean {
   if (!lastRefresh) return true;
   return Date.now() - lastRefresh > intervalMs;
 }
@@ -106,7 +114,8 @@ export function calculateAccountScore(account: Account): number {
 
   // Recently used accounts get higher score
   if (account.lastUsed) {
-    const daysSinceUse = (Date.now() - account.lastUsed) / (1000 * 60 * 60 * 24);
+    const daysSinceUse =
+      (Date.now() - account.lastUsed) / (1000 * 60 * 60 * 24);
     score += Math.max(0, 50 - daysSinceUse * 5);
   }
 
@@ -122,7 +131,9 @@ export function calculateAccountScore(account: Account): number {
 }
 
 export function getPrioritizedAccounts(accounts: Account[]): Account[] {
-  return [...accounts].sort((a, b) => calculateAccountScore(b) - calculateAccountScore(a));
+  return [...accounts].sort(
+    (a, b) => calculateAccountScore(b) - calculateAccountScore(a)
+  );
 }
 
 export function filterAccountsByActive(accounts: Account[]): Account[] {
@@ -143,7 +154,8 @@ export function mergeAccountData(
     // Preserve critical fields
     address: existing.address,
     chainId: existing.chainId,
-    isActive: updates.isActive !== undefined ? updates.isActive : existing.isActive,
+    isActive:
+      updates.isActive !== undefined ? updates.isActive : existing.isActive,
   };
 }
 
@@ -154,11 +166,15 @@ export function getAccountChangesSummary(
   const changes: string[] = [];
 
   if (oldAccount.name !== newAccount.name) {
-    changes.push(`Name changed from "${oldAccount.name}" to "${newAccount.name}"`);
+    changes.push(
+      `Name changed from "${oldAccount.name}" to "${newAccount.name}"`
+    );
   }
 
   if (oldAccount.balance !== newAccount.balance) {
-    changes.push(`Balance changed from ${oldAccount.balance} to ${newAccount.balance}`);
+    changes.push(
+      `Balance changed from ${oldAccount.balance} to ${newAccount.balance}`
+    );
   }
 
   if (oldAccount.isActive !== newAccount.isActive) {
@@ -202,6 +218,8 @@ export function sanitizeAccountData(account: Account): Account {
     balance: account.balance,
     isActive: account.isActive,
     lastUsed: account.lastUsed,
-    metadata: account.metadata ? { displayName: account.metadata.displayName } : undefined,
+    metadata: account.metadata
+      ? { displayName: account.metadata.displayName }
+      : undefined,
   };
 }

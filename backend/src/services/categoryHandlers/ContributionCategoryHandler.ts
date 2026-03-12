@@ -1,5 +1,5 @@
-import { BaseCategoryHandler } from './BaseCategoryHandler'
-import { FilteredBadgeEvent } from '../BadgeCategoryFilter'
+import { BaseCategoryHandler } from './BaseCategoryHandler';
+import { FilteredBadgeEvent } from '../BadgeCategoryFilter';
 
 export class ContributionCategoryHandler extends BaseCategoryHandler {
   constructor(logger?: any) {
@@ -7,7 +7,9 @@ export class ContributionCategoryHandler extends BaseCategoryHandler {
   }
 
   async processEvent(event: FilteredBadgeEvent): Promise<any> {
-    this.logger.info(`Processing contribution badge event: ${event.badgeId} for user ${event.userId}`);
+    this.logger.info(
+      `Processing contribution badge event: ${event.badgeId} for user ${event.userId}`
+    );
 
     // Send contribution notifications
     await this.sendNotification(
@@ -26,7 +28,7 @@ export class ContributionCategoryHandler extends BaseCategoryHandler {
       processed: true,
       badgeId: event.badgeId,
       userId: event.userId,
-      level: event.level
+      level: event.level,
     };
   }
 

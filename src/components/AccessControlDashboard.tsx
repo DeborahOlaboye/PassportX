@@ -8,9 +8,13 @@ export interface AccessControlDashboardProps {
   showSecurityAlerts?: boolean;
 }
 
-export const AccessControlDashboard: React.FC<AccessControlDashboardProps> = (props) => {
+export const AccessControlDashboard: React.FC<AccessControlDashboardProps> = (
+  props
+) => {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Access control dashboard error" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="Access control dashboard error" />}
+    >
       <AccessControlDashboardInner {...props} />
     </ErrorBoundary>
   );
@@ -18,7 +22,7 @@ export const AccessControlDashboard: React.FC<AccessControlDashboardProps> = (pr
 
 const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
   userPrincipal,
-  showSecurityAlerts = false
+  showSecurityAlerts = false,
 }) => {
   const {
     notifications,
@@ -26,10 +30,10 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
     isConnected,
     lastUpdate,
     getCriticalNotifications,
-    clearNotifications
+    clearNotifications,
   } = usePermissionState({
     userPrincipal,
-    subscribeToSecurity: showSecurityAlerts
+    subscribeToSecurity: showSecurityAlerts,
   });
 
   const criticalNotifications = getCriticalNotifications();
@@ -50,9 +54,10 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
   };
 
   const getEventTypeLabel = (eventType: string) => {
-    return eventType.split('-').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return eventType
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   return (
@@ -60,7 +65,11 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
       {/* Connection Status */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <div
+            className={`w-3 h-3 rounded-full ${
+              isConnected ? 'bg-green-500' : 'bg-red-500'
+            }`}
+          />
           <span className="text-sm text-gray-600">
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
@@ -85,7 +94,8 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
       {criticalNotifications.length > 0 && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <h3 className="text-sm font-semibold text-red-800 mb-2">
-            ⚠️ {criticalNotifications.length} Critical Notification{criticalNotifications.length > 1 ? 's' : ''}
+            ⚠️ {criticalNotifications.length} Critical Notification
+            {criticalNotifications.length > 1 ? 's' : ''}
           </h3>
           <p className="text-sm text-red-700">
             Your permissions have been modified. Please review immediately.
@@ -101,7 +111,9 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
             {securityAlerts.slice(0, 5).map((alert, index) => (
               <div
                 key={index}
-                className={`p-3 border rounded-lg ${getSeverityColor(alert.severity)}`}
+                className={`p-3 border rounded-lg ${getSeverityColor(
+                  alert.severity
+                )}`}
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -138,7 +150,9 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
             {notifications.map((notification, index) => (
               <div
                 key={index}
-                className={`p-3 border rounded-lg ${getSeverityColor(notification.severity)}`}
+                className={`p-3 border rounded-lg ${getSeverityColor(
+                  notification.severity
+                )}`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -152,9 +166,13 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
                     </div>
 
                     <div className="mt-1 text-xs space-y-1">
-                      <div>Principal: {notification.principal.slice(0, 20)}...</div>
+                      <div>
+                        Principal: {notification.principal.slice(0, 20)}...
+                      </div>
                       {notification.targetPrincipal && (
-                        <div>Target: {notification.targetPrincipal.slice(0, 20)}...</div>
+                        <div>
+                          Target: {notification.targetPrincipal.slice(0, 20)}...
+                        </div>
                       )}
                       {notification.communityId && (
                         <div>Community: {notification.communityId}</div>
@@ -174,7 +192,9 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
                   </div>
 
                   <div className="text-xs text-right ml-3">
-                    <div>{new Date(notification.timestamp).toLocaleTimeString()}</div>
+                    <div>
+                      {new Date(notification.timestamp).toLocaleTimeString()}
+                    </div>
                     <div className="text-xs opacity-70">
                       {new Date(notification.timestamp).toLocaleDateString()}
                     </div>
@@ -188,6 +208,5 @@ const AccessControlDashboardInner: React.FC<AccessControlDashboardProps> = ({
     </div>
   );
 };
-
 
 export default AccessControlDashboard;

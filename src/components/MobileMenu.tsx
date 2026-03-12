@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Menu, X, Home, User, Settings, Eye } from 'lucide-react'
+import { useState } from 'react';
+import Link from 'next/link';
+import { Menu, X, Home, User, Settings, Eye } from 'lucide-react';
 
 export default function MobileMenu() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/passport', label: 'My Passport', icon: User },
     { href: '/admin', label: 'Admin', icon: Settings },
     { href: '/public', label: 'Explore', icon: Eye },
-  ]
+  ];
 
   return (
     <div className="md:hidden">
@@ -41,5 +41,5 @@ export default function MobileMenu() {
         </div>
       )}
     </div>
-  )
+  );
 }

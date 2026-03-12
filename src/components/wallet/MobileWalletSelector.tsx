@@ -4,9 +4,17 @@ import { WalletErrorFallback } from '../FallbackUI';
 import React, { useState, useEffect } from 'react';
 import { X, Smartphone, Monitor, Copy, Check } from 'lucide-react';
 import QRCodeDisplay from './QRCodeDisplay';
-import { initiateMobileWalletConnection, waitForMobileWalletResponse, MobileWalletResponse } from '@/utils/mobileWalletResponseHandler';
+import {
+  initiateMobileWalletConnection,
+  waitForMobileWalletResponse,
+  MobileWalletResponse,
+} from '@/utils/mobileWalletResponseHandler';
 import { openMobileWallet } from '@/utils/stacksWalletConnect';
-import { trackMobileWalletConnectionAttempt, trackMobileWalletConnectionSuccess, trackMobileWalletConnectionFailure } from '@/utils/mobileWalletAnalytics';
+import {
+  trackMobileWalletConnectionAttempt,
+  trackMobileWalletConnectionSuccess,
+  trackMobileWalletConnectionFailure,
+} from '@/utils/mobileWalletAnalytics';
 import { useWalletConnect } from '@/contexts/WalletConnectContext';
 
 interface MobileWalletSelectorProps {
@@ -42,7 +50,11 @@ const MOBILE_WALLETS = [
 
 export default function MobileWalletSelector(props: MobileWalletSelectorProps) {
   return (
-    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <WalletErrorFallback error={error} reset={reset} />
+      )}
+    >
       <MobileWalletSelectorInner {...props} />
     </ErrorBoundary>
   );
@@ -53,14 +65,19 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [connectingWallet, setConnectingWallet] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'error'>('idle');
+  const [connectionStatus, setConnectionStatus] = useState<
+    'idle' | 'connecting' | 'success' | 'error'
+  >('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     // Detect mobile device
     const checkMobile = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      const isMobileDevice =
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+          userAgent
+        );
       setIsMobile(isMobileDevice);
     };
 
@@ -72,19 +89,26 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
     setConnectionStatus('connecting');
     setErrorMessage('');
 
-    const sessionId = `mobile_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = `mobile_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     try {
       // Track connection attempt
-      trackMobileWalletConnectionAttempt(walletId as 'xverse' | 'hiro' | 'leather', sessionId);
+      trackMobileWalletConnectionAttempt(
+        walletId as 'xverse' | 'hiro' | 'leather',
+        sessionId
+      );
 
-      const wallet = MOBILE_WALLETS.find(w => w.id === walletId);
+      const wallet = MOBILE_WALLETS.find((w) => w.id === walletId);
       if (!wallet) throw new Error('Wallet not found');
 
       if (isMobile) {
         // Generate WalletConnect URI
         const config = {
-          projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'passportx_walletconnect_project',
+          projectId:
+            process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ||
+            'passportx_walletconnect_project',
           relayUrl: 'wss://relay.walletconnect.org',
           metadata: {
             name: 'PassportX',
@@ -94,15 +118,23 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
           },
           requiredNamespaces: {
             stacks: {
-              methods: ['stacks_signMessage', 'stacks_signTransaction', 'stacks_getAccounts'],
+              methods: [
+                'stacks_signMessage',
+                'stacks_signTransaction',
+                'stacks_getAccounts',
+              ],
               chains: ['stacks:1'],
               events: ['accountsChanged'],
             },
           },
         };
 
-        const sessionTopic = `stacks_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const uri = `wc:${sessionTopic}@2?relay-protocol=irn&symKey=${generateSymKey()}&projectId=${config.projectId}`;
+        const sessionTopic = `stacks_session_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+        const uri = `wc:${sessionTopic}@2?relay-protocol=irn&symKey=${generateSymKey()}&projectId=${
+          config.projectId
+        }`;
 
         // Initiate connection
         const requestId = initiateMobileWalletConnection(uri, wallet.id);
@@ -115,7 +147,10 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
 
         if (response.success && response.data) {
           // Track success
-          trackMobileWalletConnectionSuccess(walletId as 'xverse' | 'hiro' | 'leather', sessionId);
+          trackMobileWalletConnectionSuccess(
+            walletId as 'xverse' | 'hiro' | 'leather',
+            sessionId
+          );
 
           // Connect to the app
           const connectedWallet = {
@@ -145,7 +180,9 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
 
       console.error('Wallet connection failed:', error);
       setConnectionStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Connection failed');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Connection failed'
+      );
     } finally {
       setConnectingWallet(null);
     }
@@ -154,7 +191,9 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
   const generateSymKey = (): string => {
     const array = new Uint8Array(32);
     window.crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join(
+      ''
+    );
   };
 
   const handleCopyUri = async (uri: string) => {
@@ -174,7 +213,9 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
             <QRCodeDisplay
               onBack={() => setShowQR(false)}
               onClose={onClose}
-              preferredWallet={connectingWallet as 'xverse' | 'hiro' | 'leather' | undefined}
+              preferredWallet={
+                connectingWallet as 'xverse' | 'hiro' | 'leather' | undefined
+              }
             />
           </div>
         </div>
@@ -202,7 +243,9 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
             {isMobile ? (
               <>
                 <Smartphone className="w-5 h-5 text-green-600" />
-                <span className="text-sm text-gray-600">Mobile device detected</span>
+                <span className="text-sm text-gray-600">
+                  Mobile device detected
+                </span>
               </>
             ) : (
               <>
@@ -225,7 +268,9 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
                   <span className="text-2xl">{wallet.icon}</span>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-900">{wallet.name}</p>
-                    <p className="text-sm text-gray-500">{wallet.description}</p>
+                    <p className="text-sm text-gray-500">
+                      {wallet.description}
+                    </p>
                   </div>
                   {connectingWallet === wallet.id && (
                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
@@ -237,27 +282,32 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
 
           {/* Connection Status */}
           {connectionStatus !== 'idle' && (
-            <div className={`p-3 rounded-lg ${
-              connectionStatus === 'success'
-                ? 'bg-green-50 border border-green-200'
-                : connectionStatus === 'error'
-                ? 'bg-red-50 border border-red-200'
-                : 'bg-blue-50 border border-blue-200'
-            }`}>
+            <div
+              className={`p-3 rounded-lg ${
+                connectionStatus === 'success'
+                  ? 'bg-green-50 border border-green-200'
+                  : connectionStatus === 'error'
+                  ? 'bg-red-50 border border-red-200'
+                  : 'bg-blue-50 border border-blue-200'
+              }`}
+            >
               <div className="flex items-center space-x-2">
                 {connectionStatus === 'connecting' && (
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
                 )}
-                <span className={`text-sm font-medium ${
-                  connectionStatus === 'success'
-                    ? 'text-green-800'
-                    : connectionStatus === 'error'
-                    ? 'text-red-800'
-                    : 'text-blue-800'
-                }`}>
+                <span
+                  className={`text-sm font-medium ${
+                    connectionStatus === 'success'
+                      ? 'text-green-800'
+                      : connectionStatus === 'error'
+                      ? 'text-red-800'
+                      : 'text-blue-800'
+                  }`}
+                >
                   {connectionStatus === 'connecting' && 'Connecting...'}
                   {connectionStatus === 'success' && 'Connected successfully!'}
-                  {connectionStatus === 'error' && `Connection failed: ${errorMessage}`}
+                  {connectionStatus === 'error' &&
+                    `Connection failed: ${errorMessage}`}
                 </span>
               </div>
             </div>

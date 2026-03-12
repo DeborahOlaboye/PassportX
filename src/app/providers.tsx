@@ -9,13 +9,13 @@ import FallbackUI from '@/components/FallbackUI';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="A critical error occurred" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="A critical error occurred" />}
+    >
       <AuthProvider>
         <NetworkProvider>
           <TransactionProvider>
-            <TransactionSigningProvider>
-              {children}
-            </TransactionSigningProvider>
+            <TransactionSigningProvider>{children}</TransactionSigningProvider>
           </TransactionProvider>
         </NetworkProvider>
       </AuthProvider>

@@ -1,4 +1,4 @@
-import ReorgHandlerService, { ReorgEvent } from './ReorgHandlerService'
+import ReorgHandlerService, { ReorgEvent } from './ReorgHandlerService';
 
 export interface CacheEntry {
   key: string;
@@ -29,7 +29,7 @@ export class ReorgAwareCache {
       key,
       value,
       blockHeight,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.cache.set(key, entry);
@@ -96,21 +96,26 @@ export class ReorgAwareCache {
     this.logger.info(`Rolling back cache to block ${blockHeight}`);
 
     // Get all block heights greater than the rollback point
-    const blocksToRemove = Array.from(this.blockIndex.keys())
-      .filter(height => height > blockHeight);
+    const blocksToRemove = Array.from(this.blockIndex.keys()).filter(
+      (height) => height > blockHeight
+    );
 
     for (const height of blocksToRemove) {
       const keys = this.blockIndex.get(height);
       if (keys) {
         for (const key of keys) {
           this.cache.delete(key);
-          this.logger.debug(`Rolled back cache entry: ${key} from block ${height}`);
+          this.logger.debug(
+            `Rolled back cache entry: ${key} from block ${height}`
+          );
         }
       }
       this.blockIndex.delete(height);
     }
 
-    this.logger.info(`Cache rollback complete. Removed entries from ${blocksToRemove.length} blocks`);
+    this.logger.info(
+      `Cache rollback complete. Removed entries from ${blocksToRemove.length} blocks`
+    );
   }
 
   /**
@@ -128,7 +133,7 @@ export class ReorgAwareCache {
       totalEntries: this.cache.size,
       blocksTracked: this.blockIndex.size,
       oldestBlock: blocks.length > 0 ? blocks[0] : null,
-      newestBlock: blocks.length > 0 ? blocks[blocks.length - 1] : null
+      newestBlock: blocks.length > 0 ? blocks[blocks.length - 1] : null,
     };
   }
 
@@ -155,7 +160,7 @@ export class ReorgAwareCache {
   async handleReorg(reorgEvent: ReorgEvent): Promise<void> {
     this.logger.warn('Handling reorg in cache', {
       rollbackToBlock: reorgEvent.rollbackToBlock,
-      newCanonicalBlock: reorgEvent.newCanonicalBlock
+      newCanonicalBlock: reorgEvent.newCanonicalBlock,
     });
 
     // Rollback cache to the canonical chain
@@ -193,16 +198,22 @@ export class ReorgAwareCache {
     }
 
     if (keysToDelete.length > 0) {
-      this.logger.debug(`Invalidated ${keysToDelete.length} cache entries for transaction ${transactionHash}`);
+      this.logger.debug(
+        `Invalidated ${keysToDelete.length} cache entries for transaction ${transactionHash}`
+      );
     }
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[ReorgAwareCache] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[ReorgAwareCache] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[ReorgAwareCache] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ReorgAwareCache] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[ReorgAwareCache] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[ReorgAwareCache] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[ReorgAwareCache] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ReorgAwareCache] ${msg}`, ...args),
     };
   }
 }

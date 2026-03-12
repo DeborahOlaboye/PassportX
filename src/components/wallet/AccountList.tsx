@@ -20,8 +20,13 @@ export default function AccountList({
   className = '',
   showActions = true,
 }: AccountListProps) {
-  const { state, switchAccount, removeAccount, updateAccountSettings, filterAccounts } =
-    useMultiAccount();
+  const {
+    state,
+    switchAccount,
+    removeAccount,
+    updateAccountSettings,
+    filterAccounts,
+  } = useMultiAccount();
   const [copied, setCopied] = useState<string | null>(null);
 
   const accounts = filterAccounts({ sortBy });
@@ -61,11 +66,14 @@ export default function AccountList({
     }
   };
 
-  const shortAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const shortAddress = (addr: string) =>
+    `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   if (accounts.length === 0) {
     return (
-      <div className={`flex items-center justify-center p-6 text-gray-500 ${className}`}>
+      <div
+        className={`flex items-center justify-center p-6 text-gray-500 ${className}`}
+      >
         <p>No accounts available</p>
       </div>
     );
@@ -87,13 +95,18 @@ export default function AccountList({
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">
-                  {account.name || account.metadata?.displayName || shortAddress(account.address)}
+                  {account.name ||
+                    account.metadata?.displayName ||
+                    shortAddress(account.address)}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{shortAddress(account.address)}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {shortAddress(account.address)}
+                </p>
 
                 {account.balance && (
                   <p className="text-sm text-gray-700 mt-2">
-                    Balance: <span className="font-medium">{account.balance}</span>
+                    Balance:{' '}
+                    <span className="font-medium">{account.balance}</span>
                   </p>
                 )}
               </div>

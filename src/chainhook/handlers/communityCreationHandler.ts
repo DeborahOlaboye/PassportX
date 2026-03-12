@@ -2,14 +2,17 @@ import {
   ChainhookEventPayload,
   ChainhookEventHandler,
   NotificationPayload,
-  CommunityCreationEvent
+  CommunityCreationEvent,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
 export class CommunityCreationHandler implements ChainhookEventHandler {
   private logger: any;
   private readonly SUPPORTED_METHODS = ['create-community', 'create-comm'];
-  private readonly SUPPORTED_TOPICS = ['community-created', 'community-creation'];
+  private readonly SUPPORTED_TOPICS = [
+    'community-created',
+    'community-creation',
+  ];
   private compiledMethodFilter: Set<string>;
   private compiledTopicFilter: Set<string>;
   private lastHitTime = 0;
@@ -24,15 +27,21 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CommunityCreationHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CommunityCreationHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCreationHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CommunityCreationHandler] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CommunityCreationHandler] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CommunityCreationHandler] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CommunityCreationHandler] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CommunityCreationHandler] ${msg}`, ...args),
     };
   }
 
   private getCacheKey(event: ChainhookEventPayload): string {
-    return `${event.block_identifier?.index}:${event.transactions?.[0]?.transaction_hash || ''}`;
+    return `${event.block_identifier?.index}:${
+      event.transactions?.[0]?.transaction_hash || ''
+    }`;
   }
 
   private isCacheValid(cachedTime: number): boolean {
@@ -132,10 +141,15 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
 
               if (method === 'create-community') {
                 const args = op.contract_call.args || [];
-                const ownerAddress = this.extractOwnerAddress(op.contract_call, tx);
+                const ownerAddress = this.extractOwnerAddress(
+                  op.contract_call,
+                  tx
+                );
 
                 if (!ownerAddress) {
-                  this.logger.warn('Failed to extract ownerAddress from contract call');
+                  this.logger.warn(
+                    'Failed to extract ownerAddress from contract call'
+                  );
                   continue;
                 }
 
@@ -148,11 +162,14 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
                   contractAddress: op.contract_call.contract,
                   transactionHash: tx.transaction_hash,
                   blockHeight: event.block_identifier?.index || 0,
-                  timestamp: this.extractTimestamp(event)
+                  timestamp: this.extractTimestamp(event),
                 };
 
                 if (!this.validateCommunityEvent(communityEvent)) {
-                  this.logger.warn('Invalid community event data', communityEvent);
+                  this.logger.warn(
+                    'Invalid community event data',
+                    communityEvent
+                  );
                   continue;
                 }
 
@@ -160,7 +177,7 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
                 notifications.push(notification);
                 this.logger.info('Created community creation notification', {
                   communityId: communityEvent.communityId,
-                  communityName: communityEvent.communityName
+                  communityName: communityEvent.communityName,
                 });
               }
             }
@@ -169,22 +186,32 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
               for (const evt of op.events) {
                 if (!evt || !evt.topic) continue;
 
-                if (evt.topic.includes('community') && evt.topic.includes('created')) {
+                if (
+                  evt.topic.includes('community') &&
+                  evt.topic.includes('created')
+                ) {
                   const communityEvent = EventMapper.mapCommunityCreationEvent({
                     ...evt.value,
                     contractAddress: evt.contract_address,
                     transactionHash: tx.transaction_hash,
                     blockHeight: event.block_identifier?.index || 0,
-                    timestamp: this.extractTimestamp(event)
+                    timestamp: this.extractTimestamp(event),
                   });
 
-                  if (communityEvent && this.validateCommunityEvent(communityEvent)) {
-                    const notification = this.createNotification(communityEvent);
+                  if (
+                    communityEvent &&
+                    this.validateCommunityEvent(communityEvent)
+                  ) {
+                    const notification =
+                      this.createNotification(communityEvent);
                     notifications.push(notification);
-                    this.logger.info('Created event-based community creation notification', {
-                      communityId: communityEvent.communityId,
-                      communityName: communityEvent.communityName
-                    });
+                    this.logger.info(
+                      'Created event-based community creation notification',
+                      {
+                        communityId: communityEvent.communityId,
+                        communityName: communityEvent.communityName,
+                      }
+                    );
                   }
                 }
               }
@@ -263,31 +290,48 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
 
   private extractOwnerAddress(contractCall: any, tx: any): string {
     try {
-      if (contractCall?.args && Array.isArray(contractCall.args) && contractCall.args.length > 3) {
+      if (
+        contractCall?.args &&
+        Array.isArray(contractCall.args) &&
+        contractCall.args.length > 3
+      ) {
         const arg = contractCall.args[3];
         const ownerFromArgs = arg?.value || arg;
-        if (typeof ownerFromArgs === 'string' && ownerFromArgs.trim().length > 0) {
-          this.logger.debug('Extracted owner address from contract args', { address: ownerFromArgs });
+        if (
+          typeof ownerFromArgs === 'string' &&
+          ownerFromArgs.trim().length > 0
+        ) {
+          this.logger.debug('Extracted owner address from contract args', {
+            address: ownerFromArgs,
+          });
           return ownerFromArgs;
         }
       }
 
       if (tx?.transaction_sender && typeof tx.transaction_sender === 'string') {
-        this.logger.debug('Using transaction sender as owner address', { address: tx.transaction_sender });
+        this.logger.debug('Using transaction sender as owner address', {
+          address: tx.transaction_sender,
+        });
         return tx.transaction_sender;
       }
 
       if (tx?.sender && typeof tx.sender === 'string') {
-        this.logger.debug('Using tx.sender as owner address', { address: tx.sender });
+        this.logger.debug('Using tx.sender as owner address', {
+          address: tx.sender,
+        });
         return tx.sender;
       }
 
       if (tx?.tx_sender && typeof tx.tx_sender === 'string') {
-        this.logger.debug('Using tx.tx_sender as owner address', { address: tx.tx_sender });
+        this.logger.debug('Using tx.tx_sender as owner address', {
+          address: tx.tx_sender,
+        });
         return tx.tx_sender;
       }
 
-      this.logger.warn('Unable to extract owner address from contract call or transaction');
+      this.logger.warn(
+        'Unable to extract owner address from contract call or transaction'
+      );
       return '';
     } catch (error) {
       this.logger.error('Error extracting owner address:', error);
@@ -297,13 +341,20 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
 
   private extractTimestamp(event: ChainhookEventPayload): number {
     try {
-      if (event?.metadata?.pox_cycle_position && typeof event.metadata.pox_cycle_position === 'number') {
-        this.logger.debug('Using pox_cycle_position as timestamp', { timestamp: event.metadata.pox_cycle_position });
+      if (
+        event?.metadata?.pox_cycle_position &&
+        typeof event.metadata.pox_cycle_position === 'number'
+      ) {
+        this.logger.debug('Using pox_cycle_position as timestamp', {
+          timestamp: event.metadata.pox_cycle_position,
+        });
         return event.metadata.pox_cycle_position;
       }
 
       if (event?.timestamp && typeof event.timestamp === 'number') {
-        this.logger.debug('Using event timestamp', { timestamp: event.timestamp });
+        this.logger.debug('Using event timestamp', {
+          timestamp: event.timestamp,
+        });
         return event.timestamp;
       }
 
@@ -326,7 +377,9 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
     );
   }
 
-  private createNotification(communityEvent: CommunityCreationEvent): NotificationPayload {
+  private createNotification(
+    communityEvent: CommunityCreationEvent
+  ): NotificationPayload {
     return {
       userId: communityEvent.ownerAddress,
       type: 'community_created',
@@ -341,8 +394,8 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
         contractAddress: communityEvent.contractAddress,
         transactionHash: communityEvent.transactionHash,
         blockHeight: communityEvent.blockHeight,
-        timestamp: communityEvent.timestamp
-      }
+        timestamp: communityEvent.timestamp,
+      },
     };
   }
 }

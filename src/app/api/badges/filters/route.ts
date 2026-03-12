@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createErrorResponse } from '@/lib/error-response'
+import { NextRequest, NextResponse } from 'next/server';
+import { createErrorResponse } from '@/lib/error-response';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,17 +11,17 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       next: { revalidate: 60 }, // Cache for 60 seconds
-    })
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     return NextResponse.json(data, {
       status: response.status,
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
       },
-    })
+    });
   } catch (error) {
-    return createErrorResponse('Failed to fetch filter options', error)
+    return createErrorResponse('Failed to fetch filter options', error);
   }
 }

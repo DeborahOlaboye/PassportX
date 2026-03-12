@@ -16,10 +16,14 @@ export class BadgeMintNotificationService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeMintNotificationService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeMintNotificationService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeMintNotificationService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeMintNotificationService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeMintNotificationService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeMintNotificationService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeMintNotificationService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeMintNotificationService] ${msg}`, ...args),
     };
   }
 
@@ -36,7 +40,11 @@ export class BadgeMintNotificationService {
         throw new Error('User ID is required for notification');
       }
 
-      const { includeInstructions = true, includePassportLink = true, includeCommunityLink = false } = options;
+      const {
+        includeInstructions = true,
+        includePassportLink = true,
+        includeCommunityLink = false,
+      } = options;
 
       const message = this.buildBadgeMintMessage(
         event.badgeName || 'Achievement Badge',
@@ -61,14 +69,14 @@ export class BadgeMintNotificationService {
           blockHeight: event.blockHeight || 0,
           timestamp: event.timestamp || Date.now(),
           passportUrl: '/passport',
-          badgeDetailsUrl: event.badgeId ? `/badges/${event.badgeId}` : ''
-        }
+          badgeDetailsUrl: event.badgeId ? `/badges/${event.badgeId}` : '',
+        },
       };
 
       this.logger.info('Created badge mint notification', {
         badgeId: event.badgeId,
         userId: event.userId,
-        badgeName: event.badgeName
+        badgeName: event.badgeName,
       });
 
       return notification;
@@ -117,7 +125,9 @@ export class BadgeMintNotificationService {
       userId: issuerAddress,
       type: 'badge_issued',
       title: `✅ Badge Issued: ${event.badgeName}`,
-      message: `You have successfully issued the ${event.badgeName} badge to ${event.userId.substring(0, 10)}... for ${event.criteria}`,
+      message: `You have successfully issued the ${
+        event.badgeName
+      } badge to ${event.userId.substring(0, 10)}... for ${event.criteria}`,
       data: {
         eventType: 'badge-mint-confirmation',
         badgeId: event.badgeId,
@@ -127,8 +137,8 @@ export class BadgeMintNotificationService {
         contractAddress: event.contractAddress || '',
         transactionHash: event.transactionHash || '',
         blockHeight: event.blockHeight || 0,
-        timestamp: event.timestamp || Date.now()
-      }
+        timestamp: event.timestamp || Date.now(),
+      },
     };
   }
 
@@ -145,10 +155,16 @@ export class BadgeMintNotificationService {
 
       const notifications: NotificationPayload[] = [];
 
-      if (!Array.isArray(recipientAddresses) || recipientAddresses.length === 0) {
-        this.logger.warn('No recipient addresses provided for notification batch', {
-          badgeId: event.badgeId
-        });
+      if (
+        !Array.isArray(recipientAddresses) ||
+        recipientAddresses.length === 0
+      ) {
+        this.logger.warn(
+          'No recipient addresses provided for notification batch',
+          {
+            badgeId: event.badgeId,
+          }
+        );
         return [];
       }
 
@@ -156,24 +172,40 @@ export class BadgeMintNotificationService {
         try {
           if (recipientAddress && typeof recipientAddress === 'string') {
             const badgeEvent = { ...event, userId: recipientAddress };
-            const notification = this.createBadgeMintNotification(badgeEvent, options);
+            const notification = this.createBadgeMintNotification(
+              badgeEvent,
+              options
+            );
             notifications.push(notification);
-            this.logger.debug('Added badge mint notification for recipient', { recipientAddress });
+            this.logger.debug('Added badge mint notification for recipient', {
+              recipientAddress,
+            });
           }
         } catch (recipientError) {
-          this.logger.error('Failed to create notification for recipient ' + recipientAddress, recipientError);
+          this.logger.error(
+            'Failed to create notification for recipient ' + recipientAddress,
+            recipientError
+          );
         }
       }
 
       for (const issuerAddress of issuerAddresses || []) {
         try {
           if (issuerAddress && typeof issuerAddress === 'string') {
-            const confirmationNotification = this.createIssuanceConfirmationNotification(event, issuerAddress);
+            const confirmationNotification =
+              this.createIssuanceConfirmationNotification(event, issuerAddress);
             notifications.push(confirmationNotification);
-            this.logger.debug('Added issuance confirmation notification for issuer', { issuerAddress });
+            this.logger.debug(
+              'Added issuance confirmation notification for issuer',
+              { issuerAddress }
+            );
           }
         } catch (issuerError) {
-          this.logger.error('Failed to create confirmation notification for issuer ' + issuerAddress, issuerError);
+          this.logger.error(
+            'Failed to create confirmation notification for issuer ' +
+              issuerAddress,
+            issuerError
+          );
         }
       }
 
@@ -181,7 +213,7 @@ export class BadgeMintNotificationService {
         badgeId: event.badgeId,
         notificationCount: notifications.length,
         recipientCount: recipientAddresses.length,
-        issuerCount: issuerAddresses?.length || 0
+        issuerCount: issuerAddresses?.length || 0,
       });
 
       return notifications;
@@ -193,8 +225,14 @@ export class BadgeMintNotificationService {
 
   validateNotificationPayload(notification: NotificationPayload): boolean {
     try {
-      if (!notification.userId || !notification.title || !notification.message) {
-        this.logger.warn('Invalid notification payload: missing required fields');
+      if (
+        !notification.userId ||
+        !notification.title ||
+        !notification.message
+      ) {
+        this.logger.warn(
+          'Invalid notification payload: missing required fields'
+        );
         return false;
       }
 

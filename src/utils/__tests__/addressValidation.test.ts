@@ -5,25 +5,37 @@
 import {
   isValidStacksAddress,
   validateContractAddress,
-  validateContractAddresses
+  validateContractAddresses,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
   it('should validate mainnet addresses', () => {
-    expect(isValidStacksAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(true);
-    expect(isValidStacksAddress('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(true);
+    expect(
+      isValidStacksAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')
+    ).toBe(true);
+    expect(
+      isValidStacksAddress('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(true);
   });
 
   it('should validate testnet addresses', () => {
-    expect(isValidStacksAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(true);
-    expect(isValidStacksAddress('ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG')).toBe(true);
+    expect(
+      isValidStacksAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')
+    ).toBe(true);
+    expect(
+      isValidStacksAddress('ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG')
+    ).toBe(true);
   });
 
   it('should reject invalid addresses', () => {
     expect(isValidStacksAddress('')).toBe(false);
     expect(isValidStacksAddress('SP123')).toBe(false);
-    expect(isValidStacksAddress('SA3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(false);
-    expect(isValidStacksAddress('SP3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte')).toBe(false);
+    expect(
+      isValidStacksAddress('SA3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')
+    ).toBe(false);
+    expect(
+      isValidStacksAddress('SP3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte')
+    ).toBe(false);
     expect(isValidStacksAddress('invalid')).toBe(false);
   });
 
@@ -36,13 +48,19 @@ describe('isValidStacksAddress', () => {
 
 describe('validateContractAddress', () => {
   it('should validate valid mainnet address', () => {
-    const result = validateContractAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', 'testContract');
+    const result = validateContractAddress(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'testContract'
+    );
     expect(result.valid).toBe(true);
     expect(result.error).toBeUndefined();
   });
 
   it('should validate valid testnet address', () => {
-    const result = validateContractAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM', 'testContract');
+    const result = validateContractAddress(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'testContract'
+    );
     expect(result.valid).toBe(true);
     expect(result.error).toBeUndefined();
   });
@@ -60,13 +78,19 @@ describe('validateContractAddress', () => {
   });
 
   it('should reject address not starting with S', () => {
-    const result = validateContractAddress('AP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', 'testContract');
+    const result = validateContractAddress(
+      'AP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'testContract'
+    );
     expect(result.valid).toBe(false);
     expect(result.error).toContain("must start with 'S'");
   });
 
   it('should reject address with invalid network prefix', () => {
-    const result = validateContractAddress('SA3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', 'testContract');
+    const result = validateContractAddress(
+      'SA3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'testContract'
+    );
     expect(result.valid).toBe(false);
     expect(result.error).toContain("'SP' (mainnet) or 'ST' (testnet)");
   });
@@ -78,7 +102,10 @@ describe('validateContractAddress', () => {
   });
 
   it('should reject address with invalid format', () => {
-    const result = validateContractAddress('SP3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte', 'testContract');
+    const result = validateContractAddress(
+      'SP3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte',
+      'testContract'
+    );
     expect(result.valid).toBe(false);
     expect(result.error).toContain('invalid format');
   });
@@ -93,7 +120,7 @@ describe('validateContractAddresses', () => {
   it('should validate all valid addresses', () => {
     const addresses = {
       PASSPORT_CORE: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
-      BADGE_ISSUER: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7'
+      BADGE_ISSUER: 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
     };
     const result = validateContractAddresses(addresses);
     expect(result.valid).toBe(true);
@@ -103,7 +130,7 @@ describe('validateContractAddresses', () => {
   it('should collect errors for invalid addresses', () => {
     const addresses = {
       PASSPORT_CORE: 'invalid1',
-      BADGE_ISSUER: 'invalid2'
+      BADGE_ISSUER: 'invalid2',
     };
     const result = validateContractAddresses(addresses);
     expect(result.valid).toBe(false);
@@ -113,7 +140,7 @@ describe('validateContractAddresses', () => {
   it('should validate mixed valid and invalid addresses', () => {
     const addresses = {
       PASSPORT_CORE: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
-      BADGE_ISSUER: 'invalid'
+      BADGE_ISSUER: 'invalid',
     };
     const result = validateContractAddresses(addresses);
     expect(result.valid).toBe(false);
@@ -129,7 +156,7 @@ describe('validateContractAddresses', () => {
   it('should skip empty address values', () => {
     const addresses = {
       PASSPORT_CORE: 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
-      BADGE_ISSUER: ''
+      BADGE_ISSUER: '',
     };
     const result = validateContractAddresses(addresses);
     expect(result.valid).toBe(true);

@@ -12,11 +12,15 @@ import {
 
 describe('isValidStacksAddress', () => {
   it('accepts valid mainnet address (SP prefix)', () => {
-    expect(isValidStacksAddress('SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9')).toBe(true);
+    expect(
+      isValidStacksAddress('SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9')
+    ).toBe(true);
   });
 
   it('accepts valid testnet address (ST prefix)', () => {
-    expect(isValidStacksAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(true);
+    expect(
+      isValidStacksAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')
+    ).toBe(true);
   });
 
   it('rejects empty string', () => {
@@ -29,7 +33,9 @@ describe('isValidStacksAddress', () => {
   });
 
   it('rejects address with wrong prefix (SA...)', () => {
-    expect(isValidStacksAddress('SA2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9')).toBe(false);
+    expect(
+      isValidStacksAddress('SA2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9')
+    ).toBe(false);
   });
 
   it('rejects address that is too short', () => {
@@ -41,7 +47,9 @@ describe('isValidStacksAddress', () => {
   });
 
   it('rejects address with lowercase letters', () => {
-    expect(isValidStacksAddress('sp2pabaf9ftajynfzh93xenaj8fvy99rrm50d2jg9')).toBe(false);
+    expect(
+      isValidStacksAddress('sp2pabaf9ftajynfzh93xenaj8fvy99rrm50d2jg9')
+    ).toBe(false);
   });
 });
 

@@ -1,81 +1,99 @@
-'use client'
+'use client';
 
-import { use, useEffect, useState } from 'react'
-import { User, Mail, Globe, Github, Twitter, Linkedin, MessageCircle, Calendar, Shield } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { validateCustomUrlParameter, isSafeFromInjection } from '@/utils/validation'
+import { use, useEffect, useState } from 'react';
+import {
+  User,
+  Mail,
+  Globe,
+  Github,
+  Twitter,
+  Linkedin,
+  MessageCircle,
+  Calendar,
+  Shield,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  validateCustomUrlParameter,
+  isSafeFromInjection,
+} from '@/utils/validation';
 
 interface UserProfile {
-  id: string
-  stacksAddress: string
-  name?: string
-  bio?: string
-  avatar?: string
-  customUrl?: string
+  id: string;
+  stacksAddress: string;
+  name?: string;
+  bio?: string;
+  avatar?: string;
+  customUrl?: string;
   socialLinks?: {
-    twitter?: string
-    github?: string
-    linkedin?: string
-    discord?: string
-    website?: string
-  }
+    twitter?: string;
+    github?: string;
+    linkedin?: string;
+    discord?: string;
+    website?: string;
+  };
   themePreferences?: {
-    mode: 'light' | 'dark' | 'system'
-    accentColor?: string
-  }
-  isPublic: boolean
-  joinDate: string
+    mode: 'light' | 'dark' | 'system';
+    accentColor?: string;
+  };
+  isPublic: boolean;
+  joinDate: string;
 }
 
-export default function PublicProfilePage({ params }: { params: Promise<{ customUrl: string }> }) {
-  const resolvedParams = use(params)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function PublicProfilePage({
+  params,
+}: {
+  params: Promise<{ customUrl: string }>;
+}) {
+  const resolvedParams = use(params);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Validate customUrl parameter on component mount
-  const validation = validateCustomUrlParameter(resolvedParams.customUrl)
-  
+  const validation = validateCustomUrlParameter(resolvedParams.customUrl);
+
   // Set error if customUrl is invalid
-  const isValidUrl = validation.isValid && isSafeFromInjection(validation.sanitized || '')
+  const isValidUrl =
+    validation.isValid && isSafeFromInjection(validation.sanitized || '');
 
   useEffect(() => {
     // Only fetch if customUrl is valid
     if (isValidUrl) {
-      fetchProfile()
+      fetchProfile();
     } else {
-      setError('Invalid custom URL format')
-      setLoading(false)
+      setError('Invalid custom URL format');
+      setLoading(false);
     }
-  }, [resolvedParams.customUrl])
+  }, [resolvedParams.customUrl]);
 
   const fetchProfile = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Use sanitized customUrl from validation
-      const sanitizedUrl = validation.sanitized || ''
-      
+      const sanitizedUrl = validation.sanitized || '';
+
       // Build URL with validated parameter
-      const url = new URL(`${window.location.origin}/api/users/profile`)
-      url.searchParams.set('customUrl', sanitizedUrl)
-      
-      const response = await fetch(url.toString())
-      const data = await response.json()
+      const url = new URL(`${window.location.origin}/api/users/profile`);
+      url.searchParams.set('customUrl', sanitizedUrl);
+
+      const response = await fetch(url.toString());
+      const data = await response.json();
 
       if (response.ok) {
-        setProfile(data)
+        setProfile(data);
       } else {
-        setError(data.error || 'Profile not found')
+        setError(data.error || 'Profile not found');
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
-      setError('Failed to load profile')
+      console.error('Error fetching profile:', error);
+      setError('Failed to load profile');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -85,7 +103,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !profile) {
@@ -93,14 +111,18 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile Not Found</h1>
-          <p className="text-gray-600 mb-6">{error || 'This profile does not exist or is private.'}</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Profile Not Found
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {error || 'This profile does not exist or is private.'}
+          </p>
           <Link href="/" className="text-blue-600 hover:text-blue-700">
             Go back home
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -135,70 +157,82 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
               <div className="flex flex-wrap items-center gap-4 justify-center sm:justify-start">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Calendar className="w-4 h-4" />
-                  Joined {new Date(profile.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                  Joined{' '}
+                  {new Date(profile.joinDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                  })}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Social Links */}
-          {profile.socialLinks && Object.values(profile.socialLinks).some(link => link) && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Connect</h2>
-              <div className="flex flex-wrap gap-3">
-                {profile.socialLinks.twitter && (
-                  <a
-                    href={`https://twitter.com/${profile.socialLinks.twitter.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <Twitter className="w-4 h-4" />
-                    <span className="text-sm">Twitter</span>
-                  </a>
-                )}
-                {profile.socialLinks.github && (
-                  <a
-                    href={`https://github.com/${profile.socialLinks.github}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <Github className="w-4 h-4" />
-                    <span className="text-sm">GitHub</span>
-                  </a>
-                )}
-                {profile.socialLinks.linkedin && (
-                  <a
-                    href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                    <span className="text-sm">LinkedIn</span>
-                  </a>
-                )}
-                {profile.socialLinks.discord && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="text-sm">{profile.socialLinks.discord}</span>
-                  </div>
-                )}
-                {profile.socialLinks.website && (
-                  <a
-                    href={profile.socialLinks.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    <Globe className="w-4 h-4" />
-                    <span className="text-sm">Website</span>
-                  </a>
-                )}
+          {profile.socialLinks &&
+            Object.values(profile.socialLinks).some((link) => link) && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h2 className="text-sm font-semibold text-gray-700 mb-3">
+                  Connect
+                </h2>
+                <div className="flex flex-wrap gap-3">
+                  {profile.socialLinks.twitter && (
+                    <a
+                      href={`https://twitter.com/${profile.socialLinks.twitter.replace(
+                        '@',
+                        ''
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      <Twitter className="w-4 h-4" />
+                      <span className="text-sm">Twitter</span>
+                    </a>
+                  )}
+                  {profile.socialLinks.github && (
+                    <a
+                      href={`https://github.com/${profile.socialLinks.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      <Github className="w-4 h-4" />
+                      <span className="text-sm">GitHub</span>
+                    </a>
+                  )}
+                  {profile.socialLinks.linkedin && (
+                    <a
+                      href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                      <span className="text-sm">LinkedIn</span>
+                    </a>
+                  )}
+                  {profile.socialLinks.discord && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+                      <MessageCircle className="w-4 h-4" />
+                      <span className="text-sm">
+                        {profile.socialLinks.discord}
+                      </span>
+                    </div>
+                  )}
+                  {profile.socialLinks.website && (
+                    <a
+                      href={profile.socialLinks.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    >
+                      <Globe className="w-4 h-4" />
+                      <span className="text-sm">Website</span>
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Badges Section - Placeholder */}
@@ -210,5 +244,5 @@ export default function PublicProfilePage({ params }: { params: Promise<{ custom
         </div>
       </div>
     </div>
-  )
+  );
 }

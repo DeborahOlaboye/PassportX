@@ -9,7 +9,7 @@ import {
   Smartphone,
   Trash2,
   Download,
-  Filter
+  Filter,
 } from 'lucide-react';
 
 interface ConnectionRecord {
@@ -145,8 +145,8 @@ export default function MobileWalletConnectionHistory({
     localStorage.setItem('mobileWalletHistory', JSON.stringify(history));
   }, [history]);
 
-  const filteredHistory = history.filter(record =>
-    filter === 'all' || record.status === filter
+  const filteredHistory = history.filter(
+    (record) => filter === 'all' || record.status === filter
   );
 
   const formatDuration = (seconds: number) => {
@@ -172,7 +172,9 @@ export default function MobileWalletConnectionHistory({
   };
 
   const handleClearHistory = () => {
-    if (window.confirm('Are you sure you want to clear all connection history?')) {
+    if (
+      window.confirm('Are you sure you want to clear all connection history?')
+    ) {
       setHistory([]);
       onClearHistory?.();
     }
@@ -180,9 +182,12 @@ export default function MobileWalletConnectionHistory({
 
   const handleExportHistory = () => {
     const dataStr = JSON.stringify(history, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri =
+      'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = `wallet-history-${new Date().toISOString().split('T')[0]}.json`;
+    const exportFileDefaultName = `wallet-history-${
+      new Date().toISOString().split('T')[0]
+    }.json`;
 
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -192,8 +197,8 @@ export default function MobileWalletConnectionHistory({
     onExportHistory?.();
   };
 
-  const successCount = history.filter(r => r.status === 'success').length;
-  const failureCount = history.filter(r => r.status === 'failed').length;
+  const successCount = history.filter((r) => r.status === 'success').length;
+  const failureCount = history.filter((r) => r.status === 'failed').length;
   const totalConnections = history.length;
 
   return (
@@ -234,11 +239,15 @@ export default function MobileWalletConnectionHistory({
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center p-4 bg-blue-50 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{totalConnections}</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {totalConnections}
+          </div>
           <div className="text-sm text-blue-700">Total Connections</div>
         </div>
         <div className="text-center p-4 bg-green-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{successCount}</div>
+          <div className="text-2xl font-bold text-green-600">
+            {successCount}
+          </div>
           <div className="text-sm text-green-700">Successful</div>
         </div>
         <div className="text-center p-4 bg-red-50 rounded-lg">
@@ -254,7 +263,9 @@ export default function MobileWalletConnectionHistory({
             <button
               onClick={() => setFilter('all')}
               className={`px-3 py-1 text-sm rounded ${
-                filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                filter === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700'
               }`}
             >
               All ({totalConnections})
@@ -262,7 +273,9 @@ export default function MobileWalletConnectionHistory({
             <button
               onClick={() => setFilter('success')}
               className={`px-3 py-1 text-sm rounded ${
-                filter === 'success' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'
+                filter === 'success'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white text-gray-700'
               }`}
             >
               Success ({successCount})
@@ -270,7 +283,9 @@ export default function MobileWalletConnectionHistory({
             <button
               onClick={() => setFilter('failed')}
               className={`px-3 py-1 text-sm rounded ${
-                filter === 'failed' ? 'bg-red-600 text-white' : 'bg-white text-gray-700'
+                filter === 'failed'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-white text-gray-700'
               }`}
             >
               Failed ({failureCount})
@@ -285,7 +300,9 @@ export default function MobileWalletConnectionHistory({
           <div className="text-center py-8 text-gray-500">
             <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No connection history found</p>
-            <p className="text-sm">Your mobile wallet connections will appear here</p>
+            <p className="text-sm">
+              Your mobile wallet connections will appear here
+            </p>
           </div>
         ) : (
           filteredHistory.map((record) => {
@@ -303,11 +320,17 @@ export default function MobileWalletConnectionHistory({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{WALLET_ICONS[record.walletType]}</span>
+                    <span className="text-lg">
+                      {WALLET_ICONS[record.walletType]}
+                    </span>
                     <div>
-                      <div className="font-medium text-gray-900">{record.walletName}</div>
+                      <div className="font-medium text-gray-900">
+                        {record.walletName}
+                      </div>
                       <div className="text-sm text-gray-500 flex items-center gap-2">
-                        <span>{PLATFORM_ICONS[record.deviceInfo.platform]}</span>
+                        <span>
+                          {PLATFORM_ICONS[record.deviceInfo.platform]}
+                        </span>
                         <span>{formatTimestamp(record.timestamp)}</span>
                         <span>•</span>
                         <span>{formatDuration(record.duration)}</span>

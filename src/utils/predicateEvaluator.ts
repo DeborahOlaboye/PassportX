@@ -5,7 +5,7 @@ import {
   PredicateResult,
   STXTransferEvent,
   ContractCallEvent,
-  EventType
+  EventType,
 } from '../types/chainhook';
 
 /**
@@ -27,7 +27,7 @@ export class PredicateEvaluator {
       matched,
       event,
       matchedAt: Date.now(),
-      actions: matched ? predicate.filters ? ['trigger'] : [] : []
+      actions: matched ? (predicate.filters ? ['trigger'] : []) : [],
     };
   }
 
@@ -132,16 +132,14 @@ export class PredicateEvaluator {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
   /**
    * Create a predicate from partial configuration
    */
-  static createPredicate(
-    config: Partial<PredicateConfig>
-  ): PredicateConfig {
+  static createPredicate(config: Partial<PredicateConfig>): PredicateConfig {
     return {
       id: config.id || `predicate-${Date.now()}`,
       name: config.name || 'Unnamed Predicate',
@@ -150,7 +148,7 @@ export class PredicateEvaluator {
       eventType: config.eventType || EventType.TX,
       filters: config.filters || {},
       enabled: config.enabled !== undefined ? config.enabled : true,
-      createdAt: config.createdAt || Date.now()
+      createdAt: config.createdAt || Date.now(),
     };
   }
 }

@@ -6,20 +6,20 @@ export enum ChainhookErrorType {
   DELIVERY_ERROR = 'DELIVERY_ERROR',
   PREFERENCES_ERROR = 'PREFERENCES_ERROR',
   WEBSOCKET_ERROR = 'WEBSOCKET_ERROR',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 export interface ChainhookError {
-  type: ChainhookErrorType
-  message: string
-  originalError?: Error
-  timestamp: string
-  context?: Record<string, any>
+  type: ChainhookErrorType;
+  message: string;
+  originalError?: Error;
+  timestamp: string;
+  context?: Record<string, any>;
 }
 
 export class ChainhookErrorHandler {
-  private static errorLog: ChainhookError[] = []
-  private static maxLogSize = 1000
+  private static errorLog: ChainhookError[] = [];
+  private static maxLogSize = 1000;
 
   static createError(
     type: ChainhookErrorType,
@@ -32,145 +32,176 @@ export class ChainhookErrorHandler {
       message,
       originalError,
       timestamp: new Date().toISOString(),
-      context
-    }
+      context,
+    };
 
-    this.logError(error)
-    return error
+    this.logError(error);
+    return error;
   }
 
-  static handleParseError(message: string, originalError?: Error): ChainhookError {
+  static handleParseError(
+    message: string,
+    originalError?: Error
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.PARSE_ERROR,
       message,
       originalError,
       { originalMessage: originalError?.message }
-    )
+    );
   }
 
-  static handleValidationError(message: string, context?: Record<string, any>): ChainhookError {
+  static handleValidationError(
+    message: string,
+    context?: Record<string, any>
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.VALIDATION_ERROR,
       message,
       undefined,
       context
-    )
+    );
   }
 
-  static handleHandlerError(handlerName: string, message: string, originalError?: Error): ChainhookError {
+  static handleHandlerError(
+    handlerName: string,
+    message: string,
+    originalError?: Error
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.HANDLER_ERROR,
       `Handler error in ${handlerName}: ${message}`,
       originalError,
       { handler: handlerName }
-    )
+    );
   }
 
-  static handleNotificationError(userId: string, message: string, originalError?: Error): ChainhookError {
+  static handleNotificationError(
+    userId: string,
+    message: string,
+    originalError?: Error
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.NOTIFICATION_ERROR,
       `Notification error for user ${userId}: ${message}`,
       originalError,
       { userId }
-    )
+    );
   }
 
-  static handleDeliveryError(notificationId: string, message: string, originalError?: Error): ChainhookError {
+  static handleDeliveryError(
+    notificationId: string,
+    message: string,
+    originalError?: Error
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.DELIVERY_ERROR,
       `Delivery error for notification ${notificationId}: ${message}`,
       originalError,
       { notificationId }
-    )
+    );
   }
 
-  static handlePreferencesError(userId: string, message: string, originalError?: Error): ChainhookError {
+  static handlePreferencesError(
+    userId: string,
+    message: string,
+    originalError?: Error
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.PREFERENCES_ERROR,
       `Preferences error for user ${userId}: ${message}`,
       originalError,
       { userId }
-    )
+    );
   }
 
-  static handleWebSocketError(message: string, originalError?: Error): ChainhookError {
+  static handleWebSocketError(
+    message: string,
+    originalError?: Error
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.WEBSOCKET_ERROR,
       message,
       originalError
-    )
+    );
   }
 
-  static handleUnknownError(message: string, originalError?: Error, context?: Record<string, any>): ChainhookError {
+  static handleUnknownError(
+    message: string,
+    originalError?: Error,
+    context?: Record<string, any>
+  ): ChainhookError {
     return this.createError(
       ChainhookErrorType.UNKNOWN_ERROR,
       message,
       originalError,
       context
-    )
+    );
   }
 
   private static logError(error: ChainhookError): void {
-    this.errorLog.push(error)
+    this.errorLog.push(error);
 
     if (this.errorLog.length > this.maxLogSize) {
-      this.errorLog.shift()
+      this.errorLog.shift();
     }
 
     console.error(`[${error.type}] ${error.timestamp}: ${error.message}`, {
       originalError: error.originalError,
-      context: error.context
-    })
+      context: error.context,
+    });
   }
 
   static getErrorLog(limit?: number): ChainhookError[] {
     if (limit) {
-      return this.errorLog.slice(-limit)
+      return this.errorLog.slice(-limit);
     }
-    return [...this.errorLog]
+    return [...this.errorLog];
   }
 
   static getErrorsByType(type: ChainhookErrorType): ChainhookError[] {
-    return this.errorLog.filter(e => e.type === type)
+    return this.errorLog.filter((e) => e.type === type);
   }
 
   static getErrorCount(): number {
-    return this.errorLog.length
+    return this.errorLog.length;
   }
 
   static getErrorCountByType(type: ChainhookErrorType): number {
-    return this.getErrorsByType(type).length
+    return this.getErrorsByType(type).length;
   }
 
   static clearErrorLog(): void {
-    this.errorLog = []
+    this.errorLog = [];
   }
 
   static getErrorSummary(): Record<string, number> {
-    const summary: Record<string, number> = {}
+    const summary: Record<string, number> = {};
 
     for (const error of this.errorLog) {
-      summary[error.type] = (summary[error.type] || 0) + 1
+      summary[error.type] = (summary[error.type] || 0) + 1;
     }
 
-    return summary
+    return summary;
   }
 
-  static isRecentError(type: ChainhookErrorType, withinMinutes: number = 5): boolean {
-    const cutoffTime = Date.now() - withinMinutes * 60 * 1000
+  static isRecentError(
+    type: ChainhookErrorType,
+    withinMinutes: number = 5
+  ): boolean {
+    const cutoffTime = Date.now() - withinMinutes * 60 * 1000;
 
     return this.errorLog.some(
-      error =>
-        error.type === type &&
-        new Date(error.timestamp).getTime() > cutoffTime
-    )
+      (error) =>
+        error.type === type && new Date(error.timestamp).getTime() > cutoffTime
+    );
   }
 
   static getRecentErrors(withinMinutes: number = 5): ChainhookError[] {
-    const cutoffTime = Date.now() - withinMinutes * 60 * 1000
+    const cutoffTime = Date.now() - withinMinutes * 60 * 1000;
 
     return this.errorLog.filter(
-      error => new Date(error.timestamp).getTime() > cutoffTime
-    )
+      (error) => new Date(error.timestamp).getTime() > cutoffTime
+    );
   }
 }

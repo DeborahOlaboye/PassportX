@@ -9,7 +9,7 @@ import {
   BadgeMintPredicateEvent,
   CommunityCreationEvent,
   RevocationEvent,
-  ReorgEvent
+  ReorgEvent,
 } from '../types/chainhook';
 
 /**
@@ -40,11 +40,14 @@ export class MockChainhookEventFactory {
       blockHeight: 100000 + this.getNextId(),
       blockHash: `0x${'0'.repeat(64)}`,
       sender: overrides?.sender || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
-      recipient: overrides?.recipient || 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
+      recipient:
+        overrides?.recipient || 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
       amount: overrides?.amount || BigInt(1000000),
       txIndex: overrides?.txIndex || 0,
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
@@ -60,22 +63,25 @@ export class MockChainhookEventFactory {
       timestamp,
       blockHeight: 100000 + this.getNextId(),
       blockHash: `0x${'0'.repeat(64)}`,
-      contract: overrides?.contract || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
+      contract:
+        overrides?.contract || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       function: overrides?.function || 'mint-badge',
-      args: overrides?.args || { recipientAddress: 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT' },
+      args: overrides?.args || {
+        recipientAddress: 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
+      },
       txIndex: overrides?.txIndex || 0,
       success: overrides?.success !== undefined ? overrides.success : true,
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
   /**
    * Create a mock NFT mint event
    */
-  static createNFTMintEvent(
-    overrides?: Partial<NFTMintEvent>
-  ): NFTMintEvent {
+  static createNFTMintEvent(overrides?: Partial<NFTMintEvent>): NFTMintEvent {
     const timestamp = Date.now();
     return {
       type: EventType.TX,
@@ -83,11 +89,16 @@ export class MockChainhookEventFactory {
       blockHeight: 100000 + this.getNextId(),
       blockHash: `0x${'0'.repeat(64)}`,
       tokenId: overrides?.tokenId || `badge-${this.getNextId()}`,
-      recipient: overrides?.recipient || 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
-      contractAddress: overrides?.contractAddress || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
+      recipient:
+        overrides?.recipient || 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
+      contractAddress:
+        overrides?.contractAddress ||
+        'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       metadata: overrides?.metadata || { level: 1, category: 'achievement' },
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
@@ -107,8 +118,10 @@ export class MockChainhookEventFactory {
       entityType: overrides?.entityType || 'badge',
       changes: overrides?.changes || { name: 'Updated Badge Name' },
       previousValues: overrides?.previousValues || { name: 'Old Badge Name' },
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
@@ -125,12 +138,17 @@ export class MockChainhookEventFactory {
       blockHeight: 100000 + this.getNextId(),
       blockHash: `0x${'0'.repeat(64)}`,
       badgeId: overrides?.badgeId || `badge-${this.getNextId()}`,
-      recipientAddress: overrides?.recipientAddress || 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
-      issuerAddress: overrides?.issuerAddress || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
+      recipientAddress:
+        overrides?.recipientAddress ||
+        'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
+      issuerAddress:
+        overrides?.issuerAddress || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       communityId: overrides?.communityId || 'community-1',
       level: overrides?.level || 1,
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
@@ -147,12 +165,16 @@ export class MockChainhookEventFactory {
       blockHeight: 100000 + this.getNextId(),
       blockHash: `0x${'0'.repeat(64)}`,
       communityId: overrides?.communityId || `community-${this.getNextId()}`,
-      creatorAddress: overrides?.creatorAddress || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
+      creatorAddress:
+        overrides?.creatorAddress ||
+        'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       name: overrides?.name || `Test Community ${this.getNextId()}`,
       description: overrides?.description || 'A test community',
       metadata: overrides?.metadata || { tags: ['test'] },
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
@@ -168,21 +190,24 @@ export class MockChainhookEventFactory {
       timestamp,
       blockHeight: 100000 + this.getNextId(),
       blockHash: `0x${'0'.repeat(64)}`,
-      revokedEntityId: overrides?.revokedEntityId || `badge-${this.getNextId()}`,
+      revokedEntityId:
+        overrides?.revokedEntityId || `badge-${this.getNextId()}`,
       revokedEntityType: overrides?.revokedEntityType || 'badge',
-      revokedByAddress: overrides?.revokedByAddress || 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
+      revokedByAddress:
+        overrides?.revokedByAddress ||
+        'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       reason: overrides?.reason || 'Policy violation',
-      txHash: overrides?.txHash || `0x${this.getNextId().toString().padStart(64, '0')}`,
-      ...overrides
+      txHash:
+        overrides?.txHash ||
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
+      ...overrides,
     };
   }
 
   /**
    * Create a mock reorg event
    */
-  static createReorgEvent(
-    overrides?: Partial<ReorgEvent>
-  ): ReorgEvent {
+  static createReorgEvent(overrides?: Partial<ReorgEvent>): ReorgEvent {
     const timestamp = Date.now();
     return {
       type: EventType.BLOCK,
@@ -193,17 +218,17 @@ export class MockChainhookEventFactory {
       commonAncestorHeight: overrides?.commonAncestorHeight || 99997,
       removedBlockHashes: overrides?.removedBlockHashes || [
         `0x${this.getNextId().toString().padStart(64, '0')}`,
-        `0x${this.getNextId().toString().padStart(64, '0')}`
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
       ],
       addedBlockHashes: overrides?.addedBlockHashes || [
         `0x${this.getNextId().toString().padStart(64, '0')}`,
-        `0x${this.getNextId().toString().padStart(64, '0')}`
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
       ],
       affectedTransactions: overrides?.affectedTransactions || [
         `0x${this.getNextId().toString().padStart(64, '0')}`,
-        `0x${this.getNextId().toString().padStart(64, '0')}`
+        `0x${this.getNextId().toString().padStart(64, '0')}`,
       ],
-      ...overrides
+      ...overrides,
     };
   }
 

@@ -1,16 +1,20 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useNotificationPreferences } from '@/contexts/NotificationPreferencesContext'
-import ErrorBoundary from './ErrorBoundary'
-import FallbackUI from './FallbackUI'
+import { useState } from 'react';
+import { useNotificationPreferences } from '@/contexts/NotificationPreferencesContext';
+import ErrorBoundary from './ErrorBoundary';
+import FallbackUI from './FallbackUI';
 
 export function NotificationPreferencesPanel() {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Failed to load notification preferences" />}>
+    <ErrorBoundary
+      fallback={
+        <FallbackUI message="Failed to load notification preferences" />
+      }
+    >
       <NotificationPreferencesPanelInner />
     </ErrorBoundary>
-  )
+  );
 }
 
 function NotificationPreferencesPanelInner() {
@@ -26,133 +30,141 @@ function NotificationPreferencesPanelInner() {
     toggleCommunityInviteNotifications,
     toggleSystemNotifications,
     toggleSystemAnnouncementNotifications,
-    resetToDefaults
-  } = useNotificationPreferences()
+    resetToDefaults,
+  } = useNotificationPreferences();
 
-  const [isSaving, setIsSaving] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const showSuccess = (message: string) => {
-    setSuccessMessage(message)
-    setTimeout(() => setSuccessMessage(''), 3000)
-  }
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
 
   const handleBadgeToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleBadgeNotifications(enabled)
-      showSuccess('Badge notifications updated')
+      setIsSaving(true);
+      await toggleBadgeNotifications(enabled);
+      showSuccess('Badge notifications updated');
     } catch (err) {
-      console.error('Error toggling badge notifications:', err)
+      console.error('Error toggling badge notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleBadgeMintToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleBadgeMintNotifications(enabled)
-      showSuccess('Badge mint notifications updated')
+      setIsSaving(true);
+      await toggleBadgeMintNotifications(enabled);
+      showSuccess('Badge mint notifications updated');
     } catch (err) {
-      console.error('Error toggling badge mint notifications:', err)
+      console.error('Error toggling badge mint notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleBadgeVerifyToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleBadgeVerifyNotifications(enabled)
-      showSuccess('Badge verification notifications updated')
+      setIsSaving(true);
+      await toggleBadgeVerifyNotifications(enabled);
+      showSuccess('Badge verification notifications updated');
     } catch (err) {
-      console.error('Error toggling badge verification notifications:', err)
+      console.error('Error toggling badge verification notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCommunityToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleCommunityNotifications(enabled)
-      showSuccess('Community notifications updated')
+      setIsSaving(true);
+      await toggleCommunityNotifications(enabled);
+      showSuccess('Community notifications updated');
     } catch (err) {
-      console.error('Error toggling community notifications:', err)
+      console.error('Error toggling community notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCommunityUpdateToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleCommunityUpdateNotifications(enabled)
-      showSuccess('Community update notifications updated')
+      setIsSaving(true);
+      await toggleCommunityUpdateNotifications(enabled);
+      showSuccess('Community update notifications updated');
     } catch (err) {
-      console.error('Error toggling community update notifications:', err)
+      console.error('Error toggling community update notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCommunityInviteToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleCommunityInviteNotifications(enabled)
-      showSuccess('Community invite notifications updated')
+      setIsSaving(true);
+      await toggleCommunityInviteNotifications(enabled);
+      showSuccess('Community invite notifications updated');
     } catch (err) {
-      console.error('Error toggling community invite notifications:', err)
+      console.error('Error toggling community invite notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleSystemToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleSystemNotifications(enabled)
-      showSuccess('System notifications updated')
+      setIsSaving(true);
+      await toggleSystemNotifications(enabled);
+      showSuccess('System notifications updated');
     } catch (err) {
-      console.error('Error toggling system notifications:', err)
+      console.error('Error toggling system notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleSystemAnnouncementToggle = async (enabled: boolean) => {
     try {
-      setIsSaving(true)
-      await toggleSystemAnnouncementNotifications(enabled)
-      showSuccess('System announcement notifications updated')
+      setIsSaving(true);
+      await toggleSystemAnnouncementNotifications(enabled);
+      showSuccess('System announcement notifications updated');
     } catch (err) {
-      console.error('Error toggling system announcement notifications:', err)
+      console.error('Error toggling system announcement notifications:', err);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleReset = async () => {
-    if (confirm('Are you sure you want to reset notification preferences to defaults?')) {
+    if (
+      confirm(
+        'Are you sure you want to reset notification preferences to defaults?'
+      )
+    ) {
       try {
-        setIsSaving(true)
-        await resetToDefaults()
-        showSuccess('Notification preferences reset to defaults')
+        setIsSaving(true);
+        await resetToDefaults();
+        showSuccess('Notification preferences reset to defaults');
       } catch (err) {
-        console.error('Error resetting preferences:', err)
+        console.error('Error resetting preferences:', err);
       } finally {
-        setIsSaving(false)
+        setIsSaving(false);
       }
     }
-  }
+  };
 
   if (isLoading) {
-    return <div className="p-4">Loading notification preferences...</div>
+    return <div className="p-4">Loading notification preferences...</div>;
   }
 
   if (!preferences) {
-    return <div className="p-4">No notification preferences found. Please try again.</div>
+    return (
+      <div className="p-4">
+        No notification preferences found. Please try again.
+      </div>
+    );
   }
 
   return (
@@ -160,9 +172,7 @@ function NotificationPreferencesPanelInner() {
       <h2 className="text-2xl font-bold mb-6">Notification Preferences</h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-          {error}
-        </div>
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>
       )}
 
       {successMessage && (
@@ -174,10 +184,12 @@ function NotificationPreferencesPanelInner() {
       <div className="space-y-8">
         <section className="border-b pb-6">
           <h3 className="text-lg font-semibold mb-4">Badge Notifications</h3>
-          
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Enable all badge notifications</label>
+              <label className="text-sm font-medium">
+                Enable all badge notifications
+              </label>
               <button
                 onClick={() => handleBadgeToggle(!preferences.badges.enabled)}
                 disabled={isSaving}
@@ -194,9 +206,13 @@ function NotificationPreferencesPanelInner() {
             {preferences.badges.enabled && (
               <>
                 <div className="flex items-center justify-between pl-4">
-                  <label className="text-sm">Badge received notifications</label>
+                  <label className="text-sm">
+                    Badge received notifications
+                  </label>
                   <button
-                    onClick={() => handleBadgeMintToggle(!preferences.badges.mint)}
+                    onClick={() =>
+                      handleBadgeMintToggle(!preferences.badges.mint)
+                    }
                     disabled={isSaving}
                     className={`px-3 py-1 rounded text-sm ${
                       preferences.badges.mint
@@ -209,9 +225,13 @@ function NotificationPreferencesPanelInner() {
                 </div>
 
                 <div className="flex items-center justify-between pl-4">
-                  <label className="text-sm">Badge verification notifications</label>
+                  <label className="text-sm">
+                    Badge verification notifications
+                  </label>
                   <button
-                    onClick={() => handleBadgeVerifyToggle(!preferences.badges.verify)}
+                    onClick={() =>
+                      handleBadgeVerifyToggle(!preferences.badges.verify)
+                    }
                     disabled={isSaving}
                     className={`px-3 py-1 rounded text-sm ${
                       preferences.badges.verify
@@ -228,13 +248,19 @@ function NotificationPreferencesPanelInner() {
         </section>
 
         <section className="border-b pb-6">
-          <h3 className="text-lg font-semibold mb-4">Community Notifications</h3>
-          
+          <h3 className="text-lg font-semibold mb-4">
+            Community Notifications
+          </h3>
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Enable all community notifications</label>
+              <label className="text-sm font-medium">
+                Enable all community notifications
+              </label>
               <button
-                onClick={() => handleCommunityToggle(!preferences.community.enabled)}
+                onClick={() =>
+                  handleCommunityToggle(!preferences.community.enabled)
+                }
                 disabled={isSaving}
                 className={`px-3 py-1 rounded ${
                   preferences.community.enabled
@@ -249,9 +275,15 @@ function NotificationPreferencesPanelInner() {
             {preferences.community.enabled && (
               <>
                 <div className="flex items-center justify-between pl-4">
-                  <label className="text-sm">Community update notifications</label>
+                  <label className="text-sm">
+                    Community update notifications
+                  </label>
                   <button
-                    onClick={() => handleCommunityUpdateToggle(!preferences.community.updates)}
+                    onClick={() =>
+                      handleCommunityUpdateToggle(
+                        !preferences.community.updates
+                      )
+                    }
                     disabled={isSaving}
                     className={`px-3 py-1 rounded text-sm ${
                       preferences.community.updates
@@ -264,9 +296,15 @@ function NotificationPreferencesPanelInner() {
                 </div>
 
                 <div className="flex items-center justify-between pl-4">
-                  <label className="text-sm">Community invite notifications</label>
+                  <label className="text-sm">
+                    Community invite notifications
+                  </label>
                   <button
-                    onClick={() => handleCommunityInviteToggle(!preferences.community.invites)}
+                    onClick={() =>
+                      handleCommunityInviteToggle(
+                        !preferences.community.invites
+                      )
+                    }
                     disabled={isSaving}
                     className={`px-3 py-1 rounded text-sm ${
                       preferences.community.invites
@@ -284,10 +322,12 @@ function NotificationPreferencesPanelInner() {
 
         <section className="pb-6">
           <h3 className="text-lg font-semibold mb-4">System Notifications</h3>
-          
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Enable all system notifications</label>
+              <label className="text-sm font-medium">
+                Enable all system notifications
+              </label>
               <button
                 onClick={() => handleSystemToggle(!preferences.system.enabled)}
                 disabled={isSaving}
@@ -303,9 +343,15 @@ function NotificationPreferencesPanelInner() {
 
             {preferences.system.enabled && (
               <div className="flex items-center justify-between pl-4">
-                <label className="text-sm">System announcement notifications</label>
+                <label className="text-sm">
+                  System announcement notifications
+                </label>
                 <button
-                  onClick={() => handleSystemAnnouncementToggle(!preferences.system.announcements)}
+                  onClick={() =>
+                    handleSystemAnnouncementToggle(
+                      !preferences.system.announcements
+                    )
+                  }
                   disabled={isSaving}
                   className={`px-3 py-1 rounded text-sm ${
                     preferences.system.announcements
@@ -331,6 +377,5 @@ function NotificationPreferencesPanelInner() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

@@ -7,7 +7,9 @@ import { useAuth } from '../hooks/useAuth';
 
 export const AuthDemo: React.FC = () => {
   const { token, isAuthenticated, signIn, signOut, error } = useAuth();
-  const [account, setAccount] = useState('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+  const [account, setAccount] = useState(
+    'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+  );
 
   const handleSignIn = async () => {
     await signIn(account);
@@ -15,8 +17,14 @@ export const AuthDemo: React.FC = () => {
 
   return (
     <div style={{ padding: 20 }}>
-      <div data-testid="auth-status">{isAuthenticated ? 'Authenticated' : 'Not authenticated'}</div>
-      {isAuthenticated && <div data-testid="auth-token">{token?.accessToken?.substring(0, 10)}...</div>}
+      <div data-testid="auth-status">
+        {isAuthenticated ? 'Authenticated' : 'Not authenticated'}
+      </div>
+      {isAuthenticated && (
+        <div data-testid="auth-token">
+          {token?.accessToken?.substring(0, 10)}...
+        </div>
+      )}
       {error && <div style={{ color: 'red' }}>Error: {error.message}</div>}
       <input
         type="text"

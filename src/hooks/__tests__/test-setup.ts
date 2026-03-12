@@ -3,7 +3,7 @@
  * Provides common mocks, fixtures, and utilities for all test suites
  */
 
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
 // Mock user session data
 export const mockUserSession = {
@@ -13,21 +13,21 @@ export const mockUserSession = {
     profile: {
       stxAddress: {
         testnet: 'STTEST123456789TESTNETADDRESS123456',
-        mainnet: 'SPTEST123456789MAINNETADDRESS123456'
+        mainnet: 'SPTEST123456789MAINNETADDRESS123456',
       },
-      name: 'Test User'
-    }
+      name: 'Test User',
+    },
   })),
-  signUserOut: jest.fn()
-}
+  signUserOut: jest.fn(),
+};
 
 // Mock user object
 export const mockUser = {
   stacksAddress: 'STTEST123456789TESTNETADDRESS123456',
   username: 'testuser',
   profileUrl: 'https://example.com/profile',
-  email: 'test@example.com'
-}
+  email: 'test@example.com',
+};
 
 // Mock context value
 export const mockAuthContext = {
@@ -35,8 +35,8 @@ export const mockAuthContext = {
   userSession: mockUserSession,
   isLoading: false,
   isAuthenticated: true,
-  error: null
-}
+  error: null,
+};
 
 /**
  * Badge issuance test fixtures
@@ -47,12 +47,12 @@ export const badgeIssuanceFixtures = {
     templateId: 1,
     communityId: 1,
     recipientName: 'John Doe',
-    recipientEmail: 'john@example.com'
+    recipientEmail: 'john@example.com',
   },
 
   validResponse: {
     txId: 'tx_0123456789abcdef0123456789abcdef',
-    badgeId: 1
+    badgeId: 1,
   },
 
   successStates: [
@@ -61,8 +61,8 @@ export const badgeIssuanceFixtures = {
       error: null,
       success: true,
       txId: 'tx_0123456789abcdef0123456789abcdef',
-      badgeId: 1
-    }
+      badgeId: 1,
+    },
   ],
 
   errorResponses: {
@@ -71,9 +71,9 @@ export const badgeIssuanceFixtures = {
     invalidAddress: new Error('Invalid recipient address format'),
     templateNotFound: new Error('Badge template does not exist'),
     communityNotFound: new Error('Community does not exist'),
-    unauthorized: new Error('Only badge issuers can issue badges')
-  }
-}
+    unauthorized: new Error('Only badge issuers can issue badges'),
+  },
+};
 
 /**
  * Community creation test fixtures
@@ -87,15 +87,15 @@ export const communityCreationFixtures = {
     stxPayment: 1000,
     theme: {
       primaryColor: '#FF6B35',
-      secondaryColor: '#004E89'
+      secondaryColor: '#004E89',
     },
     settings: {
       allowMemberInvites: true,
       requireApproval: false,
       allowBadgeIssuance: true,
-      allowCustomBadges: true
+      allowCustomBadges: true,
     },
-    tags: ['web3', 'developers', 'blockchain']
+    tags: ['web3', 'developers', 'blockchain'],
   },
 
   minimalParams: {
@@ -106,13 +106,13 @@ export const communityCreationFixtures = {
       allowMemberInvites: false,
       requireApproval: true,
       allowBadgeIssuance: false,
-      allowCustomBadges: false
-    }
+      allowCustomBadges: false,
+    },
   },
 
   validResponse: {
     txId: 'tx_community_0123456789abcdef',
-    communityId: 1
+    communityId: 1,
   },
 
   statusResponses: {
@@ -121,33 +121,37 @@ export const communityCreationFixtures = {
       blockHeight: 50000,
       blockTime: 1672531200,
       confirmed: true,
-      fee: 180
+      fee: 180,
     },
 
     pending: {
       status: 'pending',
       blockHeight: null,
-      confirmed: false
+      confirmed: false,
     },
 
     failed: {
       status: 'failed',
       blockHeight: 49999,
       confirmed: true,
-      error: 'Insufficient STX balance'
-    }
+      error: 'Insufficient STX balance',
+    },
   },
 
   errorResponses: {
     duplicateName: new Error('Community name already taken'),
     insufficientPayment: new Error('Minimum STX payment is 100 microSTX'),
     unauthorized: new Error('You do not have permission to create communities'),
-    maxLimitReached: new Error('Maximum number of communities created by this user reached'),
+    maxLimitReached: new Error(
+      'Maximum number of communities created by this user reached'
+    ),
     maintenanceMode: new Error('Contract is in maintenance mode'),
     invalidName: new Error('Community name must be 3-50 characters'),
-    invalidDescription: new Error('Community description must be 10-500 characters')
-  }
-}
+    invalidDescription: new Error(
+      'Community description must be 10-500 characters'
+    ),
+  },
+};
 
 /**
  * Transaction test fixtures
@@ -156,28 +160,28 @@ export const transactionFixtures = {
   txIds: {
     valid: 'tx_0123456789abcdef0123456789abcdef0123456789abcdef',
     invalid: 'invalid_tx_id',
-    nonexistent: 'tx_0000000000000000000000000000000000000000'
+    nonexistent: 'tx_0000000000000000000000000000000000000000',
   },
 
   blockHeights: {
     recent: 50000,
     old: 49000,
-    future: 51000
+    future: 51000,
   },
 
   timestamps: {
     recent: Math.floor(Date.now() / 1000),
     old: 1672531200,
-    future: Math.floor(Date.now() / 1000) + 86400
+    future: Math.floor(Date.now() / 1000) + 86400,
   },
 
   fees: {
     low: 120,
     medium: 180,
     high: 250,
-    custom: [140, 160, 200]
-  }
-}
+    custom: [140, 160, 200],
+  },
+};
 
 /**
  * Network configuration fixtures
@@ -186,15 +190,15 @@ export const networkFixtures = {
   testnet: {
     network: 'testnet',
     explorerUrl: 'https://testnet-explorer.stacks.co',
-    apiUrl: 'https://testnet-api.stacks.co'
+    apiUrl: 'https://testnet-api.stacks.co',
   },
 
   mainnet: {
     network: 'mainnet',
     explorerUrl: 'https://explorer.stacks.co',
-    apiUrl: 'https://api.stacks.co'
-  }
-}
+    apiUrl: 'https://api.stacks.co',
+  },
+};
 
 /**
  * Error simulation utilities
@@ -203,12 +207,10 @@ export const errorSimulation = {
   /**
    * Simulates a failed transaction
    */
-  createFailedTransaction: (
-    reason: string
-  ) => ({
+  createFailedTransaction: (reason: string) => ({
     txId: `tx_failed_${Date.now()}`,
     status: 'failed',
-    error: reason
+    error: reason,
   }),
 
   /**
@@ -233,8 +235,8 @@ export const errorSimulation = {
    * Simulates a contract revert
    */
   createContractRevert: (errorCode: string) =>
-    new Error(`Contract revert: ${errorCode}`)
-}
+    new Error(`Contract revert: ${errorCode}`),
+};
 
 /**
  * Mock implementations for contract managers
@@ -247,20 +249,20 @@ export const contractManagerMocks = {
     issueBadge: jest.fn().mockResolvedValue({
       txId: 'tx_badge_123',
       badgeId: 1,
-      ...overrides
+      ...overrides,
     }),
     revokeBadge: jest.fn().mockResolvedValue({
       txId: 'tx_revoke_123',
-      badgeId: 1
+      badgeId: 1,
     }),
     getBadgeDetails: jest.fn().mockResolvedValue({
       id: 1,
       templateId: 1,
       recipientAddress: 'ST123',
       issuedAt: Date.now(),
-      revokedAt: null
+      revokedAt: null,
     }),
-    validateBadge: jest.fn().mockResolvedValue(true)
+    validateBadge: jest.fn().mockResolvedValue(true),
   }),
 
   /**
@@ -270,25 +272,25 @@ export const contractManagerMocks = {
     createCommunity: jest.fn().mockResolvedValue({
       txId: 'tx_community_123',
       communityId: 1,
-      ...overrides
+      ...overrides,
     }),
     updateCommunity: jest.fn().mockResolvedValue({
       txId: 'tx_update_123',
-      communityId: 1
+      communityId: 1,
     }),
     validateTransactionStatus: jest.fn().mockResolvedValue({
       status: 'success',
       blockHeight: 50000,
-      confirmed: true
+      confirmed: true,
     }),
     getCommunityDetails: jest.fn().mockResolvedValue({
       id: 1,
       name: 'Test Community',
       owner: 'ST123',
-      createdAt: Date.now()
-    })
-  })
-}
+      createdAt: Date.now(),
+    }),
+  }),
+};
 
 /**
  * Wait utilities for async tests
@@ -299,37 +301,43 @@ export const waitUtils = {
    */
   waitFor: (condition: () => boolean, timeout = 5000, interval = 100) => {
     return new Promise((resolve, reject) => {
-      const startTime = Date.now()
+      const startTime = Date.now();
       const checkInterval = setInterval(() => {
         if (condition()) {
-          clearInterval(checkInterval)
-          resolve(true)
+          clearInterval(checkInterval);
+          resolve(true);
         } else if (Date.now() - startTime > timeout) {
-          clearInterval(checkInterval)
-          reject(new Error('Condition not met within timeout'))
+          clearInterval(checkInterval);
+          reject(new Error('Condition not met within timeout'));
         }
-      }, interval)
-    })
+      }, interval);
+    });
   },
 
   /**
    * Wait for state update
    */
-  waitForStateUpdate: (stateGetter: () => any, expectedValue: any, timeout = 5000) => {
+  waitForStateUpdate: (
+    stateGetter: () => any,
+    expectedValue: any,
+    timeout = 5000
+  ) => {
     return new Promise((resolve, reject) => {
-      const startTime = Date.now()
+      const startTime = Date.now();
       const checkInterval = setInterval(() => {
         if (stateGetter() === expectedValue) {
-          clearInterval(checkInterval)
-          resolve(true)
+          clearInterval(checkInterval);
+          resolve(true);
         } else if (Date.now() - startTime > timeout) {
-          clearInterval(checkInterval)
-          reject(new Error(`State did not reach expected value: ${expectedValue}`))
+          clearInterval(checkInterval);
+          reject(
+            new Error(`State did not reach expected value: ${expectedValue}`)
+          );
         }
-      }, 100)
-    })
-  }
-}
+      }, 100);
+    });
+  },
+};
 
 /**
  * Assertion utilities
@@ -339,22 +347,22 @@ export const assertions = {
    * Verify successful transaction state
    */
   assertSuccessfulTransaction: (result: any) => {
-    expect(result.isLoading).toBe(false)
-    expect(result.error).toBeNull()
-    expect(result.success).toBe(true)
-    expect(result.txId).toBeDefined()
-    expect(result.txId).not.toBeNull()
+    expect(result.isLoading).toBe(false);
+    expect(result.error).toBeNull();
+    expect(result.success).toBe(true);
+    expect(result.txId).toBeDefined();
+    expect(result.txId).not.toBeNull();
   },
 
   /**
    * Verify failed transaction state
    */
   assertFailedTransaction: (result: any, expectedError?: string) => {
-    expect(result.isLoading).toBe(false)
-    expect(result.success).toBe(false)
-    expect(result.error).toBeDefined()
+    expect(result.isLoading).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
     if (expectedError) {
-      expect(result.error).toContain(expectedError)
+      expect(result.error).toContain(expectedError);
     }
   },
 
@@ -362,19 +370,19 @@ export const assertions = {
    * Verify loading state
    */
   assertLoadingState: (result: any) => {
-    expect(result.isLoading).toBe(true)
+    expect(result.isLoading).toBe(true);
   },
 
   /**
    * Verify reset state
    */
   assertResetState: (result: any) => {
-    expect(result.isLoading).toBe(false)
-    expect(result.error).toBeNull()
-    expect(result.success).toBe(false)
-    expect(result.txId).toBeNull()
-  }
-}
+    expect(result.isLoading).toBe(false);
+    expect(result.error).toBeNull();
+    expect(result.success).toBe(false);
+    expect(result.txId).toBeNull();
+  },
+};
 
 /**
  * Test data generators
@@ -384,11 +392,11 @@ export const testDataGenerators = {
    * Generate random Stacks address
    */
   generateStacksAddress: (network: 'testnet' | 'mainnet' = 'testnet') => {
-    const prefix = network === 'mainnet' ? 'SP' : 'ST'
+    const prefix = network === 'mainnet' ? 'SP' : 'ST';
     const randomPart = Array.from({ length: 39 }, () =>
       Math.random().toString(36).charAt(2)
-    ).join('')
-    return `${prefix}${randomPart.toUpperCase().slice(0, 39)}`
+    ).join('');
+    return `${prefix}${randomPart.toUpperCase().slice(0, 39)}`;
   },
 
   /**
@@ -397,7 +405,7 @@ export const testDataGenerators = {
   generateTransactionId: () => {
     return `tx_${Array.from({ length: 64 }, () =>
       Math.floor(Math.random() * 16).toString(16)
-    ).join('')}`
+    ).join('')}`;
   },
 
   /**
@@ -417,7 +425,7 @@ export const testDataGenerators = {
     recipientAddress: this.generateStacksAddress(),
     templateId: Math.floor(Math.random() * 100),
     communityId: Math.floor(Math.random() * 100),
-    ...overrides
+    ...overrides,
   }),
 
   /**
@@ -431,11 +439,11 @@ export const testDataGenerators = {
       allowMemberInvites: Math.random() > 0.5,
       requireApproval: Math.random() > 0.5,
       allowBadgeIssuance: Math.random() > 0.5,
-      allowCustomBadges: Math.random() > 0.5
+      allowCustomBadges: Math.random() > 0.5,
     },
-    ...overrides
-  })
-}
+    ...overrides,
+  }),
+};
 
 export default {
   mockUserSession,
@@ -449,5 +457,5 @@ export default {
   contractManagerMocks,
   waitUtils,
   assertions,
-  testDataGenerators
-}
+  testDataGenerators,
+};

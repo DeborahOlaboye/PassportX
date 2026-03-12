@@ -8,7 +8,7 @@
 export enum EventType {
   TX = 'tx',
   BLOCK = 'block',
-  MICROBLOCK = 'microblock'
+  MICROBLOCK = 'microblock',
 }
 
 export interface ChainhookEvent {

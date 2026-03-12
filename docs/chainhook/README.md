@@ -12,13 +12,13 @@ real-time updates in response to on-chain events.
 
 ## Documents
 
-| Document | What you will learn |
-|---|---|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Component map, two-layer config explained, predicate table, network environments |
-| [PREDICATE_FLOW.md](./PREDICATE_FLOW.md) | Step-by-step predicate lifecycle, registration call chain, webhook signature algorithm |
+| Document                                       | What you will learn                                                                                              |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)           | Component map, two-layer config explained, predicate table, network environments                                 |
+| [PREDICATE_FLOW.md](./PREDICATE_FLOW.md)       | Step-by-step predicate lifecycle, registration call chain, webhook signature algorithm                           |
 | [SEQUENCE_DIAGRAMS.md](./SEQUENCE_DIAGRAMS.md) | Mermaid diagrams for badge mint, metadata update, revocation, community creation, connection recovery, and reorg |
-| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Diagnostic checklist, fixes for 8 common failure modes, error code reference |
-| [CONFIGURATION.md](./CONFIGURATION.md) | Every environment variable, all config file exports, `.env` templates for dev and production |
+| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)     | Diagnostic checklist, fixes for 8 common failure modes, error code reference                                     |
+| [CONFIGURATION.md](./CONFIGURATION.md)         | Every environment variable, all config file exports, `.env` templates for dev and production                     |
 
 ## Key Files (quick reference)
 

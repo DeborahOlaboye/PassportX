@@ -11,11 +11,7 @@ import User from '../models/User';
 import { createError } from '../middleware/errorHandler';
 import { Response } from 'express';
 import { setSessionCookie, clearSessionCookie } from '../utils/sessionManager';
-import {
-  generateNonce,
-  validateNonce,
-  invalidateNonce,
-} from './nonceService';
+import { generateNonce, validateNonce, invalidateNonce } from './nonceService';
 import logger from '../utils/logger';
 
 /**
@@ -131,7 +127,11 @@ export const authenticateUser = async (
   }
 
   // Verify the wallet signature.
-  const isValidSignature = await verifySignature(message, signature, stacksAddress);
+  const isValidSignature = await verifySignature(
+    message,
+    signature,
+    stacksAddress
+  );
   if (!isValidSignature) {
     throw createError('Invalid signature', 401);
   }

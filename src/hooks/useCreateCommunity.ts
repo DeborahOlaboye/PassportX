@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   CommunityContractManager,
   CreateCommunityParams,
-  CommunitySettings
+  CommunitySettings,
 } from '@/lib/contracts/communityContractUtils';
 import { CommunityBackendPayload, BackendApiResponse } from '@/types/contract';
 
@@ -41,7 +41,7 @@ export const useCreateCommunity = () => {
     error: null,
     success: false,
     txId: null,
-    communityId: null
+    communityId: null,
   });
 
   const resetState = useCallback(() => {
@@ -50,28 +50,29 @@ export const useCreateCommunity = () => {
       error: null,
       success: false,
       txId: null,
-      communityId: null
+      communityId: null,
     });
   }, []);
 
   const createCommunity = useCallback(
     async (options: CreateCommunityOptions) => {
       if (!user || !userSession.isUserSignedIn()) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: 'You must be signed in to create a community'
+          error: 'You must be signed in to create a community',
         }));
         throw new Error('User not authenticated');
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
-        error: null
+        error: null,
       }));
 
       try {
-        const contractAddress = process.env.NEXT_PUBLIC_COMMUNITY_MANAGER_ADDRESS ||
+        const contractAddress =
+          process.env.NEXT_PUBLIC_COMMUNITY_MANAGER_ADDRESS ||
           (process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet'
             ? process.env.NEXT_PUBLIC_MAINNET_COMMUNITY_MANAGER_ADDRESS
             : process.env.NEXT_PUBLIC_TESTNET_COMMUNITY_MANAGER_ADDRESS);
@@ -80,7 +81,10 @@ export const useCreateCommunity = () => {
           throw new Error('Community manager contract address not configured');
         }
 
-        const network = process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
+        const network =
+          process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet'
+            ? 'mainnet'
+            : 'testnet';
 
         const manager = new CommunityContractManager(
           contractAddress,
@@ -92,17 +96,17 @@ export const useCreateCommunity = () => {
           name: options.name,
           description: options.description,
           stxPayment: options.stxPayment,
-          network: network as 'testnet' | 'mainnet'
+          network: network as 'testnet' | 'mainnet',
         };
 
         const result = await manager.createCommunity(contractParams);
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isLoading: false,
           success: true,
           txId: result.txId,
-          communityId: result.communityId || null
+          communityId: result.communityId || null,
         }));
 
         const transactionData = {
@@ -117,18 +121,19 @@ export const useCreateCommunity = () => {
           tags: options.tags,
           owner: user.stacksAddress,
           createdAt: new Date().toISOString(),
-          network: network
+          network: network,
         };
 
         await registerCommunityOnBackend(transactionData);
 
         return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to create community';
-        setState(prev => ({
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to create community';
+        setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: errorMessage
+          error: errorMessage,
         }));
         throw err;
       }
@@ -136,20 +141,25 @@ export const useCreateCommunity = () => {
     [user, userSession]
   );
 
-  const registerCommunityOnBackend = async (communityData: CommunityBackendPayload): Promise<BackendApiResponse> => {
+  const registerCommunityOnBackend = async (
+    communityData: CommunityBackendPayload
+  ): Promise<BackendApiResponse> => {
     try {
       const response = await fetch('/api/communities', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(communityData)
+        body: JSON.stringify(communityData),
       });
 
       if (!response.ok) {
         const error: BackendApiResponse = await response.json();
         console.error('Backend registration error:', error);
-        return { success: false, error: error.message || 'Registration failed' };
+        return {
+          success: false,
+          error: error.message || 'Registration failed',
+        };
       }
 
       return response.json();
@@ -157,7 +167,7 @@ export const useCreateCommunity = () => {
       console.error('Failed to register community on backend:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   };
@@ -169,13 +179,21 @@ export const useCreateCommunity = () => {
       }
 
       try {
-        const contractAddress = process.env.NEXT_PUBLIC_COMMUNITY_MANAGER_ADDRESS;
+        const contractAddress =
+          process.env.NEXT_PUBLIC_COMMUNITY_MANAGER_ADDRESS;
         if (!contractAddress) {
           throw new Error('Community manager contract address not configured');
         }
 
-        const network = process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
-        const manager = new CommunityContractManager(contractAddress, userSession, network);
+        const network =
+          process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet'
+            ? 'mainnet'
+            : 'testnet';
+        const manager = new CommunityContractManager(
+          contractAddress,
+          userSession,
+          network
+        );
 
         return await manager.validateTransactionStatus(txId);
       } catch (error: unknown) {
@@ -190,6 +208,6 @@ export const useCreateCommunity = () => {
     ...state,
     createCommunity,
     resetState,
-    checkTransactionStatus
+    checkTransactionStatus,
   };
 };

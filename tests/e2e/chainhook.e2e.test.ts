@@ -1,8 +1,17 @@
 // End-to-end Chainhook integration test scenarios
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { PredicateEvaluator, PredicateBuilder } from '../src/utils/predicateEvaluator';
-import { EventHandlerRegistry, EventHandlerBuilder } from '../src/utils/eventHandlerRegistry';
-import { ReorgHandler, ReorgAwareEventProcessor } from '../src/utils/reorgHandler';
+import {
+  PredicateEvaluator,
+  PredicateBuilder,
+} from '../src/utils/predicateEvaluator';
+import {
+  EventHandlerRegistry,
+  EventHandlerBuilder,
+} from '../src/utils/eventHandlerRegistry';
+import {
+  ReorgHandler,
+  ReorgAwareEventProcessor,
+} from '../src/utils/reorgHandler';
 import { MockChainhookEventFactory } from '../src/utils/mockChainhookEvents';
 import { EventType } from '../src/types/chainhook';
 
@@ -34,18 +43,18 @@ describe('Chainhook E2E Scenarios', () => {
       // Create badge template
       const createEvent = MockChainhookEventFactory.createMetadataUpdateEvent({
         entityType: 'badge',
-        changes: { created: true }
+        changes: { created: true },
       });
       await eventRegistry.dispatch('metadata-update', createEvent);
 
       // Issue badge to multiple recipients
       const issueEvent1 = MockChainhookEventFactory.createBadgeMintEvent({
         badgeId: 'badge-1',
-        recipientAddress: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG'
+        recipientAddress: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       });
       const issueEvent2 = MockChainhookEventFactory.createBadgeMintEvent({
         badgeId: 'badge-1',
-        recipientAddress: 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT'
+        recipientAddress: 'ST2CY5V39NAYQ07NNC5V4FQ7QG7V5K2KKG3TZYJCT',
       });
 
       await eventRegistry.dispatch('badge-mint', issueEvent1);
@@ -54,7 +63,7 @@ describe('Chainhook E2E Scenarios', () => {
       // Revoke badge
       const revokeEvent = MockChainhookEventFactory.createRevocationEvent({
         revokedEntityId: 'badge-1',
-        revokedEntityType: 'badge'
+        revokedEntityType: 'badge',
       });
       await eventRegistry.dispatch('revocation', revokeEvent);
 
@@ -74,10 +83,11 @@ describe('Chainhook E2E Scenarios', () => {
         .onBadgeMint(badgeIssued);
 
       // Create community
-      const communityEvent = MockChainhookEventFactory.createCommunityCreationEvent({
-        communityId: 'community-1',
-        name: 'Developers Community'
-      });
+      const communityEvent =
+        MockChainhookEventFactory.createCommunityCreationEvent({
+          communityId: 'community-1',
+          name: 'Developers Community',
+        });
       await eventRegistry.dispatch('community-creation', communityEvent);
 
       // Issue badges within community
@@ -85,7 +95,7 @@ describe('Chainhook E2E Scenarios', () => {
         MockChainhookEventFactory.createBadgeMintEvent({
           badgeId: `badge-${i}`,
           communityId: 'community-1',
-          recipientAddress: `ST${i}PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG`
+          recipientAddress: `ST${i}PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG`,
         })
       );
 
@@ -103,16 +113,17 @@ describe('Chainhook E2E Scenarios', () => {
       new EventHandlerBuilder(eventRegistry).onRevocation(handler);
 
       // Create community
-      const communityEvent = MockChainhookEventFactory.createCommunityCreationEvent({
-        communityId: 'community-1'
-      });
+      const communityEvent =
+        MockChainhookEventFactory.createCommunityCreationEvent({
+          communityId: 'community-1',
+        });
       await eventRegistry.dispatch('community-creation', communityEvent);
 
       // Revoke community
       const revokeEvent = MockChainhookEventFactory.createRevocationEvent({
         revokedEntityId: 'community-1',
         revokedEntityType: 'community',
-        reason: 'Compliance violation'
+        reason: 'Compliance violation',
       });
       await eventRegistry.dispatch('revocation', revokeEvent);
 
@@ -132,7 +143,9 @@ describe('Chainhook E2E Scenarios', () => {
 
       // Process initial events
       const batch1 = Array.from({ length: 5 }, (_, i) =>
-        MockChainhookEventFactory.createBadgeMintEvent({ badgeId: `badge-${i}` })
+        MockChainhookEventFactory.createBadgeMintEvent({
+          badgeId: `badge-${i}`,
+        })
       );
 
       for (const event of batch1) {
@@ -142,13 +155,15 @@ describe('Chainhook E2E Scenarios', () => {
       // Detect reorg affecting some transactions
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         affectedTransactions: [batch1[2].txHash || 'tx-2'],
-        blockHeight: 100010
+        blockHeight: 100010,
       });
       await reorgHandler.handleReorg(reorgEvent);
 
       // Process replacement events
       const batch2 = [
-        MockChainhookEventFactory.createBadgeMintEvent({ badgeId: 'badge-2-replacement' })
+        MockChainhookEventFactory.createBadgeMintEvent({
+          badgeId: 'badge-2-replacement',
+        }),
       ];
 
       for (const event of batch2) {
@@ -176,7 +191,7 @@ describe('Chainhook E2E Scenarios', () => {
       for (let batch = 0; batch < batchCount; batch++) {
         const events = Array.from({ length: eventsPerBatch }, (_, i) =>
           MockChainhookEventFactory.createBadgeMintEvent({
-            badgeId: `badge-${batch}-${i}`
+            badgeId: `badge-${batch}-${i}`,
           })
         );
 
@@ -204,18 +219,24 @@ describe('Chainhook E2E Scenarios', () => {
         .build();
 
       const lowValueEvent = MockChainhookEventFactory.createSTXTransferEvent({
-        amount: BigInt(100000)
+        amount: BigInt(100000),
       });
 
       const highValueEvent = MockChainhookEventFactory.createSTXTransferEvent({
         amount: BigInt(5000000),
-        sender: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG'
+        sender: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       });
 
       const predicates = [highValuePredicate, specificSenderPredicate];
 
-      const lowValueResults = predicateEvaluator.evaluateEvents([lowValueEvent], predicates);
-      const highValueResults = predicateEvaluator.evaluateEvents([highValueEvent], predicates);
+      const lowValueResults = predicateEvaluator.evaluateEvents(
+        [lowValueEvent],
+        predicates
+      );
+      const highValueResults = predicateEvaluator.evaluateEvents(
+        [highValueEvent],
+        predicates
+      );
 
       expect(lowValueResults.length).toBe(1); // Only sender match
       expect(highValueResults.length).toBe(2); // Both match
@@ -224,7 +245,8 @@ describe('Chainhook E2E Scenarios', () => {
 
   describe('Error Recovery and Resilience', () => {
     it('should continue processing after handler failures', async () => {
-      const failingHandler = jest.fn()
+      const failingHandler = jest
+        .fn()
         .mockRejectedValueOnce(new Error('Temporary failure'))
         .mockResolvedValueOnce(undefined);
 
@@ -245,8 +267,8 @@ describe('Chainhook E2E Scenarios', () => {
       expect(response2.success).toBe(true);
 
       // One handler fails, other succeeds
-      expect(response1.actions.some(a => a.status === 'failed')).toBe(true);
-      expect(response1.actions.some(a => a.status === 'success')).toBe(true);
+      expect(response1.actions.some((a) => a.status === 'failed')).toBe(true);
+      expect(response1.actions.some((a) => a.status === 'success')).toBe(true);
     });
 
     it('should handle and recover from reorg during active event processing', async () => {
@@ -254,13 +276,15 @@ describe('Chainhook E2E Scenarios', () => {
       new EventHandlerBuilder(eventRegistry).onBadgeMint(handler);
 
       // Start processing events
-      const event1 = MockChainhookEventFactory.createBadgeMintEvent({ txHash: 'tx-1' });
+      const event1 = MockChainhookEventFactory.createBadgeMintEvent({
+        txHash: 'tx-1',
+      });
       await eventRegistry.dispatch('badge-mint', event1);
 
       // Reorg occurs affecting this transaction
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         affectedTransactions: ['tx-1'],
-        blockHeight: 100005
+        blockHeight: 100005,
       });
       await reorgHandler.handleReorg(reorgEvent);
 
@@ -279,7 +303,7 @@ describe('Chainhook E2E Scenarios', () => {
       // Create reorg scenario
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100010,
-        affectedTransactions: ['tx-1', 'tx-2', 'tx-3']
+        affectedTransactions: ['tx-1', 'tx-2', 'tx-3'],
       });
       await reorgHandler.handleReorg(reorgEvent);
 
@@ -293,9 +317,10 @@ describe('Chainhook E2E Scenarios', () => {
       // Simulate reprocessing
       const reprocessedEvents = Array.from(
         { length: recoveryActions.reprocessTransactions.length },
-        (_, i) => MockChainhookEventFactory.createBadgeMintEvent({
-          txHash: recoveryActions.reprocessTransactions[i]
-        })
+        (_, i) =>
+          MockChainhookEventFactory.createBadgeMintEvent({
+            txHash: recoveryActions.reprocessTransactions[i],
+          })
       );
 
       expect(reprocessedEvents.length).toBeGreaterThan(0);

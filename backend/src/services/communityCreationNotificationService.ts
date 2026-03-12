@@ -15,10 +15,14 @@ export class CommunityCreationNotificationService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CommunityCreationNotificationService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CommunityCreationNotificationService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCreationNotificationService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CommunityCreationNotificationService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CommunityCreationNotificationService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CommunityCreationNotificationService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CommunityCreationNotificationService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CommunityCreationNotificationService] ${msg}`, ...args),
     };
   }
 
@@ -35,7 +39,8 @@ export class CommunityCreationNotificationService {
         throw new Error('Owner address is required for notification');
       }
 
-      const { includeInstructions = true, includeDashboardLink = true } = options;
+      const { includeInstructions = true, includeDashboardLink = true } =
+        options;
 
       const message = this.buildWelcomeMessage(
         event.communityName || 'Your Community',
@@ -58,14 +63,18 @@ export class CommunityCreationNotificationService {
           transactionHash: event.transactionHash || '',
           blockHeight: event.blockHeight || 0,
           timestamp: event.timestamp || Date.now(),
-          dashboardUrl: event.communityId ? `/communities/${event.communityId}` : '',
-          settingsUrl: event.communityId ? `/communities/${event.communityId}/settings` : ''
-        }
+          dashboardUrl: event.communityId
+            ? `/communities/${event.communityId}`
+            : '',
+          settingsUrl: event.communityId
+            ? `/communities/${event.communityId}/settings`
+            : '',
+        },
       };
 
       this.logger.info('Created welcome notification', {
         communityId: event.communityId,
-        userId: event.ownerAddress
+        userId: event.ownerAddress,
       });
 
       return notification;
@@ -123,8 +132,8 @@ export class CommunityCreationNotificationService {
         badgesUrl: `${communityUrl}/badges`,
         transactionHash: '',
         blockHeight: 0,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     };
   }
 
@@ -140,7 +149,7 @@ export class CommunityCreationNotificationService {
 
       if (!Array.isArray(adminAddresses) || adminAddresses.length === 0) {
         this.logger.warn('No admin addresses provided for notification batch', {
-          communityId: event.communityId
+          communityId: event.communityId,
         });
         return [];
       }
@@ -151,12 +160,20 @@ export class CommunityCreationNotificationService {
       try {
         const primaryAdmin = adminAddresses[0];
         if (primaryAdmin && typeof primaryAdmin === 'string') {
-          const welcomeNotification = this.createWelcomeNotification(event, options);
+          const welcomeNotification = this.createWelcomeNotification(
+            event,
+            options
+          );
           notifications.push(welcomeNotification);
-          this.logger.debug('Added primary admin welcome notification', { adminAddress: primaryAdmin });
+          this.logger.debug('Added primary admin welcome notification', {
+            adminAddress: primaryAdmin,
+          });
         }
       } catch (primaryError) {
-        this.logger.error('Failed to create primary admin notification', primaryError);
+        this.logger.error(
+          'Failed to create primary admin notification',
+          primaryError
+        );
       }
 
       // Additional admin confirmations
@@ -164,24 +181,31 @@ export class CommunityCreationNotificationService {
         try {
           const adminAddress = adminAddresses[i];
           if (adminAddress && typeof adminAddress === 'string') {
-            const confirmationNotification = this.createAdminConfirmationNotification(
-              event.communityId || '',
-              event.communityName || 'Community',
-              adminAddress,
-              event.communityId ? `/communities/${event.communityId}` : ''
-            );
+            const confirmationNotification =
+              this.createAdminConfirmationNotification(
+                event.communityId || '',
+                event.communityName || 'Community',
+                adminAddress,
+                event.communityId ? `/communities/${event.communityId}` : ''
+              );
             notifications.push(confirmationNotification);
-            this.logger.debug('Added secondary admin confirmation notification', { adminAddress });
+            this.logger.debug(
+              'Added secondary admin confirmation notification',
+              { adminAddress }
+            );
           }
         } catch (adminError) {
-          this.logger.error('Failed to create admin confirmation notification for admin ' + i, adminError);
+          this.logger.error(
+            'Failed to create admin confirmation notification for admin ' + i,
+            adminError
+          );
         }
       }
 
       this.logger.info('Built notification batch for community creation', {
         communityId: event.communityId,
         notificationCount: notifications.length,
-        adminCount: adminAddresses.length
+        adminCount: adminAddresses.length,
       });
 
       return notifications;
@@ -193,8 +217,14 @@ export class CommunityCreationNotificationService {
 
   validateNotificationPayload(notification: NotificationPayload): boolean {
     try {
-      if (!notification.userId || !notification.title || !notification.message) {
-        this.logger.warn('Invalid notification payload: missing required fields');
+      if (
+        !notification.userId ||
+        !notification.title ||
+        !notification.message
+      ) {
+        this.logger.warn(
+          'Invalid notification payload: missing required fields'
+        );
         return false;
       }
 

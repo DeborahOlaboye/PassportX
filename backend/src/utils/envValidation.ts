@@ -37,7 +37,9 @@ export class EnvValidator {
     const result = this.validate();
     if (!result.isValid) {
       console.error(
-        `❌ [EnvValidator] Missing or insecure required environment variables: ${result.missingVariables.join(', ')}`
+        `❌ [EnvValidator] Missing or insecure required environment variables: ${result.missingVariables.join(
+          ', '
+        )}`
       );
       console.error(
         '❌ [EnvValidator] Copy backend/.env.example to backend/.env and set real values for each missing variable.'

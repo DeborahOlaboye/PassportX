@@ -12,31 +12,31 @@ db.createCollection('users', {
       properties: {
         stacksAddress: {
           bsonType: 'string',
-          description: 'Stacks blockchain address - required'
+          description: 'Stacks blockchain address - required',
         },
         email: {
           bsonType: 'string',
-          description: 'User email address'
+          description: 'User email address',
         },
         name: {
           bsonType: 'string',
-          maxLength: 100
+          maxLength: 100,
         },
         bio: {
           bsonType: 'string',
-          maxLength: 500
+          maxLength: 500,
         },
         isPublic: {
           bsonType: 'bool',
-          description: 'Whether the profile is public'
+          description: 'Whether the profile is public',
         },
         joinDate: {
           bsonType: 'date',
-          description: 'Date when user joined'
-        }
-      }
-    }
-  }
+          description: 'Date when user joined',
+        },
+      },
+    },
+  },
 });
 
 db.createCollection('communities', {
@@ -47,26 +47,26 @@ db.createCollection('communities', {
       properties: {
         name: {
           bsonType: 'string',
-          maxLength: 100
+          maxLength: 100,
         },
         slug: {
           bsonType: 'string',
-          pattern: '^[a-z0-9-]+$'
+          pattern: '^[a-z0-9-]+$',
         },
         description: {
           bsonType: 'string',
-          maxLength: 2000
+          maxLength: 2000,
         },
         admins: {
           bsonType: 'array',
           minItems: 1,
           items: {
-            bsonType: 'string'
-          }
-        }
-      }
-    }
-  }
+            bsonType: 'string',
+          },
+        },
+      },
+    },
+  },
 });
 
 db.createCollection('badgetemplates');
@@ -106,7 +106,7 @@ db.users.insertOne({
   joinDate: new Date(),
   lastActive: new Date(),
   communities: [],
-  adminCommunities: []
+  adminCommunities: [],
 });
 
 // Create sample community (for development)
@@ -122,7 +122,7 @@ const sampleCommunity = db.communities.insertOne({
     secondaryColor: '#10b981',
     backgroundColor: '#ffffff',
     textColor: '#1f2937',
-    borderRadius: '0.5rem'
+    borderRadius: '0.5rem',
   },
   socialLinks: {},
   memberCount: 0,
@@ -133,11 +133,11 @@ const sampleCommunity = db.communities.insertOne({
     allowMemberInvites: true,
     requireApproval: false,
     allowBadgeIssuance: true,
-    allowCustomBadges: false
+    allowCustomBadges: false,
   },
   tags: ['sample', 'development'],
   createdAt: new Date(),
-  updatedAt: new Date()
+  updatedAt: new Date(),
 });
 
 // Create sample badge template
@@ -152,7 +152,7 @@ db.badgetemplates.insertOne({
   community: sampleCommunity.insertedId,
   creator: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
   isActive: true,
-  createdAt: new Date()
+  createdAt: new Date(),
 });
 
 print('MongoDB initialization complete!');

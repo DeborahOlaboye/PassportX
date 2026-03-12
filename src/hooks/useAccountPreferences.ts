@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useMultiAccount } from '@/contexts/MultiAccountContext';
-import { AccountPreferences, AccountSettings, AccountSortOption } from '@/types/multi-account';
+import {
+  AccountPreferences,
+  AccountSettings,
+  AccountSortOption,
+} from '@/types/multi-account';
 import {
   loadPreferences,
   savePreferences,
@@ -9,8 +13,11 @@ import {
 } from '@/utils/account-storage';
 
 export function useAccountPreferences() {
-  const { state, savePreferences: contextSavePreferences, updateAccountSettings } =
-    useMultiAccount();
+  const {
+    state,
+    savePreferences: contextSavePreferences,
+    updateAccountSettings,
+  } = useMultiAccount();
   const [isLoading, setIsLoading] = useState(true);
 
   // Load preferences on mount
@@ -124,7 +131,9 @@ export function useAccountPreferences() {
   const toggleNotifications = useCallback(
     async (address: string) => {
       const current = await getAccountSettings(address);
-      return updateAccountPreference(address, { notifications: !current?.notifications });
+      return updateAccountPreference(address, {
+        notifications: !current?.notifications,
+      });
     },
     [getAccountSettings, updateAccountPreference]
   );

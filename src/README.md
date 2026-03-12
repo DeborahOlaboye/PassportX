@@ -49,7 +49,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Stacks wallet (for testing)
 
@@ -57,11 +57,13 @@ src/
 
 1. Clone the repository
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Copy environment configuration:
+
    ```bash
    cp .env.local.example .env.local
    ```
@@ -69,6 +71,7 @@ src/
 4. Update environment variables in `.env.local`
 
 5. Run the development server:
+
    ```bash
    npm run dev
    ```
@@ -78,16 +81,19 @@ src/
 ## Key Components
 
 ### User Experience
+
 - **Passport View**: Personal badge collection with filtering and search
 - **Public Sharing**: SEO-optimized public passport pages
 - **Responsive Design**: Works seamlessly on desktop and mobile
 
-### Admin Experience  
+### Admin Experience
+
 - **Dashboard**: Overview of communities and statistics
 - **Badge Creation**: Intuitive form with real-time preview
 - **Community Management**: Create and manage badge-issuing communities
 
 ### Technical Features
+
 - **Wallet Integration**: Stacks Connect for blockchain authentication
 - **Error Handling**: Comprehensive error boundaries and user feedback
 - **Loading States**: Smooth loading experiences throughout the app

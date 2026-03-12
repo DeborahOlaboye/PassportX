@@ -23,10 +23,14 @@ export class BadgeMetadataChangeDetector {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[ChangeDetector] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[ChangeDetector] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[ChangeDetector] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ChangeDetector] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[ChangeDetector] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[ChangeDetector] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[ChangeDetector] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ChangeDetector] ${msg}`, ...args),
     };
   }
 
@@ -39,7 +43,7 @@ export class BadgeMetadataChangeDetector {
         field: 'level',
         previousValue: event.previousLevel,
         newValue: event.level,
-        changeType: event.previousLevel === undefined ? 'added' : 'modified'
+        changeType: event.previousLevel === undefined ? 'added' : 'modified',
       });
     }
 
@@ -49,7 +53,7 @@ export class BadgeMetadataChangeDetector {
         field: 'category',
         previousValue: event.previousCategory,
         newValue: event.category,
-        changeType: event.previousCategory === undefined ? 'added' : 'modified'
+        changeType: event.previousCategory === undefined ? 'added' : 'modified',
       });
     }
 
@@ -59,21 +63,25 @@ export class BadgeMetadataChangeDetector {
         field: 'description',
         previousValue: event.previousDescription,
         newValue: event.description,
-        changeType: event.previousDescription === undefined ? 'added' : 'modified'
+        changeType:
+          event.previousDescription === undefined ? 'added' : 'modified',
       });
     }
 
-    const changedFields = changes.map(c => c.field);
+    const changedFields = changes.map((c) => c.field);
 
-    this.logger.debug(`Detected ${changes.length} metadata changes for badge: ${event.badgeId}`, {
-      fields: changedFields
-    });
+    this.logger.debug(
+      `Detected ${changes.length} metadata changes for badge: ${event.badgeId}`,
+      {
+        fields: changedFields,
+      }
+    );
 
     return {
       hasChanges: changes.length > 0,
       changes,
       changedFields,
-      changeCount: changes.length
+      changeCount: changes.length,
     };
   }
 
@@ -95,7 +103,9 @@ export class BadgeMetadataChangeDetector {
       return 'No metadata changes detected';
     }
 
-    const descriptions = result.changes.map(c => this.generateChangeDescription(c));
+    const descriptions = result.changes.map((c) =>
+      this.generateChangeDescription(c)
+    );
     return descriptions.join(', ');
   }
 
@@ -108,7 +118,7 @@ export class BadgeMetadataChangeDetector {
       return 'low';
     }
 
-    if (result.changes.some(c => c.field === 'level')) {
+    if (result.changes.some((c) => c.field === 'level')) {
       return 'high';
     }
 
@@ -124,16 +134,21 @@ export class BadgeMetadataChangeDetector {
       return false;
     }
 
-    return result.changes.some(c => 
-      c.field === 'level' || c.field === 'category' || c.field === 'description'
+    return result.changes.some(
+      (c) =>
+        c.field === 'level' ||
+        c.field === 'category' ||
+        c.field === 'description'
     );
   }
 
-  groupChangesByType(result: ChangeDetectionResult): Record<string, MetadataChange[]> {
+  groupChangesByType(
+    result: ChangeDetectionResult
+  ): Record<string, MetadataChange[]> {
     const grouped: Record<string, MetadataChange[]> = {
       added: [],
       modified: [],
-      removed: []
+      removed: [],
     };
 
     for (const change of result.changes) {

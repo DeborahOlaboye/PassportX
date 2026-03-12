@@ -6,7 +6,11 @@ import { TransactionErrorFallback } from '../FallbackUI';
 
 export function TransactionHistory() {
   return (
-    <ErrorBoundary fallback={(error, reset) => <TransactionErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <TransactionErrorFallback error={error} reset={reset} />
+      )}
+    >
       <TransactionHistoryInner />
     </ErrorBoundary>
   );

@@ -1,14 +1,20 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { ArrowUpDown, Check } from 'lucide-react'
+import { useState } from 'react';
+import { ArrowUpDown, Check } from 'lucide-react';
 
-export type SortOption = 'newest' | 'oldest' | 'level-high' | 'level-low' | 'name-asc' | 'name-desc'
+export type SortOption =
+  | 'newest'
+  | 'oldest'
+  | 'level-high'
+  | 'level-low'
+  | 'name-asc'
+  | 'name-desc';
 
 interface SortDropdownProps {
-  value: SortOption
-  onChange: (value: SortOption) => void
-  className?: string
+  value: SortOption;
+  onChange: (value: SortOption) => void;
+  className?: string;
 }
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -18,17 +24,22 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'level-low', label: 'Level: Low to High' },
   { value: 'name-asc', label: 'Name: A to Z' },
   { value: 'name-desc', label: 'Name: Z to A' },
-]
+];
 
-export default function SortDropdown({ value, onChange, className = '' }: SortDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export default function SortDropdown({
+  value,
+  onChange,
+  className = '',
+}: SortDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
-  const selectedOption = sortOptions.find((opt) => opt.value === value) || sortOptions[0]
+  const selectedOption =
+    sortOptions.find((opt) => opt.value === value) || sortOptions[0];
 
   const handleSelect = (option: SortOption) => {
-    onChange(option)
-    setIsOpen(false)
-  }
+    onChange(option);
+    setIsOpen(false);
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -61,7 +72,9 @@ export default function SortDropdown({ value, onChange, className = '' }: SortDr
                 >
                   <span
                     className={`${
-                      value === option.value ? 'text-blue-600 font-medium' : 'text-gray-700'
+                      value === option.value
+                        ? 'text-blue-600 font-medium'
+                        : 'text-gray-700'
                     }`}
                   >
                     {option.label}
@@ -76,5 +89,5 @@ export default function SortDropdown({ value, onChange, className = '' }: SortDr
         </>
       )}
     </div>
-  )
+  );
 }

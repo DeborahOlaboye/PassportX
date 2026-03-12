@@ -243,12 +243,12 @@ sequenceDiagram
 
 ## Summary Table
 
-| Event | Predicate | Webhook Route | Key Service |
-|---|---|---|---|
-| Badge mint | `pred_badge_mint_call` | `/api/badges/webhook/mint` | `BadgeMintService` |
-| Badge metadata update | `pred_badge_metadata_update_call` | `/api/badges/webhook/metadata` | `BadgeMetadataUpdateService` |
-| Badge revocation | `pred_badge_revocation_call` | `/api/badges/webhook/revocation` | `BadgeRevocationCoordinator` |
-| Community creation | `pred_community_creation_call` | `/api/community-creation/webhook/events` | `CommunityCreationService` |
+| Event                 | Predicate                         | Webhook Route                            | Key Service                  |
+| --------------------- | --------------------------------- | ---------------------------------------- | ---------------------------- |
+| Badge mint            | `pred_badge_mint_call`            | `/api/badges/webhook/mint`               | `BadgeMintService`           |
+| Badge metadata update | `pred_badge_metadata_update_call` | `/api/badges/webhook/metadata`           | `BadgeMetadataUpdateService` |
+| Badge revocation      | `pred_badge_revocation_call`      | `/api/badges/webhook/revocation`         | `BadgeRevocationCoordinator` |
+| Community creation    | `pred_community_creation_call`    | `/api/community-creation/webhook/events` | `CommunityCreationService`   |
 
 ---
 

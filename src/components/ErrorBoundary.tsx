@@ -1,8 +1,10 @@
 import React from 'react';
 
-type Props = { 
-  children: React.ReactNode; 
-  fallback?: React.ReactNode | ((error: Error, reset: () => void) => React.ReactNode);
+type Props = {
+  children: React.ReactNode;
+  fallback?:
+    | React.ReactNode
+    | ((error: Error, reset: () => void) => React.ReactNode);
   onReset?: () => void;
 };
 type State = { hasError: boolean; error?: Error };

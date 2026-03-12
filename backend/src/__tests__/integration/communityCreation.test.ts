@@ -13,7 +13,7 @@ describe('Community Creation Integration', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
     };
 
     communityService = new CommunityCreationService(mockLogger);
@@ -42,10 +42,12 @@ describe('Community Creation Integration', () => {
         contractAddress: '',
         transactionHash: '',
         blockHeight: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       } as CommunityCreationEvent;
 
-      const result = await communityService.processCommunityCreationEvent(invalidEvent);
+      const result = await communityService.processCommunityCreationEvent(
+        invalidEvent
+      );
 
       expect(result.success).toBe(false);
       expect(result.message).toContain('Invalid');
@@ -58,10 +60,11 @@ describe('Community Creation Integration', () => {
         description: 'Test description',
         ownerAddress: 'SP123456789ABCDEF0123456789ABCDEF0',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'abc123',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // We can't fully test without database, but we can verify the service accepts valid data
@@ -77,37 +80,46 @@ describe('Community Creation Integration', () => {
         description: 'An awesome community',
         ownerAddress: 'SP123456789ABCDEF0123456789ABCDEF0',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'abc123',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
-      const notification = notificationService.createWelcomeNotification(event, {
-        includeInstructions: true,
-        includeDashboardLink: true
-      });
+      const notification = notificationService.createWelcomeNotification(
+        event,
+        {
+          includeInstructions: true,
+          includeDashboardLink: true,
+        }
+      );
 
       expect(notification.userId).toBe(event.ownerAddress);
       expect(notification.type).toBe('community_created');
       expect(notification.title).toContain('My Awesome Community');
       expect(notification.message).toContain('blockchain');
       expect(notification.data.communityId).toBe('test-community-1');
-      expect(notification.data.dashboardUrl).toBe('/communities/test-community-1');
+      expect(notification.data.dashboardUrl).toBe(
+        '/communities/test-community-1'
+      );
     });
 
     it('should create admin confirmation notification', () => {
-      const notification = notificationService.createAdminConfirmationNotification(
-        'community-1',
-        'Tech Community',
-        'SP123456789ABCDEF0123456789ABCDEF0',
-        '/communities/community-1'
-      );
+      const notification =
+        notificationService.createAdminConfirmationNotification(
+          'community-1',
+          'Tech Community',
+          'SP123456789ABCDEF0123456789ABCDEF0',
+          '/communities/community-1'
+        );
 
       expect(notification.userId).toBe('SP123456789ABCDEF0123456789ABCDEF0');
       expect(notification.type).toBe('community_created');
       expect(notification.title).toContain('Admin');
-      expect(notification.data.memberUrl || notification.data.membersUrl).toBeDefined();
+      expect(
+        notification.data.memberUrl || notification.data.membersUrl
+      ).toBeDefined();
     });
 
     it('should build notification batch for multiple admins', async () => {
@@ -117,18 +129,22 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       const admins = [
         'SP111111111111111111111111111111111',
-        'SP222222222222222222222222222222222'
+        'SP222222222222222222222222222222222',
       ];
 
-      const notifications = await notificationService.buildNotificationBatch(event, admins);
+      const notifications = await notificationService.buildNotificationBatch(
+        event,
+        admins
+      );
 
       expect(notifications.length).toBe(2);
       expect(notifications[0].userId).toBe(admins[0]);
@@ -142,14 +158,16 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       const notification = notificationService.createWelcomeNotification(event);
-      const isValid = notificationService.validateNotificationPayload(notification);
+      const isValid =
+        notificationService.validateNotificationPayload(notification);
 
       expect(isValid).toBe(true);
     });
@@ -191,22 +209,30 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // Set up some cache entries
       cacheService.set('communities:list:all', { count: 10 });
-      cacheService.set('communities:admin:SP111111111111111111111111111111111:count', { count: 1 });
+      cacheService.set(
+        'communities:admin:SP111111111111111111111111111111111:count',
+        { count: 1 }
+      );
 
       // Trigger invalidation
       cacheService.onCommunityCreated(event);
 
       // Verify entries are invalidated
       expect(cacheService.get('communities:list:all')).toBeNull();
-      expect(cacheService.get('communities:admin:SP111111111111111111111111111111111:count')).toBeNull();
+      expect(
+        cacheService.get(
+          'communities:admin:SP111111111111111111111111111111111:count'
+        )
+      ).toBeNull();
     });
 
     it('should return cache statistics', () => {
@@ -239,10 +265,11 @@ describe('Community Creation Integration', () => {
         description: 'Testing the complete workflow',
         ownerAddress: 'SP123456789ABCDEF0123456789ABCDEF0',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'integration-test-tx',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // Create welcome notification
@@ -251,7 +278,10 @@ describe('Community Creation Integration', () => {
       expect(notification.type).toBe('community_created');
 
       // Build notification batch
-      const notifications = await notificationService.buildNotificationBatch(event, [event.ownerAddress]);
+      const notifications = await notificationService.buildNotificationBatch(
+        event,
+        [event.ownerAddress]
+      );
       expect(notifications.length).toBeGreaterThan(0);
 
       // Invalidate cache
@@ -266,18 +296,25 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
-      const notifications = await notificationService.buildNotificationBatch(event, []);
+      const notifications = await notificationService.buildNotificationBatch(
+        event,
+        []
+      );
       expect(notifications).toEqual([]);
     });
 
     it('should handle null event gracefully', async () => {
-      const notifications = await notificationService.buildNotificationBatch(null as any, ['SP111111111111111111111111111111111']);
+      const notifications = await notificationService.buildNotificationBatch(
+        null as any,
+        ['SP111111111111111111111111111111111']
+      );
       expect(notifications).toEqual([]);
     });
 
@@ -288,13 +325,16 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: '',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       } as CommunityCreationEvent;
 
-      const result = await communityService.processCommunityCreationEvent(invalidEvent);
+      const result = await communityService.processCommunityCreationEvent(
+        invalidEvent
+      );
       expect(result.success).toBe(false);
       expect(result.error).toContain('Owner address');
     });
@@ -306,13 +346,16 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       } as CommunityCreationEvent;
 
-      const result = await communityService.processCommunityCreationEvent(invalidEvent);
+      const result = await communityService.processCommunityCreationEvent(
+        invalidEvent
+      );
       expect(result.success).toBe(false);
     });
 
@@ -323,10 +366,11 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       await communityService.processCommunityCreationEvent(event);
@@ -343,15 +387,18 @@ describe('Community Creation Integration', () => {
         description: 'Test',
         ownerAddress: 'SP111111111111111111111111111111111',
         createdAtBlockHeight: 100,
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
         transactionHash: 'tx1',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       await communityService.processCommunityCreationEvent(event1);
 
-      const logs = communityService.getAuditLogsByOwner('SP111111111111111111111111111111111');
+      const logs = communityService.getAuditLogsByOwner(
+        'SP111111111111111111111111111111111'
+      );
       expect(logs.length).toBeGreaterThan(0);
       expect(logs[0].ownerAddress).toBe('SP111111111111111111111111111111111');
     });

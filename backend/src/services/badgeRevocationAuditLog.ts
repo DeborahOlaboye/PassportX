@@ -35,7 +35,7 @@ export class BadgeRevocationAuditLog {
     revocationsByIssuer: new Map(),
     revocationsByUser: new Map(),
     revocationsByBadge: new Map(),
-    revocationsByDate: new Map()
+    revocationsByDate: new Map(),
   };
   private readonly MAX_LOG_SIZE = 100000;
 
@@ -45,14 +45,21 @@ export class BadgeRevocationAuditLog {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeRevocationAuditLog] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeRevocationAuditLog] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeRevocationAuditLog] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeRevocationAuditLog] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeRevocationAuditLog] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeRevocationAuditLog] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeRevocationAuditLog] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeRevocationAuditLog] ${msg}`, ...args),
     };
   }
 
-  recordRevocation(event: BadgeRevocationEvent, context?: { ipAddress?: string; userAgent?: string }): RevocationRecord {
+  recordRevocation(
+    event: BadgeRevocationEvent,
+    context?: { ipAddress?: string; userAgent?: string }
+  ): RevocationRecord {
     const record: RevocationRecord = {
       badgeId: event.badgeId,
       userId: event.userId,
@@ -65,14 +72,16 @@ export class BadgeRevocationAuditLog {
       timestamp: event.timestamp,
       recordedAt: Date.now(),
       ipAddress: context?.ipAddress,
-      userAgent: context?.userAgent
+      userAgent: context?.userAgent,
     };
 
     this.revocationLog.push(record);
 
     if (this.revocationLog.length > this.MAX_LOG_SIZE) {
       this.revocationLog.shift();
-      this.logger.warn('Revocation log exceeds max size, removing oldest record');
+      this.logger.warn(
+        'Revocation log exceeds max size, removing oldest record'
+      );
     }
 
     this.updateMetrics(record);
@@ -80,13 +89,16 @@ export class BadgeRevocationAuditLog {
     this.logger.info('Badge revocation recorded', {
       badgeId: event.badgeId,
       userId: event.userId,
-      revocationType: event.revocationType
+      revocationType: event.revocationType,
     });
 
     return record;
   }
 
-  recordBatchRevocations(events: BadgeRevocationEvent[], context?: { ipAddress?: string; userAgent?: string }): RevocationRecord[] {
+  recordBatchRevocations(
+    events: BadgeRevocationEvent[],
+    context?: { ipAddress?: string; userAgent?: string }
+  ): RevocationRecord[] {
     const records: RevocationRecord[] = [];
 
     for (const event of events) {
@@ -94,7 +106,7 @@ export class BadgeRevocationAuditLog {
     }
 
     this.logger.info(`Batch revocation records created`, {
-      count: records.length
+      count: records.length,
     });
 
     return records;
@@ -109,7 +121,8 @@ export class BadgeRevocationAuditLog {
       this.metrics.hardRevokeCount++;
     }
 
-    const issuerCount = this.metrics.revocationsByIssuer.get(record.issuerId) || 0;
+    const issuerCount =
+      this.metrics.revocationsByIssuer.get(record.issuerId) || 0;
     this.metrics.revocationsByIssuer.set(record.issuerId, issuerCount + 1);
 
     const userCount = this.metrics.revocationsByUser.get(record.userId) || 0;
@@ -123,30 +136,42 @@ export class BadgeRevocationAuditLog {
     this.metrics.revocationsByDate.set(dateKey, dateCount + 1);
   }
 
-  getRevocationHistory(userId: string, limit: number = 100): RevocationRecord[] {
+  getRevocationHistory(
+    userId: string,
+    limit: number = 100
+  ): RevocationRecord[] {
     return this.revocationLog
-      .filter(r => r.userId === userId)
+      .filter((r) => r.userId === userId)
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
 
-  getRevocationsByBadge(badgeId: string, limit: number = 100): RevocationRecord[] {
+  getRevocationsByBadge(
+    badgeId: string,
+    limit: number = 100
+  ): RevocationRecord[] {
     return this.revocationLog
-      .filter(r => r.badgeId === badgeId)
+      .filter((r) => r.badgeId === badgeId)
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
 
-  getRevocationsByIssuer(issuerId: string, limit: number = 100): RevocationRecord[] {
+  getRevocationsByIssuer(
+    issuerId: string,
+    limit: number = 100
+  ): RevocationRecord[] {
     return this.revocationLog
-      .filter(r => r.issuerId === issuerId)
+      .filter((r) => r.issuerId === issuerId)
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
 
-  getRevocationsByDateRange(startDate: number, endDate: number): RevocationRecord[] {
+  getRevocationsByDateRange(
+    startDate: number,
+    endDate: number
+  ): RevocationRecord[] {
     return this.revocationLog
-      .filter(r => r.timestamp >= startDate && r.timestamp <= endDate)
+      .filter((r) => r.timestamp >= startDate && r.timestamp <= endDate)
       .sort((a, b) => b.timestamp - a.timestamp);
   }
 
@@ -156,27 +181,37 @@ export class BadgeRevocationAuditLog {
       revocationsByIssuer: new Map(this.metrics.revocationsByIssuer),
       revocationsByUser: new Map(this.metrics.revocationsByUser),
       revocationsByBadge: new Map(this.metrics.revocationsByBadge),
-      revocationsByDate: new Map(this.metrics.revocationsByDate)
+      revocationsByDate: new Map(this.metrics.revocationsByDate),
     };
   }
 
   getRevocationStatistics() {
     return {
       totalRevocations: this.metrics.totalRevocations,
-      softRevokePercentage: this.metrics.totalRevocations > 0
-        ? ((this.metrics.softRevokeCount / this.metrics.totalRevocations) * 100).toFixed(2) + '%'
-        : '0%',
-      hardRevokePercentage: this.metrics.totalRevocations > 0
-        ? ((this.metrics.hardRevokeCount / this.metrics.totalRevocations) * 100).toFixed(2) + '%'
-        : '0%',
+      softRevokePercentage:
+        this.metrics.totalRevocations > 0
+          ? (
+              (this.metrics.softRevokeCount / this.metrics.totalRevocations) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
+      hardRevokePercentage:
+        this.metrics.totalRevocations > 0
+          ? (
+              (this.metrics.hardRevokeCount / this.metrics.totalRevocations) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
       topIssuer: this.getTopEntry(this.metrics.revocationsByIssuer),
       mostRevokedBadge: this.getTopEntry(this.metrics.revocationsByBadge),
       mostAffectedUser: this.getTopEntry(this.metrics.revocationsByUser),
-      recordCount: this.revocationLog.length
+      recordCount: this.revocationLog.length,
     };
   }
 
-  private getTopEntry(map: Map<string, number>): { name: string; count: number } | null {
+  private getTopEntry(
+    map: Map<string, number>
+  ): { name: string; count: number } | null {
     let topEntry: [string, number] | null = null;
     let maxCount = 0;
 
@@ -201,23 +236,27 @@ export class BadgeRevocationAuditLog {
     let results = [...this.revocationLog];
 
     if (query.badgeId) {
-      results = results.filter(r => r.badgeId === query.badgeId);
+      results = results.filter((r) => r.badgeId === query.badgeId);
     }
 
     if (query.userId) {
-      results = results.filter(r => r.userId === query.userId);
+      results = results.filter((r) => r.userId === query.userId);
     }
 
     if (query.issuerId) {
-      results = results.filter(r => r.issuerId === query.issuerId);
+      results = results.filter((r) => r.issuerId === query.issuerId);
     }
 
     if (query.revocationType) {
-      results = results.filter(r => r.revocationType === query.revocationType);
+      results = results.filter(
+        (r) => r.revocationType === query.revocationType
+      );
     }
 
     if (query.startDate && query.endDate) {
-      results = results.filter(r => r.timestamp >= query.startDate! && r.timestamp <= query.endDate!);
+      results = results.filter(
+        (r) => r.timestamp >= query.startDate! && r.timestamp <= query.endDate!
+      );
     }
 
     return results.sort((a, b) => b.timestamp - a.timestamp);
@@ -225,17 +264,32 @@ export class BadgeRevocationAuditLog {
 
   exportAuditLog(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
-      return JSON.stringify({
-        exportedAt: new Date().toISOString(),
-        totalRecords: this.revocationLog.length,
-        records: this.revocationLog,
-        metrics: this.getMetrics()
-      }, null, 2);
+      return JSON.stringify(
+        {
+          exportedAt: new Date().toISOString(),
+          totalRecords: this.revocationLog.length,
+          records: this.revocationLog,
+          metrics: this.getMetrics(),
+        },
+        null,
+        2
+      );
     }
 
     if (format === 'csv') {
-      const headers = ['badgeId', 'userId', 'badgeName', 'revocationType', 'reason', 'issuerId', 'transactionHash', 'blockHeight', 'timestamp', 'recordedAt'];
-      const rows = this.revocationLog.map(r => [
+      const headers = [
+        'badgeId',
+        'userId',
+        'badgeName',
+        'revocationType',
+        'reason',
+        'issuerId',
+        'transactionHash',
+        'blockHeight',
+        'timestamp',
+        'recordedAt',
+      ];
+      const rows = this.revocationLog.map((r) => [
         r.badgeId,
         r.userId,
         r.badgeName,
@@ -245,10 +299,12 @@ export class BadgeRevocationAuditLog {
         r.transactionHash,
         r.blockHeight,
         r.timestamp,
-        r.recordedAt
+        r.recordedAt,
       ]);
 
-      const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+      const csvContent = [headers, ...rows]
+        .map((row) => row.join(','))
+        .join('\n');
       return csvContent;
     }
 
@@ -264,7 +320,7 @@ export class BadgeRevocationAuditLog {
       revocationsByIssuer: new Map(),
       revocationsByUser: new Map(),
       revocationsByBadge: new Map(),
-      revocationsByDate: new Map()
+      revocationsByDate: new Map(),
     };
     this.logger.info('Audit log reset');
   }

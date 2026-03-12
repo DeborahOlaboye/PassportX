@@ -86,7 +86,10 @@ export class NetworkAnalytics {
   private persistEvents(): void {
     try {
       const eventsToPersist = this.events.slice(-100); // Only persist last 100 events
-      localStorage.setItem('network-analytics-events', JSON.stringify(eventsToPersist));
+      localStorage.setItem(
+        'network-analytics-events',
+        JSON.stringify(eventsToPersist)
+      );
     } catch (error) {
       console.warn('Failed to persist network analytics events:', error);
     }
@@ -105,44 +108,63 @@ export class NetworkAnalytics {
   }
 
   public getNetworkSwitchEvents(): NetworkSwitchEvent[] {
-    return this.events.filter((event): event is NetworkSwitchEvent => 'fromNetwork' in event);
+    return this.events.filter(
+      (event): event is NetworkSwitchEvent => 'fromNetwork' in event
+    );
   }
 
   public getNetworkStatusEvents(): NetworkStatusEvent[] {
-    return this.events.filter((event): event is NetworkStatusEvent => 'isConnected' in event);
+    return this.events.filter(
+      (event): event is NetworkStatusEvent => 'isConnected' in event
+    );
   }
 
   public getSwitchSuccessRate(): number {
     const switchEvents = this.getNetworkSwitchEvents();
     if (switchEvents.length === 0) return 0;
 
-    const successfulSwitches = switchEvents.filter(event => event.success).length;
+    const successfulSwitches = switchEvents.filter(
+      (event) => event.success
+    ).length;
     return (successfulSwitches / switchEvents.length) * 100;
   }
 
   public getAverageSwitchDuration(): number {
-    const switchEvents = this.getNetworkSwitchEvents().filter(event => event.success && event.duration);
+    const switchEvents = this.getNetworkSwitchEvents().filter(
+      (event) => event.success && event.duration
+    );
     if (switchEvents.length === 0) return 0;
 
-    const totalDuration = switchEvents.reduce((sum, event) => sum + (event.duration || 0), 0);
+    const totalDuration = switchEvents.reduce(
+      (sum, event) => sum + (event.duration || 0),
+      0
+    );
     return totalDuration / switchEvents.length;
   }
 
   public getNetworkUptime(network: NetworkType): number {
-    const statusEvents = this.getNetworkStatusEvents().filter(event => event.network === network);
+    const statusEvents = this.getNetworkStatusEvents().filter(
+      (event) => event.network === network
+    );
     if (statusEvents.length === 0) return 0;
 
-    const connectedEvents = statusEvents.filter(event => event.isConnected).length;
+    const connectedEvents = statusEvents.filter(
+      (event) => event.isConnected
+    ).length;
     return (connectedEvents / statusEvents.length) * 100;
   }
 
   public getAverageLatency(network: NetworkType): number {
-    const statusEvents = this.getNetworkStatusEvents()
-      .filter(event => event.network === network && event.isConnected && event.latency);
+    const statusEvents = this.getNetworkStatusEvents().filter(
+      (event) => event.network === network && event.isConnected && event.latency
+    );
 
     if (statusEvents.length === 0) return 0;
 
-    const totalLatency = statusEvents.reduce((sum, event) => sum + (event.latency || 0), 0);
+    const totalLatency = statusEvents.reduce(
+      (sum, event) => sum + (event.latency || 0),
+      0
+    );
     return totalLatency / statusEvents.length;
   }
 
@@ -169,7 +191,9 @@ export class NetworkAnalytics {
     localStorage.removeItem('network-analytics-events');
   }
 
-  public getRecentEvents(count: number = 50): (NetworkSwitchEvent | NetworkStatusEvent)[] {
+  public getRecentEvents(
+    count: number = 50
+  ): (NetworkSwitchEvent | NetworkStatusEvent)[] {
     return this.events.slice(-count);
   }
 }
@@ -182,7 +206,13 @@ export const trackNetworkSwitch = (
   duration?: number,
   error?: string
 ): void => {
-  NetworkAnalytics.getInstance().trackNetworkSwitch(fromNetwork, toNetwork, success, duration, error);
+  NetworkAnalytics.getInstance().trackNetworkSwitch(
+    fromNetwork,
+    toNetwork,
+    success,
+    duration,
+    error
+  );
 };
 
 export const trackNetworkStatus = (
@@ -192,5 +222,11 @@ export const trackNetworkStatus = (
   blockHeight?: number,
   error?: string
 ): void => {
-  NetworkAnalytics.getInstance().trackNetworkStatus(network, isConnected, latency, blockHeight, error);
+  NetworkAnalytics.getInstance().trackNetworkStatus(
+    network,
+    isConnected,
+    latency,
+    blockHeight,
+    error
+  );
 };

@@ -80,7 +80,10 @@ export class NetworkMigration {
 
       // Store migrated data
       if (migratedData.network) {
-        localStorage.setItem('network-preference', JSON.stringify(migratedData.network));
+        localStorage.setItem(
+          'network-preference',
+          JSON.stringify(migratedData.network)
+        );
       }
 
       // Clean up legacy keys
@@ -89,13 +92,15 @@ export class NetworkMigration {
       }
 
       // Mark migration as completed
-      localStorage.setItem('network-migration-status', JSON.stringify({
-        version: this.MIGRATION_VERSION,
-        success: true,
-        timestamp: result.timestamp,
-        migratedKeys: result.migratedKeys,
-      }));
-
+      localStorage.setItem(
+        'network-migration-status',
+        JSON.stringify({
+          version: this.MIGRATION_VERSION,
+          success: true,
+          timestamp: result.timestamp,
+          migratedKeys: result.migratedKeys,
+        })
+      );
     } catch (error) {
       result.success = false;
       result.errors.push(`Migration failed: ${error}`);
@@ -147,7 +152,9 @@ export class NetworkMigration {
   }
 
   private isValidNetworkType(value: any): value is NetworkType {
-    return typeof value === 'string' && (value === 'mainnet' || value === 'testnet');
+    return (
+      typeof value === 'string' && (value === 'mainnet' || value === 'testnet')
+    );
   }
 
   public rollbackMigration(): MigrationResult {
@@ -185,10 +192,13 @@ export class NetworkMigration {
       for (const key of status.migratedKeys) {
         // This is a simplified rollback - in practice, you'd need to store
         // the original values during migration
-        localStorage.setItem(key, JSON.stringify({
-          network: preference.network,
-          migrated: false,
-        }));
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            network: preference.network,
+            migrated: false,
+          })
+        );
       }
 
       // Remove migrated data
@@ -197,7 +207,6 @@ export class NetworkMigration {
 
       result.success = true;
       result.migratedKeys = status.migratedKeys;
-
     } catch (error) {
       result.errors.push(`Rollback failed: ${error}`);
     }
@@ -227,7 +236,7 @@ export class NetworkMigration {
     const data = {
       migrationStatus: this.getMigrationStatus(),
       currentNetworkPreference: localStorage.getItem('network-preference'),
-      legacyKeys: this.LEGACY_KEYS.map(key => ({
+      legacyKeys: this.LEGACY_KEYS.map((key) => ({
         key,
         exists: localStorage.getItem(key) !== null,
       })),

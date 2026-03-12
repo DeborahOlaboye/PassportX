@@ -201,26 +201,26 @@ jobs:
         run: |
           cat > DEPLOYMENT_APPROVAL.md << EOF
           # WalletConnect Mainnet Staging Deployment Checklist
-          
+
           ## Pre-Deployment Validation
           - [x] All tests passed
           - [x] Code security audit completed
           - [x] Configuration validated
           - [x] WalletConnect configuration loaded
-          
+
           ## Deployment Steps
           - [ ] Reviewed deployment report
           - [ ] Verified mainnet credentials
           - [ ] Confirmed WalletConnect project configuration
           - [ ] Approved by team lead
           - [ ] Approved by security lead
-          
+
           ## Post-Deployment
           - [ ] Verify deployment status
           - [ ] Monitor error logs
           - [ ] Validate WalletConnect functionality
           - [ ] Update deployment log
-          
+
           Generated: $(date -Iseconds)
           Commit: ${{ github.sha }}
           EOF
@@ -240,7 +240,7 @@ jobs:
             const fs = require('fs');
             const report = fs.readFileSync('deployment-report.json', 'utf8');
             const checklist = fs.readFileSync('DEPLOYMENT_APPROVAL.md', 'utf8');
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number || 1,
               owner: context.repo.owner,

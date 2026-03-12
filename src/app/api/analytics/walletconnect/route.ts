@@ -13,14 +13,14 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const range = (searchParams.get('range') as TimeRange) || '7d';
-    
+
     const { db } = await connectToDatabase();
     const analyticsCollection = db.collection('analytics_events');
 
     // Calculate date range based on the selected time range
     const now = new Date();
     let startDate = new Date();
-    
+
     switch (range) {
       case '24h':
         startDate.setDate(now.getDate() - 1);
@@ -65,7 +65,10 @@ export async function GET(request: Request) {
         {
           $group: {
             _id: {
-              $dateToString: { format: '%Y-%m-%d', date: { $toDate: '$timestamp' } },
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: { $toDate: '$timestamp' },
+              },
             },
             count: { $sum: 1 },
           },

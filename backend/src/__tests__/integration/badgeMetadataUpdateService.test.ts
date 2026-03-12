@@ -1,4 +1,6 @@
-import BadgeMetadataUpdateService, { MetadataUpdateResult } from '../../services/badgeMetadataUpdateService';
+import BadgeMetadataUpdateService, {
+  MetadataUpdateResult,
+} from '../../services/badgeMetadataUpdateService';
 import BadgeMetadataCacheInvalidator from '../../services/badgeMetadataCacheInvalidator';
 import BadgeUIRefreshService from '../../services/badgeUIRefreshService';
 import { BadgeMetadataUpdateEvent } from '../../chainhook/types/handlers';
@@ -14,12 +16,16 @@ describe('BadgeMetadataUpdateService Integration', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
     };
 
     cacheInvalidator = new BadgeMetadataCacheInvalidator(mockLogger);
     uiRefreshService = new BadgeUIRefreshService(mockLogger);
-    service = new BadgeMetadataUpdateService(cacheInvalidator, uiRefreshService, mockLogger);
+    service = new BadgeMetadataUpdateService(
+      cacheInvalidator,
+      uiRefreshService,
+      mockLogger
+    );
   });
 
   afterEach(() => {
@@ -35,7 +41,10 @@ describe('BadgeMetadataUpdateService Integration', () => {
         timestamp: Date.now(),
         level: { current: 'gold', previous: 'silver' },
         category: { current: 'achievement', previous: 'reward' },
-        description: { current: 'Updated description', previous: 'Old description' }
+        description: {
+          current: 'Updated description',
+          previous: 'Old description',
+        },
       };
 
       const result = await service.processMetadataUpdate(event);
@@ -51,7 +60,7 @@ describe('BadgeMetadataUpdateService Integration', () => {
       const event = {
         transactionHash: '0xtx123',
         blockHeight: 1000,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       } as any;
 
       const result = await service.processMetadataUpdate(event);
@@ -67,7 +76,7 @@ describe('BadgeMetadataUpdateService Integration', () => {
         transactionHash: '0xtx456',
         blockHeight: 1001,
         timestamp: Date.now(),
-        level: { current: 'platinum', previous: 'gold' }
+        level: { current: 'platinum', previous: 'gold' },
       };
 
       await service.processMetadataUpdate(event);
@@ -94,26 +103,26 @@ describe('BadgeMetadataUpdateService Integration', () => {
           badgeId: 'badge-1',
           transactionHash: '0xtx1',
           blockHeight: 1000,
-          level: { current: 'gold', previous: 'silver' }
+          level: { current: 'gold', previous: 'silver' },
         },
         {
           badgeId: 'badge-2',
           transactionHash: '0xtx2',
           blockHeight: 1001,
-          category: { current: 'achievement', previous: 'reward' }
+          category: { current: 'achievement', previous: 'reward' },
         },
         {
           badgeId: 'badge-3',
           transactionHash: '0xtx3',
           blockHeight: 1002,
-          description: { current: 'New', previous: 'Old' }
-        }
+          description: { current: 'New', previous: 'Old' },
+        },
       ];
 
       const results = await service.processBatchMetadataUpdates(events);
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
     });
 
     it('should handle partial failures in batch', async () => {
@@ -122,18 +131,18 @@ describe('BadgeMetadataUpdateService Integration', () => {
           badgeId: 'badge-1',
           transactionHash: '0xtx1',
           blockHeight: 1000,
-          level: { current: 'gold', previous: 'silver' }
+          level: { current: 'gold', previous: 'silver' },
         },
         {
           transactionHash: '0xtx2',
-          blockHeight: 1001
+          blockHeight: 1001,
         } as any,
         {
           badgeId: 'badge-3',
           transactionHash: '0xtx3',
           blockHeight: 1002,
-          category: { current: 'new', previous: 'old' }
-        }
+          category: { current: 'new', previous: 'old' },
+        },
       ];
 
       const results = await service.processBatchMetadataUpdates(events);
@@ -150,14 +159,14 @@ describe('BadgeMetadataUpdateService Integration', () => {
           badgeId: 'badge-1',
           transactionHash: '0xtx1',
           blockHeight: 1000,
-          level: { current: 'gold', previous: 'silver' }
+          level: { current: 'gold', previous: 'silver' },
         },
         {
           badgeId: 'badge-2',
           transactionHash: '0xtx2',
           blockHeight: 1001,
-          category: { current: 'achievement', previous: 'reward' }
-        }
+          category: { current: 'achievement', previous: 'reward' },
+        },
       ];
 
       await service.processBatchMetadataUpdates(events);
@@ -169,15 +178,21 @@ describe('BadgeMetadataUpdateService Integration', () => {
 
   describe('Integration with Cache and UI Services', () => {
     it('should coordinate cache invalidation and UI notification', async () => {
-      const cacheInvalidateSpy = jest.spyOn(cacheInvalidator, 'invalidateBadgeCache');
-      const uiNotifySpy = jest.spyOn(uiRefreshService, 'notifyBadgeMetadataUpdate');
+      const cacheInvalidateSpy = jest.spyOn(
+        cacheInvalidator,
+        'invalidateBadgeCache'
+      );
+      const uiNotifySpy = jest.spyOn(
+        uiRefreshService,
+        'notifyBadgeMetadataUpdate'
+      );
 
       const event: BadgeMetadataUpdateEvent = {
         badgeId: 'badge-1',
         transactionHash: '0xtx123',
         blockHeight: 1000,
         level: { current: 'gold', previous: 'silver' },
-        category: { current: 'achievement', previous: 'reward' }
+        category: { current: 'achievement', previous: 'reward' },
       };
 
       await service.processMetadataUpdate(event);
@@ -192,7 +207,7 @@ describe('BadgeMetadataUpdateService Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        level: { current: 'gold', previous: 'silver' }
+        level: { current: 'gold', previous: 'silver' },
       };
 
       await service.processMetadataUpdate(event);
@@ -210,7 +225,7 @@ describe('BadgeMetadataUpdateService Integration', () => {
         badgeId: 'badge-1',
         transactionHash: '0xtx1',
         blockHeight: 1000,
-        level: { current: 'gold', previous: 'silver' }
+        level: { current: 'gold', previous: 'silver' },
       };
 
       const invalidEvent = { transactionHash: '0xtx2' } as any;
@@ -227,7 +242,7 @@ describe('BadgeMetadataUpdateService Integration', () => {
         badgeId: 'badge-1',
         transactionHash: '0xtx123',
         blockHeight: 1000,
-        level: { current: 'gold', previous: 'silver' }
+        level: { current: 'gold', previous: 'silver' },
       };
 
       await service.processMetadataUpdate(event);

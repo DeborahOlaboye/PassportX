@@ -14,16 +14,19 @@ export interface InvalidationMetrics {
 }
 
 export class BadgeMetadataCacheInvalidator {
-  private invalidatedBadges: Map<string, { timestamp: number; count: number }> = new Map();
+  private invalidatedBadges: Map<string, { timestamp: number; count: number }> =
+    new Map();
   private invalidationTimings: number[] = [];
   private readonly MAX_TIMING_SAMPLES = 1000;
   private metrics: InvalidationMetrics = {
     totalInvalidations: 0,
     invalidationsByBadge: new Map(),
     lastInvalidationTime: 0,
-    averageInvalidationTime: 0
+    averageInvalidationTime: 0,
   };
-  private invalidationCallbacks: ((event: CacheInvalidationEvent) => Promise<void>)[] = [];
+  private invalidationCallbacks: ((
+    event: CacheInvalidationEvent
+  ) => Promise<void>)[] = [];
   private logger: any;
 
   constructor(logger?: any) {
@@ -32,16 +35,24 @@ export class BadgeMetadataCacheInvalidator {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CacheInvalidator] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CacheInvalidator] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CacheInvalidator] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CacheInvalidator] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CacheInvalidator] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CacheInvalidator] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CacheInvalidator] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CacheInvalidator] ${msg}`, ...args),
     };
   }
 
-  registerInvalidationCallback(callback: (event: CacheInvalidationEvent) => Promise<void>): void {
+  registerInvalidationCallback(
+    callback: (event: CacheInvalidationEvent) => Promise<void>
+  ): void {
     this.invalidationCallbacks.push(callback);
-    this.logger.debug(`Invalidation callback registered. Total: ${this.invalidationCallbacks.length}`);
+    this.logger.debug(
+      `Invalidation callback registered. Total: ${this.invalidationCallbacks.length}`
+    );
   }
 
   async invalidateBadgeCache(event: CacheInvalidationEvent): Promise<void> {
@@ -58,16 +69,17 @@ export class BadgeMetadataCacheInvalidator {
       } else {
         this.invalidatedBadges.set(event.badgeId, {
           timestamp: Date.now(),
-          count: 1
+          count: 1,
         });
       }
 
-      const countByBadge = this.metrics.invalidationsByBadge.get(event.badgeId) || 0;
+      const countByBadge =
+        this.metrics.invalidationsByBadge.get(event.badgeId) || 0;
       this.metrics.invalidationsByBadge.set(event.badgeId, countByBadge + 1);
 
       this.logger.info(`Invalidating badge cache: ${event.badgeId}`, {
         changedFields: event.changedFields,
-        blockHeight: event.blockHeight
+        blockHeight: event.blockHeight,
       });
 
       for (const callback of this.invalidationCallbacks) {
@@ -81,15 +93,21 @@ export class BadgeMetadataCacheInvalidator {
       const duration = performance.now() - startTime;
       this.recordInvalidationTiming(duration);
     } catch (error) {
-      this.logger.error(`Error invalidating cache for badge ${event.badgeId}:`, error);
+      this.logger.error(
+        `Error invalidating cache for badge ${event.badgeId}:`,
+        error
+      );
     }
   }
 
-  async invalidateMultipleBadges(badgeIds: string[], event: Omit<CacheInvalidationEvent, 'badgeId'>): Promise<void> {
+  async invalidateMultipleBadges(
+    badgeIds: string[],
+    event: Omit<CacheInvalidationEvent, 'badgeId'>
+  ): Promise<void> {
     for (const badgeId of badgeIds) {
       await this.invalidateBadgeCache({
         ...event,
-        badgeId
+        badgeId,
       });
     }
 
@@ -108,12 +126,15 @@ export class BadgeMetadataCacheInvalidator {
     this.invalidationTimings.push(time);
 
     if (this.invalidationTimings.length > this.MAX_TIMING_SAMPLES) {
-      this.invalidationTimings = this.invalidationTimings.slice(-this.MAX_TIMING_SAMPLES);
+      this.invalidationTimings = this.invalidationTimings.slice(
+        -this.MAX_TIMING_SAMPLES
+      );
     }
 
     if (this.invalidationTimings.length > 0) {
       const sum = this.invalidationTimings.reduce((a, b) => a + b, 0);
-      this.metrics.averageInvalidationTime = sum / this.invalidationTimings.length;
+      this.metrics.averageInvalidationTime =
+        sum / this.invalidationTimings.length;
     }
   }
 
@@ -121,12 +142,16 @@ export class BadgeMetadataCacheInvalidator {
     return {
       totalInvalidations: this.metrics.totalInvalidations,
       lastInvalidationTime: this.metrics.lastInvalidationTime,
-      averageInvalidationTime: parseFloat(this.metrics.averageInvalidationTime.toFixed(4)),
+      averageInvalidationTime: parseFloat(
+        this.metrics.averageInvalidationTime.toFixed(4)
+      ),
       invalidatedBadgeCount: this.invalidatedBadges.size,
-      topInvalidatedBadges: Array.from(this.metrics.invalidationsByBadge.entries())
+      topInvalidatedBadges: Array.from(
+        this.metrics.invalidationsByBadge.entries()
+      )
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
-        .map(([badgeId, count]) => ({ badgeId, count }))
+        .map(([badgeId, count]) => ({ badgeId, count })),
     };
   }
 
@@ -141,7 +166,7 @@ export class BadgeMetadataCacheInvalidator {
       totalInvalidations: 0,
       invalidationsByBadge: new Map(),
       lastInvalidationTime: 0,
-      averageInvalidationTime: 0
+      averageInvalidationTime: 0,
     };
     this.invalidationTimings = [];
     this.logger.info('Cache invalidation metrics reset');

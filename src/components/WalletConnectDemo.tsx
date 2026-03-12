@@ -22,7 +22,7 @@ const DemoInner: React.FC = () => {
       id: 'demo-' + Date.now(),
       accounts: ['demo-account'],
       connectedAt: Date.now(),
-      expiresAt: Date.now() + 1000 * 60 * 60 // 1h
+      expiresAt: Date.now() + 1000 * 60 * 60, // 1h
     };
     try {
       await save(s as any);
@@ -33,21 +33,41 @@ const DemoInner: React.FC = () => {
 
   return (
     <div>
-      <div data-testid="session-status">{isConnected ? 'connected' : 'disconnected'}</div>
+      <div data-testid="session-status">
+        {isConnected ? 'connected' : 'disconnected'}
+      </div>
       <div data-testid="session-id">{session?.id ?? 'none'}</div>
       <label>
-        <input type="checkbox" checked={useSession} onChange={(e) => setUseSession(e.target.checked)} /> Use sessionStorage
+        <input
+          type="checkbox"
+          checked={useSession}
+          onChange={(e) => setUseSession(e.target.checked)}
+        />{' '}
+        Use sessionStorage
       </label>
-      <button data-testid="connect-wallet" onClick={connect}>Connect (demo)</button>
-      <button data-testid="disconnect-wallet" onClick={disconnect}>Disconnect</button>
-      {error && showError && <ErrorToast message={error.message || 'Connection error'} onClose={() => setShowError(false)} />}
+      <button data-testid="connect-wallet" onClick={connect}>
+        Connect (demo)
+      </button>
+      <button data-testid="disconnect-wallet" onClick={disconnect}>
+        Disconnect
+      </button>
+      {error && showError && (
+        <ErrorToast
+          message={error.message || 'Connection error'}
+          onClose={() => setShowError(false)}
+        />
+      )}
     </div>
   );
 };
 
 export const WalletConnectDemo: React.FC = () => (
   <WalletSessionProvider>
-    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <WalletErrorFallback error={error} reset={reset} />
+      )}
+    >
       <DemoInner />
     </ErrorBoundary>
   </WalletSessionProvider>

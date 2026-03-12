@@ -42,14 +42,20 @@ export class BadgeRevocationCoordinator {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[RevocationCoordinator] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[RevocationCoordinator] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[RevocationCoordinator] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[RevocationCoordinator] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[RevocationCoordinator] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[RevocationCoordinator] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[RevocationCoordinator] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[RevocationCoordinator] ${msg}`, ...args),
     };
   }
 
-  async processBadgeRevocation(event: BadgeRevocationEvent): Promise<RevocationResult> {
+  async processBadgeRevocation(
+    event: BadgeRevocationEvent
+  ): Promise<RevocationResult> {
     const startTime = Date.now();
 
     try {
@@ -61,7 +67,7 @@ export class BadgeRevocationCoordinator {
         badgeId: event.badgeId,
         userId: event.userId,
         revocationType: event.revocationType,
-        blockHeight: event.blockHeight
+        blockHeight: event.blockHeight,
       });
 
       let auditLogged = false;
@@ -115,24 +121,25 @@ export class BadgeRevocationCoordinator {
         cacheInvalidated,
         notified,
         countUpdated,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       this.logger.info(`Badge revocation processed successfully`, {
         badgeId: event.badgeId,
         userId: event.userId,
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       });
 
       return result;
     } catch (error) {
       this.errorCount++;
 
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Error processing badge revocation: ${errorMessage}`, {
         badgeId: event.badgeId,
         userId: event.userId,
-        error
+        error,
       });
 
       return {
@@ -145,12 +152,14 @@ export class BadgeRevocationCoordinator {
         notified: false,
         countUpdated: false,
         timestamp: Date.now(),
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
 
-  async processBatchRevocations(events: BadgeRevocationEvent[]): Promise<RevocationResult[]> {
+  async processBatchRevocations(
+    events: BadgeRevocationEvent[]
+  ): Promise<RevocationResult[]> {
     this.logger.info(`Processing batch of ${events.length} badge revocations`);
 
     const results: RevocationResult[] = [];
@@ -160,8 +169,10 @@ export class BadgeRevocationCoordinator {
       results.push(result);
     }
 
-    const successCount = results.filter(r => r.success).length;
-    this.logger.info(`Batch revocation processing complete: ${successCount}/${events.length} successful`);
+    const successCount = results.filter((r) => r.success).length;
+    this.logger.info(
+      `Batch revocation processing complete: ${successCount}/${events.length} successful`
+    );
 
     return results;
   }
@@ -170,13 +181,17 @@ export class BadgeRevocationCoordinator {
     return {
       processedCount: this.processedCount,
       errorCount: this.errorCount,
-      successRate: this.processedCount > 0
-        ? ((this.processedCount - this.errorCount) / this.processedCount * 100).toFixed(2) + '%'
-        : '0%',
+      successRate:
+        this.processedCount > 0
+          ? (
+              ((this.processedCount - this.errorCount) / this.processedCount) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
       auditLogMetrics: this.auditLog.getMetrics(),
       cacheInvalidatorMetrics: this.cacheInvalidator.getMetrics(),
       notificationMetrics: this.notificationService.getMetrics(),
-      countUpdateMetrics: this.countUpdateService.getMetrics()
+      countUpdateMetrics: this.countUpdateService.getMetrics(),
     };
   }
 
@@ -184,13 +199,17 @@ export class BadgeRevocationCoordinator {
     return {
       processedCount: this.processedCount,
       errorCount: this.errorCount,
-      successRate: this.processedCount > 0
-        ? ((this.processedCount - this.errorCount) / this.processedCount * 100).toFixed(2) + '%'
-        : '0%',
+      successRate:
+        this.processedCount > 0
+          ? (
+              ((this.processedCount - this.errorCount) / this.processedCount) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
       auditLogStats: this.auditLog.getRevocationStatistics(),
       cacheInvalidatorStats: this.cacheInvalidator.getDetailedMetrics(),
       notificationStats: this.notificationService.getDetailedMetrics(),
-      countUpdateStats: this.countUpdateService.getDetailedMetrics()
+      countUpdateStats: this.countUpdateService.getDetailedMetrics(),
     };
   }
 

@@ -1,5 +1,9 @@
-import { FilteredBadgeEvent, BadgeCategory, BadgeLevel } from '../BadgeCategoryFilter'
-import { ChainhookEventPayload } from '../../../src/chainhook/types/handlers'
+import {
+  FilteredBadgeEvent,
+  BadgeCategory,
+  BadgeLevel,
+} from '../BadgeCategoryFilter';
+import { ChainhookEventPayload } from '../../../src/chainhook/types/handlers';
 
 export interface CategoryHandler {
   getCategory(): BadgeCategory;
@@ -28,16 +32,25 @@ export abstract class BaseCategoryHandler implements CategoryHandler {
 
   protected getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[${this.category}] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[${this.category}] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[${this.category}] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[${this.category}] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[${this.category}] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[${this.category}] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[${this.category}] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[${this.category}] ${msg}`, ...args),
     };
   }
 
-  protected async sendNotification(event: FilteredBadgeEvent, message: string): Promise<void> {
+  protected async sendNotification(
+    event: FilteredBadgeEvent,
+    message: string
+  ): Promise<void> {
     // Implementation would integrate with notification service
-    this.logger.info(`Sending notification for ${this.category} badge: ${message}`);
+    this.logger.info(
+      `Sending notification for ${this.category} badge: ${message}`
+    );
   }
 
   protected async updateAnalytics(event: FilteredBadgeEvent): Promise<void> {

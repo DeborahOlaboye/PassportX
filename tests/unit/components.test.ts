@@ -5,11 +5,11 @@ const mockRender = jest.fn();
 const mockScreen = {
   getByText: jest.fn(),
   getByTestId: jest.fn(),
-  queryByText: jest.fn()
+  queryByText: jest.fn(),
 };
 const mockFireEvent = {
   click: jest.fn(),
-  change: jest.fn()
+  change: jest.fn(),
 };
 
 describe('Frontend Component Tests', () => {
@@ -27,13 +27,15 @@ describe('Frontend Component Tests', () => {
         name: 'Python Beginner',
         description: 'Completed Python basics',
         level: 1,
-        category: 'skill'
+        category: 'skill',
       };
 
       // Mock component render
       mockRender(badge);
       mockScreen.getByText.mockReturnValue({ textContent: badge.name });
-      mockScreen.getByTestId.mockReturnValue({ textContent: badge.description });
+      mockScreen.getByTestId.mockReturnValue({
+        textContent: badge.description,
+      });
 
       expect(mockScreen.getByText(badge.name)).toBeTruthy();
       expect(mockScreen.getByTestId('badge-description')).toBeTruthy();
@@ -53,19 +55,19 @@ describe('Frontend Component Tests', () => {
   describe('PassportView Component', () => {
     test('should display user badges', () => {
       const user = testUsers.users[0];
-      const userBadges = user.badges.map((id: number) => 
+      const userBadges = user.badges.map((id: number) =>
         badgeTemplates.templates.find((t: any) => t.id === id)
       );
 
       mockRender({ user, badges: userBadges });
-      
+
       expect(mockScreen.getByText(user.name)).toBeTruthy();
       expect(mockScreen.getByTestId('badge-grid')).toBeTruthy();
     });
 
     test('should show empty state when no badges', () => {
       const user = { ...testUsers.users[0], badges: [] };
-      
+
       mockRender({ user, badges: [] });
       mockScreen.queryByText.mockReturnValue(null);
       mockScreen.getByText.mockReturnValue({ textContent: 'No badges yet' });
@@ -90,7 +92,7 @@ describe('Frontend Component Tests', () => {
         name: 'New Badge',
         description: 'A new badge template',
         category: 1,
-        level: 1
+        level: 1,
       };
 
       mockFireEvent.change({ target: { name: 'name', value: formData.name } });
@@ -104,7 +106,7 @@ describe('Frontend Component Tests', () => {
   describe('CommunityDashboard Component', () => {
     test('should display community information', () => {
       const community = testUsers.communities[0];
-      
+
       mockRender({ community });
       mockScreen.getByText.mockReturnValue({ textContent: community.name });
 

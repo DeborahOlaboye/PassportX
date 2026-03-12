@@ -1,4 +1,8 @@
-import { isTestnetConfigured, connectWallet, signAndSubmit } from './helpers/walletConnectHelper';
+import {
+  isTestnetConfigured,
+  connectWallet,
+  signAndSubmit,
+} from './helpers/walletConnectHelper';
 
 describe('Badge issuance via WalletConnect (placeholder)', () => {
   it('skips when not configured', async () => {

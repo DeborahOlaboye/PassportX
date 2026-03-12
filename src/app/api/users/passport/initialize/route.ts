@@ -8,14 +8,17 @@ export async function POST(request: NextRequest) {
     const cookie = request.headers.get('cookie');
     const authHeader = request.headers.get('authorization');
 
-    const response = await fetch(`${BACKEND_URL}/api/users/passport/initialize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(cookie && { Cookie: cookie }),
-        ...(authHeader && { Authorization: authHeader }),
-      },
-    });
+    const response = await fetch(
+      `${BACKEND_URL}/api/users/passport/initialize`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cookie && { Cookie: cookie }),
+          ...(authHeader && { Authorization: authHeader }),
+        },
+      }
+    );
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });

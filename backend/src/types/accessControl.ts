@@ -17,21 +17,21 @@ export enum AccessControlEventType {
   PERMISSION_GROUP_UPDATED = 'permission-group-updated',
   ISSUER_AUTHORIZED = 'issuer-authorized',
   ISSUER_REVOKED = 'issuer-revoked',
-  COMMUNITY_OWNERSHIP_TRANSFERRED = 'community-ownership-transferred'
+  COMMUNITY_OWNERSHIP_TRANSFERRED = 'community-ownership-transferred',
 }
 
 export enum Role {
   ADMIN = 'admin',
   ISSUER = 'issuer',
   MODERATOR = 'moderator',
-  MEMBER = 'member'
+  MEMBER = 'member',
 }
 
 export enum GlobalPermission {
   CAN_CREATE_COMMUNITIES = 'can-create-communities',
   CAN_ISSUE_BADGES = 'can-issue-badges',
   IS_PLATFORM_ADMIN = 'is-platform-admin',
-  SUSPENDED = 'suspended'
+  SUSPENDED = 'suspended',
 }
 
 export interface AccessControlEvent {
@@ -74,7 +74,9 @@ export interface CommunityPermissionChangeEvent extends AccessControlEvent {
 }
 
 export interface RoleAssignmentEvent extends AccessControlEvent {
-  eventType: AccessControlEventType.ROLE_ASSIGNED | AccessControlEventType.ROLE_REVOKED;
+  eventType:
+    | AccessControlEventType.ROLE_ASSIGNED
+    | AccessControlEventType.ROLE_REVOKED;
   metadata: {
     communityId: string;
     role: Role;
@@ -82,7 +84,9 @@ export interface RoleAssignmentEvent extends AccessControlEvent {
 }
 
 export interface AdminChangeEvent extends AccessControlEvent {
-  eventType: AccessControlEventType.ADMIN_ADDED | AccessControlEventType.ADMIN_REMOVED;
+  eventType:
+    | AccessControlEventType.ADMIN_ADDED
+    | AccessControlEventType.ADMIN_REMOVED;
   metadata: {
     communityId: string;
     role: Role.ADMIN;
@@ -90,7 +94,9 @@ export interface AdminChangeEvent extends AccessControlEvent {
 }
 
 export interface SuspensionEvent extends AccessControlEvent {
-  eventType: AccessControlEventType.USER_SUSPENDED | AccessControlEventType.USER_UNSUSPENDED;
+  eventType:
+    | AccessControlEventType.USER_SUSPENDED
+    | AccessControlEventType.USER_UNSUSPENDED;
   metadata: {
     reason?: string;
     previousValue: boolean;
@@ -99,7 +105,9 @@ export interface SuspensionEvent extends AccessControlEvent {
 }
 
 export interface IssuerAuthorizationEvent extends AccessControlEvent {
-  eventType: AccessControlEventType.ISSUER_AUTHORIZED | AccessControlEventType.ISSUER_REVOKED;
+  eventType:
+    | AccessControlEventType.ISSUER_AUTHORIZED
+    | AccessControlEventType.ISSUER_REVOKED;
   metadata: {
     communityId?: string;
     authorized: boolean;

@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { AccessControlAuditService } from '../../services/AccessControlAuditService';
-import { AccessControlEventType, AdminChangeEvent } from '../../types/accessControl';
+import {
+  AccessControlEventType,
+  AdminChangeEvent,
+} from '../../types/accessControl';
 import { AccessControlAuditLog } from '../../models/AccessControlAuditLog';
 
 describe('AccessControlAuditService', () => {
@@ -28,8 +31,8 @@ describe('AccessControlAuditService', () => {
         data: {},
         metadata: {
           communityId: 'community-1',
-          role: 'admin' as any
-        }
+          role: 'admin' as any,
+        },
       };
 
       const auditLog = await service.logEvent(event);
@@ -54,15 +57,15 @@ describe('AccessControlAuditService', () => {
         data: {},
         metadata: {
           communityId: 'community-1',
-          role: 'admin' as any
-        }
+          role: 'admin' as any,
+        },
       };
 
       await service.logEvent(event);
       await service.logEvent(event); // Try to log again
 
       const count = await AccessControlAuditLog.countDocuments({
-        transactionHash: 'tx201'
+        transactionHash: 'tx201',
       });
 
       expect(count).toBe(1);
@@ -81,8 +84,8 @@ describe('AccessControlAuditService', () => {
         data: {},
         metadata: {
           communityId: 'community-1',
-          role: 'admin' as any
-        }
+          role: 'admin' as any,
+        },
       };
 
       const auditLog = await service.logEvent(event);
@@ -104,7 +107,7 @@ describe('AccessControlAuditService', () => {
         contractAddress: 'SP1.access-control',
         method: 'add-admin',
         data: {},
-        metadata: { communityId: 'comm-1', role: 'admin' as any }
+        metadata: { communityId: 'comm-1', role: 'admin' as any },
       });
 
       await service.logEvent({
@@ -117,7 +120,7 @@ describe('AccessControlAuditService', () => {
         contractAddress: 'SP1.access-control',
         method: 'assign-role',
         data: {},
-        metadata: { communityId: 'comm-1', role: 'member' as any }
+        metadata: { communityId: 'comm-1', role: 'member' as any },
       });
     });
 
@@ -128,7 +131,7 @@ describe('AccessControlAuditService', () => {
 
     it('should filter by event type', async () => {
       const logs = await service.queryLogs({
-        eventType: AccessControlEventType.ADMIN_ADDED
+        eventType: AccessControlEventType.ADMIN_ADDED,
       });
       expect(logs).toHaveLength(1);
       expect(logs[0].eventType).toBe(AccessControlEventType.ADMIN_ADDED);
@@ -151,7 +154,7 @@ describe('AccessControlAuditService', () => {
         contractAddress: 'SP1.access-control',
         method: 'add-admin',
         data: {},
-        metadata: { communityId: 'comm-1', role: 'admin' as any }
+        metadata: { communityId: 'comm-1', role: 'admin' as any },
       });
 
       await service.logEvent({
@@ -163,7 +166,7 @@ describe('AccessControlAuditService', () => {
         contractAddress: 'SP1.access-control',
         method: 'add-admin',
         data: {},
-        metadata: { communityId: 'comm-2', role: 'admin' as any }
+        metadata: { communityId: 'comm-2', role: 'admin' as any },
       });
     });
 

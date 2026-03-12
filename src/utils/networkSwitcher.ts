@@ -35,9 +35,9 @@ export class NetworkSwitcher {
 
   private static clearNetworkData(): void {
     // Clear localStorage items
-    this.RESET_KEYS.forEach(key => {
-      const keys = Object.keys(localStorage).filter(k => k.startsWith(key));
-      keys.forEach(k => localStorage.removeItem(k));
+    this.RESET_KEYS.forEach((key) => {
+      const keys = Object.keys(localStorage).filter((k) => k.startsWith(key));
+      keys.forEach((k) => localStorage.removeItem(k));
     });
 
     // Clear sessionStorage
@@ -47,8 +47,8 @@ export class NetworkSwitcher {
     if (typeof window !== 'undefined') {
       // Clear fetch cache if available
       if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
             if (name.includes('api') || name.includes('stacks')) {
               caches.delete(name);
             }
@@ -79,24 +79,33 @@ export class NetworkSwitcher {
 
   private static notifyNetworkChange(network: NetworkType): void {
     // Dispatch custom event
-    window.dispatchEvent(new CustomEvent('networkSwitched', {
-      detail: { network }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('networkSwitched', {
+        detail: { network },
+      })
+    );
 
     // Update document title or other global indicators
-    document.title = `PassportX - ${network.charAt(0).toUpperCase() + network.slice(1)}`;
+    document.title = `PassportX - ${
+      network.charAt(0).toUpperCase() + network.slice(1)
+    }`;
   }
 
   static getCurrentNetwork(): NetworkType {
     const saved = localStorage.getItem('passportx-network');
-    return (saved === 'mainnet' || saved === 'testnet') ? saved as NetworkType : 'testnet';
+    return saved === 'mainnet' || saved === 'testnet'
+      ? (saved as NetworkType)
+      : 'testnet';
   }
 
   static saveNetworkPreference(network: NetworkType): void {
     localStorage.setItem('passportx-network', network);
   }
 
-  static validateNetworkSwitch(currentNetwork: NetworkType, targetNetwork: NetworkType): boolean {
+  static validateNetworkSwitch(
+    currentNetwork: NetworkType,
+    targetNetwork: NetworkType
+  ): boolean {
     // Add any validation logic here
     // For example, warn about unsaved changes, pending transactions, etc.
 
@@ -110,16 +119,24 @@ export class NetworkSwitcher {
 }
 
 // Hook for components to listen to network switches
-export function useNetworkSwitchListener(callback: (network: NetworkType) => void) {
+export function useNetworkSwitchListener(
+  callback: (network: NetworkType) => void
+) {
   if (typeof window !== 'undefined') {
     const handleNetworkSwitch = (event: CustomEvent) => {
       callback(event.detail.network);
     };
 
-    window.addEventListener('networkSwitched', handleNetworkSwitch as EventListener);
+    window.addEventListener(
+      'networkSwitched',
+      handleNetworkSwitch as EventListener
+    );
 
     return () => {
-      window.removeEventListener('networkSwitched', handleNetworkSwitch as EventListener);
+      window.removeEventListener(
+        'networkSwitched',
+        handleNetworkSwitch as EventListener
+      );
     };
   }
 

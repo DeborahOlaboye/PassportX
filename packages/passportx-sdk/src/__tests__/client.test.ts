@@ -15,7 +15,7 @@ describe('PassportX SDK', () => {
   beforeEach(() => {
     client = new PassportX({
       apiUrl: 'https://test.api.passportx.app',
-      network: 'testnet'
+      network: 'testnet',
     });
 
     // Reset mocks
@@ -32,7 +32,7 @@ describe('PassportX SDK', () => {
       const customClient = new PassportX({
         apiUrl: 'https://custom.api',
         network: 'mainnet',
-        timeout: 5000
+        timeout: 5000,
       });
       expect(customClient).toBeInstanceOf(PassportX);
     });
@@ -41,7 +41,7 @@ describe('PassportX SDK', () => {
       expect(axios.create).toHaveBeenCalledWith(
         expect.objectContaining({
           baseURL: 'https://test.api.passportx.app',
-          timeout: 10000
+          timeout: 10000,
         })
       );
     });
@@ -56,25 +56,29 @@ describe('PassportX SDK', () => {
           id: 'template1',
           name: 'Test Badge',
           category: 'achievement',
-          level: 1
+          level: 1,
         },
         metadata: {
           level: 1,
           category: 'achievement',
-          timestamp: Date.now()
-        }
-      }
+          timestamp: Date.now(),
+        },
+      },
     ];
 
     it('should fetch user badges', async () => {
       const mockGet = jest.fn().mockResolvedValue({ data: mockBadges });
       (client as any).client.get = mockGet;
 
-      const result = await client.getUserBadges('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+      const result = await client.getUserBadges(
+        'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+      );
 
       expect(result).toEqual(mockBadges);
       expect(mockGet).toHaveBeenCalledWith(
-        expect.stringContaining('/api/users/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM/badges')
+        expect.stringContaining(
+          '/api/users/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM/badges'
+        )
       );
     });
 
@@ -86,15 +90,13 @@ describe('PassportX SDK', () => {
         category: 'achievement',
         level: 1,
         limit: 10,
-        offset: 0
+        offset: 0,
       });
 
       expect(mockGet).toHaveBeenCalledWith(
         expect.stringContaining('category=achievement')
       );
-      expect(mockGet).toHaveBeenCalledWith(
-        expect.stringContaining('level=1')
-      );
+      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('level=1'));
     });
   });
 
@@ -104,13 +106,13 @@ describe('PassportX SDK', () => {
       owner: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
       template: {
         id: 'template1',
-        name: 'Test Badge'
+        name: 'Test Badge',
       },
       metadata: {
         level: 1,
         category: 'achievement',
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     };
 
     it('should fetch a specific badge', async () => {
@@ -131,8 +133,8 @@ describe('PassportX SDK', () => {
         metadata: {
           level: 2,
           category: 'skill',
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       };
 
       const mockGet = jest.fn().mockResolvedValue({ data: mockBadge });
@@ -151,12 +153,12 @@ describe('PassportX SDK', () => {
       slug: 'test-community',
       description: 'A test community',
       admins: ['ST1...'],
-      memberCount: 100
+      memberCount: 100,
     };
 
     it('should fetch community by ID', async () => {
       const mockGet = jest.fn().mockResolvedValue({
-        data: { success: true, data: mockCommunity }
+        data: { success: true, data: mockCommunity },
       });
       (client as any).client.get = mockGet;
 
@@ -168,7 +170,7 @@ describe('PassportX SDK', () => {
 
     it('should fetch community by slug', async () => {
       const mockGet = jest.fn().mockResolvedValue({
-        data: { success: true, data: mockCommunity }
+        data: { success: true, data: mockCommunity },
       });
       (client as any).client.get = mockGet;
 
@@ -184,14 +186,14 @@ describe('PassportX SDK', () => {
         id: 'template1',
         name: 'Template 1',
         category: 'achievement',
-        level: 1
+        level: 1,
       },
       {
         id: 'template2',
         name: 'Template 2',
         category: 'skill',
-        level: 2
-      }
+        level: 2,
+      },
     ];
 
     it('should fetch community badge templates', async () => {
@@ -201,7 +203,9 @@ describe('PassportX SDK', () => {
       const result = await client.getCommunityBadges('community1');
 
       expect(result).toEqual(mockTemplates);
-      expect(mockGet).toHaveBeenCalledWith('/api/badges/templates/community/community1');
+      expect(mockGet).toHaveBeenCalledWith(
+        '/api/badges/templates/community/community1'
+      );
     });
   });
 
@@ -209,19 +213,19 @@ describe('PassportX SDK', () => {
     const mockResponse = {
       data: [
         { id: 'c1', name: 'Community 1' },
-        { id: 'c2', name: 'Community 2' }
+        { id: 'c2', name: 'Community 2' },
       ],
       pagination: {
         total: 2,
         limit: 10,
         offset: 0,
-        hasMore: false
-      }
+        hasMore: false,
+      },
     };
 
     it('should list communities', async () => {
       const mockGet = jest.fn().mockResolvedValue({
-        data: { success: true, data: mockResponse }
+        data: { success: true, data: mockResponse },
       });
       (client as any).client.get = mockGet;
 
@@ -232,13 +236,13 @@ describe('PassportX SDK', () => {
 
     it('should list communities with search', async () => {
       const mockGet = jest.fn().mockResolvedValue({
-        data: { success: true, data: mockResponse }
+        data: { success: true, data: mockResponse },
       });
       (client as any).client.get = mockGet;
 
       await client.listCommunities({
         search: 'test',
-        tags: ['tag1', 'tag2']
+        tags: ['tag1', 'tag2'],
       });
 
       expect(mockGet).toHaveBeenCalledWith(
@@ -253,7 +257,7 @@ describe('PassportX SDK', () => {
   describe('verifyBadge', () => {
     it('should return true for valid badge', async () => {
       const mockGet = jest.fn().mockResolvedValue({
-        data: { id: 'badge1' }
+        data: { id: 'badge1' },
       });
       (client as any).client.get = mockGet;
 
@@ -263,9 +267,9 @@ describe('PassportX SDK', () => {
     });
 
     it('should return false for invalid badge', async () => {
-      const mockGet = jest.fn().mockRejectedValue(
-        new PassportXError('Not found', 'NOT_FOUND', 404)
-      );
+      const mockGet = jest
+        .fn()
+        .mockRejectedValue(new PassportXError('Not found', 'NOT_FOUND', 404));
       (client as any).client.get = mockGet;
 
       const result = await client.verifyBadge('invalid');
@@ -274,18 +278,24 @@ describe('PassportX SDK', () => {
     });
 
     it('should throw error for non-404 errors', async () => {
-      const mockGet = jest.fn().mockRejectedValue(
-        new PassportXError('Server error', 'SERVER_ERROR', 500)
-      );
+      const mockGet = jest
+        .fn()
+        .mockRejectedValue(
+          new PassportXError('Server error', 'SERVER_ERROR', 500)
+        );
       (client as any).client.get = mockGet;
 
-      await expect(client.verifyBadge('badge1')).rejects.toThrow(PassportXError);
+      await expect(client.verifyBadge('badge1')).rejects.toThrow(
+        PassportXError
+      );
     });
   });
 
   describe('Error Handling', () => {
     it('should handle PassportXError correctly', () => {
-      const error = new PassportXError('Test error', 'TEST_CODE', 400, { detail: 'test' });
+      const error = new PassportXError('Test error', 'TEST_CODE', 400, {
+        detail: 'test',
+      });
 
       expect(error.message).toBe('Test error');
       expect(error.code).toBe('TEST_CODE');

@@ -5,7 +5,7 @@ export {
   ValidationError,
   NotFoundError,
   ConflictError,
-  ServiceUnavailableError
+  ServiceUnavailableError,
 } from './AppError';
 
 export {
@@ -13,5 +13,5 @@ export {
   isError,
   getErrorMessage,
   getErrorStatusCode,
-  toAppError
+  toAppError,
 } from './errorUtils';

@@ -10,9 +10,7 @@
       "namespaces": {
         "eip155": {
           "chains": ["eip155:5"],
-          "accounts": [
-            "eip155:5:0x1234567890123456789012345678901234567890"
-          ],
+          "accounts": ["eip155:5:0x1234567890123456789012345678901234567890"],
           "methods": [
             "eth_sendTransaction",
             "eth_signTransaction",
@@ -47,9 +45,7 @@
       "namespaces": {
         "eip155": {
           "chains": ["eip155:1"],
-          "accounts": [
-            "eip155:1:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-          ],
+          "accounts": ["eip155:1:0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"],
           "methods": [
             "eth_sendTransaction",
             "eth_signTransaction",

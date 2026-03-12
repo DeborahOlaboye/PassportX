@@ -1,5 +1,8 @@
 import { BadgeRevocationHandler } from '../badgeRevocationHandler';
-import { ChainhookEventPayload, BadgeRevocationEvent } from '../../types/handlers';
+import {
+  ChainhookEventPayload,
+  BadgeRevocationEvent,
+} from '../../types/handlers';
 
 describe('BadgeRevocationHandler', () => {
   let handler: BadgeRevocationHandler;
@@ -10,7 +13,7 @@ describe('BadgeRevocationHandler', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
     };
     handler = new BadgeRevocationHandler(mockLogger);
   });
@@ -30,20 +33,21 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'revoke-badge',
-                  args: ['badge-1']
-                }
-              }
-            ]
-          }
+                  args: ['badge-1'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(true);
@@ -63,20 +67,21 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'burn-badge',
-                  args: ['badge-2']
-                }
-              }
-            ]
-          }
+                  args: ['badge-2'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(true);
@@ -93,8 +98,8 @@ describe('BadgeRevocationHandler', () => {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(false);
@@ -114,27 +119,28 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'revoke-badge',
-                  args: ['badge-1']
-                }
-              }
-            ]
-          }
+                  args: ['badge-1'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       handler.canHandle(event);
       const debugCalls = mockLogger.debug.mock.calls.length;
-      
+
       handler.canHandle(event);
-      
+
       expect(mockLogger.debug.mock.calls.length).toBeGreaterThan(debugCalls);
     });
   });
@@ -154,20 +160,21 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'revoke-badge',
-                  args: ['badge-1']
-                }
-              }
-            ]
-          }
+                  args: ['badge-1'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const notifications = await handler.handle(event);
@@ -190,20 +197,21 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'burn-badge',
-                  args: ['badge-2']
-                }
-              }
-            ]
-          }
+                  args: ['badge-2'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const notifications = await handler.handle(event);
@@ -226,12 +234,13 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'revoke-badge',
-                  args: ['badge-1']
-                }
-              }
-            ]
+                  args: ['badge-1'],
+                },
+              },
+            ],
           },
           {
             transaction_index: 1,
@@ -240,20 +249,21 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'revoke-badge',
-                  args: ['badge-2']
-                }
-              }
-            ]
-          }
+                  args: ['badge-2'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const notifications = await handler.handle(event);
@@ -275,20 +285,21 @@ describe('BadgeRevocationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
                   method: 'mint',
-                  args: ['badge-1']
-                }
-              }
-            ]
-          }
+                  args: ['badge-1'],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const notifications = await handler.handle(event);

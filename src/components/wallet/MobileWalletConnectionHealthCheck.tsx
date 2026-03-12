@@ -13,7 +13,7 @@ import {
   Clock,
   RefreshCw,
   Play,
-  Pause
+  Pause,
 } from 'lucide-react';
 
 interface HealthCheck {
@@ -36,62 +36,65 @@ export default function MobileWalletConnectionHealthCheck() {
   const [healthStatus, setHealthStatus] = useState<HealthStatus>({
     overall: 'healthy',
     score: 100,
-    checks: []
+    checks: [],
   });
   const [isRunning, setIsRunning] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
 
-  const HEALTH_CHECKS: Omit<HealthCheck, 'status' | 'duration' | 'error' | 'lastRun'>[] = [
+  const HEALTH_CHECKS: Omit<
+    HealthCheck,
+    'status' | 'duration' | 'error' | 'lastRun'
+  >[] = [
     {
       id: 'network-connectivity',
       name: 'Network Connectivity',
-      description: 'Check internet connection and network stability'
+      description: 'Check internet connection and network stability',
     },
     {
       id: 'walletconnect-service',
       name: 'WalletConnect Service',
-      description: 'Verify WalletConnect bridge availability'
+      description: 'Verify WalletConnect bridge availability',
     },
     {
       id: 'stacks-node',
       name: 'Stacks Node Access',
-      description: 'Check connection to Stacks blockchain nodes'
+      description: 'Check connection to Stacks blockchain nodes',
     },
     {
       id: 'qr-generation',
       name: 'QR Code Generation',
-      description: 'Test QR code creation and encoding'
+      description: 'Test QR code creation and encoding',
     },
     {
       id: 'deep-linking',
       name: 'Deep Linking Support',
-      description: 'Verify mobile app deep linking functionality'
+      description: 'Verify mobile app deep linking functionality',
     },
     {
       id: 'security-validation',
       name: 'Security Validation',
-      description: 'Check encryption and security measures'
+      description: 'Check encryption and security measures',
     },
     {
       id: 'performance-metrics',
       name: 'Performance Metrics',
-      description: 'Validate connection speed and reliability'
+      description: 'Validate connection speed and reliability',
     },
     {
       id: 'error-handling',
       name: 'Error Handling',
-      description: 'Test error scenarios and recovery mechanisms'
-    }
+      description: 'Test error scenarios and recovery mechanisms',
+    },
   ];
 
   useEffect(() => {
     // Initialize with pending checks
-    setHealthStatus(prev => ({
+    setHealthStatus((prev) => ({
       ...prev,
-      checks: HEALTH_CHECKS.map(check => ({
+      checks: HEALTH_CHECKS.map((check) => ({
         ...check,
-        status: 'pending' as const
-      }))
+        status: 'pending' as const,
+      })),
     }));
   }, []);
 
@@ -132,7 +135,7 @@ export default function MobileWalletConnectionHealthCheck() {
         ...check,
         status: 'passed',
         duration: Date.now() - startTime,
-        lastRun: new Date()
+        lastRun: new Date(),
       };
     } catch (error) {
       return {
@@ -140,7 +143,7 @@ export default function MobileWalletConnectionHealthCheck() {
         status: 'failed',
         duration: Date.now() - startTime,
         error: error instanceof Error ? error.message : 'Unknown error',
-        lastRun: new Date()
+        lastRun: new Date(),
       };
     }
   };
@@ -152,7 +155,7 @@ export default function MobileWalletConnectionHealthCheck() {
     try {
       const response = await fetch('https://httpbin.org/status/200', {
         method: 'HEAD',
-        signal: controller.signal
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
 
@@ -167,7 +170,7 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testWalletConnectService = async (): Promise<void> => {
     // Simulate WalletConnect service check
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Mock check - in real implementation, would ping WalletConnect bridge
     if (Math.random() > 0.95) {
@@ -177,7 +180,7 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testStacksNode = async (): Promise<void> => {
     // Simulate Stacks node check
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Mock check - in real implementation, would check Stacks API
     if (Math.random() > 0.98) {
@@ -187,11 +190,12 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testQRGeneration = async (): Promise<void> => {
     // Test QR code generation
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     try {
       // Mock QR generation test
-      const testData = 'wc:test-uri@1?bridge=https://bridge.walletconnect.org&key=test-key';
+      const testData =
+        'wc:test-uri@1?bridge=https://bridge.walletconnect.org&key=test-key';
       if (!testData.includes('wc:')) {
         throw new Error('Invalid WalletConnect URI format');
       }
@@ -202,10 +206,13 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testDeepLinking = async (): Promise<void> => {
     // Test deep linking support
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     const userAgent = navigator.userAgent.toLowerCase();
-    const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    const isMobile =
+      /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        userAgent
+      );
 
     if (!isMobile) {
       // On desktop, deep linking might not be available
@@ -215,7 +222,7 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testSecurityValidation = async (): Promise<void> => {
     // Test security measures
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
     // Mock security checks
     const hasCrypto = typeof crypto !== 'undefined';
@@ -228,11 +235,11 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testPerformanceMetrics = async (): Promise<void> => {
     // Test performance metrics
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const startTime = performance.now();
     // Simulate some operation
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const endTime = performance.now();
 
     const duration = endTime - startTime;
@@ -243,7 +250,7 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const testErrorHandling = async (): Promise<void> => {
     // Test error handling
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     // Simulate error scenario
     try {
@@ -263,11 +270,11 @@ export default function MobileWalletConnectionHealthCheck() {
 
     for (const check of healthStatus.checks) {
       // Update check to running status
-      setHealthStatus(prev => ({
+      setHealthStatus((prev) => ({
         ...prev,
-        checks: prev.checks.map(c =>
+        checks: prev.checks.map((c) =>
           c.id === check.id ? { ...c, status: 'running' as const } : c
-        )
+        ),
       }));
 
       // Run the check
@@ -275,19 +282,19 @@ export default function MobileWalletConnectionHealthCheck() {
       updatedChecks.push(result);
 
       // Update the check result
-      setHealthStatus(prev => ({
+      setHealthStatus((prev) => ({
         ...prev,
-        checks: prev.checks.map(c =>
-          c.id === check.id ? result : c
-        )
+        checks: prev.checks.map((c) => (c.id === check.id ? result : c)),
       }));
 
       // Small delay between checks
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
     // Calculate overall health status
-    const passedChecks = updatedChecks.filter(c => c.status === 'passed').length;
+    const passedChecks = updatedChecks.filter(
+      (c) => c.status === 'passed'
+    ).length;
     const totalChecks = updatedChecks.length;
     const score = Math.round((passedChecks / totalChecks) * 100);
 
@@ -295,11 +302,11 @@ export default function MobileWalletConnectionHealthCheck() {
     if (score < 70) overall = 'critical';
     else if (score < 90) overall = 'warning';
 
-    setHealthStatus(prev => ({
+    setHealthStatus((prev) => ({
       ...prev,
       overall,
       score,
-      checks: updatedChecks
+      checks: updatedChecks,
     }));
 
     setLastCheckTime(new Date());
@@ -323,20 +330,29 @@ export default function MobileWalletConnectionHealthCheck() {
 
   const getStatusColor = (status: HealthCheck['status']) => {
     switch (status) {
-      case 'passed': return 'text-green-700 bg-green-50 border-green-200';
-      case 'failed': return 'text-red-700 bg-red-50 border-red-200';
-      case 'warning': return 'text-yellow-700 bg-yellow-50 border-yellow-200';
-      case 'running': return 'text-blue-700 bg-blue-50 border-blue-200';
-      default: return 'text-gray-700 bg-gray-50 border-gray-200';
+      case 'passed':
+        return 'text-green-700 bg-green-50 border-green-200';
+      case 'failed':
+        return 'text-red-700 bg-red-50 border-red-200';
+      case 'warning':
+        return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+      case 'running':
+        return 'text-blue-700 bg-blue-50 border-blue-200';
+      default:
+        return 'text-gray-700 bg-gray-50 border-gray-200';
     }
   };
 
   const getOverallStatusColor = (overall: HealthStatus['overall']) => {
     switch (overall) {
-      case 'healthy': return 'text-green-700 bg-green-50 border-green-200';
-      case 'warning': return 'text-yellow-700 bg-yellow-50 border-yellow-200';
-      case 'critical': return 'text-red-700 bg-red-50 border-red-200';
-      default: return 'text-gray-700 bg-gray-50 border-gray-200';
+      case 'healthy':
+        return 'text-green-700 bg-green-50 border-green-200';
+      case 'warning':
+        return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+      case 'critical':
+        return 'text-red-700 bg-red-50 border-red-200';
+      default:
+        return 'text-gray-700 bg-gray-50 border-gray-200';
     }
   };
 
@@ -373,11 +389,17 @@ export default function MobileWalletConnectionHealthCheck() {
         </div>
 
         {/* Overall Health Status */}
-        <div className={`p-4 rounded-lg border mb-6 ${getOverallStatusColor(healthStatus.overall)}`}>
+        <div
+          className={`p-4 rounded-lg border mb-6 ${getOverallStatusColor(
+            healthStatus.overall
+          )}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-lg">
-                System Health: {healthStatus.overall.charAt(0).toUpperCase() + healthStatus.overall.slice(1)}
+                System Health:{' '}
+                {healthStatus.overall.charAt(0).toUpperCase() +
+                  healthStatus.overall.slice(1)}
               </h3>
               <p className="text-sm mt-1">
                 Health Score: {healthStatus.score}/100
@@ -402,7 +424,9 @@ export default function MobileWalletConnectionHealthCheck() {
         {healthStatus.checks.map((check) => (
           <div
             key={check.id}
-            className={`p-4 rounded-lg border transition-all ${getStatusColor(check.status)}`}
+            className={`p-4 rounded-lg border transition-all ${getStatusColor(
+              check.status
+            )}`}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
@@ -410,7 +434,9 @@ export default function MobileWalletConnectionHealthCheck() {
 
                 <div className="flex-grow">
                   <h4 className="font-medium text-gray-900">{check.name}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{check.description}</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {check.description}
+                  </p>
 
                   {check.error && (
                     <p className="text-sm text-red-600 mt-2">
@@ -441,29 +467,43 @@ export default function MobileWalletConnectionHealthCheck() {
       {/* Health Check Summary */}
       {healthStatus.checks.length > 0 && (
         <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="font-medium text-gray-900 mb-2">Health Check Summary</h4>
+          <h4 className="font-medium text-gray-900 mb-2">
+            Health Check Summary
+          </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <div className="font-medium text-green-600">
-                {healthStatus.checks.filter(c => c.status === 'passed').length}
+                {
+                  healthStatus.checks.filter((c) => c.status === 'passed')
+                    .length
+                }
               </div>
               <div className="text-gray-600">Passed</div>
             </div>
             <div>
               <div className="font-medium text-red-600">
-                {healthStatus.checks.filter(c => c.status === 'failed').length}
+                {
+                  healthStatus.checks.filter((c) => c.status === 'failed')
+                    .length
+                }
               </div>
               <div className="text-gray-600">Failed</div>
             </div>
             <div>
               <div className="font-medium text-yellow-600">
-                {healthStatus.checks.filter(c => c.status === 'warning').length}
+                {
+                  healthStatus.checks.filter((c) => c.status === 'warning')
+                    .length
+                }
               </div>
               <div className="text-gray-600">Warnings</div>
             </div>
             <div>
               <div className="font-medium text-gray-600">
-                {healthStatus.checks.filter(c => c.status === 'pending').length}
+                {
+                  healthStatus.checks.filter((c) => c.status === 'pending')
+                    .length
+                }
               </div>
               <div className="text-gray-600">Pending</div>
             </div>

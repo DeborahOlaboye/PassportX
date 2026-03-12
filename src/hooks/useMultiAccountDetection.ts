@@ -10,16 +10,12 @@ export interface AccountDetectionConfig {
 }
 
 export function useMultiAccountDetection(config: AccountDetectionConfig = {}) {
-  const { state, addAccount, switchAccount, onAccountSwitch } = useMultiAccount();
+  const { state, addAccount, switchAccount, onAccountSwitch } =
+    useMultiAccount();
   const debounceTimer = useRef<NodeJS.Timeout>();
   const previousAccounts = useRef<string[]>([]);
 
-  const {
-    autoSwitch = true,
-    debounceMs = 500,
-    onDetected,
-    onChanged,
-  } = config;
+  const { autoSwitch = true, debounceMs = 500, onDetected, onChanged } = config;
 
   const detectAccountChanges = useCallback(async () => {
     const currentAddresses = state.accounts.map((a) => a.address);
@@ -39,8 +35,8 @@ export function useMultiAccountDetection(config: AccountDetectionConfig = {}) {
 
       // Auto-switch to first new account if enabled
       if (autoSwitch && newAccounts.length > 0 && !state.activeAccount) {
-        const firstNewAccount = state.accounts.find(
-          (a) => newAccounts.includes(a.address)
+        const firstNewAccount = state.accounts.find((a) =>
+          newAccounts.includes(a.address)
         );
         if (firstNewAccount) {
           await switchAccount(firstNewAccount.address, 'auto');
@@ -50,7 +46,14 @@ export function useMultiAccountDetection(config: AccountDetectionConfig = {}) {
     }
 
     previousAccounts.current = currentAddresses;
-  }, [state.accounts, state.activeAccount, autoSwitch, onDetected, onChanged, switchAccount]);
+  }, [
+    state.accounts,
+    state.activeAccount,
+    autoSwitch,
+    onDetected,
+    onChanged,
+    switchAccount,
+  ]);
 
   const triggerDetection = useCallback(() => {
     if (debounceTimer.current) {
@@ -90,8 +93,10 @@ export function useMultiAccountDetection(config: AccountDetectionConfig = {}) {
 
   const hasAccountChanges = useCallback((): boolean => {
     const currentAddresses = state.accounts.map((a) => a.address);
-    return currentAddresses.length !== previousAccounts.current.length ||
-      currentAddresses.some((addr) => !previousAccounts.current.includes(addr));
+    return (
+      currentAddresses.length !== previousAccounts.current.length ||
+      currentAddresses.some((addr) => !previousAccounts.current.includes(addr))
+    );
   }, [state.accounts]);
 
   return {

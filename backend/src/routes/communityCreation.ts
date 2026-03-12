@@ -4,7 +4,10 @@ import CommunityCreationNotificationService from '../services/communityCreationN
 import CommunityCacheService from '../services/communityCacheService';
 import { CommunityCreationEvent } from '../services/communityCreationService';
 import { authenticateToken } from '../middleware/auth';
-import { validateWebhookSignature, getWebhookValidationConfig } from '../middleware/webhookValidation';
+import {
+  validateWebhookSignature,
+  getWebhookValidationConfig,
+} from '../middleware/webhookValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { COMMUNITY_WRITE_RATE_LIMIT } from '../config/rateLimits';
 
@@ -27,7 +30,10 @@ export function initializeCommunityCreationRoutes(
   cacheService = _cacheService;
 }
 
-function validateCommunityCreationEvent(event: any): { valid: boolean; errors: string[] } {
+function validateCommunityCreationEvent(event: any): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!event || typeof event !== 'object') {
@@ -66,140 +72,162 @@ function validateCommunityCreationEvent(event: any): { valid: boolean; errors: s
   return { valid: errors.length === 0, errors };
 }
 
-router.post('/webhook/events', validateWebhookSignature(getWebhookValidationConfig()), async (req: Request, res: Response) => {
-  try {
-    if (!communityCreationService || !notificationService || !cacheService) {
-      console.error('Community creation services not initialized');
-      return res.status(503).json({
-        success: false,
-        error: 'Community creation services not initialized',
-        code: 'SERVICE_NOT_INITIALIZED'
-      });
-    }
-
-    const event: CommunityCreationEvent = req.body;
-
-    if (!event) {
-      return res.status(400).json({
-        success: false,
-        error: 'Request body is required',
-        code: 'MISSING_REQUEST_BODY'
-      });
-    }
-
-    const validation = validateCommunityCreationEvent(event);
-    if (!validation.valid) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid community creation event',
-        details: validation.errors,
-        code: 'VALIDATION_ERROR'
-      });
-    }
-
-    const result = await communityCreationService.processCommunityCreationEvent(event);
-
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        error: result.message,
-        details: result.error,
-        code: 'PROCESSING_ERROR'
-      });
-    }
-
+router.post(
+  '/webhook/events',
+  validateWebhookSignature(getWebhookValidationConfig()),
+  async (req: Request, res: Response) => {
     try {
-      const notifications = await notificationService.buildNotificationBatch(
-        event,
-        [event.ownerAddress],
-        { includeInstructions: true, includeDashboardLink: true }
+      if (!communityCreationService || !notificationService || !cacheService) {
+        console.error('Community creation services not initialized');
+        return res.status(503).json({
+          success: false,
+          error: 'Community creation services not initialized',
+          code: 'SERVICE_NOT_INITIALIZED',
+        });
+      }
+
+      const event: CommunityCreationEvent = req.body;
+
+      if (!event) {
+        return res.status(400).json({
+          success: false,
+          error: 'Request body is required',
+          code: 'MISSING_REQUEST_BODY',
+        });
+      }
+
+      const validation = validateCommunityCreationEvent(event);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid community creation event',
+          details: validation.errors,
+          code: 'VALIDATION_ERROR',
+        });
+      }
+
+      const result =
+        await communityCreationService.processCommunityCreationEvent(event);
+
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          error: result.message,
+          details: result.error,
+          code: 'PROCESSING_ERROR',
+        });
+      }
+
+      try {
+        const notifications = await notificationService.buildNotificationBatch(
+          event,
+          [event.ownerAddress],
+          { includeInstructions: true, includeDashboardLink: true }
+        );
+
+        cacheService.onCommunityCreated(event);
+
+        res.status(201).json({
+          success: true,
+          communityId: result.communityId,
+          message: result.message,
+          notificationsSent: notifications.length,
+          code: 'COMMUNITY_CREATED',
+        });
+      } catch (notificationError) {
+        console.error('Error sending notifications:', notificationError);
+        res.status(201).json({
+          success: true,
+          communityId: result.communityId,
+          message: result.message,
+          notificationsSent: 0,
+          warning: 'Community created but notification delivery failed',
+          code: 'COMMUNITY_CREATED_NOTIFICATION_ERROR',
+        });
+      }
+    } catch (error) {
+      console.error('Error processing community creation webhook:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to process community creation event',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        code: 'INTERNAL_SERVER_ERROR',
+      });
+    }
+  }
+);
+
+router.post(
+  '/sync',
+  communityCreationLimiter,
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      if (!communityCreationService) {
+        return res.status(503).json({
+          error: 'Community creation service not initialized',
+        });
+      }
+
+      const {
+        blockchainId,
+        contractAddress,
+        ownerAddress,
+        communityName,
+        description,
+      } = req.body;
+
+      if (
+        !blockchainId ||
+        !contractAddress ||
+        !ownerAddress ||
+        !communityName
+      ) {
+        return res.status(400).json({
+          error:
+            'Missing required fields: blockchainId, contractAddress, ownerAddress, communityName',
+        });
+      }
+
+      const result = await communityCreationService.syncCommunityFromBlockchain(
+        blockchainId,
+        contractAddress,
+        ownerAddress,
+        communityName,
+        description || ''
       );
 
-      cacheService.onCommunityCreated(event);
+      if (!result.success) {
+        return res.status(400).json({
+          error: result.message,
+          details: result.error,
+        });
+      }
 
-      res.status(201).json({
+      if (cacheService) {
+        cacheService.invalidatePattern('^communities:');
+      }
+
+      res.json({
         success: true,
         communityId: result.communityId,
         message: result.message,
-        notificationsSent: notifications.length,
-        code: 'COMMUNITY_CREATED'
       });
-    } catch (notificationError) {
-      console.error('Error sending notifications:', notificationError);
-      res.status(201).json({
-        success: true,
-        communityId: result.communityId,
-        message: result.message,
-        notificationsSent: 0,
-        warning: 'Community created but notification delivery failed',
-        code: 'COMMUNITY_CREATED_NOTIFICATION_ERROR'
+    } catch (error) {
+      console.error('Error syncing community from blockchain:', error);
+      res.status(500).json({
+        error: 'Failed to sync community from blockchain',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-  } catch (error) {
-    console.error('Error processing community creation webhook:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process community creation event',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      code: 'INTERNAL_SERVER_ERROR'
-    });
   }
-});
-
-router.post('/sync', communityCreationLimiter, authenticateToken, async (req: Request, res: Response) => {
-  try {
-    if (!communityCreationService) {
-      return res.status(503).json({
-        error: 'Community creation service not initialized'
-      });
-    }
-
-    const { blockchainId, contractAddress, ownerAddress, communityName, description } = req.body;
-
-    if (!blockchainId || !contractAddress || !ownerAddress || !communityName) {
-      return res.status(400).json({
-        error: 'Missing required fields: blockchainId, contractAddress, ownerAddress, communityName'
-      });
-    }
-
-    const result = await communityCreationService.syncCommunityFromBlockchain(
-      blockchainId,
-      contractAddress,
-      ownerAddress,
-      communityName,
-      description || ''
-    );
-
-    if (!result.success) {
-      return res.status(400).json({
-        error: result.message,
-        details: result.error
-      });
-    }
-
-    if (cacheService) {
-      cacheService.invalidatePattern('^communities:');
-    }
-
-    res.json({
-      success: true,
-      communityId: result.communityId,
-      message: result.message
-    });
-  } catch (error) {
-    console.error('Error syncing community from blockchain:', error);
-    res.status(500).json({
-      error: 'Failed to sync community from blockchain',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
+);
 
 router.get('/status/:blockchainId', async (req: Request, res: Response) => {
   try {
     if (!communityCreationService) {
       return res.status(503).json({
-        error: 'Community creation service not initialized'
+        error: 'Community creation service not initialized',
       });
     }
 
@@ -208,7 +236,7 @@ router.get('/status/:blockchainId', async (req: Request, res: Response) => {
 
     if (!blockchainId || !contractAddress) {
       return res.status(400).json({
-        error: 'Missing required parameters: blockchainId, contractAddress'
+        error: 'Missing required parameters: blockchainId, contractAddress',
       });
     }
 
@@ -221,7 +249,7 @@ router.get('/status/:blockchainId', async (req: Request, res: Response) => {
       return res.status(404).json({
         error: 'Community not found',
         blockchainId,
-        synced: false
+        synced: false,
       });
     }
 
@@ -232,74 +260,84 @@ router.get('/status/:blockchainId', async (req: Request, res: Response) => {
       communityName: community.name,
       slug: community.slug,
       admin: community.admins[0],
-      createdAt: community.createdAt
+      createdAt: community.createdAt,
     });
   } catch (error) {
     console.error('Error checking community sync status:', error);
     res.status(500).json({
       error: 'Failed to check community sync status',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
 
-router.post('/notifications/test', communityCreationLimiter, authenticateToken, async (req: Request, res: Response) => {
-  try {
-    if (!notificationService) {
-      return res.status(503).json({
-        error: 'Notification service not initialized'
+router.post(
+  '/notifications/test',
+  communityCreationLimiter,
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    try {
+      if (!notificationService) {
+        return res.status(503).json({
+          error: 'Notification service not initialized',
+        });
+      }
+
+      const { communityId, communityName, ownerAddress } = req.body;
+
+      if (!communityId || !communityName || !ownerAddress) {
+        return res.status(400).json({
+          error:
+            'Missing required fields: communityId, communityName, ownerAddress',
+        });
+      }
+
+      const testEvent: CommunityCreationEvent = {
+        communityId,
+        communityName,
+        description: 'Test community',
+        ownerAddress,
+        createdAtBlockHeight: 0,
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+        transactionHash: 'test-tx-hash',
+        blockHeight: 0,
+        timestamp: Date.now(),
+      };
+
+      const notification = notificationService.createWelcomeNotification(
+        testEvent,
+        {
+          includeInstructions: true,
+          includeDashboardLink: true,
+        }
+      );
+
+      if (!notificationService.validateNotificationPayload(notification)) {
+        return res.status(400).json({
+          error: 'Generated notification is invalid',
+        });
+      }
+
+      res.json({
+        success: true,
+        notification,
+      });
+    } catch (error) {
+      console.error('Error generating test notification:', error);
+      res.status(500).json({
+        error: 'Failed to generate test notification',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    const { communityId, communityName, ownerAddress } = req.body;
-
-    if (!communityId || !communityName || !ownerAddress) {
-      return res.status(400).json({
-        error: 'Missing required fields: communityId, communityName, ownerAddress'
-      });
-    }
-
-    const testEvent: CommunityCreationEvent = {
-      communityId,
-      communityName,
-      description: 'Test community',
-      ownerAddress,
-      createdAtBlockHeight: 0,
-      contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
-      transactionHash: 'test-tx-hash',
-      blockHeight: 0,
-      timestamp: Date.now()
-    };
-
-    const notification = notificationService.createWelcomeNotification(testEvent, {
-      includeInstructions: true,
-      includeDashboardLink: true
-    });
-
-    if (!notificationService.validateNotificationPayload(notification)) {
-      return res.status(400).json({
-        error: 'Generated notification is invalid'
-      });
-    }
-
-    res.json({
-      success: true,
-      notification
-    });
-  } catch (error) {
-    console.error('Error generating test notification:', error);
-    res.status(500).json({
-      error: 'Failed to generate test notification',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
   }
-});
+);
 
 router.get('/cache/stats', authenticateToken, (req: Request, res: Response) => {
   try {
     if (!cacheService) {
       return res.status(503).json({
-        error: 'Cache service not initialized'
+        error: 'Cache service not initialized',
       });
     }
 
@@ -307,38 +345,42 @@ router.get('/cache/stats', authenticateToken, (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      cache: stats
+      cache: stats,
     });
   } catch (error) {
     console.error('Error getting cache stats:', error);
     res.status(500).json({
       error: 'Failed to get cache stats',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
 
-router.post('/cache/clear', authenticateToken, (req: Request, res: Response) => {
-  try {
-    if (!cacheService) {
-      return res.status(503).json({
-        error: 'Cache service not initialized'
+router.post(
+  '/cache/clear',
+  authenticateToken,
+  (req: Request, res: Response) => {
+    try {
+      if (!cacheService) {
+        return res.status(503).json({
+          error: 'Cache service not initialized',
+        });
+      }
+
+      cacheService.clear();
+
+      res.json({
+        success: true,
+        message: 'Cache cleared successfully',
+      });
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      res.status(500).json({
+        error: 'Failed to clear cache',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    cacheService.clear();
-
-    res.json({
-      success: true,
-      message: 'Cache cleared successfully'
-    });
-  } catch (error) {
-    console.error('Error clearing cache:', error);
-    res.status(500).json({
-      error: 'Failed to clear cache',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
   }
-});
+);
 
 export default router;

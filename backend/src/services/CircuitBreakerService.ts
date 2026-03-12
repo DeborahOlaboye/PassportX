@@ -52,10 +52,7 @@ export class CircuitBreaker {
   private totalSuccesses: number = 0;
   private rejectedCalls: number = 0;
 
-  constructor(
-    private name: string,
-    private config: CircuitBreakerConfig
-  ) {}
+  constructor(private name: string, private config: CircuitBreakerConfig) {}
 
   /**
    * Execute a function with circuit breaker protection
@@ -63,7 +60,9 @@ export class CircuitBreaker {
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     if (!this.canExecute()) {
       this.rejectedCalls++;
-      throw new Error(`Circuit breaker '${this.name}' is OPEN. Request rejected.`);
+      throw new Error(
+        `Circuit breaker '${this.name}' is OPEN. Request rejected.`
+      );
     }
 
     this.totalCalls++;
@@ -169,7 +168,9 @@ export class CircuitBreaker {
     }
 
     // Check error percentage threshold
-    const recentFailures = this.callHistory.filter(call => !call.success).length;
+    const recentFailures = this.callHistory.filter(
+      (call) => !call.success
+    ).length;
     const errorPercentage = (recentFailures / recentCalls) * 100;
 
     return errorPercentage >= this.config.errorThresholdPercentage;
@@ -181,7 +182,7 @@ export class CircuitBreaker {
   private recordCall(success: boolean): void {
     this.callHistory.push({
       timestamp: Date.now(),
-      success
+      success,
     });
 
     this.cleanCallHistory();
@@ -192,7 +193,9 @@ export class CircuitBreaker {
    */
   private cleanCallHistory(): void {
     const cutoff = Date.now() - this.config.monitoringPeriod;
-    this.callHistory = this.callHistory.filter(call => call.timestamp > cutoff);
+    this.callHistory = this.callHistory.filter(
+      (call) => call.timestamp > cutoff
+    );
   }
 
   /**
@@ -257,7 +260,7 @@ export class CircuitBreaker {
       totalCalls: this.totalCalls,
       totalFailures: this.totalFailures,
       totalSuccesses: this.totalSuccesses,
-      rejectedCalls: this.rejectedCalls
+      rejectedCalls: this.rejectedCalls,
     };
   }
 
@@ -289,13 +292,16 @@ export class CircuitBreakerRegistry {
     timeout: 60000, // 1 minute
     volumeThreshold: 10,
     errorThresholdPercentage: 50,
-    monitoringPeriod: 60000 // 1 minute
+    monitoringPeriod: 60000, // 1 minute
   };
 
   /**
    * Get or create a circuit breaker
    */
-  getBreaker(name: string, config?: Partial<CircuitBreakerConfig>): CircuitBreaker {
+  getBreaker(
+    name: string,
+    config?: Partial<CircuitBreakerConfig>
+  ): CircuitBreaker {
     if (!this.breakers.has(name)) {
       const breakerConfig = { ...this.defaultConfig, ...config };
       const breaker = new CircuitBreaker(name, breakerConfig);

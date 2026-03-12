@@ -16,6 +16,7 @@ This is the backend API for PassportX, providing REST endpoints and database ope
 ## Architecture
 
 ### Technology Stack
+
 - **Runtime**: Node.js 18+ with TypeScript
 - **Framework**: Express.js with security middleware
 - **Database**: MongoDB with Mongoose ODM
@@ -25,6 +26,7 @@ This is the backend API for PassportX, providing REST endpoints and database ope
 - **Deployment**: Docker with Nginx reverse proxy
 
 ### Project Structure
+
 ```
 backend/
 ├── src/
@@ -66,6 +68,7 @@ backend/
 ## Quick Start
 
 ### Development Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -81,6 +84,7 @@ npm test
 ```
 
 ### Production Deployment
+
 ```bash
 # Using Docker Compose (recommended)
 docker-compose up -d
@@ -93,16 +97,19 @@ docker run -p 3001:3001 --env-file .env passportx-backend
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/message` - Generate authentication message
 - `POST /api/auth/login` - Authenticate with signature
 
 ### Users & Passports
+
 - `GET /api/users/profile/:address` - Get user profile
 - `PUT /api/users/profile` - Update user profile
 - `GET /api/users/badges/:address` - Get user's badge collection
 - `GET /api/users/stats/:address` - Get user statistics
 
 ### Communities
+
 - `GET /api/communities` - List all communities
 - `POST /api/communities` - Create new community
 - `GET /api/communities/:id` - Get community details
@@ -110,6 +117,7 @@ docker run -p 3001:3001 --env-file .env passportx-backend
 - `GET /api/communities/:id/stats` - Community analytics
 
 ### Badges
+
 - `POST /api/badges/templates` - Create badge template
 - `GET /api/badges/templates/community/:id` - Get community templates
 - `POST /api/badges/issue` - Issue badge to user
@@ -117,12 +125,14 @@ docker run -p 3001:3001 --env-file .env passportx-backend
 - `DELETE /api/badges/:id` - Revoke badge
 
 ### Blockchain Integration
+
 - `GET /api/blockchain/transaction/:txId` - Transaction status
 - `GET /api/blockchain/badges/:address` - Blockchain badge data
 - `POST /api/blockchain/validate-address` - Validate Stacks address
 - `POST /api/blockchain/read-function` - Read contract function
 
 ### Health & Monitoring
+
 - `GET /health` - Basic health check
 - `GET /health/status` - Detailed system status
 - `GET /health/metrics` - Request metrics
@@ -131,12 +141,14 @@ docker run -p 3001:3001 --env-file .env passportx-backend
 ## Database Schema
 
 ### Collections
+
 - **users**: User profiles and settings
 - **communities**: Community information and branding
 - **badgetemplates**: Badge template definitions
 - **badges**: Issued badge records
 
 ### Key Features
+
 - Optimized indexes for performance
 - Referential integrity with population
 - Flexible metadata storage
@@ -145,12 +157,14 @@ docker run -p 3001:3001 --env-file .env passportx-backend
 ## Security Features
 
 ### Authentication & Authorization
+
 - JWT-based authentication
 - Stacks signature verification
 - Role-based access control (community admins)
 - Request rate limiting
 
 ### Data Protection
+
 - Input validation and sanitization
 - CORS configuration
 - Security headers (helmet)
@@ -196,11 +210,13 @@ curl -H "Origin: http://localhost:3000" \
 ```
 
 Expected response headers:
+
 - `Access-Control-Allow-Origin: http://localhost:3000`
 - `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS`
 - `Access-Control-Allow-Credentials: true`
 
 ### Monitoring & Logging
+
 - Request/response logging
 - Performance metrics
 - Health monitoring
@@ -209,12 +225,14 @@ Expected response headers:
 ## Blockchain Integration
 
 ### Stacks Network Support
+
 - Testnet and mainnet configuration
 - Contract interaction utilities
 - Transaction monitoring
 - Address validation
 
 ### Smart Contract Integration
+
 - Badge minting operations
 - Community creation
 - NFT metadata management
@@ -223,12 +241,14 @@ Expected response headers:
 ## Testing
 
 ### Test Coverage
+
 - Unit tests for services
 - Integration tests for routes
 - In-memory database for testing
 - Mocked blockchain interactions
 
 ### Running Tests
+
 ```bash
 # Run all tests
 npm test
@@ -243,12 +263,14 @@ npm run test:watch
 ## Performance & Scalability
 
 ### Optimizations
+
 - Database indexing strategy
 - Connection pooling
 - Request caching headers
 - Efficient query patterns
 
 ### Monitoring
+
 - Response time tracking
 - Error rate monitoring
 - Database performance metrics
@@ -257,6 +279,7 @@ npm run test:watch
 ## Environment Configuration
 
 ### Required Variables
+
 ```bash
 NODE_ENV=development
 PORT=3001
@@ -268,6 +291,7 @@ FRONTEND_URL=http://localhost:3000
 ```
 
 ### Contract Addresses (after deployment)
+
 ```bash
 PASSPORT_CONTRACT_ADDRESS=SP...
 BADGE_ISSUER_CONTRACT_ADDRESS=SP...
@@ -277,12 +301,14 @@ COMMUNITY_MANAGER_CONTRACT_ADDRESS=SP...
 ## Development Workflow
 
 ### Code Quality
+
 - TypeScript for type safety
 - ESLint for code standards
 - Prettier for formatting
 - Git hooks for validation
 
 ### API Development
+
 - RESTful design principles
 - Consistent error responses
 - Comprehensive validation
@@ -291,12 +317,14 @@ COMMUNITY_MANAGER_CONTRACT_ADDRESS=SP...
 ## Deployment Options
 
 ### Docker (Recommended)
+
 - Multi-stage builds
 - Security best practices
 - Health checks
 - Resource limits
 
 ### Traditional Hosting
+
 - PM2 process management
 - Nginx reverse proxy
 - SSL/TLS termination

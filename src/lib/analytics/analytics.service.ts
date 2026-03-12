@@ -16,7 +16,8 @@ class AnalyticsService {
 
   private constructor() {
     this.sessionId = this.getOrCreateSessionId();
-    this.apiEndpoint = process.env.NEXT_PUBLIC_ANALYTICS_API_URL || '/api/analytics';
+    this.apiEndpoint =
+      process.env.NEXT_PUBLIC_ANALYTICS_API_URL || '/api/analytics';
   }
 
   public static getInstance(): AnalyticsService {
@@ -37,7 +38,10 @@ class AnalyticsService {
     });
   }
 
-  public trackTransactionCompleted(transactionHash: string, method: string): void {
+  public trackTransactionCompleted(
+    transactionHash: string,
+    method: string
+  ): void {
     this.trackEvent('transaction_completed', {
       transaction_hash: transactionHash,
       method,
@@ -61,7 +65,10 @@ class AnalyticsService {
     });
   }
 
-  private async trackEvent(eventName: string, eventData: Record<string, any> = {}): Promise<void> {
+  private async trackEvent(
+    eventName: string,
+    eventData: Record<string, any> = {}
+  ): Promise<void> {
     const event: AnalyticsEvent = {
       eventName,
       eventData,

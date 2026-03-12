@@ -45,7 +45,8 @@ export default function AccountSelector({
     }
   };
 
-  const shortAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const shortAddress = (addr: string) =>
+    `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   if (!state.accounts || state.accounts.length === 0) {
     return null;
@@ -58,9 +59,14 @@ export default function AccountSelector({
         className="flex items-center space-x-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <span className="font-medium text-gray-700">
-          {state.activeAccount?.name || shortAddress(state.activeAccount?.address || '')}
+          {state.activeAccount?.name ||
+            shortAddress(state.activeAccount?.address || '')}
         </span>
-        <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-gray-600 transition-transform ${
+            isDropdownOpen ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {isDropdownOpen && (
@@ -82,9 +88,13 @@ export default function AccountSelector({
               >
                 <div className="flex-1 text-left min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {account.name || account.metadata?.displayName || shortAddress(account.address)}
+                    {account.name ||
+                      account.metadata?.displayName ||
+                      shortAddress(account.address)}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">{shortAddress(account.address)}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {shortAddress(account.address)}
+                  </p>
                 </div>
 
                 <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
@@ -111,9 +121,7 @@ export default function AccountSelector({
             ))}
 
             {hasMore && (
-              <button
-                className="w-full px-3 py-2 text-xs text-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              >
+              <button className="w-full px-3 py-2 text-xs text-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                 View {sortedAccounts.length - maxDisplay} more accounts
               </button>
             )}

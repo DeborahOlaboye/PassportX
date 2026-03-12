@@ -31,7 +31,7 @@ function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
   if (!req.user || !adminAddresses.includes(req.user.stacksAddress)) {
     return res.status(403).json({ error: 'Forbidden: admin access required' });
   }
-  next()
+  next();
 }
 
 let badgeMintService: BadgeMintService | null = null;

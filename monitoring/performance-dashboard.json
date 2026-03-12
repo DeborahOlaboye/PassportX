@@ -6,24 +6,17 @@
       {
         "title": "Response Time Trends",
         "type": "graph",
-        "metrics": [
-          "http_req_duration_p95",
-          "http_req_duration_p99"
-        ]
+        "metrics": ["http_req_duration_p95", "http_req_duration_p99"]
       },
       {
         "title": "Error Rate",
         "type": "graph",
-        "metrics": [
-          "http_req_failed_rate"
-        ]
+        "metrics": ["http_req_failed_rate"]
       },
       {
         "title": "Throughput",
         "type": "graph",
-        "metrics": [
-          "http_reqs_rate"
-        ]
+        "metrics": ["http_reqs_rate"]
       }
     ]
   },

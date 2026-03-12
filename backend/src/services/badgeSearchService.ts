@@ -208,8 +208,14 @@ export class BadgeSearchService {
    * Get trending badges (most issued recently)
    */
   async getTrendingBadges(days = 7, limit = 10) {
-    const safeDays = Math.min(365, Math.max(1, Number.isFinite(days) ? days : 7));
-    const safeLimit = Math.min(50, Math.max(1, Number.isFinite(limit) ? limit : 10));
+    const safeDays = Math.min(
+      365,
+      Math.max(1, Number.isFinite(days) ? days : 7)
+    );
+    const safeLimit = Math.min(
+      50,
+      Math.max(1, Number.isFinite(limit) ? limit : 10)
+    );
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - safeDays);
 

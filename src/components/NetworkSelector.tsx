@@ -13,7 +13,7 @@ interface NetworkSelectorProps {
 export function NetworkSelector({
   variant = 'dropdown',
   showStatus = true,
-  className = ''
+  className = '',
 }: NetworkSelectorProps) {
   const { currentNetwork, config, isSwitching, switchNetwork } = useNetwork();
   const [isOpen, setIsOpen] = useState(false);
@@ -72,7 +72,11 @@ export function NetworkSelector({
   if (variant === 'minimal') {
     return (
       <div className={`flex items-center space-x-2 ${className}`}>
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getNetworkColor(currentNetwork)}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getNetworkColor(
+            currentNetwork
+          )}`}
+        >
           <span className="mr-1">{getNetworkIcon(currentNetwork)}</span>
           {currentNetwork.toUpperCase()}
         </span>
@@ -91,11 +95,17 @@ export function NetworkSelector({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isSwitching}
-        className={`flex items-center space-x-2 px-3 py-2 border rounded-md bg-white text-sm font-medium ${getNetworkColor(currentNetwork)} disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`flex items-center space-x-2 px-3 py-2 border rounded-md bg-white text-sm font-medium ${getNetworkColor(
+          currentNetwork
+        )} disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         <span>{getNetworkIcon(currentNetwork)}</span>
         <span>{config.name}</span>
-        <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+        <span
+          className={`transform transition-transform ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        >
           ▼
         </span>
       </button>
@@ -121,10 +131,7 @@ export function NetworkSelector({
 
       {/* Overlay to close dropdown */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
       )}
     </div>
   );
@@ -136,7 +143,11 @@ export function NetworkStatus({ className = '' }: { className?: string }) {
 
   return (
     <div className={`flex items-center space-x-2 text-sm ${className}`}>
-      <div className={`w-2 h-2 rounded-full ${isSwitching ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
+      <div
+        className={`w-2 h-2 rounded-full ${
+          isSwitching ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'
+        }`}
+      />
       <span className="font-medium">{config.name}</span>
       {isSwitching && <span className="text-gray-500">Switching...</span>}
     </div>

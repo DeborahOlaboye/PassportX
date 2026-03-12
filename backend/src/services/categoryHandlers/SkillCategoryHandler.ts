@@ -1,5 +1,5 @@
-import { BaseCategoryHandler } from './BaseCategoryHandler'
-import { FilteredBadgeEvent } from '../BadgeCategoryFilter'
+import { BaseCategoryHandler } from './BaseCategoryHandler';
+import { FilteredBadgeEvent } from '../BadgeCategoryFilter';
 
 export class SkillCategoryHandler extends BaseCategoryHandler {
   constructor(logger?: any) {
@@ -7,7 +7,9 @@ export class SkillCategoryHandler extends BaseCategoryHandler {
   }
 
   async processEvent(event: FilteredBadgeEvent): Promise<any> {
-    this.logger.info(`Processing skill badge event: ${event.badgeId} for user ${event.userId}`);
+    this.logger.info(
+      `Processing skill badge event: ${event.badgeId} for user ${event.userId}`
+    );
 
     // Send skill-specific notifications
     await this.sendNotification(
@@ -26,12 +28,16 @@ export class SkillCategoryHandler extends BaseCategoryHandler {
       processed: true,
       badgeId: event.badgeId,
       userId: event.userId,
-      level: event.level
+      level: event.level,
     };
   }
 
-  private async updateSkillProgression(event: FilteredBadgeEvent): Promise<void> {
+  private async updateSkillProgression(
+    event: FilteredBadgeEvent
+  ): Promise<void> {
     // Track skill progression for the user
-    this.logger.info(`Updating skill progression for user ${event.userId} at level ${event.level}`);
+    this.logger.info(
+      `Updating skill progression for user ${event.userId} at level ${event.level}`
+    );
   }
 }

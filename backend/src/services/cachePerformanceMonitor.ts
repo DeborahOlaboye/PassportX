@@ -58,10 +58,14 @@ export class CachePerformanceMonitor {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CachePerformanceMonitor] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CachePerformanceMonitor] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CachePerformanceMonitor] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CachePerformanceMonitor] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CachePerformanceMonitor] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CachePerformanceMonitor] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CachePerformanceMonitor] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CachePerformanceMonitor] ${msg}`, ...args),
     };
   }
 
@@ -85,25 +89,27 @@ export class CachePerformanceMonitor {
     const badgeCacheHitRate = this.estimateHitRate(badgeCacheStats);
     const communityCacheHitRate = this.estimateHitRate(communityCacheStats);
 
-    const overallHitRate = (
+    const overallHitRate =
       badgeCacheHitRate * 0.4 +
       communityCacheHitRate * 0.3 +
-      eventCacheMetrics.hitRate * 0.3
-    );
+      eventCacheMetrics.hitRate * 0.3;
 
     const topInvalidatedKeys = Array.from(this.keyInvalidationCounts.entries())
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([key, count]) => ({ key, count }));
 
-    const cacheEfficiency = this.calculateCacheEfficiency(overallHitRate, invalidatorMetrics);
+    const cacheEfficiency = this.calculateCacheEfficiency(
+      overallHitRate,
+      invalidatorMetrics
+    );
 
     const recommendations = this.generateRecommendations({
       overallHitRate,
       invalidationTime: invalidatorMetrics.averageInvalidationTime,
       totalInvalidations: invalidatorMetrics.totalInvalidations,
       cacheEfficiency,
-      topInvalidatedKeys
+      topInvalidatedKeys,
     });
 
     return {
@@ -116,12 +122,14 @@ export class CachePerformanceMonitor {
       cacheSize: {
         badge: badgeCacheStats.size,
         community: communityCacheStats.size,
-        event: this.eventCache.getSize()
+        event: this.eventCache.getSize(),
       },
-      invalidationsByEventType: Object.fromEntries(invalidatorMetrics.invalidationsByEventType),
+      invalidationsByEventType: Object.fromEntries(
+        invalidatorMetrics.invalidationsByEventType
+      ),
       topInvalidatedKeys,
       cacheEfficiency: parseFloat(cacheEfficiency.toFixed(2)),
-      recommendations
+      recommendations,
     };
   }
 
@@ -138,9 +146,15 @@ export class CachePerformanceMonitor {
     return Math.min(utilizationRate * 0.8 + 0.2, 0.95);
   }
 
-  private calculateCacheEfficiency(overallHitRate: number, invalidatorMetrics: any): number {
+  private calculateCacheEfficiency(
+    overallHitRate: number,
+    invalidatorMetrics: any
+  ): number {
     // Cache efficiency considers both hit rate and invalidation overhead
-    const invalidationOverhead = Math.min(invalidatorMetrics.averageInvalidationTime / 100, 1); // Cap at 100ms
+    const invalidationOverhead = Math.min(
+      invalidatorMetrics.averageInvalidationTime / 100,
+      1
+    ); // Cap at 100ms
     const efficiency = overallHitRate * (1 - invalidationOverhead * 0.1); // 10% penalty per 100ms
 
     return Math.max(0, Math.min(1, efficiency));
@@ -156,29 +170,41 @@ export class CachePerformanceMonitor {
     const recommendations: string[] = [];
 
     if (metrics.overallHitRate < 0.8) {
-      recommendations.push('Consider increasing cache TTL for frequently accessed data');
+      recommendations.push(
+        'Consider increasing cache TTL for frequently accessed data'
+      );
       recommendations.push('Implement cache warming for high-traffic keys');
     }
 
     if (metrics.invalidationTime > 50) {
-      recommendations.push('Optimize cache invalidation patterns to reduce processing time');
+      recommendations.push(
+        'Optimize cache invalidation patterns to reduce processing time'
+      );
       recommendations.push('Consider batching multiple invalidations');
     }
 
     if (metrics.cacheEfficiency < 0.7) {
-      recommendations.push('Review cache invalidation frequency - too many invalidations may reduce efficiency');
-      recommendations.push('Implement selective invalidation instead of broad patterns');
+      recommendations.push(
+        'Review cache invalidation frequency - too many invalidations may reduce efficiency'
+      );
+      recommendations.push(
+        'Implement selective invalidation instead of broad patterns'
+      );
     }
 
     if (metrics.topInvalidatedKeys.length > 0) {
       const topKey = metrics.topInvalidatedKeys[0];
       if (topKey.count > metrics.totalInvalidations * 0.3) {
-        recommendations.push(`Key "${topKey.key}" is invalidated frequently - consider optimizing related operations`);
+        recommendations.push(
+          `Key "${topKey.key}" is invalidated frequently - consider optimizing related operations`
+        );
       }
     }
 
     if (recommendations.length === 0) {
-      recommendations.push('Cache performance is optimal - continue monitoring');
+      recommendations.push(
+        'Cache performance is optimal - continue monitoring'
+      );
     }
 
     return recommendations;
@@ -198,20 +224,29 @@ export class CachePerformanceMonitor {
     // Check invalidation performance
     if (metrics.averageInvalidationTime > 100) {
       issues.push('Slow cache invalidation detected');
-      recommendations.push('Optimize invalidation patterns and reduce pattern matching');
+      recommendations.push(
+        'Optimize invalidation patterns and reduce pattern matching'
+      );
     }
 
     // Check cache sizes
-    const totalCacheSize = metrics.cacheSize.badge + metrics.cacheSize.community + metrics.cacheSize.event;
+    const totalCacheSize =
+      metrics.cacheSize.badge +
+      metrics.cacheSize.community +
+      metrics.cacheSize.event;
     if (totalCacheSize > 10000) {
       issues.push('High memory usage by caches');
-      recommendations.push('Consider implementing cache size limits or LRU eviction');
+      recommendations.push(
+        'Consider implementing cache size limits or LRU eviction'
+      );
     }
 
     // Check invalidation frequency
     if (metrics.totalInvalidations > 1000) {
       issues.push('High frequency of cache invalidations');
-      recommendations.push('Review event processing to reduce unnecessary invalidations');
+      recommendations.push(
+        'Review event processing to reduce unnecessary invalidations'
+      );
     }
 
     let status: 'healthy' | 'warning' | 'critical' = 'healthy';
@@ -226,7 +261,7 @@ export class CachePerformanceMonitor {
       status,
       issues,
       recommendations: [...recommendations, ...metrics.recommendations],
-      lastChecked: Date.now()
+      lastChecked: Date.now(),
     };
   }
 
@@ -234,7 +269,10 @@ export class CachePerformanceMonitor {
     const healthStatus = this.getHealthStatus();
 
     if (healthStatus.status === 'critical') {
-      this.logger.error('Critical cache health issues detected:', healthStatus.issues);
+      this.logger.error(
+        'Critical cache health issues detected:',
+        healthStatus.issues
+      );
     } else if (healthStatus.status === 'warning') {
       this.logger.warn('Cache health warnings:', healthStatus.issues);
     } else {
@@ -243,7 +281,10 @@ export class CachePerformanceMonitor {
 
     // Log recommendations
     if (healthStatus.recommendations.length > 0) {
-      this.logger.info('Cache optimization recommendations:', healthStatus.recommendations);
+      this.logger.info(
+        'Cache optimization recommendations:',
+        healthStatus.recommendations
+      );
     }
   }
 
@@ -259,7 +300,9 @@ export class CachePerformanceMonitor {
     this.logger.info('Cache performance metrics reset');
   }
 
-  getTopInvalidatedKeys(limit: number = 10): Array<{ key: string; count: number }> {
+  getTopInvalidatedKeys(
+    limit: number = 10
+  ): Array<{ key: string; count: number }> {
     return Array.from(this.keyInvalidationCounts.entries())
       .sort(([, a], [, b]) => b - a)
       .slice(0, limit)
@@ -280,7 +323,7 @@ Performance Metrics:
 - Overall Hit Rate: ${(metrics.overallHitRate * 100).toFixed(1)}%
 - Badge Cache Hit Rate: ${(metrics.badgeCacheHitRate * 100).toFixed(1)}%
 - Community Cache Hit Rate: ${(metrics.communityCacheHitRate * 100).toFixed(1)}%
-- Event Cache Hit Rate: ${(metrics.eventCacheHitRate).toFixed(1)}%
+- Event Cache Hit Rate: ${metrics.eventCacheHitRate.toFixed(1)}%
 - Average Invalidation Time: ${metrics.averageInvalidationTime.toFixed(2)}ms
 - Total Invalidations: ${metrics.totalInvalidations}
 - Cache Efficiency: ${(metrics.cacheEfficiency * 100).toFixed(1)}%
@@ -291,13 +334,19 @@ Cache Sizes:
 - Event Cache: ${metrics.cacheSize.event} entries
 
 Top Invalidated Keys:
-${metrics.topInvalidatedKeys.map(item => `- ${item.key}: ${item.count} times`).join('\n')}
+${metrics.topInvalidatedKeys
+  .map((item) => `- ${item.key}: ${item.count} times`)
+  .join('\n')}
 
 Issues:
-${health.issues.length > 0 ? health.issues.map(issue => `- ${issue}`).join('\n') : 'None detected'}
+${
+  health.issues.length > 0
+    ? health.issues.map((issue) => `- ${issue}`).join('\n')
+    : 'None detected'
+}
 
 Recommendations:
-${health.recommendations.map(rec => `- ${rec}`).join('\n')}
+${health.recommendations.map((rec) => `- ${rec}`).join('\n')}
     `.trim();
   }
 

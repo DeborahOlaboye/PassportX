@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { stages, performanceThresholds } from './config.js';
 
-export let options = {
+export const options = {
   stages: stages.stress,
   thresholds: {
     ...performanceThresholds,

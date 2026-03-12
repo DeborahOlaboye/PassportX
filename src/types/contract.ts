@@ -41,7 +41,11 @@ export interface BackendApiResponse<T = unknown> {
  */
 export interface TransactionStatusResponse {
   tx_id: string;
-  tx_status: 'pending' | 'success' | 'abort_by_response' | 'abort_by_post_condition';
+  tx_status:
+    | 'pending'
+    | 'success'
+    | 'abort_by_response'
+    | 'abort_by_post_condition';
   tx_result?: {
     hex: string;
     repr: string;

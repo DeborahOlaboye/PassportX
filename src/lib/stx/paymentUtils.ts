@@ -2,7 +2,7 @@ import {
   FungiblePostCondition,
   makeStandardSTXPostCondition,
   FungibleConditionCode,
-  PostConditionMode
+  PostConditionMode,
 } from '@stacks/transactions';
 
 interface PaymentAmount {
@@ -51,23 +51,23 @@ export const stxUtils = {
     if (amount < MIN_STX_AMOUNT) {
       return {
         valid: false,
-        error: `Amount must be at least ${MIN_STX_AMOUNT} STX`
+        error: `Amount must be at least ${MIN_STX_AMOUNT} STX`,
       };
     }
     if (amount > MAX_STX_AMOUNT) {
       return {
         valid: false,
-        error: `Amount cannot exceed ${MAX_STX_AMOUNT} STX`
+        error: `Amount cannot exceed ${MAX_STX_AMOUNT} STX`,
       };
     }
     if (!Number.isInteger(amount) && amount % 1 !== 0) {
       return {
         valid: false,
-        error: 'Amount must be a valid number'
+        error: 'Amount must be a valid number',
       };
     }
     return { valid: true };
-  }
+  },
 };
 
 export const createPaymentPostCondition = (
@@ -93,7 +93,7 @@ export const calculateNetworkFees = (
   return {
     slow: Math.max(0.00001, baseStx * 0.8),
     suggested: baseStx,
-    fast: baseStx * 1.5
+    fast: baseStx * 1.5,
   };
 };
 
@@ -107,7 +107,7 @@ export const estimateTransactionCost = (
   return {
     payment: paymentAmount,
     fee: networkFee,
-    total: paymentAmount + networkFee
+    total: paymentAmount + networkFee,
   };
 };
 
@@ -121,7 +121,7 @@ export const validateSufficientBalance = (
 
   return {
     sufficient: false,
-    shortfall: requiredAmount - balance
+    shortfall: requiredAmount - balance,
   };
 };
 
@@ -137,7 +137,7 @@ export const createPaymentMetadata = (
     currency: 'STX',
     timestamp: new Date().toISOString(),
     txId: txId || null,
-    status: 'pending'
+    status: 'pending',
   };
 };
 
@@ -145,9 +145,10 @@ export const getExplorerUrl = (
   txId: string,
   network: 'testnet' | 'mainnet' = 'testnet'
 ): string => {
-  const baseUrl = network === 'mainnet'
-    ? 'https://explorer.stacks.co'
-    : 'https://explorer.hiro.so';
+  const baseUrl =
+    network === 'mainnet'
+      ? 'https://explorer.stacks.co'
+      : 'https://explorer.hiro.so';
 
   return `${baseUrl}/txid/${txId}`;
 };
@@ -184,14 +185,14 @@ export const trackPaymentEvent = (
   const event = {
     type: `community_payment_${eventType}`,
     timestamp: new Date().toISOString(),
-    data
+    data,
   };
 
   if (typeof window !== 'undefined' && (window as any).gtag) {
     (window as any).gtag('event', event.type, {
       communityName: data.communityName,
       amount: data.amount,
-      txId: data.txId
+      txId: data.txId,
     });
   }
 

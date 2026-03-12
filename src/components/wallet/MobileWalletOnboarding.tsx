@@ -11,7 +11,7 @@ import {
   Download,
   ExternalLink,
   Star,
-  Clock
+  Clock,
 } from 'lucide-react';
 
 interface OnboardingStep {
@@ -32,8 +32,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     content: (
       <div className="space-y-4">
         <p className="text-gray-600">
-          PassportX works with popular mobile wallets that support the Stacks blockchain.
-          Choose the wallet that best fits your needs.
+          PassportX works with popular mobile wallets that support the Stacks
+          blockchain. Choose the wallet that best fits your needs.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -46,7 +46,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-3">
-              Popular wallet with excellent Stacks support and user-friendly interface.
+              Popular wallet with excellent Stacks support and user-friendly
+              interface.
             </p>
             <div className="flex items-center gap-2">
               <Star className="w-4 h-4 text-yellow-500" />
@@ -124,7 +125,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           </div>
         </div>
       </div>
-    )
+    ),
   },
   {
     id: 'install-wallet',
@@ -137,9 +138,12 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           <div className="flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
             <div>
-              <h4 className="font-medium text-green-900">Installation Complete</h4>
+              <h4 className="font-medium text-green-900">
+                Installation Complete
+              </h4>
               <p className="text-sm text-green-800">
-                Great! You've chosen your wallet. Now let's get it set up properly.
+                Great! You've chosen your wallet. Now let's get it set up
+                properly.
               </p>
             </div>
           </div>
@@ -147,21 +151,25 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 
         <div className="space-y-4">
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Step 1: Create or Import Account</h4>
+            <h4 className="font-medium mb-2">
+              Step 1: Create or Import Account
+            </h4>
             <p className="text-sm text-gray-600 mb-3">
-              When you open the wallet app for the first time, you'll need to create a new account
-              or import an existing one.
+              When you open the wallet app for the first time, you'll need to
+              create a new account or import an existing one.
             </p>
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
               <p className="text-sm text-yellow-800">
-                <strong>Security Tip:</strong> Write down your recovery phrase and store it securely.
-                Never share it with anyone.
+                <strong>Security Tip:</strong> Write down your recovery phrase
+                and store it securely. Never share it with anyone.
               </p>
             </div>
           </div>
 
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Step 2: Enable Camera Permissions</h4>
+            <h4 className="font-medium mb-2">
+              Step 2: Enable Camera Permissions
+            </h4>
             <p className="text-sm text-gray-600 mb-3">
               Mobile wallet connection requires camera access to scan QR codes.
               Make sure to grant camera permissions when prompted.
@@ -173,18 +181,23 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           </div>
 
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Step 3: Test Wallet Functionality</h4>
+            <h4 className="font-medium mb-2">
+              Step 3: Test Wallet Functionality
+            </h4>
             <p className="text-sm text-gray-600 mb-3">
-              Before connecting to PassportX, make sure your wallet can receive STX and view balances.
+              Before connecting to PassportX, make sure your wallet can receive
+              STX and view balances.
             </p>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <QrCode className="w-4 h-4" />
-              <span>Test receiving a small amount of STX to verify everything works</span>
+              <span>
+                Test receiving a small amount of STX to verify everything works
+              </span>
             </div>
           </div>
         </div>
       </div>
-    )
+    ),
   },
   {
     id: 'connect-wallet',
@@ -194,8 +207,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     content: (
       <div className="space-y-4">
         <p className="text-gray-600">
-          Now that your wallet is set up, let's connect it to PassportX.
-          This process is secure and only requires scanning a QR code.
+          Now that your wallet is set up, let's connect it to PassportX. This
+          process is secure and only requires scanning a QR code.
         </p>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -225,7 +238,9 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           </div>
 
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-medium mb-2 text-orange-700">What Your Wallet Shows</h4>
+            <h4 className="font-medium mb-2 text-orange-700">
+              What Your Wallet Shows
+            </h4>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>• Connection request from PassportX</li>
               <li>• Requested permissions</li>
@@ -239,7 +254,9 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           <div className="flex items-start gap-3">
             <Clock className="w-5 h-5 text-yellow-600 mt-0.5" />
             <div>
-              <h4 className="font-medium text-yellow-900">Connection Timeout</h4>
+              <h4 className="font-medium text-yellow-900">
+                Connection Timeout
+              </h4>
               <p className="text-sm text-yellow-800">
                 QR codes expire after 5 minutes for security. If it times out,
                 simply generate a new QR code.
@@ -248,7 +265,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           </div>
         </div>
       </div>
-    )
+    ),
   },
   {
     id: 'explore-features',
@@ -266,7 +283,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           <div className="border border-gray-200 rounded-lg p-4">
             <h4 className="font-medium mb-2">Badge Management</h4>
             <p className="text-sm text-gray-600 mb-3">
-              View, manage, and interact with your blockchain badges and credentials.
+              View, manage, and interact with your blockchain badges and
+              credentials.
             </p>
             <div className="text-sm text-blue-600">• View badge collection</div>
             <div className="text-sm text-blue-600">• Transfer badges</div>
@@ -276,7 +294,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           <div className="border border-gray-200 rounded-lg p-4">
             <h4 className="font-medium mb-2">Community Features</h4>
             <p className="text-sm text-gray-600 mb-3">
-              Participate in communities and manage your social blockchain presence.
+              Participate in communities and manage your social blockchain
+              presence.
             </p>
             <div className="text-sm text-blue-600">• Join communities</div>
             <div className="text-sm text-blue-600">• View member badges</div>
@@ -310,8 +329,9 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
             <div>
               <h4 className="font-medium text-green-900">You're All Set!</h4>
               <p className="text-sm text-green-800 mb-2">
-                Your mobile wallet is connected and ready to use. Start exploring PassportX features
-                and discover the power of blockchain credentials.
+                Your mobile wallet is connected and ready to use. Start
+                exploring PassportX features and discover the power of
+                blockchain credentials.
               </p>
               <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
                 Start Exploring PassportX
@@ -320,13 +340,15 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
           </div>
         </div>
       </div>
-    )
-  }
+    ),
+  },
 ];
 
 export default function MobileWalletOnboarding() {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Mobile wallet onboarding error" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="Mobile wallet onboarding error" />}
+    >
       <MobileWalletOnboardingInner />
     </ErrorBoundary>
   );
@@ -338,7 +360,7 @@ function MobileWalletOnboardingInner() {
 
   const steps = ONBOARDING_STEPS.map((step, index) => ({
     ...step,
-    completed: completedSteps.has(index)
+    completed: completedSteps.has(index),
   }));
 
   const currentStepData = steps[currentStep];
@@ -346,7 +368,7 @@ function MobileWalletOnboardingInner() {
   const isLastStep = currentStep === steps.length - 1;
 
   const nextStep = () => {
-    setCompletedSteps(prev => new Set([...prev, currentStep]));
+    setCompletedSteps((prev) => new Set([...prev, currentStep]));
     if (!isLastStep) {
       setCurrentStep(currentStep + 1);
     }
@@ -371,8 +393,8 @@ function MobileWalletOnboardingInner() {
         </div>
 
         <p className="text-gray-600">
-          Get up and running with mobile wallet connections in just a few minutes.
-          Follow this guided setup to connect your wallet to PassportX.
+          Get up and running with mobile wallet connections in just a few
+          minutes. Follow this guided setup to connect your wallet to PassportX.
         </p>
       </div>
 
@@ -422,7 +444,9 @@ function MobileWalletOnboardingInner() {
       {/* Current Step Content */}
       <div className="mb-8">
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">{currentStepData.title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {currentStepData.title}
+          </h3>
           <p className="text-gray-600">{currentStepData.description}</p>
         </div>
 

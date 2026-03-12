@@ -212,33 +212,37 @@ router.delete(
   }
 );
 
-router.delete('/user/:userId', authenticateToken, async (req: AuthRequest, res: Response) => {
-  try {
-    if (!userActivityService) {
-      return res.status(503).json({
-        success: false,
-        error: 'Activity service not initialized',
+router.delete(
+  '/user/:userId',
+  authenticateToken,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!userActivityService) {
+        return res.status(503).json({
+          success: false,
+          error: 'Activity service not initialized',
+        });
+      }
+
+      const { userId } = req.params;
+
+      if (req.user!.stacksAddress !== userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden: you can only clear your own activities',
+        });
+      }
+
+      const count = await userActivityService.clearUserActivities(userId);
+
+      res.json({
+        success: true,
+        data: { deletedCount: count },
       });
+    } catch (error) {
+      handleError(res, error, 'Error clearing user activities');
     }
-
-    const { userId } = req.params;
-
-    if (req.user!.stacksAddress !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: 'Forbidden: you can only clear your own activities',
-      });
-    }
-
-    const count = await userActivityService.clearUserActivities(userId);
-
-    res.json({
-      success: true,
-      data: { deletedCount: count },
-    });
-  } catch (error) {
-    handleError(res, error, 'Error clearing user activities');
   }
-});
+);
 
 export default router;

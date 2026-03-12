@@ -20,7 +20,8 @@ export interface WalletConnectionRequest {
 export class MobileWalletResponseHandler {
   private static instance: MobileWalletResponseHandler;
   private pendingRequests: Map<string, WalletConnectionRequest> = new Map();
-  private responseListeners: Set<(response: MobileWalletResponse) => void> = new Set();
+  private responseListeners: Set<(response: MobileWalletResponse) => void> =
+    new Set();
 
   private constructor() {
     this.setupMessageListener();
@@ -66,7 +67,9 @@ export class MobileWalletResponseHandler {
     window.addEventListener('storage', (event) => {
       if (event.key?.startsWith('walletconnect_response_')) {
         try {
-          const response: MobileWalletResponse = JSON.parse(event.newValue || '{}');
+          const response: MobileWalletResponse = JSON.parse(
+            event.newValue || '{}'
+          );
           this.handleWalletResponse(response);
         } catch (error) {
           console.error('Failed to parse wallet response from storage:', error);
@@ -75,22 +78,30 @@ export class MobileWalletResponseHandler {
     });
   }
 
-  public initiateConnection(uri: string, walletType?: 'xverse' | 'hiro' | 'leather'): string {
+  public initiateConnection(
+    uri: string,
+    walletType?: 'xverse' | 'hiro' | 'leather'
+  ): string {
     const sessionTopic = this.extractSessionTopic(uri);
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const requestId = `req_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     const request: WalletConnectionRequest = {
       uri,
       sessionTopic,
       walletType,
       timestamp: Date.now(),
-      expiresAt: Date.now() + (5 * 60 * 1000), // 5 minutes
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
     };
 
     this.pendingRequests.set(requestId, request);
 
     // Store in sessionStorage for persistence
-    sessionStorage.setItem(`wallet_request_${requestId}`, JSON.stringify(request));
+    sessionStorage.setItem(
+      `wallet_request_${requestId}`,
+      JSON.stringify(request)
+    );
 
     return requestId;
   }
@@ -134,10 +145,12 @@ export class MobileWalletResponseHandler {
 
   private handleWalletResponse(response: MobileWalletResponse): void {
     // Find matching pending request
-    const matchingRequest = Array.from(this.pendingRequests.entries()).find(([_, request]) => {
-      // Match by session topic or other criteria
-      return true; // For now, accept all responses
-    });
+    const matchingRequest = Array.from(this.pendingRequests.entries()).find(
+      ([_, request]) => {
+        // Match by session topic or other criteria
+        return true; // For now, accept all responses
+      }
+    );
 
     if (matchingRequest) {
       const [requestId] = matchingRequest;
@@ -146,7 +159,7 @@ export class MobileWalletResponseHandler {
     }
 
     // Notify listeners
-    this.responseListeners.forEach(listener => {
+    this.responseListeners.forEach((listener) => {
       try {
         listener(response);
       } catch (error) {
@@ -160,7 +173,9 @@ export class MobileWalletResponseHandler {
 
   private storeResponseForDebugging(response: MobileWalletResponse): void {
     try {
-      const existing = JSON.parse(localStorage.getItem('wallet_responses') || '[]');
+      const existing = JSON.parse(
+        localStorage.getItem('wallet_responses') || '[]'
+      );
       existing.push(response);
 
       // Keep only last 10 responses
@@ -174,7 +189,9 @@ export class MobileWalletResponseHandler {
     }
   }
 
-  public addResponseListener(listener: (response: MobileWalletResponse) => void): () => void {
+  public addResponseListener(
+    listener: (response: MobileWalletResponse) => void
+  ): () => void {
     this.responseListeners.add(listener);
 
     // Return cleanup function
@@ -183,7 +200,10 @@ export class MobileWalletResponseHandler {
     };
   }
 
-  public waitForResponse(requestId: string, timeout: number = 30000): Promise<MobileWalletResponse> {
+  public waitForResponse(
+    requestId: string,
+    timeout: number = 30000
+  ): Promise<MobileWalletResponse> {
     return new Promise((resolve, reject) => {
       const request = this.pendingRequests.get(requestId);
       if (!request) {
@@ -230,7 +250,7 @@ export class MobileWalletResponseHandler {
     this.responseListeners.clear();
 
     // Clear sessionStorage
-    Object.keys(sessionStorage).forEach(key => {
+    Object.keys(sessionStorage).forEach((key) => {
       if (key.startsWith('wallet_request_')) {
         sessionStorage.removeItem(key);
       }
@@ -243,18 +263,26 @@ export const initiateMobileWalletConnection = (
   uri: string,
   walletType?: 'xverse' | 'hiro' | 'leather'
 ): string => {
-  return MobileWalletResponseHandler.getInstance().initiateConnection(uri, walletType);
+  return MobileWalletResponseHandler.getInstance().initiateConnection(
+    uri,
+    walletType
+  );
 };
 
 export const waitForMobileWalletResponse = (
   requestId: string,
   timeout?: number
 ): Promise<MobileWalletResponse> => {
-  return MobileWalletResponseHandler.getInstance().waitForResponse(requestId, timeout);
+  return MobileWalletResponseHandler.getInstance().waitForResponse(
+    requestId,
+    timeout
+  );
 };
 
 export const addMobileWalletResponseListener = (
   listener: (response: MobileWalletResponse) => void
 ): (() => void) => {
-  return MobileWalletResponseHandler.getInstance().addResponseListener(listener);
+  return MobileWalletResponseHandler.getInstance().addResponseListener(
+    listener
+  );
 };

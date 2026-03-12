@@ -78,7 +78,10 @@ describe('Activity route DELETE endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(svc.deleteActivityForUser).toHaveBeenCalledWith('activity-123', 'SP_ALICE');
+      expect(svc.deleteActivityForUser).toHaveBeenCalledWith(
+        'activity-123',
+        'SP_ALICE'
+      );
     });
   });
 

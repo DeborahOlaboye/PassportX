@@ -21,7 +21,7 @@ if (metrics.http_req_duration) {
   const p99 = metrics.http_req_duration['p(99)'];
   const errorRate = metrics.http_req_failed?.rate || 0;
 
-  Object.keys(baseline.baselines).forEach(endpoint => {
+  Object.keys(baseline.baselines).forEach((endpoint) => {
     baseline.baselines[endpoint].p95 = Math.round(p95);
     baseline.baselines[endpoint].p99 = Math.round(p99);
     baseline.baselines[endpoint].errorRate = parseFloat(errorRate.toFixed(3));

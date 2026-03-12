@@ -11,7 +11,10 @@ export class CommunityCacheService {
   private logger: any;
   private config: CacheConfig;
 
-  constructor(config: CacheConfig = { enabled: true, ttl: 300, provider: 'memory' }, logger?: any) {
+  constructor(
+    config: CacheConfig = { enabled: true, ttl: 300, provider: 'memory' },
+    logger?: any
+  ) {
     this.config = config;
     this.logger = logger || this.getDefaultLogger();
     this.startCleanupInterval();
@@ -19,10 +22,14 @@ export class CommunityCacheService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CommunityCacheService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CommunityCacheService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCacheService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CommunityCacheService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CommunityCacheService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CommunityCacheService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CommunityCacheService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CommunityCacheService] ${msg}`, ...args),
     };
   }
 
@@ -109,7 +116,9 @@ export class CommunityCacheService {
     }
 
     if (invalidated > 0) {
-      this.logger.info(`Cache invalidated ${invalidated} entries matching pattern: ${pattern}`);
+      this.logger.info(
+        `Cache invalidated ${invalidated} entries matching pattern: ${pattern}`
+      );
     }
   }
 
@@ -127,33 +136,44 @@ export class CommunityCacheService {
       }
 
       if (!event || !event.communityId) {
-        this.logger.warn('Invalid community creation event for cache invalidation');
+        this.logger.warn(
+          'Invalid community creation event for cache invalidation'
+        );
         return;
       }
 
       this.logger.info('Invalidating cache due to community creation', {
         communityId: event.communityId,
         communityName: event.communityName,
-        ownerAddress: event.ownerAddress
+        ownerAddress: event.ownerAddress,
       });
 
-      const invalidatedCount = this.invalidateMultiple([
-        '^communities:list:.*',
-        '^communities:search:.*',
-        '^communities:tag:.*',
-        '^communities:admin:.*',
-        'communities:count',
-        event.ownerAddress ? `communities:admin:${event.ownerAddress}:count` : null,
-        event.communityId ? `community:${event.communityId}` : null,
-        event.communityName ? `community:slug:${this.generateSlug(event.communityName)}` : null
-      ].filter(key => key !== null) as string[]);
+      const invalidatedCount = this.invalidateMultiple(
+        [
+          '^communities:list:.*',
+          '^communities:search:.*',
+          '^communities:tag:.*',
+          '^communities:admin:.*',
+          'communities:count',
+          event.ownerAddress
+            ? `communities:admin:${event.ownerAddress}:count`
+            : null,
+          event.communityId ? `community:${event.communityId}` : null,
+          event.communityName
+            ? `community:slug:${this.generateSlug(event.communityName)}`
+            : null,
+        ].filter((key) => key !== null) as string[]
+      );
 
       this.logger.info('Community cache invalidation complete', {
         communityId: event.communityId,
-        invalidatedPatterns: invalidatedCount
+        invalidatedPatterns: invalidatedCount,
       });
     } catch (error) {
-      this.logger.error('Error during cache invalidation for community creation', error);
+      this.logger.error(
+        'Error during cache invalidation for community creation',
+        error
+      );
     }
   }
 
@@ -188,7 +208,9 @@ export class CommunityCacheService {
       }
 
       if (count > 0) {
-        this.logger.debug(`Cache invalidated ${count} entries matching pattern: ${pattern}`);
+        this.logger.debug(
+          `Cache invalidated ${count} entries matching pattern: ${pattern}`
+        );
       }
 
       return count;
@@ -217,7 +239,7 @@ export class CommunityCacheService {
       cacheSize: this.cache.size,
       enabled: this.config.enabled,
       ttl: this.config.ttl,
-      provider: this.config.provider
+      provider: this.config.provider,
     };
   }
 }

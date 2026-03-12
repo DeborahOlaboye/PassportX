@@ -3,37 +3,39 @@
 import { useState, useEffect } from 'react';
 import { DateRange } from 'react-day-picker';
 import { addDays } from 'date-fns';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Wifi, WifiOff } from 'lucide-react';
-import { 
-  fetchAnalyticsData, 
-  AnalyticsData, 
-  TimeRange 
+import {
+  fetchAnalyticsData,
+  AnalyticsData,
+  TimeRange,
 } from '@/lib/api/analytics';
 import { useAnalyticsUpdates } from '@/hooks/useAnalyticsUpdates';
 import ErrorBoundary from '../ErrorBoundary';
 import FallbackUI from '../FallbackUI';
-import { 
-  BadgeDistributionChart, 
-  EngagementMetrics, 
+import {
+  BadgeDistributionChart,
+  EngagementMetrics,
   GrowthMetrics,
   TimeSeriesChart,
   TopBadges,
-  RecentActivity
+  RecentActivity,
 } from './components';
 
 export function AnalyticsDashboard() {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Analytics dashboard error" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="Analytics dashboard error" />}
+    >
       <AnalyticsDashboardInner />
     </ErrorBoundary>
   );
@@ -86,7 +88,9 @@ function AnalyticsDashboardInner() {
       <div className="rounded-md bg-red-50 p-4">
         <div className="flex">
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error loading analytics</h3>
+            <h3 className="text-sm font-medium text-red-800">
+              Error loading analytics
+            </h3>
             <div className="mt-2 text-sm text-red-700">
               <p>{error}</p>
             </div>
@@ -149,9 +153,12 @@ function AnalyticsDashboardInner() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.metrics.totalBadges.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {data.metrics.totalBadges.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {data.metrics.badgesChange >= 0 ? '+' : ''}{data.metrics.badgesChange}% from last period
+              {data.metrics.badgesChange >= 0 ? '+' : ''}
+              {data.metrics.badgesChange}% from last period
             </p>
           </CardContent>
         </Card>
@@ -173,16 +180,21 @@ function AnalyticsDashboardInner() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.metrics.activeUsers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {data.metrics.activeUsers.toLocaleString()}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {data.metrics.activeUsersChange >= 0 ? '+' : ''}{data.metrics.activeUsersChange}% from last period
+              {data.metrics.activeUsersChange >= 0 ? '+' : ''}
+              {data.metrics.activeUsersChange}% from last period
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Engagement Rate
+            </CardTitle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -197,9 +209,12 @@ function AnalyticsDashboardInner() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.metrics.engagementRate}%</div>
+            <div className="text-2xl font-bold">
+              {data.metrics.engagementRate}%
+            </div>
             <p className="text-xs text-muted-foreground">
-              {data.metrics.engagementChange >= 0 ? '+' : ''}{data.metrics.engagementChange}% from last period
+              {data.metrics.engagementChange >= 0 ? '+' : ''}
+              {data.metrics.engagementChange}% from last period
             </p>
           </CardContent>
         </Card>
@@ -221,9 +236,12 @@ function AnalyticsDashboardInner() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.metrics.avgSessionDuration}m</div>
+            <div className="text-2xl font-bold">
+              {data.metrics.avgSessionDuration}m
+            </div>
             <p className="text-xs text-muted-foreground">
-              {data.metrics.sessionDurationChange >= 0 ? '+' : ''}{data.metrics.sessionDurationChange}% from last period
+              {data.metrics.sessionDurationChange >= 0 ? '+' : ''}
+              {data.metrics.sessionDurationChange}% from last period
             </p>
           </CardContent>
         </Card>
@@ -241,7 +259,7 @@ function AnalyticsDashboardInner() {
             <TimeSeriesChart data={data.timeSeries} />
           </CardContent>
         </Card>
-        
+
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Top Badges</CardTitle>
@@ -263,7 +281,7 @@ function AnalyticsDashboardInner() {
             <BadgeDistributionChart data={data.badgeDistribution} />
           </CardContent>
         </Card>
-        
+
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
@@ -279,13 +297,15 @@ function AnalyticsDashboardInner() {
         <Card>
           <CardHeader>
             <CardTitle>Engagement Metrics</CardTitle>
-            <CardDescription>How users are interacting with badges</CardDescription>
+            <CardDescription>
+              How users are interacting with badges
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <EngagementMetrics metrics={data.engagementMetrics} />
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Growth Metrics</CardTitle>
@@ -299,4 +319,3 @@ function AnalyticsDashboardInner() {
     </div>
   );
 }
-

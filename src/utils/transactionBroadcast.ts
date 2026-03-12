@@ -4,35 +4,46 @@ export class TransactionBroadcaster {
   private static readonly MAX_RETRIES = 3;
   private static readonly RETRY_DELAY = 1000; // 1 second
 
-  static async broadcastTransaction(signedTx: SignedTransaction): Promise<string> {
+  static async broadcastTransaction(
+    signedTx: SignedTransaction
+  ): Promise<string> {
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
       try {
         // Simulate broadcasting delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Mock successful broadcast - in real implementation, this would send to blockchain
         const mockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
 
-        console.log(`Transaction broadcasted successfully on attempt ${attempt}:`, mockHash);
+        console.log(
+          `Transaction broadcasted successfully on attempt ${attempt}:`,
+          mockHash
+        );
         return mockHash;
       } catch (error) {
         lastError = error as Error;
         console.warn(`Broadcast attempt ${attempt} failed:`, error);
 
         if (attempt < this.MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY * attempt));
+          await new Promise((resolve) =>
+            setTimeout(resolve, this.RETRY_DELAY * attempt)
+          );
         }
       }
     }
 
-    throw new Error(`Failed to broadcast transaction after ${this.MAX_RETRIES} attempts: ${lastError?.message}`);
+    throw new Error(
+      `Failed to broadcast transaction after ${this.MAX_RETRIES} attempts: ${lastError?.message}`
+    );
   }
 
-  static async broadcastBatch(transactions: SignedTransaction[]): Promise<string[]> {
+  static async broadcastBatch(
+    transactions: SignedTransaction[]
+  ): Promise<string[]> {
     const results = await Promise.allSettled(
-      transactions.map(tx => this.broadcastTransaction(tx))
+      transactions.map((tx) => this.broadcastTransaction(tx))
     );
 
     const hashes: string[] = [];
@@ -48,22 +59,33 @@ export class TransactionBroadcaster {
     });
 
     if (errors.length > 0) {
-      throw new Error(`Batch broadcast failed: ${errors.length} transactions failed`);
+      throw new Error(
+        `Batch broadcast failed: ${errors.length} transactions failed`
+      );
     }
 
     return hashes;
   }
 
-  static async getBroadcastStatus(hash: string): Promise<'pending' | 'confirmed' | 'failed'> {
+  static async getBroadcastStatus(
+    hash: string
+  ): Promise<'pending' | 'confirmed' | 'failed'> {
     // Mock status check - in real implementation, this would query blockchain
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Simulate random status for demo
-    const statuses: Array<'pending' | 'confirmed' | 'failed'> = ['pending', 'confirmed', 'failed'];
+    const statuses: Array<'pending' | 'confirmed' | 'failed'> = [
+      'pending',
+      'confirmed',
+      'failed',
+    ];
     return statuses[Math.floor(Math.random() * statuses.length)];
   }
 
-  static async waitForConfirmation(hash: string, confirmations: number = 1): Promise<void> {
+  static async waitForConfirmation(
+    hash: string,
+    confirmations: number = 1
+  ): Promise<void> {
     let currentConfirmations = 0;
 
     while (currentConfirmations < confirmations) {
@@ -76,7 +98,7 @@ export class TransactionBroadcaster {
       }
 
       if (currentConfirmations < confirmations) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
       }
     }
   }

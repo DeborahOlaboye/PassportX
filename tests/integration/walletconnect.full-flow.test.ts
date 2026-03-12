@@ -1,4 +1,8 @@
-import { isTestnetConfigured, connectWallet, signAndSubmit } from './helpers/walletConnectHelper';
+import {
+  isTestnetConfigured,
+  connectWallet,
+  signAndSubmit,
+} from './helpers/walletConnectHelper';
 import { assertTestnet } from './helpers/networkHelper';
 
 describe('WalletConnect full flow (placeholder)', () => {

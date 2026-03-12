@@ -1,4 +1,6 @@
-import CommunityCreationService, { CommunityCreationEvent } from './communityCreationService';
+import CommunityCreationService, {
+  CommunityCreationEvent,
+} from './communityCreationService';
 import CommunityCreationNotificationService from './communityCreationNotificationService';
 import CommunityCacheService from './communityCacheService';
 import { NotificationPayload } from '../types';
@@ -43,20 +45,29 @@ export class CommunityCreationIntegration {
     cacheService?: CommunityCacheService
   ) {
     this.logger = logger || this.getDefaultLogger();
-    this.communityService = communityService || new CommunityCreationService(this.logger);
-    this.notificationService = notificationService || new CommunityCreationNotificationService(this.logger);
-    this.cacheService = cacheService || new CommunityCacheService(
-      { enabled: true, ttl: 300, provider: 'memory' },
-      this.logger
-    );
+    this.communityService =
+      communityService || new CommunityCreationService(this.logger);
+    this.notificationService =
+      notificationService ||
+      new CommunityCreationNotificationService(this.logger);
+    this.cacheService =
+      cacheService ||
+      new CommunityCacheService(
+        { enabled: true, ttl: 300, provider: 'memory' },
+        this.logger
+      );
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CommunityCreationIntegration] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CommunityCreationIntegration] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCreationIntegration] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CommunityCreationIntegration] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CommunityCreationIntegration] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CommunityCreationIntegration] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CommunityCreationIntegration] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CommunityCreationIntegration] ${msg}`, ...args),
     };
   }
 
@@ -69,21 +80,28 @@ export class CommunityCreationIntegration {
     try {
       this.logger.debug('Processing community creation event', {
         communityId: event.communityId,
-        communityName: event.communityName
+        communityName: event.communityName,
       });
 
       const errors: string[] = [];
 
       // Sync community to database
-      const communityResult = await this.communityService.processCommunityCreationEvent(event);
+      const communityResult =
+        await this.communityService.processCommunityCreationEvent(event);
 
       if (!communityResult.success) {
-        this.logger.error('Failed to sync community to database', communityResult);
+        this.logger.error(
+          'Failed to sync community to database',
+          communityResult
+        );
         errors.push(communityResult.message);
       }
 
       // Create notifications
-      const notifications = await this.notificationService.buildNotificationBatch(event, [event.ownerAddress]);
+      const notifications =
+        await this.notificationService.buildNotificationBatch(event, [
+          event.ownerAddress,
+        ]);
 
       if (notifications.length === 0) {
         this.logger.warn('No notifications generated for community creation');
@@ -96,7 +114,7 @@ export class CommunityCreationIntegration {
         success: errors.length === 0,
         notifications,
         message: `Community creation processed (${notifications.length} notifications)`,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -106,7 +124,7 @@ export class CommunityCreationIntegration {
         success: false,
         notifications: [],
         message: 'Failed to process community creation',
-        errors: [errorMsg]
+        errors: [errorMsg],
       };
     }
   }

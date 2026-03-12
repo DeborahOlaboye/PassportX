@@ -1,12 +1,12 @@
-export type NotificationType = 
-  | 'badge_received' 
-  | 'badge_issued' 
-  | 'badge_verified' 
+export type NotificationType =
+  | 'badge_received'
+  | 'badge_issued'
+  | 'badge_verified'
   | 'badge_metadata_updated'
   | 'badge_revoked'
-  | 'community_update' 
+  | 'community_update'
   | 'community_created'
-  | 'community_invite' 
+  | 'community_invite'
   | 'system_announcement';
 
 export interface ChainhookEventPayload {

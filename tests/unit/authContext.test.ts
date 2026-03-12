@@ -14,7 +14,7 @@ describe('Auth context and provider', () => {
       accessToken: 'token123',
       account: 'ST123',
       issued: Date.now(),
-      expiresAt: Date.now() + 1000 * 60 * 60
+      expiresAt: Date.now() + 1000 * 60 * 60,
     });
 
     const result = await mockSignIn('ST123');
@@ -36,7 +36,7 @@ describe('Auth context and provider', () => {
       accessToken: 'token',
       account: 'ST123',
       issued: Date.now(),
-      expiresAt: Date.now() + 1000 * 60 * 60 // 1 hour in future
+      expiresAt: Date.now() + 1000 * 60 * 60, // 1 hour in future
     };
     const isValid = Date.now() <= token.expiresAt;
     expect(isValid).toBe(true);
@@ -47,7 +47,7 @@ describe('Auth context and provider', () => {
       accessToken: 'token',
       account: 'ST123',
       issued: Date.now() - 1000 * 60 * 60,
-      expiresAt: Date.now() - 1000 // expired 1 second ago
+      expiresAt: Date.now() - 1000, // expired 1 second ago
     };
     const isValid = Date.now() <= token.expiresAt;
     expect(isValid).toBe(false);
@@ -58,7 +58,7 @@ describe('Auth context and provider', () => {
       accessToken: 'token123',
       account: 'ST456',
       issued: Date.now(),
-      expiresAt: Date.now() + 1000 * 60 * 60
+      expiresAt: Date.now() + 1000 * 60 * 60,
     };
     // Simulate storage retrieval
     const retrieved = JSON.parse(JSON.stringify(stored));

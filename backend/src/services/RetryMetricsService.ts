@@ -57,10 +57,14 @@ export class RetryMetricsService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
@@ -68,12 +72,18 @@ export class RetryMetricsService {
    * Get comprehensive retry metrics
    */
   async getMetrics(): Promise<RetryMetrics> {
-    const [retryQueueMetrics, deadLetterQueueMetrics, successRates, throughput, latency] = await Promise.all([
+    const [
+      retryQueueMetrics,
+      deadLetterQueueMetrics,
+      successRates,
+      throughput,
+      latency,
+    ] = await Promise.all([
       this.getRetryQueueMetrics(),
       this.getDeadLetterQueueMetrics(),
       this.calculateSuccessRates(),
       this.calculateThroughput(),
-      this.calculateLatencyMetrics()
+      this.calculateLatencyMetrics(),
     ]);
 
     return {
@@ -81,7 +91,7 @@ export class RetryMetricsService {
       deadLetterQueue: deadLetterQueueMetrics,
       successRates,
       throughput,
-      latency
+      latency,
     };
   }
 
@@ -98,21 +108,26 @@ export class RetryMetricsService {
       succeeded: 0,
       failed: 0,
       averageAttempts: 0,
-      oldestPendingItem: undefined as Date | undefined
+      oldestPendingItem: undefined as Date | undefined,
     };
 
     let totalAttempts = 0;
 
-    items.forEach(item => {
+    items.forEach((item) => {
       metrics[item.status]++;
       totalAttempts += item.attemptCount;
 
-      if (item.status === 'pending' && (!metrics.oldestPendingItem || item.nextRetryAt < metrics.oldestPendingItem)) {
+      if (
+        item.status === 'pending' &&
+        (!metrics.oldestPendingItem ||
+          item.nextRetryAt < metrics.oldestPendingItem)
+      ) {
         metrics.oldestPendingItem = item.nextRetryAt;
       }
     });
 
-    metrics.averageAttempts = items.length > 0 ? totalAttempts / items.length : 0;
+    metrics.averageAttempts =
+      items.length > 0 ? totalAttempts / items.length : 0;
 
     return metrics;
   }
@@ -128,12 +143,13 @@ export class RetryMetricsService {
       dead: 0,
       recovered: 0,
       archived: 0,
-      errorDistribution: {} as Record<string, number>
+      errorDistribution: {} as Record<string, number>,
     };
 
-    items.forEach(item => {
+    items.forEach((item) => {
       metrics[item.status]++;
-      metrics.errorDistribution[item.errorType] = (metrics.errorDistribution[item.errorType] || 0) + 1;
+      metrics.errorDistribution[item.errorType] =
+        (metrics.errorDistribution[item.errorType] || 0) + 1;
     });
 
     return metrics;
@@ -147,48 +163,62 @@ export class RetryMetricsService {
     const deadLetterItems = await DeadLetterQueue.find();
 
     const totalItems = retryItems.length + deadLetterItems.length;
-    const succeededItems = retryItems.filter(item => item.status === 'succeeded').length;
-    const recoveredItems = deadLetterItems.filter(item => item.status === 'recovered').length;
+    const succeededItems = retryItems.filter(
+      (item) => item.status === 'succeeded'
+    ).length;
+    const recoveredItems = deadLetterItems.filter(
+      (item) => item.status === 'recovered'
+    ).length;
 
     const successfulItems = succeededItems + recoveredItems;
 
     const rates = {
       overall: totalItems > 0 ? (successfulItems / totalItems) * 100 : 0,
       byErrorType: {} as Record<string, number>,
-      byItemType: {} as Record<string, number>
+      byItemType: {} as Record<string, number>,
     };
 
     // Calculate success rate by error type
     const errorTypes = new Set([
-      ...retryItems.map(i => i.errorType || 'unknown'),
-      ...deadLetterItems.map(i => i.errorType)
+      ...retryItems.map((i) => i.errorType || 'unknown'),
+      ...deadLetterItems.map((i) => i.errorType),
     ]);
 
-    errorTypes.forEach(errorType => {
+    errorTypes.forEach((errorType) => {
       const total = [
-        ...retryItems.filter(i => i.errorType === errorType),
-        ...deadLetterItems.filter(i => i.errorType === errorType)
+        ...retryItems.filter((i) => i.errorType === errorType),
+        ...deadLetterItems.filter((i) => i.errorType === errorType),
       ];
       const succeeded = [
-        ...retryItems.filter(i => i.errorType === errorType && i.status === 'succeeded'),
-        ...deadLetterItems.filter(i => i.errorType === errorType && i.status === 'recovered')
+        ...retryItems.filter(
+          (i) => i.errorType === errorType && i.status === 'succeeded'
+        ),
+        ...deadLetterItems.filter(
+          (i) => i.errorType === errorType && i.status === 'recovered'
+        ),
       ];
 
-      rates.byErrorType[errorType] = total.length > 0 ? (succeeded.length / total.length) * 100 : 0;
+      rates.byErrorType[errorType] =
+        total.length > 0 ? (succeeded.length / total.length) * 100 : 0;
     });
 
     // Calculate success rate by item type
-    ['event', 'webhook'].forEach(itemType => {
+    ['event', 'webhook'].forEach((itemType) => {
       const total = [
-        ...retryItems.filter(i => i.itemType === itemType),
-        ...deadLetterItems.filter(i => i.itemType === itemType)
+        ...retryItems.filter((i) => i.itemType === itemType),
+        ...deadLetterItems.filter((i) => i.itemType === itemType),
       ];
       const succeeded = [
-        ...retryItems.filter(i => i.itemType === itemType && i.status === 'succeeded'),
-        ...deadLetterItems.filter(i => i.itemType === itemType && i.status === 'recovered')
+        ...retryItems.filter(
+          (i) => i.itemType === itemType && i.status === 'succeeded'
+        ),
+        ...deadLetterItems.filter(
+          (i) => i.itemType === itemType && i.status === 'recovered'
+        ),
       ];
 
-      rates.byItemType[itemType] = total.length > 0 ? (succeeded.length / total.length) * 100 : 0;
+      rates.byItemType[itemType] =
+        total.length > 0 ? (succeeded.length / total.length) * 100 : 0;
     });
 
     return rates;
@@ -202,14 +232,20 @@ export class RetryMetricsService {
 
     const [recentRetries, recentEvents, recentWebhooks] = await Promise.all([
       RetryQueue.countDocuments({ createdAt: { $gte: oneHourAgo } }),
-      RetryQueue.countDocuments({ createdAt: { $gte: oneHourAgo }, itemType: 'event' }),
-      RetryQueue.countDocuments({ createdAt: { $gte: oneHourAgo }, itemType: 'webhook' })
+      RetryQueue.countDocuments({
+        createdAt: { $gte: oneHourAgo },
+        itemType: 'event',
+      }),
+      RetryQueue.countDocuments({
+        createdAt: { $gte: oneHourAgo },
+        itemType: 'webhook',
+      }),
     ]);
 
     return {
       eventsPerMinute: recentEvents / 60,
       webhooksPerMinute: recentWebhooks / 60,
-      retryRatePerMinute: recentRetries / 60
+      retryRatePerMinute: recentRetries / 60,
     };
   }
 
@@ -217,22 +253,26 @@ export class RetryMetricsService {
    * Calculate latency metrics
    */
   private async calculateLatencyMetrics() {
-    const succeededItems = await RetryQueue.find({ status: 'succeeded' }).sort({ updatedAt: -1 }).limit(1000);
+    const succeededItems = await RetryQueue.find({ status: 'succeeded' })
+      .sort({ updatedAt: -1 })
+      .limit(1000);
 
     if (succeededItems.length === 0) {
       return {
         averageRetryDelay: 0,
         p50RetryDelay: 0,
         p95RetryDelay: 0,
-        p99RetryDelay: 0
+        p99RetryDelay: 0,
       };
     }
 
-    const delays = succeededItems.map(item => {
-      const created = item.createdAt.getTime();
-      const completed = item.updatedAt.getTime();
-      return completed - created;
-    }).sort((a, b) => a - b);
+    const delays = succeededItems
+      .map((item) => {
+        const created = item.createdAt.getTime();
+        const completed = item.updatedAt.getTime();
+        return completed - created;
+      })
+      .sort((a, b) => a - b);
 
     const sum = delays.reduce((acc, delay) => acc + delay, 0);
     const average = sum / delays.length;
@@ -245,14 +285,16 @@ export class RetryMetricsService {
       averageRetryDelay: average,
       p50RetryDelay: delays[p50Index] || 0,
       p95RetryDelay: delays[p95Index] || 0,
-      p99RetryDelay: delays[p99Index] || 0
+      p99RetryDelay: delays[p99Index] || 0,
     };
   }
 
   /**
    * Get retry success rate over time
    */
-  async getSuccessRateTimeSeries(hoursBack: number = 24): Promise<TimeSeriesDataPoint[]> {
+  async getSuccessRateTimeSeries(
+    hoursBack: number = 24
+  ): Promise<TimeSeriesDataPoint[]> {
     const dataPoints: TimeSeriesDataPoint[] = [];
     const now = Date.now();
     const hourMs = 3600000;
@@ -263,20 +305,21 @@ export class RetryMetricsService {
 
       const [totalItems, succeededItems] = await Promise.all([
         RetryQueue.countDocuments({
-          createdAt: { $gte: startTime, $lt: endTime }
+          createdAt: { $gte: startTime, $lt: endTime },
         }),
         RetryQueue.countDocuments({
           createdAt: { $gte: startTime, $lt: endTime },
-          status: 'succeeded'
-        })
+          status: 'succeeded',
+        }),
       ]);
 
-      const successRate = totalItems > 0 ? (succeededItems / totalItems) * 100 : 0;
+      const successRate =
+        totalItems > 0 ? (succeededItems / totalItems) * 100 : 0;
 
       dataPoints.push({
         timestamp: startTime,
         value: successRate,
-        label: `${i}h ago`
+        label: `${i}h ago`,
       });
     }
 
@@ -286,8 +329,17 @@ export class RetryMetricsService {
   /**
    * Get error distribution over time
    */
-  async getErrorDistributionTimeSeries(hoursBack: number = 24): Promise<Record<string, TimeSeriesDataPoint[]>> {
-    const errorTypes = ['network', 'validation', 'timeout', 'rate_limit', 'server_error', 'unknown'];
+  async getErrorDistributionTimeSeries(
+    hoursBack: number = 24
+  ): Promise<Record<string, TimeSeriesDataPoint[]>> {
+    const errorTypes = [
+      'network',
+      'validation',
+      'timeout',
+      'rate_limit',
+      'server_error',
+      'unknown',
+    ];
     const result: Record<string, TimeSeriesDataPoint[]> = {};
     const now = Date.now();
     const hourMs = 3600000;
@@ -301,13 +353,13 @@ export class RetryMetricsService {
 
         const count = await RetryQueue.countDocuments({
           createdAt: { $gte: startTime, $lt: endTime },
-          errorType
+          errorType,
         });
 
         result[errorType].push({
           timestamp: startTime,
           value: count,
-          label: `${i}h ago`
+          label: `${i}h ago`,
         });
       }
     }
@@ -322,7 +374,7 @@ export class RetryMetricsService {
     const items = await RetryQueue.find();
     const distribution: Record<number, number> = {};
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const attempts = item.attemptCount;
       distribution[attempts] = (distribution[attempts] || 0) + 1;
     });
@@ -333,21 +385,23 @@ export class RetryMetricsService {
   /**
    * Get top failing items
    */
-  async getTopFailingItems(limit: number = 10): Promise<Array<{
-    itemType: string;
-    errorType: string;
-    count: number;
-    lastError: string;
-  }>> {
+  async getTopFailingItems(limit: number = 10): Promise<
+    Array<{
+      itemType: string;
+      errorType: string;
+      count: number;
+      lastError: string;
+    }>
+  > {
     const items = await RetryQueue.find({ status: 'failed' })
       .sort({ attemptCount: -1 })
       .limit(limit);
 
-    return items.map(item => ({
+    return items.map((item) => ({
       itemType: item.itemType,
       errorType: item.errorType || 'unknown',
       count: item.attemptCount,
-      lastError: item.lastError || 'No error message'
+      lastError: item.lastError || 'No error message',
     }));
   }
 
@@ -366,12 +420,12 @@ export class RetryMetricsService {
       metrics,
       timeSeries: {
         successRate: successRateTimeSeries,
-        errorDistribution
+        errorDistribution,
       },
       distribution: {
-        retryAttempts: retryAttemptsDistribution
+        retryAttempts: retryAttemptsDistribution,
       },
-      topFailingItems
+      topFailingItems,
     };
 
     return JSON.stringify(export_data, null, 2);

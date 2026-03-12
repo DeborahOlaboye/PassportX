@@ -1,31 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createErrorResponse } from '@/lib/error-response'
+import { NextRequest, NextResponse } from 'next/server';
+import { createErrorResponse } from '@/lib/error-response';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const queryString = searchParams.toString()
+    const searchParams = request.nextUrl.searchParams;
+    const queryString = searchParams.toString();
 
-    const response = await fetch(`${BACKEND_URL}/api/badges/search?${queryString}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetch(
+      `${BACKEND_URL}/api/badges/search?${queryString}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
-    const data = await response.json()
+    const data = await response.json();
 
-    return NextResponse.json(data, { status: response.status })
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    return createErrorResponse('Failed to search badges', error)
+    return createErrorResponse('Failed to search badges', error);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json();
 
     const response = await fetch(`${BACKEND_URL}/api/badges/search`, {
       method: 'POST',
@@ -33,12 +36,12 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
-    })
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
-    return NextResponse.json(data, { status: response.status })
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    return createErrorResponse('Failed to search badges', error)
+    return createErrorResponse('Failed to search badges', error);
   }
 }

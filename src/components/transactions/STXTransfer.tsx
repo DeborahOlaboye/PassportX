@@ -10,7 +10,8 @@ interface STXTransferProps {
 }
 
 export function STXTransfer({ onSuccess, onError }: STXTransferProps) {
-  const { signTransaction, broadcastTransaction, estimateGas, isSigning } = useTransactionSigning();
+  const { signTransaction, broadcastTransaction, estimateGas, isSigning } =
+    useTransactionSigning();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -137,7 +138,9 @@ export function STXTransfer({ onSuccess, onError }: STXTransferProps) {
             <div className="text-sm space-y-1">
               <div>Base Fee: {gasEstimate.breakdown.base} microSTX</div>
               <div>Priority Fee: {gasEstimate.breakdown.priority} microSTX</div>
-              <div className="font-semibold">Total: {gasEstimate.total} microSTX</div>
+              <div className="font-semibold">
+                Total: {gasEstimate.total} microSTX
+              </div>
             </div>
           </div>
         )}

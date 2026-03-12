@@ -1,4 +1,8 @@
-import { Account, AccountValidation, AccountFilter } from '@/types/multi-account';
+import {
+  Account,
+  AccountValidation,
+  AccountFilter,
+} from '@/types/multi-account';
 
 export function validateAccount(account: Account): AccountValidation {
   const errors: string[] = [];
@@ -31,7 +35,10 @@ export function validateAccount(account: Account): AccountValidation {
   }
 
   if (account.balance) {
-    if (typeof account.balance !== 'string' || isNaN(parseFloat(account.balance))) {
+    if (
+      typeof account.balance !== 'string' ||
+      isNaN(parseFloat(account.balance))
+    ) {
       warnings.push('Balance should be a valid numeric string');
     }
   }
@@ -47,7 +54,10 @@ export function validateAccount(account: Account): AccountValidation {
   };
 }
 
-export function validateAccounts(accounts: Account[]): { valid: boolean; errors: Map<string, string[]> } {
+export function validateAccounts(accounts: Account[]): {
+  valid: boolean;
+  errors: Map<string, string[]>;
+} {
   const errors = new Map<string, string[]>();
 
   for (const account of accounts) {
@@ -63,7 +73,10 @@ export function validateAccounts(accounts: Account[]): { valid: boolean; errors:
   };
 }
 
-export function isDuplicateAccount(accounts: Account[], newAccount: Account): boolean {
+export function isDuplicateAccount(
+  accounts: Account[],
+  newAccount: Account
+): boolean {
   return accounts.some((a) => a.address === newAccount.address);
 }
 
@@ -101,7 +114,10 @@ export function getAccountIsolationId(account: Account): string {
   return `account_${account.address}_chain_${account.chainId}`;
 }
 
-export function filterAccountsByChain(accounts: Account[], chainId: number): Account[] {
+export function filterAccountsByChain(
+  accounts: Account[],
+  chainId: number
+): Account[] {
   return accounts.filter((a) => a.chainId === chainId);
 }
 
@@ -158,7 +174,9 @@ export function sortAccounts(
 
   switch (sortBy) {
     case 'alphabetical':
-      return sorted.sort((a, b) => (a.name || a.address).localeCompare(b.name || b.address));
+      return sorted.sort((a, b) =>
+        (a.name || a.address).localeCompare(b.name || b.address)
+      );
 
     case 'balance':
       return sorted.sort((a, b) => {

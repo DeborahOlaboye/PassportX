@@ -1,4 +1,9 @@
-import { ICommunity, IBadgeTemplate, IPopulatedBadge, IPopulatedBadgeTemplate } from '../types';
+import {
+  ICommunity,
+  IBadgeTemplate,
+  IPopulatedBadge,
+  IPopulatedBadgeTemplate,
+} from '../types';
 
 /**
  * Type guard to check if a badge has populated fields
@@ -18,7 +23,9 @@ export function isPopulatedBadge(badge: any): badge is IPopulatedBadge {
 /**
  * Type guard to check if a badge template has populated community
  */
-export function isPopulatedBadgeTemplate(template: any): template is IPopulatedBadgeTemplate {
+export function isPopulatedBadgeTemplate(
+  template: any
+): template is IPopulatedBadgeTemplate {
   return (
     template &&
     typeof template.community === 'object' &&

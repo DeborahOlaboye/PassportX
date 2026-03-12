@@ -1,28 +1,28 @@
-'use client'
-import ErrorBoundary from '../ErrorBoundary'
-import { CommunityErrorFallback } from '../FallbackUI'
-import { useState } from 'react'
-import { Users, Palette, Settings, Wallet } from 'lucide-react'
+'use client';
+import ErrorBoundary from '../ErrorBoundary';
+import { CommunityErrorFallback } from '../FallbackUI';
+import { useState } from 'react';
+import { Users, Palette, Settings, Wallet } from 'lucide-react';
 
 interface CommunityFormData {
-  name: string
-  description: string
-  about: string
-  website: string
-  primaryColor: string
-  secondaryColor: string
-  stxPayment: number
-  allowMemberInvites: boolean
-  requireApproval: boolean
-  allowBadgeIssuance: boolean
-  allowCustomBadges: boolean
-  tags: string
+  name: string;
+  description: string;
+  about: string;
+  website: string;
+  primaryColor: string;
+  secondaryColor: string;
+  stxPayment: number;
+  allowMemberInvites: boolean;
+  requireApproval: boolean;
+  allowBadgeIssuance: boolean;
+  allowCustomBadges: boolean;
+  tags: string;
 }
 
 interface CommunityCreationFormProps {
-  onSubmit: (data: CommunityFormData) => Promise<void>
-  isLoading?: boolean
-  error?: string
+  onSubmit: (data: CommunityFormData) => Promise<void>;
+  isLoading?: boolean;
+  error?: string;
 }
 
 const colorPresets = [
@@ -33,21 +33,27 @@ const colorPresets = [
   { name: 'Orange', color: '#f97316' },
   { name: 'Pink', color: '#ec4899' },
   { name: 'Teal', color: '#14b8a6' },
-  { name: 'Indigo', color: '#6366f1' }
-]
+  { name: 'Indigo', color: '#6366f1' },
+];
 
-export default function CommunityCreationForm(props: CommunityCreationFormProps) {
+export default function CommunityCreationForm(
+  props: CommunityCreationFormProps
+) {
   return (
-    <ErrorBoundary fallback={(error, reset) => <CommunityErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <CommunityErrorFallback error={error} reset={reset} />
+      )}
+    >
       <CommunityCreationFormInner {...props} />
     </ErrorBoundary>
-  )
+  );
 }
 
-function CommunityCreationFormInner({ 
-  onSubmit, 
+function CommunityCreationFormInner({
+  onSubmit,
   isLoading = false,
-  error = ''
+  error = '',
 }: CommunityCreationFormProps) {
   const [formData, setFormData] = useState<CommunityFormData>({
     name: '',
@@ -61,114 +67,128 @@ function CommunityCreationFormInner({
     requireApproval: false,
     allowBadgeIssuance: true,
     allowCustomBadges: false,
-    tags: ''
-  })
+    tags: '',
+  });
 
-  const [preview, setPreview] = useState(true)
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [preview, setPreview] = useState(true);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const validateForm = (): boolean => {
-    const errors: Record<string, string> = {}
+    const errors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      errors.name = 'Community name is required'
+      errors.name = 'Community name is required';
     } else if (formData.name.trim().length < 3) {
-      errors.name = 'Community name must be at least 3 characters'
+      errors.name = 'Community name must be at least 3 characters';
     } else if (formData.name.length > 100) {
-      errors.name = 'Community name must be less than 100 characters'
+      errors.name = 'Community name must be less than 100 characters';
     }
 
     if (!formData.description.trim()) {
-      errors.description = 'Description is required'
+      errors.description = 'Description is required';
     } else if (formData.description.trim().length < 10) {
-      errors.description = 'Description must be at least 10 characters'
+      errors.description = 'Description must be at least 10 characters';
     } else if (formData.description.length > 2000) {
-      errors.description = 'Description must be less than 2000 characters'
+      errors.description = 'Description must be less than 2000 characters';
     }
 
     if (formData.about && formData.about.length > 5000) {
-      errors.about = 'About section must be less than 5000 characters'
+      errors.about = 'About section must be less than 5000 characters';
     }
 
     if (formData.website && !isValidUrl(formData.website)) {
-      errors.website = 'Please enter a valid URL'
+      errors.website = 'Please enter a valid URL';
     }
 
     // Tags validation
     if (formData.tags) {
-      const tagList = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+      const tagList = formData.tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
       if (tagList.length > 10) {
-        errors.tags = 'Maximum 10 tags allowed'
-      } else if (tagList.some(t => t.length > 30)) {
-        errors.tags = 'Each tag must be 30 characters or fewer'
-      } else if (tagList.some(t => !/^[a-zA-Z0-9 _-]+$/.test(t))) {
-        errors.tags = 'Tags may only contain letters, numbers, spaces, hyphens, and underscores'
+        errors.tags = 'Maximum 10 tags allowed';
+      } else if (tagList.some((t) => t.length > 30)) {
+        errors.tags = 'Each tag must be 30 characters or fewer';
+      } else if (tagList.some((t) => !/^[a-zA-Z0-9 _-]+$/.test(t))) {
+        errors.tags =
+          'Tags may only contain letters, numbers, spaces, hyphens, and underscores';
       }
     }
 
     if (!isValidHexColor(formData.primaryColor)) {
-      errors.primaryColor = 'Primary color must be a valid hex color (e.g. #3b82f6)'
+      errors.primaryColor =
+        'Primary color must be a valid hex color (e.g. #3b82f6)';
     }
 
     if (!isValidHexColor(formData.secondaryColor)) {
-      errors.secondaryColor = 'Secondary color must be a valid hex color (e.g. #10b981)'
+      errors.secondaryColor =
+        'Secondary color must be a valid hex color (e.g. #10b981)';
     }
 
     if (formData.stxPayment < 0) {
-      errors.stxPayment = 'STX payment must be a positive number'
+      errors.stxPayment = 'STX payment must be a positive number';
     } else if (formData.stxPayment > 1000000) {
-      errors.stxPayment = 'STX payment exceeds maximum allowed'
+      errors.stxPayment = 'STX payment exceeds maximum allowed';
     }
 
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const isValidHexColor = (color: string): boolean =>
-    /^#[0-9A-Fa-f]{6}$/.test(color)
+    /^#[0-9A-Fa-f]{6}$/.test(color);
 
   const isValidUrl = (url: string): boolean => {
     try {
-      new URL(url)
-      return true
+      new URL(url);
+      return true;
     } catch {
-      return false
+      return false;
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!validateForm()) {
-      return
+      return;
     }
 
     try {
-      await onSubmit(formData)
+      await onSubmit(formData);
     } catch (err) {
-      console.error('Form submission error:', err)
+      console.error('Form submission error:', err);
     }
-  }
+  };
 
-  const handleChange = (field: keyof CommunityFormData, value: string | number | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleChange = (
+    field: keyof CommunityFormData,
+    value: string | number | boolean
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Real-time color validation
-    if ((field === 'primaryColor' || field === 'secondaryColor') && typeof value === 'string') {
+    if (
+      (field === 'primaryColor' || field === 'secondaryColor') &&
+      typeof value === 'string'
+    ) {
       if (value && !isValidHexColor(value)) {
-        setValidationErrors(prev => ({
+        setValidationErrors((prev) => ({
           ...prev,
-          [field]: 'Must be a valid hex color (e.g. #3b82f6)'
-        }))
+          [field]: 'Must be a valid hex color (e.g. #3b82f6)',
+        }));
       } else {
-        setValidationErrors(prev => {
-          const next = { ...prev }
-          delete next[field]
-          return next
-        })
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next[field];
+          return next;
+        });
       }
     }
-  }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -195,7 +215,9 @@ function CommunityCreationFormInner({
               disabled={isLoading}
             />
             {validationErrors.name && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.name}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.name}
+              </p>
             )}
           </div>
 
@@ -208,13 +230,17 @@ function CommunityCreationFormInner({
               onChange={(e) => handleChange('description', e.target.value)}
               rows={3}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                validationErrors.description ? 'border-red-500' : 'border-gray-300'
+                validationErrors.description
+                  ? 'border-red-500'
+                  : 'border-gray-300'
               }`}
               placeholder="Brief description of your community..."
               disabled={isLoading}
             />
             {validationErrors.description && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.description}
+              </p>
             )}
           </div>
 
@@ -233,7 +259,9 @@ function CommunityCreationFormInner({
               disabled={isLoading}
             />
             {validationErrors.about && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.about}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.about}
+              </p>
             )}
           </div>
 
@@ -252,7 +280,9 @@ function CommunityCreationFormInner({
               disabled={isLoading}
             />
             {validationErrors.website && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.website}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.website}
+              </p>
             )}
           </div>
 
@@ -269,9 +299,13 @@ function CommunityCreationFormInner({
               disabled={isLoading}
             />
             {validationErrors.tags && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.tags}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.tags}
+              </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Up to 10 tags, max 30 characters each</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Up to 10 tags, max 30 characters each
+            </p>
           </div>
 
           <div className="border-t pt-6">
@@ -287,7 +321,11 @@ function CommunityCreationFormInner({
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={isValidHexColor(formData.primaryColor) ? formData.primaryColor : '#000000'}
+                  value={
+                    isValidHexColor(formData.primaryColor)
+                      ? formData.primaryColor
+                      : '#000000'
+                  }
                   onChange={(e) => handleChange('primaryColor', e.target.value)}
                   className="w-12 h-12 rounded-lg cursor-pointer"
                   disabled={isLoading}
@@ -296,7 +334,12 @@ function CommunityCreationFormInner({
                   type="text"
                   value={formData.primaryColor}
                   onChange={(e) => handleChange('primaryColor', e.target.value)}
-                  className={"w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono " + (validationErrors.primaryColor ? "border-red-500" : "border-gray-300")}
+                  className={
+                    'w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono ' +
+                    (validationErrors.primaryColor
+                      ? 'border-red-500'
+                      : 'border-gray-300')
+                  }
                   placeholder="#3b82f6"
                   disabled={isLoading}
                   maxLength={7}
@@ -320,7 +363,9 @@ function CommunityCreationFormInner({
                 ))}
               </div>
               {validationErrors.primaryColor && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.primaryColor}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.primaryColor}
+                </p>
               )}
             </div>
 
@@ -331,23 +376,38 @@ function CommunityCreationFormInner({
               <div className="flex items-center space-x-3">
                 <input
                   type="color"
-                  value={isValidHexColor(formData.secondaryColor) ? formData.secondaryColor : '#000000'}
-                  onChange={(e) => handleChange('secondaryColor', e.target.value)}
+                  value={
+                    isValidHexColor(formData.secondaryColor)
+                      ? formData.secondaryColor
+                      : '#000000'
+                  }
+                  onChange={(e) =>
+                    handleChange('secondaryColor', e.target.value)
+                  }
                   className="w-12 h-12 rounded-lg cursor-pointer"
                   disabled={isLoading}
                 />
                 <input
                   type="text"
                   value={formData.secondaryColor}
-                  onChange={(e) => handleChange('secondaryColor', e.target.value)}
-                  className={"w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono " + (validationErrors.secondaryColor ? "border-red-500" : "border-gray-300")}
+                  onChange={(e) =>
+                    handleChange('secondaryColor', e.target.value)
+                  }
+                  className={
+                    'w-28 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono ' +
+                    (validationErrors.secondaryColor
+                      ? 'border-red-500'
+                      : 'border-gray-300')
+                  }
                   placeholder="#10b981"
                   disabled={isLoading}
                   maxLength={7}
                 />
               </div>
               {validationErrors.secondaryColor && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.secondaryColor}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.secondaryColor}
+                </p>
               )}
             </div>
           </div>
@@ -363,44 +423,60 @@ function CommunityCreationFormInner({
                 <input
                   type="checkbox"
                   checked={formData.allowMemberInvites}
-                  onChange={(e) => handleChange('allowMemberInvites', e.target.checked)}
+                  onChange={(e) =>
+                    handleChange('allowMemberInvites', e.target.checked)
+                  }
                   className="w-4 h-4 rounded border-gray-300"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-700">Allow member invites</span>
+                <span className="text-sm text-gray-700">
+                  Allow member invites
+                </span>
               </label>
 
               <label className="flex items-center space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.requireApproval}
-                  onChange={(e) => handleChange('requireApproval', e.target.checked)}
+                  onChange={(e) =>
+                    handleChange('requireApproval', e.target.checked)
+                  }
                   className="w-4 h-4 rounded border-gray-300"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-700">Require approval for new members</span>
+                <span className="text-sm text-gray-700">
+                  Require approval for new members
+                </span>
               </label>
 
               <label className="flex items-center space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.allowBadgeIssuance}
-                  onChange={(e) => handleChange('allowBadgeIssuance', e.target.checked)}
+                  onChange={(e) =>
+                    handleChange('allowBadgeIssuance', e.target.checked)
+                  }
                   className="w-4 h-4 rounded border-gray-300"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-700">Allow badge issuance</span>
+                <span className="text-sm text-gray-700">
+                  Allow badge issuance
+                </span>
               </label>
 
               <label className="flex items-center space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.allowCustomBadges}
-                  onChange={(e) => handleChange('allowCustomBadges', e.target.checked)}
+                  onChange={(e) =>
+                    handleChange('allowCustomBadges', e.target.checked)
+                  }
                   className="w-4 h-4 rounded border-gray-300"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-700">Allow custom badge templates</span>
+                <span className="text-sm text-gray-700">
+                  Allow custom badge templates
+                </span>
               </label>
             </div>
           </div>
@@ -419,9 +495,16 @@ function CommunityCreationFormInner({
                 <input
                   type="number"
                   value={formData.stxPayment}
-                  onChange={(e) => handleChange('stxPayment', Math.max(0, parseInt(e.target.value) || 0))}
+                  onChange={(e) =>
+                    handleChange(
+                      'stxPayment',
+                      Math.max(0, parseInt(e.target.value) || 0)
+                    )
+                  }
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                    validationErrors.stxPayment ? 'border-red-500' : 'border-gray-300'
+                    validationErrors.stxPayment
+                      ? 'border-red-500'
+                      : 'border-gray-300'
                   }`}
                   placeholder="100"
                   min="0"
@@ -430,17 +513,20 @@ function CommunityCreationFormInner({
                 <span className="text-sm font-medium text-gray-700">STX</span>
               </div>
               {validationErrors.stxPayment && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.stxPayment}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.stxPayment}
+                </p>
               )}
               <p className="mt-2 text-xs text-gray-500">
-                This is the one-time fee required to create the community on-chain
+                This is the one-time fee required to create the community
+                on-chain
               </p>
             </div>
           </div>
 
           <div className="flex space-x-4 pt-6">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
@@ -460,12 +546,14 @@ function CommunityCreationFormInner({
 
       {preview && (
         <div className="lg:sticky lg:top-8 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Community Preview</h3>
-          
+          <h3 className="text-lg font-semibold text-gray-900">
+            Community Preview
+          </h3>
+
           <div className="card">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div 
+                <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
                   style={{ backgroundColor: formData.primaryColor }}
                 >
@@ -479,9 +567,10 @@ function CommunityCreationFormInner({
                 </div>
               </div>
             </div>
-            
+
             <p className="text-gray-700 text-sm mb-4">
-              {formData.description || 'Community description will appear here...'}
+              {formData.description ||
+                'Community description will appear here...'}
             </p>
 
             {formData.tags && (
@@ -492,7 +581,7 @@ function CommunityCreationFormInner({
                     className="px-2 py-1 rounded-full text-xs font-medium"
                     style={{
                       backgroundColor: `${formData.primaryColor}20`,
-                      color: formData.primaryColor
+                      color: formData.primaryColor,
                     }}
                   >
                     {tag.trim()}
@@ -519,11 +608,12 @@ function CommunityCreationFormInner({
 
           <div className="card p-4 bg-blue-50 border-blue-200">
             <p className="text-xs text-blue-800">
-              <strong>Note:</strong> After creation, you'll need to confirm the transaction in your wallet to complete the on-chain registration.
+              <strong>Note:</strong> After creation, you'll need to confirm the
+              transaction in your wallet to complete the on-chain registration.
             </p>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -143,8 +143,7 @@ describe('AuthController - Signature Verification', () => {
       expect(statusMock).toHaveBeenCalledWith(401);
       expect(jsonMock).toHaveBeenCalledWith({
         success: false,
-        message:
-          'Invalid signature. Please sign the message with your wallet.',
+        message: 'Invalid signature. Please sign the message with your wallet.',
         code: 'INVALID_SIGNATURE',
       });
     });

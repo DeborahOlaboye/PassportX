@@ -14,7 +14,7 @@ describe('Badge Flow Integration Tests', () => {
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'community-tx',
         success: true,
-        result: { communityId: 1 }
+        result: { communityId: 1 },
       });
 
       const createCommunity = async () => mockStacksApi.broadcastTransaction();
@@ -25,7 +25,7 @@ describe('Badge Flow Integration Tests', () => {
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'template-tx',
         success: true,
-        result: { templateId: 1 }
+        result: { templateId: 1 },
       });
 
       const createTemplate = async () => mockStacksApi.broadcastTransaction();
@@ -35,7 +35,7 @@ describe('Badge Flow Integration Tests', () => {
       // Step 3: Authorize issuer
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'auth-tx',
-        success: true
+        success: true,
       });
 
       const authorizeIssuer = async () => mockStacksApi.broadcastTransaction();
@@ -46,7 +46,7 @@ describe('Badge Flow Integration Tests', () => {
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'mint-tx',
         success: true,
-        result: { badgeId: 1 }
+        result: { badgeId: 1 },
       });
 
       const mintBadge = async () => mockStacksApi.broadcastTransaction();
@@ -58,8 +58,8 @@ describe('Badge Flow Integration Tests', () => {
         result: {
           id: 1,
           owner: testUsers.users[0].address,
-          active: true
-        }
+          active: true,
+        },
       });
 
       const getBadge = async () => mockStacksApi.callReadOnlyFunction();
@@ -74,14 +74,14 @@ describe('Badge Flow Integration Tests', () => {
           id: 1,
           owner: testUsers.users[0].address,
           active: true,
-          issuer: testUsers.users[0].address
-        }
+          issuer: testUsers.users[0].address,
+        },
       });
 
       // Revoke badge
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'revoke-tx',
-        success: true
+        success: true,
       });
 
       const revokeBadge = async () => mockStacksApi.broadcastTransaction();
@@ -93,8 +93,8 @@ describe('Badge Flow Integration Tests', () => {
         result: {
           id: 1,
           owner: testUsers.users[0].address,
-          active: false
-        }
+          active: false,
+        },
       });
 
       const getBadge = async () => mockStacksApi.callReadOnlyFunction();
@@ -109,19 +109,19 @@ describe('Badge Flow Integration Tests', () => {
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'community-tx',
         success: true,
-        result: { communityId: 1 }
+        result: { communityId: 1 },
       });
 
       // Add member
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'member-tx',
-        success: true
+        success: true,
       });
 
       // Set permissions
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'permission-tx',
-        success: true
+        success: true,
       });
 
       const setupCommunity = async () => {
@@ -139,12 +139,12 @@ describe('Badge Flow Integration Tests', () => {
     test('should enforce permissions across all operations', async () => {
       // Check permission before operation
       mockStacksApi.callReadOnlyFunction.mockResolvedValueOnce({
-        result: false // No permission
+        result: false, // No permission
       });
 
       const checkPermission = async () => mockStacksApi.callReadOnlyFunction();
       const hasPermission = await checkPermission();
-      
+
       if (!hasPermission.result) {
         // Should not proceed with operation
         expect(mockStacksApi.broadcastTransaction).not.toHaveBeenCalled();
@@ -153,12 +153,12 @@ describe('Badge Flow Integration Tests', () => {
       // Grant permission
       mockStacksApi.broadcastTransaction.mockResolvedValueOnce({
         txid: 'grant-tx',
-        success: true
+        success: true,
       });
 
       // Check permission again
       mockStacksApi.callReadOnlyFunction.mockResolvedValueOnce({
-        result: true // Has permission
+        result: true, // Has permission
       });
 
       const grantPermission = async () => mockStacksApi.broadcastTransaction();

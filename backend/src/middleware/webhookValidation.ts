@@ -26,7 +26,7 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
         return res.status(401).json({
           success: false,
           error: 'Missing webhook signature',
-          code: 'MISSING_SIGNATURE'
+          code: 'MISSING_SIGNATURE',
         });
       }
 
@@ -34,7 +34,7 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
         return res.status(401).json({
           success: false,
           error: 'Missing webhook timestamp',
-          code: 'MISSING_TIMESTAMP'
+          code: 'MISSING_TIMESTAMP',
         });
       }
 
@@ -46,11 +46,16 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
         .update(message)
         .digest('hex');
 
-      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+      if (
+        !crypto.timingSafeEqual(
+          Buffer.from(signature),
+          Buffer.from(expectedSignature)
+        )
+      ) {
         return res.status(401).json({
           success: false,
           error: 'Invalid webhook signature',
-          code: 'INVALID_SIGNATURE'
+          code: 'INVALID_SIGNATURE',
         });
       }
 
@@ -62,7 +67,7 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
         return res.status(401).json({
           success: false,
           error: 'Webhook request expired',
-          code: 'EXPIRED_TIMESTAMP'
+          code: 'EXPIRED_TIMESTAMP',
         });
       }
 
@@ -72,7 +77,7 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
       return res.status(500).json({
         success: false,
         error: 'Failed to validate webhook signature',
-        code: 'VALIDATION_ERROR'
+        code: 'VALIDATION_ERROR',
       });
     }
   };
@@ -82,6 +87,6 @@ export function getWebhookValidationConfig(): WebhookValidationConfig {
   return {
     enabled: process.env.WEBHOOK_SIGNATURE_VALIDATION === 'true',
     algorithm: process.env.WEBHOOK_SIGNATURE_ALGORITHM || 'sha256',
-    secretKey: process.env.WEBHOOK_SECRET_KEY
+    secretKey: process.env.WEBHOOK_SECRET_KEY,
   };
 }

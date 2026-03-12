@@ -31,112 +31,112 @@ export const EVENT_NAMES = {
   USER_UNSUSPENDED: 'user-unsuspended',
 
   // Passport NFT Events
-  PASSPORT_BADGE_MINTED: 'passport-badge-minted'
-} as const
+  PASSPORT_BADGE_MINTED: 'passport-badge-minted',
+} as const;
 
-export type EventName = (typeof EVENT_NAMES)[keyof typeof EVENT_NAMES]
+export type EventName = (typeof EVENT_NAMES)[keyof typeof EVENT_NAMES];
 
 /**
  * Base contract event interface
  */
 export interface ContractEvent {
-  event: EventName
-  blockHeight: number
-  [key: string]: any
+  event: EventName;
+  blockHeight: number;
+  [key: string]: any;
 }
 
 /**
  * Badge Minted Event
  */
 export interface BadgeMintedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.BADGE_MINTED
-  badgeId: number
-  recipient: string
-  templateId: number
-  issuer: string
-  level: number
-  category: number
+  event: typeof EVENT_NAMES.BADGE_MINTED;
+  badgeId: number;
+  recipient: string;
+  templateId: number;
+  issuer: string;
+  level: number;
+  category: number;
 }
 
 /**
  * Batch Badges Minted Event
  */
 export interface BatchBadgesMintedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.BATCH_BADGES_MINTED
-  batchId: number
-  issuer: string
-  recipients: string[]
-  templateIds: number[]
-  badgeIds: number[]
-  count: number
+  event: typeof EVENT_NAMES.BATCH_BADGES_MINTED;
+  batchId: number;
+  issuer: string;
+  recipients: string[];
+  templateIds: number[];
+  badgeIds: number[];
+  count: number;
 }
 
 /**
  * Template Created Event
  */
 export interface TemplateCreatedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.TEMPLATE_CREATED
-  templateId: number
-  name: string
-  description: string
-  category: number
-  defaultLevel: number
-  creator: string
+  event: typeof EVENT_NAMES.TEMPLATE_CREATED;
+  templateId: number;
+  name: string;
+  description: string;
+  category: number;
+  defaultLevel: number;
+  creator: string;
 }
 
 /**
  * Badge Revoked Event
  */
 export interface BadgeRevokedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.BADGE_REVOKED
-  badgeId: number
-  issuer: string
-  revokedBy: string
+  event: typeof EVENT_NAMES.BADGE_REVOKED;
+  badgeId: number;
+  issuer: string;
+  revokedBy: string;
 }
 
 /**
  * Badge Metadata Updated Event
  */
 export interface BadgeMetadataUpdatedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.BADGE_METADATA_UPDATED
-  badgeId: number
-  oldLevel: number
-  newLevel: number
-  oldCategory: number
-  newCategory: number
-  updatedBy: string
+  event: typeof EVENT_NAMES.BADGE_METADATA_UPDATED;
+  badgeId: number;
+  oldLevel: number;
+  newLevel: number;
+  oldCategory: number;
+  newCategory: number;
+  updatedBy: string;
 }
 
 /**
  * Community Created Event
  */
 export interface CommunityCreatedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.COMMUNITY_CREATED
-  communityId: number
-  name: string
-  description: string
-  owner: string
+  event: typeof EVENT_NAMES.COMMUNITY_CREATED;
+  communityId: number;
+  name: string;
+  description: string;
+  owner: string;
 }
 
 /**
  * Community Member Added Event
  */
 export interface CommunityMemberAddedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.COMMUNITY_MEMBER_ADDED
-  communityId: number
-  member: string
-  role: string
-  addedBy: string
+  event: typeof EVENT_NAMES.COMMUNITY_MEMBER_ADDED;
+  communityId: number;
+  member: string;
+  role: string;
+  addedBy: string;
 }
 
 /**
  * Passport Badge Minted Event
  */
 export interface PassportBadgeMintedEvent extends ContractEvent {
-  event: typeof EVENT_NAMES.PASSPORT_BADGE_MINTED
-  tokenId: number
-  recipient: string
-  mintedBy: string
+  event: typeof EVENT_NAMES.PASSPORT_BADGE_MINTED;
+  tokenId: number;
+  recipient: string;
+  mintedBy: string;
 }
 
 /**
@@ -150,44 +150,52 @@ export type TypedContractEvent =
   | BadgeMetadataUpdatedEvent
   | CommunityCreatedEvent
   | CommunityMemberAddedEvent
-  | PassportBadgeMintedEvent
+  | PassportBadgeMintedEvent;
 
 /**
  * Event listener callback type
  */
-export type EventListener<T extends ContractEvent = ContractEvent> = (event: T) => void | Promise<void>
+export type EventListener<T extends ContractEvent = ContractEvent> = (
+  event: T
+) => void | Promise<void>;
 
 /**
  * Event subscription manager
  */
 export class EventSubscriptionManager {
-  private listeners: Map<EventName | '*', Set<EventListener>> = new Map()
+  private listeners: Map<EventName | '*', Set<EventListener>> = new Map();
 
   /**
    * Subscribe to a specific event type
    */
-  on<T extends ContractEvent = ContractEvent>(eventName: EventName | '*', listener: EventListener<T>): () => void {
+  on<T extends ContractEvent = ContractEvent>(
+    eventName: EventName | '*',
+    listener: EventListener<T>
+  ): () => void {
     if (!this.listeners.has(eventName)) {
-      this.listeners.set(eventName, new Set())
+      this.listeners.set(eventName, new Set());
     }
 
-    this.listeners.get(eventName)!.add(listener as EventListener)
+    this.listeners.get(eventName)!.add(listener as EventListener);
 
     // Return unsubscribe function
     return () => {
-      this.off(eventName, listener)
-    }
+      this.off(eventName, listener);
+    };
   }
 
   /**
    * Unsubscribe from an event
    */
-  off<T extends ContractEvent = ContractEvent>(eventName: EventName | '*', listener: EventListener<T>): void {
-    const listeners = this.listeners.get(eventName)
+  off<T extends ContractEvent = ContractEvent>(
+    eventName: EventName | '*',
+    listener: EventListener<T>
+  ): void {
+    const listeners = this.listeners.get(eventName);
     if (listeners) {
-      listeners.delete(listener as EventListener)
+      listeners.delete(listener as EventListener);
       if (listeners.size === 0) {
-        this.listeners.delete(eventName)
+        this.listeners.delete(eventName);
       }
     }
   }
@@ -197,18 +205,18 @@ export class EventSubscriptionManager {
    */
   async emit(event: ContractEvent): Promise<void> {
     // Call specific event listeners
-    const specificListeners = this.listeners.get(event.event as EventName)
+    const specificListeners = this.listeners.get(event.event as EventName);
     if (specificListeners) {
       for (const listener of specificListeners) {
-        await listener(event)
+        await listener(event);
       }
     }
 
     // Call wildcard listeners
-    const wildcardListeners = this.listeners.get('*')
+    const wildcardListeners = this.listeners.get('*');
     if (wildcardListeners) {
       for (const listener of wildcardListeners) {
-        await listener(event)
+        await listener(event);
       }
     }
   }
@@ -217,14 +225,14 @@ export class EventSubscriptionManager {
    * Remove all listeners
    */
   removeAllListeners(): void {
-    this.listeners.clear()
+    this.listeners.clear();
   }
 
   /**
    * Get listener count for an event
    */
   listenerCount(eventName: EventName | '*'): number {
-    return this.listeners.get(eventName)?.size || 0
+    return this.listeners.get(eventName)?.size || 0;
   }
 }
 
@@ -235,35 +243,37 @@ export function parseContractEvent(rawEvent: any): ContractEvent | null {
   try {
     // Handle Stacks.js event format
     if (rawEvent?.contract_event?.value) {
-      const value = rawEvent.contract_event.value
+      const value = rawEvent.contract_event.value;
 
       // Extract event name
-      const eventName = value.event?.value || value.event
+      const eventName = value.event?.value || value.event;
 
       // Parse all fields from the event
       const parsedEvent: any = {
         event: eventName,
-        blockHeight: rawEvent.block_height || 0
-      }
+        blockHeight: rawEvent.block_height || 0,
+      };
 
       // Parse each field in the event
       for (const [key, val] of Object.entries(value)) {
-        if (key === 'event') continue
+        if (key === 'event') continue;
 
         // Convert kebab-case to camelCase
-        const camelKey = key.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
+        const camelKey = key.replace(/-([a-z])/g, (_, letter) =>
+          letter.toUpperCase()
+        );
 
         // Parse Clarity values to JavaScript types
-        parsedEvent[camelKey] = parseClarityValue(val)
+        parsedEvent[camelKey] = parseClarityValue(val);
       }
 
-      return parsedEvent as ContractEvent
+      return parsedEvent as ContractEvent;
     }
 
-    return null
+    return null;
   } catch (error) {
-    console.error('Failed to parse contract event:', error)
-    return null
+    console.error('Failed to parse contract event:', error);
+    return null;
   }
 }
 
@@ -272,7 +282,7 @@ export function parseContractEvent(rawEvent: any): ContractEvent | null {
  */
 function parseClarityValue(value: any): any {
   if (value === null || value === undefined) {
-    return null
+    return null;
   }
 
   // Handle primitive Clarity types
@@ -280,26 +290,30 @@ function parseClarityValue(value: any): any {
     if ('value' in value) {
       // Handle Clarity value wrappers
       if (value.type === 'uint' || value.type === 'int') {
-        return parseInt(value.value, 10)
+        return parseInt(value.value, 10);
       }
       if (value.type === 'bool') {
-        return value.value === true || value.value === 'true'
+        return value.value === true || value.value === 'true';
       }
       if (value.type === 'principal') {
-        return value.value
+        return value.value;
       }
-      if (value.type === 'string' || value.type === 'string-ascii' || value.type === 'string-utf8') {
-        return value.value
+      if (
+        value.type === 'string' ||
+        value.type === 'string-ascii' ||
+        value.type === 'string-utf8'
+      ) {
+        return value.value;
       }
       if (value.type === 'list') {
-        return value.value.map(parseClarityValue)
+        return value.value.map(parseClarityValue);
       }
 
-      return value.value
+      return value.value;
     }
   }
 
-  return value
+  return value;
 }
 
 /**
@@ -309,7 +323,7 @@ export function filterEventsByType<T extends ContractEvent>(
   events: ContractEvent[],
   eventType: EventName
 ): T[] {
-  return events.filter((e) => e.event === eventType) as T[]
+  return events.filter((e) => e.event === eventType) as T[];
 }
 
 /**
@@ -320,13 +334,18 @@ export function filterEventsByBlockRange(
   startBlock: number,
   endBlock: number
 ): ContractEvent[] {
-  return events.filter((e) => e.blockHeight >= startBlock && e.blockHeight <= endBlock)
+  return events.filter(
+    (e) => e.blockHeight >= startBlock && e.blockHeight <= endBlock
+  );
 }
 
 /**
  * Filter events by principal (user/issuer/etc)
  */
-export function filterEventsByPrincipal(events: ContractEvent[], principal: string): ContractEvent[] {
+export function filterEventsByPrincipal(
+  events: ContractEvent[],
+  principal: string
+): ContractEvent[] {
   return events.filter((e) => {
     // Check common principal fields
     return (
@@ -342,34 +361,41 @@ export function filterEventsByPrincipal(events: ContractEvent[], principal: stri
       e.revokedBy === principal ||
       e.suspendedBy === principal ||
       e.unsuspendedBy === principal
-    )
-  })
+    );
+  });
 }
 
 /**
  * Sort events by block height
  */
-export function sortEventsByBlock(events: ContractEvent[], descending = false): ContractEvent[] {
+export function sortEventsByBlock(
+  events: ContractEvent[],
+  descending = false
+): ContractEvent[] {
   return [...events].sort((a, b) => {
-    return descending ? b.blockHeight - a.blockHeight : a.blockHeight - b.blockHeight
-  })
+    return descending
+      ? b.blockHeight - a.blockHeight
+      : a.blockHeight - b.blockHeight;
+  });
 }
 
 /**
  * Group events by type
  */
-export function groupEventsByType(events: ContractEvent[]): Map<EventName, ContractEvent[]> {
-  const grouped = new Map<EventName, ContractEvent[]>()
+export function groupEventsByType(
+  events: ContractEvent[]
+): Map<EventName, ContractEvent[]> {
+  const grouped = new Map<EventName, ContractEvent[]>();
 
   for (const event of events) {
-    const eventName = event.event as EventName
+    const eventName = event.event as EventName;
     if (!grouped.has(eventName)) {
-      grouped.set(eventName, [])
+      grouped.set(eventName, []);
     }
-    grouped.get(eventName)!.push(event)
+    grouped.get(eventName)!.push(event);
   }
 
-  return grouped
+  return grouped;
 }
 
 /**
@@ -379,47 +405,55 @@ export function getMostRecentEvent<T extends ContractEvent>(
   events: ContractEvent[],
   eventType: EventName
 ): T | null {
-  const filtered = filterEventsByType<T>(events, eventType)
-  const sorted = sortEventsByBlock(filtered, true)
-  return sorted[0] || null
+  const filtered = filterEventsByType<T>(events, eventType);
+  const sorted = sortEventsByBlock(filtered, true);
+  return sorted[0] || null;
 }
 
 /**
  * Create a singleton event manager instance
  */
-export const eventManager = new EventSubscriptionManager()
+export const eventManager = new EventSubscriptionManager();
 
 /**
  * Helper to subscribe to badge minting events
  */
-export function onBadgeMinted(listener: EventListener<BadgeMintedEvent>): () => void {
-  return eventManager.on(EVENT_NAMES.BADGE_MINTED, listener)
+export function onBadgeMinted(
+  listener: EventListener<BadgeMintedEvent>
+): () => void {
+  return eventManager.on(EVENT_NAMES.BADGE_MINTED, listener);
 }
 
 /**
  * Helper to subscribe to community creation events
  */
-export function onCommunityCreated(listener: EventListener<CommunityCreatedEvent>): () => void {
-  return eventManager.on(EVENT_NAMES.COMMUNITY_CREATED, listener)
+export function onCommunityCreated(
+  listener: EventListener<CommunityCreatedEvent>
+): () => void {
+  return eventManager.on(EVENT_NAMES.COMMUNITY_CREATED, listener);
 }
 
 /**
  * Helper to subscribe to batch minting events
  */
-export function onBatchBadgesMinted(listener: EventListener<BatchBadgesMintedEvent>): () => void {
-  return eventManager.on(EVENT_NAMES.BATCH_BADGES_MINTED, listener)
+export function onBatchBadgesMinted(
+  listener: EventListener<BatchBadgesMintedEvent>
+): () => void {
+  return eventManager.on(EVENT_NAMES.BATCH_BADGES_MINTED, listener);
 }
 
 /**
  * Helper to subscribe to template creation events
  */
-export function onTemplateCreated(listener: EventListener<TemplateCreatedEvent>): () => void {
-  return eventManager.on(EVENT_NAMES.TEMPLATE_CREATED, listener)
+export function onTemplateCreated(
+  listener: EventListener<TemplateCreatedEvent>
+): () => void {
+  return eventManager.on(EVENT_NAMES.TEMPLATE_CREATED, listener);
 }
 
 /**
  * Helper to subscribe to all events
  */
 export function onAnyEvent(listener: EventListener): () => void {
-  return eventManager.on('*', listener)
+  return eventManager.on('*', listener);
 }

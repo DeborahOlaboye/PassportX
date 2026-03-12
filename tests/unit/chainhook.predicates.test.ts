@@ -1,6 +1,9 @@
 // Unit tests for Chainhook predicates
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { PredicateEvaluator, PredicateBuilder } from '../src/utils/predicateEvaluator';
+import {
+  PredicateEvaluator,
+  PredicateBuilder,
+} from '../src/utils/predicateEvaluator';
 import { MockChainhookEventFactory } from '../src/utils/mockChainhookEvents';
 import { EventType, PredicateConfig } from '../src/types/chainhook';
 
@@ -39,7 +42,7 @@ describe('Predicate Logic', () => {
 
     it('should match event with matching function name', () => {
       const event = MockChainhookEventFactory.createContractCallEvent({
-        function: 'mint-badge'
+        function: 'mint-badge',
       });
       const predicate = new PredicateBuilder()
         .withId('test-3')
@@ -54,7 +57,7 @@ describe('Predicate Logic', () => {
 
     it('should not match event with different function name', () => {
       const event = MockChainhookEventFactory.createContractCallEvent({
-        function: 'mint-badge'
+        function: 'mint-badge',
       });
       const predicate = new PredicateBuilder()
         .withId('test-4')
@@ -70,7 +73,7 @@ describe('Predicate Logic', () => {
     it('should match event with matching sender address', () => {
       const senderAddress = 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG';
       const event = MockChainhookEventFactory.createSTXTransferEvent({
-        sender: senderAddress
+        sender: senderAddress,
       });
       const predicate = new PredicateBuilder()
         .withId('test-5')
@@ -85,7 +88,7 @@ describe('Predicate Logic', () => {
 
     it('should not match event with different sender address', () => {
       const event = MockChainhookEventFactory.createSTXTransferEvent({
-        sender: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG'
+        sender: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG',
       });
       const predicate = new PredicateBuilder()
         .withId('test-6')
@@ -100,7 +103,7 @@ describe('Predicate Logic', () => {
 
     it('should match event with minimum amount threshold', () => {
       const event = MockChainhookEventFactory.createSTXTransferEvent({
-        amount: BigInt(1000000)
+        amount: BigInt(1000000),
       });
       const predicate = new PredicateBuilder()
         .withId('test-7')
@@ -115,7 +118,7 @@ describe('Predicate Logic', () => {
 
     it('should not match event below minimum amount threshold', () => {
       const event = MockChainhookEventFactory.createSTXTransferEvent({
-        amount: BigInt(100000)
+        amount: BigInt(100000),
       });
       const predicate = new PredicateBuilder()
         .withId('test-8')
@@ -140,13 +143,13 @@ describe('Predicate Logic', () => {
         new PredicateBuilder()
           .withId('predicate-2')
           .withEventType(EventType.TX)
-          .build()
+          .build(),
       ];
 
       const results = evaluator.evaluateEvents(events, predicates);
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results.every(r => r.matched)).toBe(true);
+      expect(results.every((r) => r.matched)).toBe(true);
     });
 
     it('should skip disabled predicates', () => {
@@ -161,12 +164,12 @@ describe('Predicate Logic', () => {
           .withId('predicate-2')
           .withEventType(EventType.TX)
           .enabled(false)
-          .build()
+          .build(),
       ];
 
       const results = evaluator.evaluateEvents(events, predicates);
 
-      expect(results.every(r => r.predicateId !== 'predicate-2')).toBe(true);
+      expect(results.every((r) => r.predicateId !== 'predicate-2')).toBe(true);
     });
 
     it('should return empty array when no predicates match', () => {
@@ -175,7 +178,7 @@ describe('Predicate Logic', () => {
         new PredicateBuilder()
           .withId('predicate-1')
           .withEventType(EventType.BLOCK)
-          .build()
+          .build(),
       ];
 
       const results = evaluator.evaluateEvents([event], predicates);
@@ -206,13 +209,13 @@ describe('Predicate Logic', () => {
         eventType: EventType.TX,
         filters: {},
         enabled: true,
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
 
       const validation = PredicateEvaluator.validatePredicate(predicate);
 
       expect(validation.valid).toBe(false);
-      expect(validation.errors.some(e => e.includes('ID'))).toBe(true);
+      expect(validation.errors.some((e) => e.includes('ID'))).toBe(true);
     });
 
     it('should reject predicate without name', () => {
@@ -223,13 +226,13 @@ describe('Predicate Logic', () => {
         eventType: EventType.TX,
         filters: {},
         enabled: true,
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
 
       const validation = PredicateEvaluator.validatePredicate(predicate);
 
       expect(validation.valid).toBe(false);
-      expect(validation.errors.some(e => e.includes('name'))).toBe(true);
+      expect(validation.errors.some((e) => e.includes('name'))).toBe(true);
     });
 
     it('should reject predicate with invalid event type', () => {
@@ -240,13 +243,15 @@ describe('Predicate Logic', () => {
         eventType: 'invalid-type',
         filters: {},
         enabled: true,
-        createdAt: Date.now()
+        createdAt: Date.now(),
       };
 
       const validation = PredicateEvaluator.validatePredicate(predicate);
 
       expect(validation.valid).toBe(false);
-      expect(validation.errors.some(e => e.includes('event type'))).toBe(true);
+      expect(validation.errors.some((e) => e.includes('event type'))).toBe(
+        true
+      );
     });
   });
 
@@ -272,9 +277,7 @@ describe('Predicate Logic', () => {
 
     it('should throw error on invalid predicate build', () => {
       expect(() => {
-        new PredicateBuilder()
-          .withId('')
-          .build();
+        new PredicateBuilder().withId('').build();
       }).toThrow();
     });
   });

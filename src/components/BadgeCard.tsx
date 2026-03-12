@@ -1,51 +1,61 @@
-import { Award, Calendar, Tag, ShieldCheck, ExternalLink } from 'lucide-react'
-import ErrorBoundary from './ErrorBoundary'
-import { BadgeErrorFallback } from './FallbackUI'
+import { Award, Calendar, Tag, ShieldCheck, ExternalLink } from 'lucide-react';
+import ErrorBoundary from './ErrorBoundary';
+import { BadgeErrorFallback } from './FallbackUI';
 
 interface Badge {
-  id: number
-  name: string
-  description: string
-  community: string
-  level: number
-  category: string
-  timestamp: number
-  icon?: string
-  verified?: boolean
-  tokenId?: number
-  transactionId?: string
+  id: number;
+  name: string;
+  description: string;
+  community: string;
+  level: number;
+  category: string;
+  timestamp: number;
+  icon?: string;
+  verified?: boolean;
+  tokenId?: number;
+  transactionId?: string;
 }
 
 interface BadgeCardProps {
-  badge: Badge
-  showVerification?: boolean
+  badge: Badge;
+  showVerification?: boolean;
 }
 
 export default function BadgeCard(props: BadgeCardProps) {
   return (
-    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <BadgeErrorFallback error={error} reset={reset} />
+      )}
+    >
       <BadgeCardInner {...props} />
     </ErrorBoundary>
-  )
+  );
 }
 
 function BadgeCardInner({ badge, showVerification = true }: BadgeCardProps) {
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString()
-  }
+    return new Date(timestamp * 1000).toLocaleDateString();
+  };
 
   const getLevelColor = (level: number) => {
     switch (level) {
-      case 1: return 'bg-green-100 text-green-800'
-      case 2: return 'bg-blue-100 text-blue-800'
-      case 3: return 'bg-purple-100 text-purple-800'
-      case 4: return 'bg-orange-100 text-orange-800'
-      case 5: return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 1:
+        return 'bg-green-100 text-green-800';
+      case 2:
+        return 'bg-blue-100 text-blue-800';
+      case 3:
+        return 'bg-purple-100 text-purple-800';
+      case 4:
+        return 'bg-orange-100 text-orange-800';
+      case 5:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
-  const isVerified = badge.verified || (badge.tokenId && badge.transactionId)
+  const isVerified = badge.verified || (badge.tokenId && badge.transactionId);
 
   return (
     <div className="card hover:shadow-lg transition-shadow relative">
@@ -70,18 +80,20 @@ function BadgeCardInner({ badge, showVerification = true }: BadgeCardProps) {
           <div>
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               {badge.name}
-              {isVerified && (
-                <ShieldCheck className="w-4 h-4 text-green-600" />
-              )}
+              {isVerified && <ShieldCheck className="w-4 h-4 text-green-600" />}
             </h3>
             <p className="text-sm text-gray-600">{badge.community}</p>
           </div>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(badge.level)}`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(
+            badge.level
+          )}`}
+        >
           Level {badge.level}
         </span>
       </div>
-      
+
       <p className="text-gray-700 mb-4">{badge.description}</p>
 
       <div className="flex items-center justify-between text-sm text-gray-500">
@@ -109,5 +121,5 @@ function BadgeCardInner({ badge, showVerification = true }: BadgeCardProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

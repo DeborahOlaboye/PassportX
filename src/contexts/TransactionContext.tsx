@@ -5,19 +5,32 @@ import { Transaction, TransactionHistoryState } from '@/types/transaction';
 
 type TransactionAction =
   | { type: 'ADD_TRANSACTION'; payload: Omit<Transaction, 'id' | 'timestamp'> }
-  | { type: 'UPDATE_TRANSACTION_STATUS'; payload: { hash: string; status: Transaction['status']; details?: Partial<Transaction> } }
+  | {
+      type: 'UPDATE_TRANSACTION_STATUS';
+      payload: {
+        hash: string;
+        status: Transaction['status'];
+        details?: Partial<Transaction>;
+      };
+    }
   | { type: 'CLEAR_HISTORY' };
 
-const transactionReducer = (state: Transaction[], action: TransactionAction): Transaction[] => {
+const transactionReducer = (
+  state: Transaction[],
+  action: TransactionAction
+): Transaction[] => {
   switch (action.type) {
     case 'ADD_TRANSACTION':
-      return [{
-        ...action.payload,
-        id: `${action.payload.hash}-${Date.now()}`,
-        timestamp: Date.now(),
-      }, ...state];
+      return [
+        {
+          ...action.payload,
+          id: `${action.payload.hash}-${Date.now()}`,
+          timestamp: Date.now(),
+        },
+        ...state,
+      ];
     case 'UPDATE_TRANSACTION_STATUS':
-      return state.map(tx =>
+      return state.map((tx) =>
         tx.hash === action.payload.hash
           ? { ...tx, ...action.payload.details, status: action.payload.status }
           : tx
@@ -29,9 +42,15 @@ const transactionReducer = (state: Transaction[], action: TransactionAction): Tr
   }
 };
 
-const TransactionContext = createContext<TransactionHistoryState | undefined>(undefined);
+const TransactionContext = createContext<TransactionHistoryState | undefined>(
+  undefined
+);
 
-export function TransactionProvider({ children }: { children: React.ReactNode }) {
+export function TransactionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [transactions, dispatch] = useReducer(transactionReducer, []);
 
   // Load from localStorage on mount
@@ -54,12 +73,21 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
     localStorage.setItem('transactionHistory', JSON.stringify(transactions));
   }, [transactions]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'timestamp'>) => {
+  const addTransaction = (
+    transaction: Omit<Transaction, 'id' | 'timestamp'>
+  ) => {
     dispatch({ type: 'ADD_TRANSACTION', payload: transaction });
   };
 
-  const updateTransactionStatus = (hash: string, status: Transaction['status'], details?: Partial<Transaction>) => {
-    dispatch({ type: 'UPDATE_TRANSACTION_STATUS', payload: { hash, status, details } });
+  const updateTransactionStatus = (
+    hash: string,
+    status: Transaction['status'],
+    details?: Partial<Transaction>
+  ) => {
+    dispatch({
+      type: 'UPDATE_TRANSACTION_STATUS',
+      payload: { hash, status, details },
+    });
   };
 
   const clearHistory = () => {
@@ -67,12 +95,14 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   };
 
   return (
-    <TransactionContext.Provider value={{
-      transactions,
-      addTransaction,
-      updateTransactionStatus,
-      clearHistory,
-    }}>
+    <TransactionContext.Provider
+      value={{
+        transactions,
+        addTransaction,
+        updateTransactionStatus,
+        clearHistory,
+      }}
+    >
       {children}
     </TransactionContext.Provider>
   );
@@ -81,7 +111,9 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
 export function useTransactionHistory() {
   const context = useContext(TransactionContext);
   if (context === undefined) {
-    throw new Error('useTransactionHistory must be used within a TransactionProvider');
+    throw new Error(
+      'useTransactionHistory must be used within a TransactionProvider'
+    );
   }
   return context;
 }

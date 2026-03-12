@@ -30,7 +30,7 @@ router.post('/queue/process', async (req, res) => {
     const result = await RetryQueueService.processQueue();
     res.json({
       message: 'Retry queue processing completed',
-      ...result
+      ...result,
     });
   } catch (error) {
     console.error('Error processing retry queue:', error);
@@ -78,7 +78,7 @@ router.post('/queue/cleanup', async (req, res) => {
     const deletedCount = await RetryQueueService.cleanupOldItems(olderThanDays);
     res.json({
       message: 'Cleanup completed',
-      deletedCount
+      deletedCount,
     });
   } catch (error) {
     console.error('Error cleaning up retry queue:', error);
@@ -96,7 +96,9 @@ router.get('/dead-letter/stats', async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('Error fetching dead letter queue stats:', error);
-    res.status(500).json({ error: 'Failed to fetch dead letter queue statistics' });
+    res
+      .status(500)
+      .json({ error: 'Failed to fetch dead letter queue statistics' });
   }
 });
 
@@ -110,7 +112,7 @@ router.post('/dead-letter/recover', async (req, res) => {
     const result = await DeadLetterQueueService.recoverItems(filter);
     res.json({
       message: 'Recovery attempt completed',
-      ...result
+      ...result,
     });
   } catch (error) {
     console.error('Error recovering items:', error);
@@ -125,10 +127,12 @@ router.post('/dead-letter/recover', async (req, res) => {
 router.post('/dead-letter/archive', async (req, res) => {
   try {
     const { olderThanDays = 7 } = req.body;
-    const archivedCount = await DeadLetterQueueService.archiveOldItems(olderThanDays);
+    const archivedCount = await DeadLetterQueueService.archiveOldItems(
+      olderThanDays
+    );
     res.json({
       message: 'Archival completed',
-      archivedCount
+      archivedCount,
     });
   } catch (error) {
     console.error('Error archiving items:', error);
@@ -185,8 +189,12 @@ router.get('/metrics', async (req, res) => {
  */
 router.get('/metrics/success-rate', async (req, res) => {
   try {
-    const hoursBack = req.query.hours ? parseInt(req.query.hours as string) : 24;
-    const timeSeries = await RetryMetricsService.getSuccessRateTimeSeries(hoursBack);
+    const hoursBack = req.query.hours
+      ? parseInt(req.query.hours as string)
+      : 24;
+    const timeSeries = await RetryMetricsService.getSuccessRateTimeSeries(
+      hoursBack
+    );
     res.json(timeSeries);
   } catch (error) {
     console.error('Error fetching success rate:', error);
@@ -200,8 +208,11 @@ router.get('/metrics/success-rate', async (req, res) => {
  */
 router.get('/metrics/error-distribution', async (req, res) => {
   try {
-    const hoursBack = req.query.hours ? parseInt(req.query.hours as string) : 24;
-    const distribution = await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
+    const hoursBack = req.query.hours
+      ? parseInt(req.query.hours as string)
+      : 24;
+    const distribution =
+      await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
     res.json(distribution);
   } catch (error) {
     console.error('Error fetching error distribution:', error);
@@ -232,7 +243,10 @@ router.get('/metrics/export', async (req, res) => {
   try {
     const exportData = await RetryMetricsService.exportMetrics();
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="retry-metrics-${Date.now()}.json"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="retry-metrics-${Date.now()}.json"`
+    );
     res.send(exportData);
   } catch (error) {
     console.error('Error exporting metrics:', error);
@@ -261,7 +275,12 @@ router.get('/monitoring/health', async (req, res) => {
 router.get('/monitoring/alerts', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-    const severity = req.query.severity as 'low' | 'medium' | 'high' | 'critical' | undefined;
+    const severity = req.query.severity as
+      | 'low'
+      | 'medium'
+      | 'high'
+      | 'critical'
+      | undefined;
     const alerts = ErrorMonitoringService.getAlerts(limit, severity);
     res.json(alerts);
   } catch (error) {
@@ -294,7 +313,9 @@ router.get('/circuit-breakers', (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('Error fetching circuit breaker stats:', error);
-    res.status(500).json({ error: 'Failed to fetch circuit breaker statistics' });
+    res
+      .status(500)
+      .json({ error: 'Failed to fetch circuit breaker statistics' });
   }
 });
 

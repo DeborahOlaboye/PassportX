@@ -39,7 +39,7 @@ export class BadgeCategoryFilter {
   private static LEVEL_MAP: Record<number, BadgeLevel> = {
     1: 'beginner',
     2: 'intermediate',
-    3: 'advanced'
+    3: 'advanced',
   };
 
   // Valid categories
@@ -48,7 +48,7 @@ export class BadgeCategoryFilter {
     'event participation',
     'contribution',
     'leadership',
-    'learning milestone'
+    'learning milestone',
   ];
 
   static getInstance(): BadgeCategoryFilter {
@@ -81,7 +81,7 @@ export class BadgeCategoryFilter {
       return {
         category,
         level,
-        timestamp: metadata.timestamp || Date.now()
+        timestamp: metadata.timestamp || Date.now(),
       };
     } catch (error) {
       console.error('Error parsing badge metadata:', error);
@@ -128,15 +128,18 @@ export class BadgeCategoryFilter {
   /**
    * Create category-specific predicates for Chainhook
    */
-  createCategoryPredicates(basePredicate: any, categories: BadgeCategory[]): any[] {
-    return categories.map(category => ({
+  createCategoryPredicates(
+    basePredicate: any,
+    categories: BadgeCategory[]
+  ): any[] {
+    return categories.map((category) => ({
       ...basePredicate,
       name: `${basePredicate.name}-${category.replace(/\s+/g, '-')}`,
       if_this: {
         ...basePredicate.if_this,
         // Add category filtering logic here
         // This would require contract-specific filtering
-      }
+      },
     }));
   }
 
@@ -157,9 +160,11 @@ export class BadgeCategoryFilter {
   private normalizeCategory(category: string | number): BadgeCategory | null {
     if (typeof category === 'string') {
       const normalized = category.toLowerCase().trim();
-      return BadgeCategoryFilter.VALID_CATEGORIES.find(cat =>
-        cat.toLowerCase() === normalized
-      ) || null;
+      return (
+        BadgeCategoryFilter.VALID_CATEGORIES.find(
+          (cat) => cat.toLowerCase() === normalized
+        ) || null
+      );
     }
 
     // If numeric, map to category (assuming 1=skill, 2=event, etc.)
@@ -168,7 +173,7 @@ export class BadgeCategoryFilter {
       2: 'event participation',
       3: 'contribution',
       4: 'leadership',
-      5: 'learning milestone'
+      5: 'learning milestone',
     };
 
     return categoryMap[category] || null;
@@ -203,7 +208,7 @@ export class BadgeCategoryFilter {
       transactionHash: eventData.transactionHash || '',
       blockHeight: eventData.blockHeight || 0,
       timestamp: metadata.timestamp,
-      metadata: eventData
+      metadata: eventData,
     };
   }
 }

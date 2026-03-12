@@ -7,16 +7,19 @@ This directory contains the Clarity smart contracts for the PassportX achievemen
 ### Core Contracts
 
 #### passport-nft.clar
+
 - **Purpose**: SIP-12 compliant non-transferable NFT for achievement badges
 - **Features**: Soulbound badges, minting, ownership tracking
 - **Error Codes**: u100-u103
 
 #### badge-metadata.clar
+
 - **Purpose**: Manages badge metadata storage and templates
 - **Features**: Badge metadata, template management, batch operations
 - **Error Codes**: u100, u500-u501, u700-u702, u705
 
 #### badge-issuer.clar
+
 - **Purpose**: Badge creation and minting functionality
 - **Features**: Template creation, badge minting, batch minting, revocation
 - **Error Codes**: u100, u104, u204, u600-u601, u700-u702
@@ -24,11 +27,13 @@ This directory contains the Clarity smart contracts for the PassportX achievemen
 ### Management Contracts
 
 #### community-manager.clar
+
 - **Purpose**: Community and member management
 - **Features**: Community creation, membership, settings, ownership transfer
 - **Error Codes**: u100, u104, u300-u301, u304
 
 #### access-control.clar
+
 - **Purpose**: Centralized access control and permissions
 - **Features**: Role management, permission checks, global/community permissions
 - **Error Codes**: u100, u400-u401, u403, u405
@@ -36,6 +41,7 @@ This directory contains the Clarity smart contracts for the PassportX achievemen
 ### Utility Contracts
 
 #### error-codes.clar
+
 - **Purpose**: Centralized error code definitions
 - **Features**: Comprehensive error codes with descriptive comments
 - **Error Codes**: All error codes (u100-u799)
@@ -73,6 +79,7 @@ All events follow a consistent structure:
 ### Events by Contract
 
 #### badge-issuer.clar (7 events)
+
 - `badge-minted`: Single badge minted
 - `batch-badges-minted`: Multiple badges minted
 - `template-created`: Badge template created
@@ -82,6 +89,7 @@ All events follow a consistent structure:
 - `issuer-revoked`: Issuer permissions removed
 
 #### community-manager.clar (5 events)
+
 - `community-created`: New community created
 - `community-member-added`: Member joins community
 - `community-settings-updated`: Community settings changed
@@ -89,6 +97,7 @@ All events follow a consistent structure:
 - `community-ownership-transferred`: Ownership changes
 
 #### access-control.clar (6 events)
+
 - `global-permissions-updated`: User's global permissions changed
 - `community-permissions-updated`: Community permissions changed
 - `community-issuer-granted`: Community-specific issuer role granted
@@ -97,6 +106,7 @@ All events follow a consistent structure:
 - `user-unsuspended`: User account restored
 
 #### passport-nft.clar (1 event)
+
 - `passport-badge-minted`: NFT token minted
 
 ### Adding New Events
@@ -110,6 +120,7 @@ When adding new events:
 5. Update `docs/EVENTS.md`
 
 Example:
+
 ```clarity
 ;; In your public function
 (define-public (perform-action (param uint))
@@ -182,6 +193,7 @@ When adding new error codes:
 6. Add to `src/lib/constants/errorCodes.ts`
 
 Example:
+
 ```clarity
 ;; In error-codes.clar
 ;; ERR-NEW-ERROR (u210)

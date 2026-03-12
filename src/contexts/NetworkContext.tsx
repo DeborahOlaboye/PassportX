@@ -1,7 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { NetworkType, NetworkConfig, NetworkState, NETWORK_CONFIGS } from '@/types/network';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+import {
+  NetworkType,
+  NetworkConfig,
+  NetworkState,
+  NETWORK_CONFIGS,
+} from '@/types/network';
 
 const NetworkContext = createContext<NetworkState | undefined>(undefined);
 
@@ -19,34 +30,39 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const switchNetwork = useCallback(async (network: NetworkType) => {
-    if (network === currentNetwork) return;
+  const switchNetwork = useCallback(
+    async (network: NetworkType) => {
+      if (network === currentNetwork) return;
 
-    setIsSwitching(true);
+      setIsSwitching(true);
 
-    try {
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEY, network);
+      try {
+        // Save to localStorage
+        localStorage.setItem(STORAGE_KEY, network);
 
-      // Update current network
-      setCurrentNetwork(network);
+        // Update current network
+        setCurrentNetwork(network);
 
-      // Reset application state
-      await resetApplicationState();
+        // Reset application state
+        await resetApplicationState();
 
-      // Dispatch custom event for other components to listen to
-      window.dispatchEvent(new CustomEvent('networkChanged', {
-        detail: { network, config: NETWORK_CONFIGS[network] }
-      }));
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(
+          new CustomEvent('networkChanged', {
+            detail: { network, config: NETWORK_CONFIGS[network] },
+          })
+        );
 
-      console.log(`Switched to ${NETWORK_CONFIGS[network].name}`);
-    } catch (error) {
-      console.error('Failed to switch network:', error);
-      throw error;
-    } finally {
-      setIsSwitching(false);
-    }
-  }, [currentNetwork]);
+        console.log(`Switched to ${NETWORK_CONFIGS[network].name}`);
+      } catch (error) {
+        console.error('Failed to switch network:', error);
+        throw error;
+      } finally {
+        setIsSwitching(false);
+      }
+    },
+    [currentNetwork]
+  );
 
   const resetApplicationState = async () => {
     // Clear transaction history
@@ -59,26 +75,31 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     // This would integrate with wallet context
 
     // Clear any network-specific caches
-    const keysToRemove = Object.keys(localStorage).filter(key =>
-      key.startsWith('cache-') || key.startsWith('api-cache-')
+    const keysToRemove = Object.keys(localStorage).filter(
+      (key) => key.startsWith('cache-') || key.startsWith('api-cache-')
     );
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
   };
 
-  const getNetworkConfig = useCallback((network: NetworkType): NetworkConfig => {
-    return NETWORK_CONFIGS[network];
-  }, []);
+  const getNetworkConfig = useCallback(
+    (network: NetworkType): NetworkConfig => {
+      return NETWORK_CONFIGS[network];
+    },
+    []
+  );
 
   const config = NETWORK_CONFIGS[currentNetwork];
 
   return (
-    <NetworkContext.Provider value={{
-      currentNetwork,
-      config,
-      isSwitching,
-      switchNetwork,
-      getNetworkConfig,
-    }}>
+    <NetworkContext.Provider
+      value={{
+        currentNetwork,
+        config,
+        isSwitching,
+        switchNetwork,
+        getNetworkConfig,
+      }}
+    >
       {children}
     </NetworkContext.Provider>
   );
@@ -93,15 +114,23 @@ export function useNetwork() {
 }
 
 // Hook for components that need to react to network changes
-export function useNetworkChange(callback: (network: NetworkType, config: NetworkConfig) => void) {
+export function useNetworkChange(
+  callback: (network: NetworkType, config: NetworkConfig) => void
+) {
   useEffect(() => {
     const handleNetworkChange = (event: CustomEvent) => {
       callback(event.detail.network, event.detail.config);
     };
 
-    window.addEventListener('networkChanged', handleNetworkChange as EventListener);
+    window.addEventListener(
+      'networkChanged',
+      handleNetworkChange as EventListener
+    );
     return () => {
-      window.removeEventListener('networkChanged', handleNetworkChange as EventListener);
+      window.removeEventListener(
+        'networkChanged',
+        handleNetworkChange as EventListener
+      );
     };
   }, [callback]);
 }

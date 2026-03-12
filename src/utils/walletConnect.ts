@@ -27,13 +27,21 @@ export function getWalletConnectConfig(): WalletConnectionConfig {
 
   return {
     projectId,
-    relayUrl: process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL || DEFAULT_RELAY_URL,
+    relayUrl:
+      process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL || DEFAULT_RELAY_URL,
     metadata: {
       name: 'PassportX',
       description: 'Achievement Passport on Stacks Blockchain',
-      url: typeof window !== 'undefined' ? window.location.origin : 'https://passportx.io',
+      url:
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : 'https://passportx.io',
       icons: [
-        `${typeof window !== 'undefined' ? window.location.origin : 'https://passportx.io'}/logo.png`,
+        `${
+          typeof window !== 'undefined'
+            ? window.location.origin
+            : 'https://passportx.io'
+        }/logo.png`,
       ],
     },
   };
@@ -95,17 +103,25 @@ export function isWalletConnectUri(uri: string): boolean {
   return /^wc:.+@2\?/.test(uri);
 }
 
-export async function saveSessionToStorage(sessionKey: string, sessionData: unknown): Promise<void> {
+export async function saveSessionToStorage(
+  sessionKey: string,
+  sessionData: unknown
+): Promise<void> {
   if (typeof window === 'undefined') return;
 
   try {
-    localStorage.setItem(`walletconnect_session_${sessionKey}`, JSON.stringify(sessionData));
+    localStorage.setItem(
+      `walletconnect_session_${sessionKey}`,
+      JSON.stringify(sessionData)
+    );
   } catch (error: unknown) {
     console.error('Failed to save session to storage:', error);
   }
 }
 
-export async function loadSessionFromStorage(sessionKey: string): Promise<unknown | null> {
+export async function loadSessionFromStorage(
+  sessionKey: string
+): Promise<unknown | null> {
   if (typeof window === 'undefined') return null;
 
   try {
@@ -117,7 +133,9 @@ export async function loadSessionFromStorage(sessionKey: string): Promise<unknow
   }
 }
 
-export async function clearSessionFromStorage(sessionKey: string): Promise<void> {
+export async function clearSessionFromStorage(
+  sessionKey: string
+): Promise<void> {
   if (typeof window === 'undefined') return;
 
   try {

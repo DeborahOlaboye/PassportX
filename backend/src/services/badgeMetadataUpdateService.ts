@@ -34,30 +34,43 @@ export class BadgeMetadataUpdateService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[MetadataUpdateService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[MetadataUpdateService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[MetadataUpdateService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[MetadataUpdateService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[MetadataUpdateService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[MetadataUpdateService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[MetadataUpdateService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[MetadataUpdateService] ${msg}`, ...args),
     };
   }
 
-  async processMetadataUpdate(event: BadgeMetadataUpdateEvent): Promise<MetadataUpdateResult> {
+  async processMetadataUpdate(
+    event: BadgeMetadataUpdateEvent
+  ): Promise<MetadataUpdateResult> {
     const startTime = Date.now();
 
     try {
       if (!event.badgeId || !event.transactionHash) {
-        throw new Error('Invalid metadata update event: missing required fields');
+        throw new Error(
+          'Invalid metadata update event: missing required fields'
+        );
       }
 
-      this.logger.info(`Processing metadata update for badge: ${event.badgeId}`, {
-        blockHeight: event.blockHeight,
-        transactionHash: event.transactionHash
-      });
+      this.logger.info(
+        `Processing metadata update for badge: ${event.badgeId}`,
+        {
+          blockHeight: event.blockHeight,
+          transactionHash: event.transactionHash,
+        }
+      );
 
       const changeResult = this.changeDetector.detectChanges(event);
       const impactLevel = this.changeDetector.getImpactLevel(changeResult);
 
-      this.logger.debug(`Detected ${changeResult.changeCount} changes with impact level: ${impactLevel}`);
+      this.logger.debug(
+        `Detected ${changeResult.changeCount} changes with impact level: ${impactLevel}`
+      );
 
       let invalidated = false;
       let uiNotified = false;
@@ -68,7 +81,7 @@ export class BadgeMetadataUpdateService {
           changedFields: changeResult.changedFields,
           timestamp: event.timestamp || Date.now(),
           transactionHash: event.transactionHash,
-          blockHeight: event.blockHeight || 0
+          blockHeight: event.blockHeight || 0,
         });
         invalidated = true;
       }
@@ -79,7 +92,7 @@ export class BadgeMetadataUpdateService {
           changeResult.changedFields,
           {
             transactionHash: event.transactionHash,
-            blockHeight: event.blockHeight
+            blockHeight: event.blockHeight,
           }
         );
         uiNotified = true;
@@ -93,23 +106,24 @@ export class BadgeMetadataUpdateService {
         invalidated,
         uiNotified,
         changeCount: changeResult.changeCount,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       this.logger.info(`Metadata update processed successfully`, {
         badgeId: event.badgeId,
         changes: changeResult.changeCount,
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
       });
 
       return result;
     } catch (error) {
       this.errorCount++;
 
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Error processing metadata update: ${errorMessage}`, {
         badgeId: event.badgeId,
-        error
+        error,
       });
 
       return {
@@ -119,12 +133,14 @@ export class BadgeMetadataUpdateService {
         uiNotified: false,
         changeCount: 0,
         timestamp: Date.now(),
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
 
-  async processBatchMetadataUpdates(events: BadgeMetadataUpdateEvent[]): Promise<MetadataUpdateResult[]> {
+  async processBatchMetadataUpdates(
+    events: BadgeMetadataUpdateEvent[]
+  ): Promise<MetadataUpdateResult[]> {
     this.logger.info(`Processing batch of ${events.length} metadata updates`);
 
     const results: MetadataUpdateResult[] = [];
@@ -134,8 +150,10 @@ export class BadgeMetadataUpdateService {
       results.push(result);
     }
 
-    const successCount = results.filter(r => r.success).length;
-    this.logger.info(`Batch processing complete: ${successCount}/${events.length} successful`);
+    const successCount = results.filter((r) => r.success).length;
+    this.logger.info(
+      `Batch processing complete: ${successCount}/${events.length} successful`
+    );
 
     return results;
   }
@@ -144,11 +162,15 @@ export class BadgeMetadataUpdateService {
     return {
       processedCount: this.processedCount,
       errorCount: this.errorCount,
-      successRate: this.processedCount > 0 
-        ? ((this.processedCount - this.errorCount) / this.processedCount * 100).toFixed(2) + '%'
-        : '0%',
+      successRate:
+        this.processedCount > 0
+          ? (
+              ((this.processedCount - this.errorCount) / this.processedCount) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
       cacheInvalidatorMetrics: this.cacheInvalidator.getMetrics(),
-      uiRefreshMetrics: this.uiRefreshService.getMetrics()
+      uiRefreshMetrics: this.uiRefreshService.getMetrics(),
     };
   }
 

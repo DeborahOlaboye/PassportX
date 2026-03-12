@@ -39,7 +39,7 @@ export class CacheInvalidationIntegration {
       enableDetailedLogging: config.enableDetailedLogging ?? false,
       batchSize: config.batchSize ?? 10,
       batchTimeout: config.batchTimeout ?? 5000,
-      ...config
+      ...config,
     };
 
     this.logger = logger || this.getDefaultLogger();
@@ -47,10 +47,14 @@ export class CacheInvalidationIntegration {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CacheInvalidationIntegration] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CacheInvalidationIntegration] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CacheInvalidationIntegration] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CacheInvalidationIntegration] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CacheInvalidationIntegration] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CacheInvalidationIntegration] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CacheInvalidationIntegration] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CacheInvalidationIntegration] ${msg}`, ...args),
     };
   }
 
@@ -102,22 +106,28 @@ export class CacheInvalidationIntegration {
       );
 
       this.isInitialized = true;
-      this.logger.info('Cache invalidation integration initialized successfully');
-
+      this.logger.info(
+        'Cache invalidation integration initialized successfully'
+      );
     } catch (error) {
-      this.logger.error('Failed to initialize cache invalidation integration:', error);
+      this.logger.error(
+        'Failed to initialize cache invalidation integration:',
+        error
+      );
       throw error;
     }
   }
 
-  private async handleCacheInvalidationEvent(event: ChainhookEventPayload): Promise<void> {
+  private async handleCacheInvalidationEvent(
+    event: ChainhookEventPayload
+  ): Promise<void> {
     const startTime = Date.now();
 
     try {
       if (this.config.enableDetailedLogging) {
         this.logger.debug('Processing cache invalidation event', {
           blockHeight: event.block_identifier?.index,
-          transactionCount: event.transactions?.length
+          transactionCount: event.transactions?.length,
         });
       }
 
@@ -126,9 +136,10 @@ export class CacheInvalidationIntegration {
 
       if (this.config.enablePerformanceMonitoring && this.performanceMonitor) {
         const processingTime = Date.now() - startTime;
-        this.logger.debug(`Cache invalidation processing completed in ${processingTime}ms`);
+        this.logger.debug(
+          `Cache invalidation processing completed in ${processingTime}ms`
+        );
       }
-
     } catch (error) {
       this.logger.error('Error handling cache invalidation event:', error);
 
@@ -138,7 +149,9 @@ export class CacheInvalidationIntegration {
     }
   }
 
-  private async handleBadgeCacheEvent(event: ChainhookEventPayload): Promise<void> {
+  private async handleBadgeCacheEvent(
+    event: ChainhookEventPayload
+  ): Promise<void> {
     try {
       // Specific handling for badge-related events
       if (this.isBadgeMintEvent(event)) {
@@ -148,58 +161,78 @@ export class CacheInvalidationIntegration {
       } else if (this.isBadgeRevocationEvent(event)) {
         await this.invalidationMapper.mapAndInvalidate(event);
       }
-
     } catch (error) {
       this.logger.error('Error handling badge cache event:', error);
     }
   }
 
-  private async handleCommunityCacheEvent(event: ChainhookEventPayload): Promise<void> {
+  private async handleCommunityCacheEvent(
+    event: ChainhookEventPayload
+  ): Promise<void> {
     try {
       // Specific handling for community-related events
       if (this.isCommunityCreationEvent(event)) {
         await this.invalidationMapper.mapAndInvalidate(event);
       }
-
     } catch (error) {
       this.logger.error('Error handling community cache event:', error);
     }
   }
 
   private isBadgeMintEvent(event: ChainhookEventPayload): boolean {
-    return event.transactions?.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        ['mint', 'mint-badge', 'nft-mint'].includes(op.contract_call?.method || '')
-      )
-    ) || false;
+    return (
+      event.transactions?.some((tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            ['mint', 'mint-badge', 'nft-mint'].includes(
+              op.contract_call?.method || ''
+            )
+        )
+      ) || false
+    );
   }
 
   private isBadgeMetadataEvent(event: ChainhookEventPayload): boolean {
-    return event.transactions?.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        ['update-metadata', 'update-badge', 'set-metadata'].includes(op.contract_call?.method || '')
-      )
-    ) || false;
+    return (
+      event.transactions?.some((tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            ['update-metadata', 'update-badge', 'set-metadata'].includes(
+              op.contract_call?.method || ''
+            )
+        )
+      ) || false
+    );
   }
 
   private isBadgeRevocationEvent(event: ChainhookEventPayload): boolean {
-    return event.transactions?.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        ['revoke', 'revoke-badge', 'burn'].includes(op.contract_call?.method || '')
-      )
-    ) || false;
+    return (
+      event.transactions?.some((tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            ['revoke', 'revoke-badge', 'burn'].includes(
+              op.contract_call?.method || ''
+            )
+        )
+      ) || false
+    );
   }
 
   private isCommunityCreationEvent(event: ChainhookEventPayload): boolean {
-    return event.transactions?.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        ['create-community', 'new-community'].includes(op.contract_call?.method || '')
-      )
-    ) || false;
+    return (
+      event.transactions?.some((tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            ['create-community', 'new-community'].includes(
+              op.contract_call?.method || ''
+            )
+        )
+      ) || false
+    );
   }
 
   async processEvent(event: ChainhookEventPayload): Promise<void> {
@@ -219,7 +252,7 @@ export class CacheInvalidationIntegration {
     const batches = this.chunkArray(events, this.config.batchSize);
 
     for (const batch of batches) {
-      const batchPromises = batch.map(event => this.processEvent(event));
+      const batchPromises = batch.map((event) => this.processEvent(event));
 
       try {
         await Promise.allSettled(batchPromises);
@@ -243,21 +276,21 @@ export class CacheInvalidationIntegration {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   getMetrics(): any {
     if (!this.performanceMonitor) {
       return {
         integrationEnabled: this.isInitialized,
-        performanceMonitoringEnabled: false
+        performanceMonitoringEnabled: false,
       };
     }
 
     return {
       integrationEnabled: this.isInitialized,
       performanceMonitoringEnabled: true,
-      ...this.performanceMonitor.getPerformanceMetrics()
+      ...this.performanceMonitor.getPerformanceMetrics(),
     };
   }
 
@@ -265,13 +298,13 @@ export class CacheInvalidationIntegration {
     if (!this.performanceMonitor) {
       return {
         status: this.isInitialized ? 'healthy' : 'not_initialized',
-        integrationEnabled: this.isInitialized
+        integrationEnabled: this.isInitialized,
       };
     }
 
     return {
       integrationEnabled: this.isInitialized,
-      ...this.performanceMonitor.getHealthStatus()
+      ...this.performanceMonitor.getHealthStatus(),
     };
   }
 
@@ -288,7 +321,10 @@ export class CacheInvalidationIntegration {
   // Configuration methods
   updateConfig(newConfig: Partial<CacheInvalidationIntegrationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.logger.info('Cache invalidation integration config updated', this.config);
+    this.logger.info(
+      'Cache invalidation integration config updated',
+      this.config
+    );
   }
 
   getConfig(): CacheInvalidationIntegrationConfig {
@@ -296,7 +332,10 @@ export class CacheInvalidationIntegration {
   }
 
   // Manual invalidation methods for testing/admin purposes
-  async invalidateCacheForEventType(eventType: string, eventData: any): Promise<void> {
+  async invalidateCacheForEventType(
+    eventType: string,
+    eventData: any
+  ): Promise<void> {
     if (!this.isInitialized) {
       throw new Error('Cache invalidation integration not initialized');
     }
