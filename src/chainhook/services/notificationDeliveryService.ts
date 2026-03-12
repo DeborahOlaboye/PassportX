@@ -6,7 +6,7 @@ export interface StoredNotification {
   type: string;
   title: string;
   message: string;
-  data: any;
+  data: Record<string, unknown>;
   read: boolean;
   createdAt: string;
   updatedAt: string;
@@ -27,7 +27,7 @@ export class NotificationDeliveryService {
         type: notification.type,
         title: notification.title,
         message: notification.message,
-        data: notification.data,
+        data: notification.data as Record<string, unknown>,
         read: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
