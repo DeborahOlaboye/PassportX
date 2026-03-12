@@ -29,7 +29,7 @@ export interface ConnectionConfig {
 export class ChainhookConnectionRecovery {
   private state: ConnectionState = {
     isConnected: false,
-    reconnectAttempts: 0
+    reconnectAttempts: 0,
   };
 
   private backoffService: ExponentialBackoffService;
@@ -50,7 +50,7 @@ export class ChainhookConnectionRecovery {
       maxDelayMs: 60000,
       multiplier: 2,
       jitterFactor: 0.1,
-      maxAttempts: config.maxReconnectAttempts
+      maxAttempts: config.maxReconnectAttempts,
     });
     this.circuitBreaker = new CircuitBreaker('chainhook-connection', {
       failureThreshold: 5,
@@ -58,17 +58,21 @@ export class ChainhookConnectionRecovery {
       timeout: 60000,
       volumeThreshold: 3,
       errorThresholdPercentage: 60,
-      monitoringPeriod: 60000
+      monitoringPeriod: 60000,
     });
     this.errorMonitoring = ErrorMonitoringService;
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
@@ -106,7 +110,9 @@ export class ChainhookConnectionRecovery {
    * Actual connection attempt logic
    */
   private async attemptConnection(): Promise<void> {
-    this.logger.info(`Attempting to connect to Chainhook node at ${this.config.host}:${this.config.port}`);
+    this.logger.info(
+      `Attempting to connect to Chainhook node at ${this.config.host}:${this.config.port}`
+    );
 
     // Simulate connection attempt with timeout
     await new Promise<void>((resolve, reject) => {
@@ -144,7 +150,7 @@ export class ChainhookConnectionRecovery {
       lastConnected: new Date(),
       reconnectAttempts: 0,
       lastError: undefined,
-      nextReconnectAt: undefined
+      nextReconnectAt: undefined,
     };
 
     this.logger.info('Successfully connected to Chainhook node');
@@ -172,13 +178,13 @@ export class ChainhookConnectionRecovery {
       {
         attempts: this.state.reconnectAttempts,
         host: this.config.host,
-        port: this.config.port
+        port: this.config.port,
       }
     );
 
     // Call disconnection callback if provided
     if (this.disconnectionCallback) {
-      this.disconnectionCallback(error).catch(err => {
+      this.disconnectionCallback(error).catch((err) => {
         this.logger.error('Error in disconnection callback', err);
       });
     }
@@ -196,17 +202,21 @@ export class ChainhookConnectionRecovery {
       clearTimeout(this.reconnectTimeout);
     }
 
-    const backoff = this.backoffService.calculateBackoff(this.state.reconnectAttempts);
+    const backoff = this.backoffService.calculateBackoff(
+      this.state.reconnectAttempts
+    );
 
     if (!backoff.shouldRetry) {
-      this.logger.error('Max reconnection attempts reached. Connection recovery stopped.');
+      this.logger.error(
+        'Max reconnection attempts reached. Connection recovery stopped.'
+      );
       this.errorMonitoring.recordError(
         'chainhook_connection_exhausted',
         'Maximum reconnection attempts exceeded',
         'ChainhookConnectionRecovery',
         {
           attempts: this.state.reconnectAttempts,
-          maxAttempts: this.config.maxReconnectAttempts
+          maxAttempts: this.config.maxReconnectAttempts,
         }
       );
       return;
@@ -214,7 +224,9 @@ export class ChainhookConnectionRecovery {
 
     this.state.nextReconnectAt = backoff.nextRetryAt;
 
-    this.logger.info(`Scheduling reconnection attempt in ${backoff.delayMs}ms (attempt ${this.state.reconnectAttempts}/${this.config.maxReconnectAttempts})`);
+    this.logger.info(
+      `Scheduling reconnection attempt in ${backoff.delayMs}ms (attempt ${this.state.reconnectAttempts}/${this.config.maxReconnectAttempts})`
+    );
 
     this.reconnectTimeout = setTimeout(() => {
       this.reconnect();
@@ -303,7 +315,7 @@ export class ChainhookConnectionRecovery {
 
     // Call disconnection callback
     if (this.disconnectionCallback) {
-      this.disconnectionCallback(error).catch(err => {
+      this.disconnectionCallback(error).catch((err) => {
         this.logger.error('Error in disconnection callback', err);
       });
     }

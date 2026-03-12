@@ -68,7 +68,9 @@ export function validateServerConfig(config: ServerOptions): boolean {
 
   if (config.https) {
     if (!config.sslCertPath || !config.sslKeyPath) {
-      throw new Error('SSL certificate and key paths are required when HTTPS is enabled');
+      throw new Error(
+        'SSL certificate and key paths are required when HTTPS is enabled'
+      );
     }
   }
 

@@ -1,68 +1,70 @@
-import { useState, useEffect, useCallback } from 'react'
-import { io, Socket } from 'socket.io-client'
+import { useState, useEffect } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 interface UseActivityFeedReturn {
-  socket: Socket | null
-  isConnected: boolean
-  error: string | null
+  socket: Socket | null;
+  isConnected: boolean;
+  error: string | null;
 }
 
 export function useActivityFeed(userId: string): UseActivityFeedReturn {
-  const [socket, setSocket] = useState<Socket | null>(null)
-  const [isConnected, setIsConnected] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) {
-      setError('User ID is required')
-      return
+      setError('User ID is required');
+      return;
     }
 
     try {
-      const socketUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
-      const token = localStorage.getItem('auth_token') || ''
+      const socketUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('auth_token') || '';
 
       if (!token) {
-        setError('Authentication token not found')
-        return
+        setError('Authentication token not found');
+        return;
       }
 
       const newSocket = io(socketUrl, {
         auth: {
-          token
+          token,
         },
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5
-      })
+        reconnectionAttempts: 5,
+      });
 
       newSocket.on('connect', () => {
-        setIsConnected(true)
-        setError(null)
-        newSocket.emit('activity:subscribe', { userId })
-      })
+        setIsConnected(true);
+        setError(null);
+        newSocket.emit('activity:subscribe', { userId });
+      });
 
       newSocket.on('disconnect', () => {
-        setIsConnected(false)
-      })
+        setIsConnected(false);
+      });
 
       newSocket.on('connect_error', (err: Error) => {
-        setError(err.message)
-        setIsConnected(false)
-      })
+        setError(err.message);
+        setIsConnected(false);
+      });
 
-      setSocket(newSocket)
+      setSocket(newSocket);
 
       return () => {
-        newSocket.disconnect()
-      }
+        newSocket.disconnect();
+      };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize socket'
-      setError(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to initialize socket';
+      setError(errorMessage);
     }
-  }, [userId])
+  }, [userId]);
 
-  return { socket, isConnected, error }
+  return { socket, isConnected, error };
 }

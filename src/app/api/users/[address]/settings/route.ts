@@ -13,15 +13,18 @@ export async function PUT(
     const cookie = request.headers.get('cookie');
     const authHeader = request.headers.get('authorization');
 
-    const response = await fetch(`${BACKEND_URL}/api/users/settings/${address}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(cookie && { Cookie: cookie }),
-        ...(authHeader && { Authorization: authHeader }),
-      },
-      body: JSON.stringify(body),
-    });
+    const response = await fetch(
+      `${BACKEND_URL}/api/users/settings/${address}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cookie && { Cookie: cookie }),
+          ...(authHeader && { Authorization: authHeader }),
+        },
+        body: JSON.stringify(body),
+      }
+    );
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });

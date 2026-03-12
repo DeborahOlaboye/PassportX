@@ -39,7 +39,8 @@ export const requireSignatureFields = (
   if (!signature || typeof signature !== 'string') {
     res.status(400).json({
       success: false,
-      message: 'signature is required — sign the message with your Stacks wallet',
+      message:
+        'signature is required — sign the message with your Stacks wallet',
       code: 'MISSING_SIGNATURE',
     });
     return;
@@ -59,7 +60,8 @@ export const requireSignatureFields = (
   if (signature.length !== 130 || !/^[0-9a-fA-F]+$/.test(signature)) {
     res.status(400).json({
       success: false,
-      message: 'Signature must be a 130-character hex string (65-byte RSV format)',
+      message:
+        'Signature must be a 130-character hex string (65-byte RSV format)',
       code: 'INVALID_SIGNATURE_FORMAT',
     });
     return;
@@ -84,7 +86,8 @@ export const requireNonceInMessage = (
 
   if (!noncePattern.test(message)) {
     logger.warn('Auth message missing or malformed nonce', {
-      messagePreview: typeof message === 'string' ? message.slice(0, 80) : message,
+      messagePreview:
+        typeof message === 'string' ? message.slice(0, 80) : message,
     });
     res.status(400).json({
       success: false,

@@ -6,10 +6,8 @@ import {
   Smartphone,
   Bell,
   Shield,
-  Clock,
-  Wifi,
   Save,
-  RotateCcw
+  RotateCcw,
 } from 'lucide-react';
 
 interface MobileWalletSettings {
@@ -43,7 +41,8 @@ const WALLET_OPTIONS = [
 ];
 
 export default function MobileWalletSettingsComponent() {
-  const [settings, setSettings] = useState<MobileWalletSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] =
+    useState<MobileWalletSettings>(DEFAULT_SETTINGS);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -67,13 +66,16 @@ export default function MobileWalletSettingsComponent() {
       try {
         const parsed = JSON.parse(stored);
         const currentSettings = { ...DEFAULT_SETTINGS, ...parsed };
-        const changed = JSON.stringify(settings) !== JSON.stringify(currentSettings);
+        const changed =
+          JSON.stringify(settings) !== JSON.stringify(currentSettings);
         setHasChanges(changed);
       } catch (error) {
         setHasChanges(true);
       }
     } else {
-      setHasChanges(JSON.stringify(settings) !== JSON.stringify(DEFAULT_SETTINGS));
+      setHasChanges(
+        JSON.stringify(settings) !== JSON.stringify(DEFAULT_SETTINGS)
+      );
     }
   }, [settings]);
 
@@ -81,7 +83,7 @@ export default function MobileWalletSettingsComponent() {
     key: K,
     value: MobileWalletSettings[K]
   ) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
@@ -99,7 +101,9 @@ export default function MobileWalletSettingsComponent() {
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset all settings to default?')) {
+    if (
+      window.confirm('Are you sure you want to reset all settings to default?')
+    ) {
       setSettings(DEFAULT_SETTINGS);
       localStorage.removeItem('mobileWalletSettings');
       setHasChanges(false);
@@ -108,7 +112,7 @@ export default function MobileWalletSettingsComponent() {
 
   const toggleWalletPreference = (walletId: 'xverse' | 'hiro' | 'leather') => {
     const newPreferred = settings.preferredWallets.includes(walletId)
-      ? settings.preferredWallets.filter(id => id !== walletId)
+      ? settings.preferredWallets.filter((id) => id !== walletId)
       : [...settings.preferredWallets, walletId];
     updateSetting('preferredWallets', newPreferred);
   };
@@ -156,14 +160,20 @@ export default function MobileWalletSettingsComponent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <label className="font-medium">Auto-connect on app launch</label>
-                <p className="text-sm text-gray-600">Automatically attempt to connect to your last used wallet</p>
+                <label className="font-medium">
+                  Auto-connect on app launch
+                </label>
+                <p className="text-sm text-gray-600">
+                  Automatically attempt to connect to your last used wallet
+                </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={settings.autoConnect}
-                  onChange={(e) => updateSetting('autoConnect', e.target.checked)}
+                  onChange={(e) =>
+                    updateSetting('autoConnect', e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -173,11 +183,15 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Connection timeout</label>
-                <p className="text-sm text-gray-600">Maximum time to wait for wallet connection</p>
+                <p className="text-sm text-gray-600">
+                  Maximum time to wait for wallet connection
+                </p>
               </div>
               <select
                 value={settings.connectionTimeout}
-                onChange={(e) => updateSetting('connectionTimeout', parseInt(e.target.value))}
+                onChange={(e) =>
+                  updateSetting('connectionTimeout', parseInt(e.target.value))
+                }
                 className="px-3 py-1 border border-gray-300 rounded-md text-sm"
               >
                 <option value={60}>1 minute</option>
@@ -190,11 +204,15 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Maximum retry attempts</label>
-                <p className="text-sm text-gray-600">Number of times to retry failed connections</p>
+                <p className="text-sm text-gray-600">
+                  Number of times to retry failed connections
+                </p>
               </div>
               <select
                 value={settings.maxRetryAttempts}
-                onChange={(e) => updateSetting('maxRetryAttempts', parseInt(e.target.value))}
+                onChange={(e) =>
+                  updateSetting('maxRetryAttempts', parseInt(e.target.value))
+                }
                 className="px-3 py-1 border border-gray-300 rounded-md text-sm"
               >
                 <option value={1}>1 attempt</option>
@@ -217,13 +235,17 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Connection notifications</label>
-                <p className="text-sm text-gray-600">Show notifications for connection status changes</p>
+                <p className="text-sm text-gray-600">
+                  Show notifications for connection status changes
+                </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={settings.enableNotifications}
-                  onChange={(e) => updateSetting('enableNotifications', e.target.checked)}
+                  onChange={(e) =>
+                    updateSetting('enableNotifications', e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -243,13 +265,17 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Haptic feedback</label>
-                <p className="text-sm text-gray-600">Vibrate device on connection events</p>
+                <p className="text-sm text-gray-600">
+                  Vibrate device on connection events
+                </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={settings.enableHapticFeedback}
-                  onChange={(e) => updateSetting('enableHapticFeedback', e.target.checked)}
+                  onChange={(e) =>
+                    updateSetting('enableHapticFeedback', e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -259,13 +285,17 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Biometric authentication</label>
-                <p className="text-sm text-gray-600">Use fingerprint/face ID for wallet access</p>
+                <p className="text-sm text-gray-600">
+                  Use fingerprint/face ID for wallet access
+                </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={settings.enableBiometricAuth}
-                  onChange={(e) => updateSetting('enableBiometricAuth', e.target.checked)}
+                  onChange={(e) =>
+                    updateSetting('enableBiometricAuth', e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -285,13 +315,17 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Analytics tracking</label>
-                <p className="text-sm text-gray-600">Help improve the app by sharing usage data</p>
+                <p className="text-sm text-gray-600">
+                  Help improve the app by sharing usage data
+                </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={settings.enableAnalytics}
-                  onChange={(e) => updateSetting('enableAnalytics', e.target.checked)}
+                  onChange={(e) =>
+                    updateSetting('enableAnalytics', e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -301,13 +335,17 @@ export default function MobileWalletSettingsComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <label className="font-medium">Offline mode</label>
-                <p className="text-sm text-gray-600">Allow limited functionality without internet</p>
+                <p className="text-sm text-gray-600">
+                  Allow limited functionality without internet
+                </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={settings.enableOfflineMode}
-                  onChange={(e) => updateSetting('enableOfflineMode', e.target.checked)}
+                  onChange={(e) =>
+                    updateSetting('enableOfflineMode', e.target.checked)
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -325,7 +363,10 @@ export default function MobileWalletSettingsComponent() {
 
           <div className="space-y-2">
             {WALLET_OPTIONS.map((wallet) => (
-              <div key={wallet.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={wallet.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{wallet.icon}</span>
                   <span className="font-medium">{wallet.name}</span>

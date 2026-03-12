@@ -1,82 +1,85 @@
-'use client'
+'use client';
 
-import { useState, useRef } from 'react'
-import { Upload, X, Loader2, User } from 'lucide-react'
-import Image from 'next/image'
+import { useState, useRef } from 'react';
+import { Upload, X, Loader2, User } from 'lucide-react';
+import Image from 'next/image';
 
 interface ProfilePictureUploadProps {
-  currentAvatar?: string
-  onUpload: (avatarUrl: string) => void
+  currentAvatar?: string;
+  onUpload: (avatarUrl: string) => void;
 }
 
-export default function ProfilePictureUpload({ currentAvatar, onUpload }: ProfilePictureUploadProps) {
-  const [uploading, setUploading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(currentAvatar || null)
-  const [error, setError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export default function ProfilePictureUpload({
+  currentAvatar,
+  onUpload,
+}: ProfilePictureUploadProps) {
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(currentAvatar || null);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file')
-      return
+      setError('Please select an image file');
+      return;
     }
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('File size must be less than 5MB')
-      return
+      setError('File size must be less than 5MB');
+      return;
     }
 
-    setError(null)
-    setUploading(true)
+    setError(null);
+    setUploading(true);
 
     try {
       // Create preview
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
 
       // Upload to server
-      const formData = new FormData()
-      formData.append('avatar', file)
+      const formData = new FormData();
+      formData.append('avatar', file);
 
       const response = await fetch('/api/users/profile/avatar', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: formData
-      })
+        body: formData,
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok && data.avatar) {
-        onUpload(data.avatar)
+        onUpload(data.avatar);
       } else {
-        throw new Error(data.error || 'Failed to upload image')
+        throw new Error(data.error || 'Failed to upload image');
       }
     } catch (error) {
-      console.error('Upload error:', error)
-      setError('Failed to upload image. Please try again.')
-      setPreview(currentAvatar || null)
+      console.error('Upload error:', error);
+      setError('Failed to upload image. Please try again.');
+      setPreview(currentAvatar || null);
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   const handleRemove = () => {
-    setPreview(null)
-    onUpload('')
+    setPreview(null);
+    onUpload('');
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = '';
     }
-  }
+  };
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -143,5 +146,5 @@ export default function ProfilePictureUpload({ currentAvatar, onUpload }: Profil
         </div>
       )}
     </div>
-  )
+  );
 }

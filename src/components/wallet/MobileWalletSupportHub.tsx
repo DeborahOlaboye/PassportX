@@ -10,7 +10,7 @@ import {
   Book,
   Settings,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 import MobileWalletFAQ from './MobileWalletFAQ';
 import MobileWalletPerformanceMonitor from './MobileWalletPerformanceMonitor';
@@ -41,10 +41,11 @@ const SUPPORT_OPTIONS: SupportOption[] = [
   {
     id: 'faq',
     title: 'Frequently Asked Questions',
-    description: 'Find answers to common questions about mobile wallet connections',
+    description:
+      'Find answers to common questions about mobile wallet connections',
     icon: <HelpCircle className="w-5 h-5" />,
     component: MobileWalletFAQ,
-    category: 'help'
+    category: 'help',
   },
   {
     id: 'tutorial',
@@ -52,7 +53,7 @@ const SUPPORT_OPTIONS: SupportOption[] = [
     description: 'Step-by-step guide to connecting your mobile wallet',
     icon: <Book className="w-5 h-5" />,
     component: MobileWalletTutorial,
-    category: 'help'
+    category: 'help',
   },
   {
     id: 'help',
@@ -60,7 +61,7 @@ const SUPPORT_OPTIONS: SupportOption[] = [
     description: 'Get help with wallet setup and resolve connection issues',
     icon: <MessageCircle className="w-5 h-5" />,
     component: MobileWalletHelp,
-    category: 'help'
+    category: 'help',
   },
   {
     id: 'recovery',
@@ -68,7 +69,7 @@ const SUPPORT_OPTIONS: SupportOption[] = [
     description: 'Automated tools to diagnose and fix connection problems',
     icon: <Settings className="w-5 h-5" />,
     component: MobileWalletConnectionRecovery,
-    category: 'diagnostics'
+    category: 'diagnostics',
   },
   {
     id: 'performance',
@@ -76,7 +77,7 @@ const SUPPORT_OPTIONS: SupportOption[] = [
     description: 'View connection performance metrics and analytics',
     icon: <BarChart3 className="w-5 h-5" />,
     component: MobileWalletPerformanceMonitor,
-    category: 'monitoring'
+    category: 'monitoring',
   },
   {
     id: 'health',
@@ -84,26 +85,26 @@ const SUPPORT_OPTIONS: SupportOption[] = [
     description: 'Run comprehensive system health diagnostics',
     icon: <Heart className="w-5 h-5" />,
     component: MobileWalletConnectionHealthCheck,
-    category: 'monitoring'
-  }
+    category: 'monitoring',
+  },
 ];
 
 const CATEGORY_CONFIG = {
   help: {
     title: 'Help & Support',
     description: 'Guides, tutorials, and troubleshooting assistance',
-    color: 'bg-blue-50 border-blue-200 text-blue-900'
+    color: 'bg-blue-50 border-blue-200 text-blue-900',
   },
   diagnostics: {
     title: 'Diagnostics & Recovery',
     description: 'Tools to diagnose and fix connection issues',
-    color: 'bg-orange-50 border-orange-200 text-orange-900'
+    color: 'bg-orange-50 border-orange-200 text-orange-900',
   },
   monitoring: {
     title: 'Monitoring & Analytics',
     description: 'Performance metrics and system health monitoring',
-    color: 'bg-green-50 border-green-200 text-green-900'
-  }
+    color: 'bg-green-50 border-green-200 text-green-900',
+  },
 };
 
 export default function MobileWalletSupportHub() {
@@ -115,12 +116,19 @@ export default function MobileWalletSupportHub() {
 }
 
 function MobileWalletSupportHubInner() {
-  const [activeSection, setActiveSection] = useState<SupportSection | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<'all' | SupportOption['category']>('all');
+  const [activeSection, setActiveSection] = useState<SupportSection | null>(
+    null
+  );
+  const [selectedCategory, setSelectedCategory] = useState<
+    'all' | SupportOption['category']
+  >('all');
 
-  const filteredOptions = selectedCategory === 'all'
-    ? SUPPORT_OPTIONS
-    : SUPPORT_OPTIONS.filter(option => option.category === selectedCategory);
+  const filteredOptions =
+    selectedCategory === 'all'
+      ? SUPPORT_OPTIONS
+      : SUPPORT_OPTIONS.filter(
+          (option) => option.category === selectedCategory
+        );
 
   const groupedOptions = filteredOptions.reduce((acc, option) => {
     if (!acc[option.category]) {
@@ -131,7 +139,7 @@ function MobileWalletSupportHubInner() {
   }, {} as Record<string, SupportOption[]>);
 
   const ActiveComponent = activeSection
-    ? SUPPORT_OPTIONS.find(option => option.id === activeSection)?.component
+    ? SUPPORT_OPTIONS.find((option) => option.id === activeSection)?.component
     : null;
 
   if (ActiveComponent) {
@@ -159,8 +167,8 @@ function MobileWalletSupportHubInner() {
         </div>
 
         <p className="text-gray-600 mb-6">
-          Get help with mobile wallet connections, troubleshoot issues, monitor performance,
-          and access comprehensive support resources.
+          Get help with mobile wallet connections, troubleshoot issues, monitor
+          performance, and access comprehensive support resources.
         </p>
 
         {/* Category Filter */}
@@ -178,11 +186,15 @@ function MobileWalletSupportHubInner() {
           {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
             <button
               key={key}
-              onClick={() => setSelectedCategory(key as SupportOption['category'])}
+              onClick={() =>
+                setSelectedCategory(key as SupportOption['category'])
+              }
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 selectedCategory === key
                   ? 'bg-blue-600 text-white'
-                  : `${config.color.split(' ')[0]} text-gray-700 hover:opacity-80`
+                  : `${
+                      config.color.split(' ')[0]
+                    } text-gray-700 hover:opacity-80`
               }`}
             >
               {config.title}
@@ -194,7 +206,8 @@ function MobileWalletSupportHubInner() {
       {/* Support Sections */}
       <div className="space-y-8">
         {Object.entries(groupedOptions).map(([category, options]) => {
-          const config = CATEGORY_CONFIG[category as keyof typeof CATEGORY_CONFIG];
+          const config =
+            CATEGORY_CONFIG[category as keyof typeof CATEGORY_CONFIG];
 
           return (
             <div key={category}>
@@ -216,13 +229,17 @@ function MobileWalletSupportHubInner() {
                           {option.icon}
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">{option.title}</h4>
+                          <h4 className="font-medium text-gray-900">
+                            {option.title}
+                          </h4>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-3">{option.description}</p>
+                    <p className="text-sm text-gray-600 mb-3">
+                      {option.description}
+                    </p>
 
                     <button
                       onClick={(e) => {
@@ -274,7 +291,8 @@ function MobileWalletSupportHubInner() {
           <div>
             <h4 className="font-medium text-blue-900">Need More Help?</h4>
             <p className="text-sm text-blue-800 mb-2">
-              Can't find what you're looking for? Our support team is here to help with any mobile wallet issues.
+              Can't find what you're looking for? Our support team is here to
+              help with any mobile wallet issues.
             </p>
             <div className="flex gap-3">
               <a

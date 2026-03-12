@@ -7,7 +7,7 @@ import {
   AdminChangeEvent,
   SuspensionEvent,
   IssuerAuthorizationEvent,
-  OwnershipTransferEvent
+  OwnershipTransferEvent,
 } from '../types/accessControl';
 import AccessControlAuditService from './AccessControlAuditService';
 import { Community } from '../models/Community';
@@ -30,10 +30,14 @@ export class AccessControlEventHandler {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
@@ -44,7 +48,7 @@ export class AccessControlEventHandler {
     try {
       this.logger.info(`Processing access control event: ${event.eventType}`, {
         transactionHash: event.transactionHash,
-        principal: event.principal
+        principal: event.principal,
       });
 
       // Log to audit trail
@@ -53,11 +57,15 @@ export class AccessControlEventHandler {
       // Process based on event type
       switch (event.eventType) {
         case AccessControlEventType.GLOBAL_PERMISSION_SET:
-          await this.handleGlobalPermissionSet(event as GlobalPermissionChangeEvent);
+          await this.handleGlobalPermissionSet(
+            event as GlobalPermissionChangeEvent
+          );
           break;
 
         case AccessControlEventType.COMMUNITY_PERMISSION_SET:
-          await this.handleCommunityPermissionSet(event as CommunityPermissionChangeEvent);
+          await this.handleCommunityPermissionSet(
+            event as CommunityPermissionChangeEvent
+          );
           break;
 
         case AccessControlEventType.ROLE_ASSIGNED:
@@ -86,7 +94,9 @@ export class AccessControlEventHandler {
 
         case AccessControlEventType.ISSUER_AUTHORIZED:
         case AccessControlEventType.ISSUER_REVOKED:
-          await this.handleIssuerAuthorization(event as IssuerAuthorizationEvent);
+          await this.handleIssuerAuthorization(
+            event as IssuerAuthorizationEvent
+          );
           break;
 
         case AccessControlEventType.COMMUNITY_OWNERSHIP_TRANSFERRED:
@@ -97,7 +107,9 @@ export class AccessControlEventHandler {
           this.logger.warn(`Unknown event type: ${event.eventType}`);
       }
 
-      this.logger.info(`Successfully processed access control event: ${event.eventType}`);
+      this.logger.info(
+        `Successfully processed access control event: ${event.eventType}`
+      );
     } catch (error) {
       this.logger.error('Error handling access control event', error);
       throw error;
@@ -107,45 +119,55 @@ export class AccessControlEventHandler {
   /**
    * Handle global permission changes
    */
-  private async handleGlobalPermissionSet(event: GlobalPermissionChangeEvent): Promise<void> {
+  private async handleGlobalPermissionSet(
+    event: GlobalPermissionChangeEvent
+  ): Promise<void> {
     this.logger.debug(`Global permission set: ${event.metadata.permission}`, {
       previous: event.metadata.previousValue,
       new: event.metadata.newValue,
-      principal: event.principal
+      principal: event.principal,
     });
 
     try {
       const User = (await import('../models/User')).default;
       const user = await User.findOne({ stacksAddress: event.principal });
-      
+
       if (user) {
         if (!user.permissions) {
           user.permissions = new Map();
         }
-        user.permissions.set(event.metadata.permission, event.metadata.newValue);
+        user.permissions.set(
+          event.metadata.permission,
+          event.metadata.newValue
+        );
         user.lastActive = new Date();
         await user.save();
-        
+
         this.logger.info('User global permissions updated in database', {
           stacksAddress: event.principal,
           permission: event.metadata.permission,
-          value: event.metadata.newValue
+          value: event.metadata.newValue,
         });
       }
     } catch (error) {
-      this.logger.error('Error updating user global permissions in database', error);
+      this.logger.error(
+        'Error updating user global permissions in database',
+        error
+      );
     }
   }
 
   /**
    * Handle community-specific permission changes
    */
-  private async handleCommunityPermissionSet(event: CommunityPermissionChangeEvent): Promise<void> {
+  private async handleCommunityPermissionSet(
+    event: CommunityPermissionChangeEvent
+  ): Promise<void> {
     const { communityId, role } = event.metadata;
 
     this.logger.debug(`Community permission set for ${communityId}`, {
       role,
-      targetPrincipal: event.targetPrincipal
+      targetPrincipal: event.targetPrincipal,
     });
 
     try {
@@ -158,7 +180,10 @@ export class AccessControlEventHandler {
       // Update community member role if needed
       // This logic depends on how Community model stores member roles
     } catch (error) {
-      this.logger.error(`Error updating community permissions for ${communityId}`, error);
+      this.logger.error(
+        `Error updating community permissions for ${communityId}`,
+        error
+      );
     }
   }
 
@@ -169,18 +194,18 @@ export class AccessControlEventHandler {
     const { communityId, role } = event.metadata;
 
     this.logger.info(`Role assigned: ${role} in community ${communityId}`, {
-      targetPrincipal: event.targetPrincipal
+      targetPrincipal: event.targetPrincipal,
     });
 
     try {
       const Community = (await import('../models/Community')).default;
       const community = await Community.findOne({ contractId: communityId });
-      
+
       if (community && event.targetPrincipal) {
         const memberIndex = community.members.findIndex(
           (m: any) => m.address === event.targetPrincipal
         );
-        
+
         if (memberIndex !== -1) {
           community.members[memberIndex].role = role;
           community.members[memberIndex].roleAssignedAt = new Date();
@@ -189,20 +214,23 @@ export class AccessControlEventHandler {
             address: event.targetPrincipal,
             role,
             joinedAt: new Date(),
-            roleAssignedAt: new Date()
+            roleAssignedAt: new Date(),
           });
         }
-        
+
         await community.save();
-        
+
         this.logger.info('Community member role updated in database', {
           communityId,
           member: event.targetPrincipal,
-          role
+          role,
         });
       }
     } catch (error) {
-      this.logger.error('Error updating community member role in database', error);
+      this.logger.error(
+        'Error updating community member role in database',
+        error
+      );
     }
   }
 
@@ -213,33 +241,36 @@ export class AccessControlEventHandler {
     const { communityId, role } = event.metadata;
 
     this.logger.info(`Role revoked: ${role} in community ${communityId}`, {
-      targetPrincipal: event.targetPrincipal
+      targetPrincipal: event.targetPrincipal,
     });
 
     try {
       const Community = (await import('../models/Community')).default;
       const community = await Community.findOne({ contractId: communityId });
-      
+
       if (community && event.targetPrincipal) {
         const memberIndex = community.members.findIndex(
           (m: any) => m.address === event.targetPrincipal
         );
-        
+
         if (memberIndex !== -1) {
           community.members[memberIndex].role = null;
           community.members[memberIndex].roleRevokedAt = new Date();
         }
-        
+
         await community.save();
-        
+
         this.logger.info('Community member role revoked in database', {
           communityId,
           member: event.targetPrincipal,
-          role
+          role,
         });
       }
     } catch (error) {
-      this.logger.error('Error revoking community member role in database', error);
+      this.logger.error(
+        'Error revoking community member role in database',
+        error
+      );
     }
   }
 
@@ -257,7 +288,7 @@ export class AccessControlEventHandler {
 
     this.logger.info(`Admin added to community ${communityId}`, {
       newAdmin,
-      addedBy: event.principal
+      addedBy: event.principal,
     });
 
     try {
@@ -281,7 +312,10 @@ export class AccessControlEventHandler {
         }
       }
     } catch (error) {
-      this.logger.error(`Error adding admin to community ${communityId}`, error);
+      this.logger.error(
+        `Error adding admin to community ${communityId}`,
+        error
+      );
     }
   }
 
@@ -299,14 +333,16 @@ export class AccessControlEventHandler {
 
     this.logger.info(`Admin removed from community ${communityId}`, {
       removedAdmin,
-      removedBy: event.principal
+      removedBy: event.principal,
     });
 
     try {
       // Update Community model
       const community = await Community.findOne({ communityId });
       if (community) {
-        community.admins = community.admins.filter(admin => admin !== removedAdmin);
+        community.admins = community.admins.filter(
+          (admin) => admin !== removedAdmin
+        );
         await community.save();
         this.logger.debug(`Removed ${removedAdmin} from community admins`);
 
@@ -321,7 +357,10 @@ export class AccessControlEventHandler {
         }
       }
     } catch (error) {
-      this.logger.error(`Error removing admin from community ${communityId}`, error);
+      this.logger.error(
+        `Error removing admin from community ${communityId}`,
+        error
+      );
     }
   }
 
@@ -338,13 +377,13 @@ export class AccessControlEventHandler {
 
     this.logger.warn(`User suspended: ${suspendedUser}`, {
       reason: event.metadata.reason,
-      suspendedBy: event.principal
+      suspendedBy: event.principal,
     });
 
     try {
       const User = (await import('../models/User')).default;
       const user = await User.findOne({ stacksAddress: suspendedUser });
-      
+
       if (user) {
         (user as any).status = 'suspended';
         (user as any).suspendedAt = new Date();
@@ -352,14 +391,17 @@ export class AccessControlEventHandler {
         (user as any).suspensionReason = event.metadata.reason;
         user.lastActive = new Date();
         await user.save();
-        
+
         this.logger.info('User suspension status updated in database', {
           stacksAddress: suspendedUser,
-          suspendedBy: event.principal
+          suspendedBy: event.principal,
         });
       }
     } catch (error) {
-      this.logger.error('Error updating user suspension status in database', error);
+      this.logger.error(
+        'Error updating user suspension status in database',
+        error
+      );
     }
   }
 
@@ -375,13 +417,13 @@ export class AccessControlEventHandler {
     }
 
     this.logger.info(`User unsuspended: ${unsuspendedUser}`, {
-      unsuspendedBy: event.principal
+      unsuspendedBy: event.principal,
     });
 
     try {
       const User = (await import('../models/User')).default;
       const user = await User.findOne({ stacksAddress: unsuspendedUser });
-      
+
       if (user) {
         (user as any).status = 'active';
         (user as any).unsuspendedAt = new Date();
@@ -389,53 +431,60 @@ export class AccessControlEventHandler {
         (user as any).suspensionReason = null;
         user.lastActive = new Date();
         await user.save();
-        
+
         this.logger.info('User unsuspension status updated in database', {
           stacksAddress: unsuspendedUser,
-          unsuspendedBy: event.principal
+          unsuspendedBy: event.principal,
         });
       }
     } catch (error) {
-      this.logger.error('Error updating user unsuspension status in database', error);
+      this.logger.error(
+        'Error updating user unsuspension status in database',
+        error
+      );
     }
   }
 
   /**
    * Handle issuer authorization changes
    */
-  private async handleIssuerAuthorization(event: IssuerAuthorizationEvent): Promise<void> {
+  private async handleIssuerAuthorization(
+    event: IssuerAuthorizationEvent
+  ): Promise<void> {
     const { authorized, communityId } = event.metadata;
     const issuer = event.targetPrincipal;
 
     this.logger.info(`Issuer ${authorized ? 'authorized' : 'revoked'}`, {
       issuer,
       communityId,
-      authorizedBy: event.principal
+      authorizedBy: event.principal,
     });
 
     try {
       const Community = (await import('../models/Community')).default;
       const community = await Community.findOne({ contractId: communityId });
-      
+
       if (community && issuer) {
         if (!community.issuers) {
           community.issuers = [];
         }
-        
+
         if (authorized) {
           if (!community.issuers.includes(issuer)) {
             community.issuers.push(issuer);
           }
         } else {
-          community.issuers = community.issuers.filter((addr: string) => addr !== issuer);
+          community.issuers = community.issuers.filter(
+            (addr: string) => addr !== issuer
+          );
         }
-        
+
         await community.save();
-        
+
         this.logger.info('Issuer permissions updated in database', {
           communityId,
           issuer,
-          authorized
+          authorized,
         });
       }
     } catch (error) {
@@ -446,19 +495,23 @@ export class AccessControlEventHandler {
   /**
    * Handle community ownership transfers
    */
-  private async handleOwnershipTransfer(event: OwnershipTransferEvent): Promise<void> {
+  private async handleOwnershipTransfer(
+    event: OwnershipTransferEvent
+  ): Promise<void> {
     const { communityId, previousOwner, newOwner } = event.metadata;
 
     this.logger.info(`Community ownership transferred for ${communityId}`, {
       from: previousOwner,
-      to: newOwner
+      to: newOwner,
     });
 
     try {
       const community = await Community.findOne({ communityId });
       if (community) {
         // Remove previous owner from admins if exists
-        community.admins = community.admins.filter(admin => admin !== previousOwner);
+        community.admins = community.admins.filter(
+          (admin) => admin !== previousOwner
+        );
 
         // Add new owner to admins if not already present
         if (!community.admins.includes(newOwner)) {
@@ -474,7 +527,10 @@ export class AccessControlEventHandler {
         this.logger.debug(`Updated community ownership`);
       }
     } catch (error) {
-      this.logger.error(`Error transferring ownership for community ${communityId}`, error);
+      this.logger.error(
+        `Error transferring ownership for community ${communityId}`,
+        error
+      );
     }
   }
 }

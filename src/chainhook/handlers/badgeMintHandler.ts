@@ -1,13 +1,14 @@
 import {
   ChainhookEventPayload,
   ChainhookEventHandler,
+  ChainhookLogger,
   NotificationPayload,
-  BadgeMintEvent
+  BadgeMintEvent,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
 export class BadgeMintHandler implements ChainhookEventHandler {
-  private logger: any;
+  private logger: ChainhookLogger;
   private readonly SUPPORTED_METHODS = ['mint', 'mint-badge', 'nft-mint'];
   private readonly SUPPORTED_TOPICS = ['mint', 'nft', 'badge-mint'];
   private compiledMethodFilter: Set<string>;
@@ -16,23 +17,29 @@ export class BadgeMintHandler implements ChainhookEventHandler {
   private hitCache: Map<string, boolean> = new Map();
   private readonly CACHE_TTL_MS = 5000;
 
-  constructor(logger?: any) {
+  constructor(logger?: ChainhookLogger) {
     this.logger = logger || this.getDefaultLogger();
     this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
     this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): ChainhookLogger {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeMintHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeMintHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeMintHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeMintHandler] ${msg}`, ...args)
+      debug: (msg: string, ...args: unknown[]) =>
+        console.debug(`[BadgeMintHandler] ${msg}`, ...args),
+      info: (msg: string, ...args: unknown[]) =>
+        console.info(`[BadgeMintHandler] ${msg}`, ...args),
+      warn: (msg: string, ...args: unknown[]) =>
+        console.warn(`[BadgeMintHandler] ${msg}`, ...args),
+      error: (msg: string, ...args: unknown[]) =>
+        console.error(`[BadgeMintHandler] ${msg}`, ...args),
     };
   }
 
   private getCacheKey(event: ChainhookEventPayload): string {
-    return `${event.block_identifier?.index}:${event.transactions?.[0]?.transaction_hash || ''}`;
+    return `${event.block_identifier?.index}:${
+      event.transactions?.[0]?.transaction_hash || ''
+    }`;
   }
 
   private isCacheValid(cachedTime: number): boolean {
@@ -132,10 +139,16 @@ export class BadgeMintHandler implements ChainhookEventHandler {
 
               if (this.SUPPORTED_METHODS.includes(method)) {
                 const args = op.contract_call.args || [];
-                const recipientAddress = this.extractRecipientAddress(args, op.contract_call, tx);
+                const recipientAddress = this.extractRecipientAddress(
+                  args,
+                  op.contract_call,
+                  tx
+                );
 
                 if (!recipientAddress) {
-                  this.logger.warn('Failed to extract recipient address from contract call');
+                  this.logger.warn(
+                    'Failed to extract recipient address from contract call'
+                  );
                   continue;
                 }
 
@@ -147,13 +160,13 @@ export class BadgeMintHandler implements ChainhookEventHandler {
                   contractAddress: op.contract_call.contract,
                   transactionHash: tx.transaction_hash,
                   blockHeight: event.block_identifier?.index || 0,
-                  timestamp: event.metadata?.pox_cycle_position || Date.now()
+                  timestamp: event.metadata?.pox_cycle_position || Date.now(),
                 };
 
                 this.logger.debug('Extracted badge mint event', {
                   userId: badgeEvent.userId,
                   badgeId: badgeEvent.badgeId,
-                  contractAddress: badgeEvent.contractAddress
+                  contractAddress: badgeEvent.contractAddress,
                 });
 
                 const notification = this.createNotification(badgeEvent);
@@ -165,27 +178,37 @@ export class BadgeMintHandler implements ChainhookEventHandler {
               for (const evt of op.events) {
                 if (!evt) continue;
 
-                if (evt.topic && (evt.topic.includes('mint') || evt.topic.includes('nft'))) {
+                if (
+                  evt.topic &&
+                  (evt.topic.includes('mint') || evt.topic.includes('nft'))
+                ) {
                   try {
                     const badgeEvent = EventMapper.mapBadgeMintEvent({
                       ...evt.value,
                       contractAddress: evt.contract_address,
                       transactionHash: tx.transaction_hash,
                       blockHeight: event.block_identifier?.index || 0,
-                      timestamp: event.metadata?.pox_cycle_position || Date.now()
+                      timestamp:
+                        event.metadata?.pox_cycle_position || Date.now(),
                     });
 
                     if (badgeEvent && badgeEvent.userId) {
-                      this.logger.debug('Mapped badge mint event from contract event', {
-                        userId: badgeEvent.userId,
-                        badgeId: badgeEvent.badgeId
-                      });
+                      this.logger.debug(
+                        'Mapped badge mint event from contract event',
+                        {
+                          userId: badgeEvent.userId,
+                          badgeId: badgeEvent.badgeId,
+                        }
+                      );
 
                       const notification = this.createNotification(badgeEvent);
                       notifications.push(notification);
                     }
                   } catch (eventMapError) {
-                    this.logger.warn('Failed to map badge mint event:', eventMapError);
+                    this.logger.warn(
+                      'Failed to map badge mint event:',
+                      eventMapError
+                    );
                   }
                 }
               }
@@ -197,7 +220,9 @@ export class BadgeMintHandler implements ChainhookEventHandler {
         }
       }
 
-      this.logger.info(`Processed badge mint event with ${notifications.length} notifications`);
+      this.logger.info(
+        `Processed badge mint event with ${notifications.length} notifications`
+      );
       return notifications;
     } catch (error) {
       this.logger.error('Error in BadgeMintHandler.handle:', error);
@@ -209,7 +234,11 @@ export class BadgeMintHandler implements ChainhookEventHandler {
     return 'badge-mint';
   }
 
-  private extractRecipientAddress(args: any[], contractCall: any, tx: any): string {
+  private extractRecipientAddress(
+    args: unknown[],
+    contractCall: unknown,
+    tx: { sender?: string }
+  ): string {
     if (!args || args.length === 0) {
       this.logger.debug('No args available, checking transaction sender');
       return tx?.sender || '';
@@ -222,23 +251,25 @@ export class BadgeMintHandler implements ChainhookEventHandler {
       return recipient;
     }
 
-    this.logger.debug('Could not extract recipient from args, checking transaction sender');
+    this.logger.debug(
+      'Could not extract recipient from args, checking transaction sender'
+    );
     return tx?.sender || '';
   }
 
-  private extractBadgeId(args: any[]): string {
+  private extractBadgeId(args: unknown[]): string {
     if (!args || args.length < 2) return '';
     const badgeId = args[1]?.value || args[1];
     return badgeId ? String(badgeId) : '';
   }
 
-  private extractBadgeName(args: any[]): string {
+  private extractBadgeName(args: unknown[]): string {
     if (!args || args.length < 3) return 'Achievement Badge';
     const badgeName = args[2]?.value || args[2];
     return badgeName ? String(badgeName) : 'Achievement Badge';
   }
 
-  private extractCriteria(args: any[]): string {
+  private extractCriteria(args: unknown[]): string {
     if (!args || args.length < 4) return 'completing a task';
     const criteria = args[3]?.value || args[3];
     return criteria ? String(criteria) : 'completing a task';
@@ -258,8 +289,8 @@ export class BadgeMintHandler implements ChainhookEventHandler {
         contractAddress: badgeEvent.contractAddress,
         transactionHash: badgeEvent.transactionHash,
         blockHeight: badgeEvent.blockHeight,
-        timestamp: badgeEvent.timestamp
-      }
+        timestamp: badgeEvent.timestamp,
+      },
     };
   }
 }

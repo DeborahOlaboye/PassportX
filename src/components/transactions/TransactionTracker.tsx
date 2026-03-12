@@ -55,7 +55,16 @@ export function TransactionTracker({
       trackTransactionCompleted(hash, method);
       if (onSuccess) onSuccess();
     }
-  }, [isSuccess, hash, method, isConnected, trackTransactionCompleted, onSuccess, updateTransactionStatus, data]);
+  }, [
+    isSuccess,
+    hash,
+    method,
+    isConnected,
+    trackTransactionCompleted,
+    onSuccess,
+    updateTransactionStatus,
+    data,
+  ]);
 
   // Track transaction errors
   useEffect(() => {

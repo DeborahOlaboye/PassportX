@@ -10,7 +10,10 @@ import { AuthToken, getTokenExpiryTime } from '../types/auth';
  */
 const generateRandomToken = (lengthBytes: number = 32): string => {
   const bytes = crypto.getRandomValues(new Uint8Array(lengthBytes));
-  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
 };
 
 /**
@@ -25,7 +28,7 @@ export const createAuthToken = (
     refreshToken: generateRandomToken(32),
     account,
     issued: Date.now(),
-    expiresAt: getTokenExpiryTime(durationMs)
+    expiresAt: getTokenExpiryTime(durationMs),
   };
 };
 

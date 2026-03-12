@@ -4,12 +4,14 @@
 import { WalletSession } from '../../src/utils/walletSession';
 
 describe('WalletConnect session management', () => {
-  const createSession = (overrides?: Partial<WalletSession>): WalletSession => ({
+  const createSession = (
+    overrides?: Partial<WalletSession>
+  ): WalletSession => ({
     id: 'sess-1',
     accounts: ['ST123'],
     connectedAt: Date.now(),
     expiresAt: Date.now() + 1000 * 60 * 60,
-    ...overrides
+    ...overrides,
   });
 
   it('should create a new session', () => {

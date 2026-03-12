@@ -28,7 +28,7 @@ function checkMetric(name, current, baselineValue) {
       metric: name,
       baseline: baselineValue,
       current: current,
-      degradation: (degradation * 100).toFixed(2) + '%'
+      degradation: (degradation * 100).toFixed(2) + '%',
     });
   }
 }
@@ -36,8 +36,8 @@ function checkMetric(name, current, baselineValue) {
 if (metrics.http_req_duration) {
   const p95 = metrics.http_req_duration['p(95)'];
   const p99 = metrics.http_req_duration['p(99)'];
-  
-  Object.keys(baseline.baselines).forEach(endpoint => {
+
+  Object.keys(baseline.baselines).forEach((endpoint) => {
     checkMetric(`${endpoint}-p95`, p95, baseline.baselines[endpoint].p95);
     checkMetric(`${endpoint}-p99`, p99, baseline.baselines[endpoint].p99);
   });

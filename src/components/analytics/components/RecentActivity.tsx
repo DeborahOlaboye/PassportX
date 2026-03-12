@@ -7,7 +7,7 @@ const activityIcons: Record<string, string> = {
   badge_issued: '🏆',
   user_joined: '👤',
   community_created: '👥',
-  badge_revoked: '❌'
+  badge_revoked: '❌',
 };
 
 export function RecentActivity({ activities }: { activities: ActivityData[] }) {
@@ -34,7 +34,9 @@ export function RecentActivity({ activities }: { activities: ActivityData[] }) {
               {activity.message}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+              {formatDistanceToNow(new Date(activity.timestamp), {
+                addSuffix: true,
+              })}
             </p>
           </div>
         </div>

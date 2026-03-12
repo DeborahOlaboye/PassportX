@@ -11,13 +11,16 @@ export async function GET(
     const { address } = params;
     const cookie = request.headers.get('cookie');
 
-    const response = await fetch(`${BACKEND_URL}/api/users/profile/${address}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(cookie && { Cookie: cookie }),
-      },
-    });
+    const response = await fetch(
+      `${BACKEND_URL}/api/users/profile/${address}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cookie && { Cookie: cookie }),
+        },
+      }
+    );
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
@@ -28,10 +31,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params: _params }: { params: { address: string } }
 ) {
   try {
-    const { address } = params;
     const body = await request.json();
     const cookie = request.headers.get('cookie');
     const authHeader = request.headers.get('authorization');

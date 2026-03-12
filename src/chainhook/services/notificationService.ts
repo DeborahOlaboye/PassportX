@@ -2,15 +2,19 @@ import {
   ChainhookEventPayload,
   NotificationPayload,
   ChainhookEventHandler,
-  UserNotificationPreferences
+  UserNotificationPreferences,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
 export class NotificationService {
   private static handlers: Map<string, ChainhookEventHandler> = new Map();
-  private static userPreferences: Map<string, UserNotificationPreferences> = new Map();
+  private static userPreferences: Map<string, UserNotificationPreferences> =
+    new Map();
 
-  static registerHandler(eventType: string, handler: ChainhookEventHandler): void {
+  static registerHandler(
+    eventType: string,
+    handler: ChainhookEventHandler
+  ): void {
     this.handlers.set(eventType, handler);
   }
 
@@ -20,25 +24,25 @@ export class NotificationService {
 
   static async processEvent(
     chainhookEvent: ChainhookEventPayload,
-    eventPayload: any
+    _eventPayload: Record<string, unknown>
   ): Promise<NotificationPayload[]> {
     try {
       const eventType = EventMapper.extractEventType(chainhookEvent);
-      
+
       if (!eventType) {
         console.warn('Could not determine event type from Chainhook event');
         return [];
       }
 
       const handler = this.getHandler(eventType);
-      
+
       if (!handler) {
         console.warn(`No handler registered for event type: ${eventType}`);
         return [];
       }
 
       const notifications = await handler.handle(chainhookEvent);
-      
+
       return notifications;
     } catch (error) {
       console.error('Error processing Chainhook event:', error);
@@ -54,31 +58,44 @@ export class NotificationService {
       return notifications;
     }
 
-    return notifications.filter(notification => {
+    return notifications.filter((notification) => {
       switch (notification.type) {
         case 'badge_received':
         case 'badge_issued':
           return userPreferences.badges.enabled && userPreferences.badges.mint;
-        
+
         case 'badge_verified':
-          return userPreferences.badges.enabled && userPreferences.badges.verify;
-        
+          return (
+            userPreferences.badges.enabled && userPreferences.badges.verify
+          );
+
         case 'community_update':
-          return userPreferences.community.enabled && userPreferences.community.updates;
-        
+          return (
+            userPreferences.community.enabled &&
+            userPreferences.community.updates
+          );
+
         case 'community_invite':
-          return userPreferences.community.enabled && userPreferences.community.invites;
-        
+          return (
+            userPreferences.community.enabled &&
+            userPreferences.community.invites
+          );
+
         case 'system_announcement':
-          return userPreferences.system.enabled && userPreferences.system.announcements;
-        
+          return (
+            userPreferences.system.enabled &&
+            userPreferences.system.announcements
+          );
+
         default:
           return true;
       }
     });
   }
 
-  static async getUserPreferences(userId: string): Promise<UserNotificationPreferences | null> {
+  static async getUserPreferences(
+    userId: string
+  ): Promise<UserNotificationPreferences | null> {
     return this.userPreferences.get(userId) || null;
   }
 
@@ -90,25 +107,27 @@ export class NotificationService {
     this.userPreferences.set(userId, preferences);
   }
 
-  static async createDefaultPreferences(userId: string): Promise<UserNotificationPreferences> {
+  static async createDefaultPreferences(
+    userId: string
+  ): Promise<UserNotificationPreferences> {
     const preferences: UserNotificationPreferences = {
       userId,
       badges: {
         enabled: true,
         mint: true,
-        verify: true
+        verify: true,
       },
       community: {
         enabled: true,
         updates: true,
-        invites: true
+        invites: true,
       },
       system: {
         enabled: true,
-        announcements: true
+        announcements: true,
       },
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     this.userPreferences.set(userId, preferences);
@@ -120,21 +139,24 @@ export class NotificationService {
     updates: Partial<UserNotificationPreferences>
   ): Promise<UserNotificationPreferences> {
     const existing = await this.getUserPreferences(userId);
-    
+
     const updated: UserNotificationPreferences = {
-      ...(existing || await this.createDefaultPreferences(userId)),
+      ...(existing || (await this.createDefaultPreferences(userId))),
       ...updates,
       userId,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     await this.setUserPreferences(userId, updated);
     return updated;
   }
 
-  static async disableNotificationType(userId: string, notificationType: string): Promise<void> {
+  static async disableNotificationType(
+    userId: string,
+    notificationType: string
+  ): Promise<void> {
     const preferences = await this.getUserPreferences(userId);
-    
+
     if (!preferences) {
       await this.createDefaultPreferences(userId);
       return;
@@ -162,9 +184,12 @@ export class NotificationService {
     await this.setUserPreferences(userId, preferences);
   }
 
-  static async enableNotificationType(userId: string, notificationType: string): Promise<void> {
+  static async enableNotificationType(
+    userId: string,
+    notificationType: string
+  ): Promise<void> {
     const preferences = await this.getUserPreferences(userId);
-    
+
     if (!preferences) {
       await this.createDefaultPreferences(userId);
       return;

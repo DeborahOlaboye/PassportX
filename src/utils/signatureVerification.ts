@@ -16,7 +16,9 @@ export interface SignedMessage {
  * In production, this would use actual Stacks crypto verification.
  * For now, we validate format and timestamp.
  */
-export const verifySignature = (signed: SignedMessage): { valid: boolean; reason?: string } => {
+export const verifySignature = (
+  signed: SignedMessage
+): { valid: boolean; reason?: string } => {
   // Basic validation
   if (!signed.signature || signed.signature.length === 0) {
     return { valid: false, reason: 'Signature is empty' };
@@ -34,7 +36,10 @@ export const verifySignature = (signed: SignedMessage): { valid: boolean; reason
 /**
  * Check if a signature is expired (beyond grace period).
  */
-export const isSignatureExpired = (signed: SignedMessage, maxAgeMs: number = 1000 * 60 * 5): boolean => {
+export const isSignatureExpired = (
+  signed: SignedMessage,
+  maxAgeMs: number = 1000 * 60 * 5
+): boolean => {
   const ageMs = Date.now() - signed.payload.timestamp;
   return ageMs > maxAgeMs;
 };

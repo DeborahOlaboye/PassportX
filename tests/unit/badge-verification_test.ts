@@ -241,7 +241,10 @@ describe('Badge Verification Contract Tests', () => {
       );
 
       expect(statusResult).toBeOk();
-      expect(statusResult.value).toHaveTupleProperty('issuer', Cl.principal(deployer));
+      expect(statusResult.value).toHaveTupleProperty(
+        'issuer',
+        Cl.principal(deployer)
+      );
     });
 
     it('should return error for invalid badge', () => {
@@ -297,7 +300,10 @@ describe('Badge Verification Contract Tests', () => {
         deployer
       );
       expect(authResult.result).toBeOk();
-      expect(authResult.result.value).toHaveTupleProperty('active', Cl.bool(true));
+      expect(authResult.result.value).toHaveTupleProperty(
+        'active',
+        Cl.bool(true)
+      );
 
       // 5. Revoke badge
       const revokeResult = simnet.callPublicFn(
@@ -316,7 +322,10 @@ describe('Badge Verification Contract Tests', () => {
         deployer
       );
       expect(postRevokeAuth.result).toBeOk();
-      expect(postRevokeAuth.result.value).toHaveTupleProperty('active', Cl.bool(false));
+      expect(postRevokeAuth.result.value).toHaveTupleProperty(
+        'active',
+        Cl.bool(false)
+      );
     });
   });
 });

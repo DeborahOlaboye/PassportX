@@ -4,8 +4,8 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 
 export function WalletConnectTracker() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { connect: _connect, connectors: _connectors } = useConnect();
+  const { disconnect: _disconnect } = useDisconnect();
   const { trackWalletConnect, setWalletAddress } = useAnalytics();
 
   // Track wallet connection

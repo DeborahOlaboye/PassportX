@@ -48,7 +48,11 @@ const nextConfig = {
     // Enable modular CSS for better CSS optimization
     modularizeCss: true,
     // Enable server components external packages
-    serverComponentsExternalPackages: ['@stacks/connect', '@stacks/network', '@stacks/transactions'],
+    serverComponentsExternalPackages: [
+      '@stacks/connect',
+      '@stacks/network',
+      '@stacks/transactions',
+    ],
     // Optimize package imports for better tree-shaking
     optimizePackageImports: ['lucide-react', 'date-fns', 'zustand'],
   },

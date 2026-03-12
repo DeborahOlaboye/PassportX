@@ -53,7 +53,9 @@ export const chainhookConfig: ChainhookConfig = {
   server: defaultServerConfig,
   node: defaultNodeConfig,
   debug: process.env.NODE_ENV === 'development',
-  environment: (process.env.NODE_ENV as 'development' | 'staging' | 'production') || 'development',
+  environment:
+    (process.env.NODE_ENV as 'development' | 'staging' | 'production') ||
+    'development',
 };
 
 // Export all configurations

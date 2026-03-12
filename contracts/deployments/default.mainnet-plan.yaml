@@ -2,8 +2,8 @@
 id: 0
 name: Mainnet deployment
 network: mainnet
-stacks-node: "https://api.hiro.so"
-bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+stacks-node: 'https://api.hiro.so'
+bitcoin-node: 'http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332'
 plan:
   batches:
     - id: 0
@@ -71,4 +71,4 @@ plan:
             path: passport-core.clar
             anchor-block-only: true
             clarity-version: 2
-      epoch: "2.5"
+      epoch: '2.5'

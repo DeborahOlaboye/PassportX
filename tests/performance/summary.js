@@ -17,15 +17,23 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 
 if (metrics.http_req_duration) {
   console.log('\n⏱️  Response Times:');
-  console.log(`   Average: ${metrics.http_req_duration.avg?.toFixed(2) || 'N/A'} ms`);
-  console.log(`   P95:     ${metrics.http_req_duration['p(95)']?.toFixed(2) || 'N/A'} ms`);
-  console.log(`   P99:     ${metrics.http_req_duration['p(99)']?.toFixed(2) || 'N/A'} ms`);
+  console.log(
+    `   Average: ${metrics.http_req_duration.avg?.toFixed(2) || 'N/A'} ms`
+  );
+  console.log(
+    `   P95:     ${metrics.http_req_duration['p(95)']?.toFixed(2) || 'N/A'} ms`
+  );
+  console.log(
+    `   P99:     ${metrics.http_req_duration['p(99)']?.toFixed(2) || 'N/A'} ms`
+  );
 }
 
 if (metrics.http_reqs) {
   console.log('\n📈 Request Statistics:');
   console.log(`   Total:   ${metrics.http_reqs.count || 'N/A'}`);
-  console.log(`   Rate:    ${metrics.http_reqs.rate?.toFixed(2) || 'N/A'} req/s`);
+  console.log(
+    `   Rate:    ${metrics.http_reqs.rate?.toFixed(2) || 'N/A'} req/s`
+  );
 }
 
 if (metrics.http_req_failed) {

@@ -77,7 +77,10 @@ export class NetworkPersistence {
 
   static importSettings(settings: Record<string, any>): boolean {
     try {
-      if (settings.network && (settings.network === 'mainnet' || settings.network === 'testnet')) {
+      if (
+        settings.network &&
+        (settings.network === 'mainnet' || settings.network === 'testnet')
+      ) {
         this.saveNetwork(settings.network);
         console.log('Network settings imported successfully');
         return true;
@@ -102,10 +105,10 @@ export class NetworkPersistence {
     const keysToCheck = [
       'network-cache',
       'network-preferences',
-      'old-network-setting'
+      'old-network-setting',
     ];
 
-    keysToCheck.forEach(key => {
+    keysToCheck.forEach((key) => {
       try {
         localStorage.removeItem(key);
       } catch (error) {

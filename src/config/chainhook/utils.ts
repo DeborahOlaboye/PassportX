@@ -29,7 +29,8 @@ export function isChainhookDebugEnabled(): boolean {
  * Get the current network from environment
  */
 export function getCurrentNetwork(): 'development' | 'testnet' | 'mainnet' {
-  const network = process.env.STACKS_NETWORK || process.env.NEXT_PUBLIC_STACKS_NETWORK;
+  const network =
+    process.env.STACKS_NETWORK || process.env.NEXT_PUBLIC_STACKS_NETWORK;
 
   switch (network) {
     case 'mainnet':
@@ -137,7 +138,9 @@ export function validateChainhookEnvironment(): {
   } else {
     const port = parseInt(process.env.CHAINHOOK_SERVER_PORT, 10);
     if (isNaN(port) || port < 1 || port > 65535) {
-      errors.push('CHAINHOOK_SERVER_PORT must be a valid port number (1-65535)');
+      errors.push(
+        'CHAINHOOK_SERVER_PORT must be a valid port number (1-65535)'
+      );
     }
   }
 

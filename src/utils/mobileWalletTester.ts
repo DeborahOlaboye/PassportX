@@ -1,6 +1,18 @@
-import { MobileWalletAnalytics, trackMobileWalletConnectionAttempt, trackMobileWalletConnectionSuccess, trackMobileWalletConnectionFailure } from './mobileWalletAnalytics';
-import { initiateMobileWalletConnection, waitForMobileWalletResponse } from './mobileWalletResponseHandler';
-import { createStacksWalletConfig, createWalletConnectUri, openMobileWallet } from './stacksWalletConnect';
+import {
+  MobileWalletAnalytics,
+  trackMobileWalletConnectionAttempt,
+  trackMobileWalletConnectionSuccess,
+  trackMobileWalletConnectionFailure,
+} from './mobileWalletAnalytics';
+import {
+  initiateMobileWalletConnection,
+  waitForMobileWalletResponse,
+} from './mobileWalletResponseHandler';
+import {
+  createStacksWalletConfig,
+  createWalletConnectUri,
+  openMobileWallet,
+} from './stacksWalletConnect';
 
 export interface MobileWalletTestResult {
   walletType: 'xverse' | 'hiro' | 'leather';
@@ -13,7 +25,9 @@ export interface MobileWalletTestResult {
 
 export interface MobileWalletTestSuite {
   runAllTests: () => Promise<MobileWalletTestResult[]>;
-  testWalletConnection: (walletType: 'xverse' | 'hiro' | 'leather') => Promise<MobileWalletTestResult>;
+  testWalletConnection: (
+    walletType: 'xverse' | 'hiro' | 'leather'
+  ) => Promise<MobileWalletTestResult>;
   getTestResults: () => MobileWalletTestResult[];
   clearTestResults: () => void;
 }
@@ -41,7 +55,11 @@ export class MobileWalletTester implements MobileWalletTestSuite {
     const results: MobileWalletTestResult[] = [];
 
     try {
-      const wallets: ('xverse' | 'hiro' | 'leather')[] = ['xverse', 'hiro', 'leather'];
+      const wallets: ('xverse' | 'hiro' | 'leather')[] = [
+        'xverse',
+        'hiro',
+        'leather',
+      ];
 
       for (const wallet of wallets) {
         try {
@@ -66,7 +84,9 @@ export class MobileWalletTester implements MobileWalletTestSuite {
     return results;
   }
 
-  public async testWalletConnection(walletType: 'xverse' | 'hiro' | 'leather'): Promise<MobileWalletTestResult> {
+  public async testWalletConnection(
+    walletType: 'xverse' | 'hiro' | 'leather'
+  ): Promise<MobileWalletTestResult> {
     const sessionId = `test_${walletType}_${Date.now()}`;
     const startTime = Date.now();
 
@@ -76,7 +96,9 @@ export class MobileWalletTester implements MobileWalletTestSuite {
 
       // Create WalletConnect configuration
       const config = createStacksWalletConfig();
-      const sessionTopic = `test_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const sessionTopic = `test_session_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
       const uri = createWalletConnectUri(sessionTopic, config);
 
       // Initiate connection (but don't actually open wallet in tests)
@@ -106,10 +128,12 @@ export class MobileWalletTester implements MobileWalletTestSuite {
 
         this.testResults.push(result);
         return result;
-
       } catch (responseError) {
         // Response failed or timed out
-        const error = responseError instanceof Error ? responseError.message : 'Response failed';
+        const error =
+          responseError instanceof Error
+            ? responseError.message
+            : 'Response failed';
         trackMobileWalletConnectionFailure(walletType, sessionId, error);
 
         const result: MobileWalletTestResult = {
@@ -124,9 +148,9 @@ export class MobileWalletTester implements MobileWalletTestSuite {
         this.testResults.push(result);
         return result;
       }
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Test failed';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Test failed';
       trackMobileWalletConnectionFailure(walletType, sessionId, errorMessage);
 
       const result: MobileWalletTestResult = {
@@ -159,11 +183,15 @@ export class MobileWalletTester implements MobileWalletTestSuite {
     successRate: number;
   } {
     const totalTests = this.testResults.length;
-    const successfulTests = this.testResults.filter(r => r.success).length;
+    const successfulTests = this.testResults.filter((r) => r.success).length;
     const failedTests = totalTests - successfulTests;
-    const totalDuration = this.testResults.reduce((sum, r) => sum + r.duration, 0);
+    const totalDuration = this.testResults.reduce(
+      (sum, r) => sum + r.duration,
+      0
+    );
     const averageDuration = totalTests > 0 ? totalDuration / totalTests : 0;
-    const successRate = totalTests > 0 ? (successfulTests / totalTests) * 100 : 0;
+    const successRate =
+      totalTests > 0 ? (successfulTests / totalTests) * 100 : 0;
 
     return {
       totalTests,
@@ -191,7 +219,9 @@ export const runMobileWalletTests = (): Promise<MobileWalletTestResult[]> => {
   return MobileWalletTester.getInstance().runAllTests();
 };
 
-export const testMobileWalletConnection = (walletType: 'xverse' | 'hiro' | 'leather'): Promise<MobileWalletTestResult> => {
+export const testMobileWalletConnection = (
+  walletType: 'xverse' | 'hiro' | 'leather'
+): Promise<MobileWalletTestResult> => {
   return MobileWalletTester.getInstance().testWalletConnection(walletType);
 };
 

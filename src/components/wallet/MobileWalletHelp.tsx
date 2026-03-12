@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp, ExternalLink, Smartphone } from 'lucide-react';
+import {
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Smartphone,
+} from 'lucide-react';
 
 interface MobileWalletHelpProps {
   walletType?: 'xverse' | 'hiro' | 'leather';
@@ -34,7 +40,7 @@ const WALLET_GUIDES = {
       'Scan the QR code or paste the connection URI',
     ],
     troubleshooting: [
-      'Ensure you\'re using the official Hiro Wallet app',
+      "Ensure you're using the official Hiro Wallet app",
       'Check your internet connection',
       'Try restarting both the wallet app and browser',
       'Contact Hiro support if issues persist',
@@ -58,11 +64,13 @@ const WALLET_GUIDES = {
   },
 };
 
-export default function MobileWalletHelp({ walletType }: MobileWalletHelpProps) {
+export default function MobileWalletHelp({
+  walletType,
+}: MobileWalletHelpProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [selectedWallet, setSelectedWallet] = useState<'xverse' | 'hiro' | 'leather'>(
-    walletType || 'xverse'
-  );
+  const [selectedWallet, setSelectedWallet] = useState<
+    'xverse' | 'hiro' | 'leather'
+  >(walletType || 'xverse');
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -86,7 +94,9 @@ export default function MobileWalletHelp({ walletType }: MobileWalletHelpProps) 
           {Object.entries(WALLET_GUIDES).map(([key, guide]) => (
             <button
               key={key}
-              onClick={() => setSelectedWallet(key as 'xverse' | 'hiro' | 'leather')}
+              onClick={() =>
+                setSelectedWallet(key as 'xverse' | 'hiro' | 'leather')
+              }
               className={`p-3 rounded-lg border-2 transition-colors ${
                 selectedWallet === key
                   ? 'border-blue-500 bg-blue-50'
@@ -110,8 +120,12 @@ export default function MobileWalletHelp({ walletType }: MobileWalletHelpProps) 
           <div className="flex items-center gap-3">
             <Smartphone className="w-5 h-5 text-blue-600" />
             <div>
-              <h3 className="font-medium text-blue-900">Download {currentGuide.name}</h3>
-              <p className="text-sm text-blue-700">Get the app to connect your wallet</p>
+              <h3 className="font-medium text-blue-900">
+                Download {currentGuide.name}
+              </h3>
+              <p className="text-sm text-blue-700">
+                Get the app to connect your wallet
+              </p>
             </div>
           </div>
           <a
@@ -144,7 +158,9 @@ export default function MobileWalletHelp({ walletType }: MobileWalletHelpProps) 
           <div className="mt-2 p-4 bg-white border border-gray-200 rounded-lg">
             <ol className="list-decimal list-inside space-y-2 text-sm">
               {currentGuide.setupSteps.map((step, index) => (
-                <li key={index} className="text-gray-700">{step}</li>
+                <li key={index} className="text-gray-700">
+                  {step}
+                </li>
               ))}
             </ol>
           </div>
@@ -169,7 +185,9 @@ export default function MobileWalletHelp({ walletType }: MobileWalletHelpProps) 
           <div className="mt-2 p-4 bg-white border border-gray-200 rounded-lg">
             <ul className="list-disc list-inside space-y-2 text-sm">
               {currentGuide.troubleshooting.map((tip, index) => (
-                <li key={index} className="text-gray-700">{tip}</li>
+                <li key={index} className="text-gray-700">
+                  {tip}
+                </li>
               ))}
             </ul>
           </div>

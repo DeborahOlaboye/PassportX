@@ -26,8 +26,10 @@ export function useAnalytics() {
 
   return {
     trackEvent: analyticsService.trackEvent.bind(analyticsService),
-    trackWalletConnect: analyticsService.trackWalletConnect.bind(analyticsService),
-    trackTransactionCompleted: analyticsService.trackTransactionCompleted.bind(analyticsService),
+    trackWalletConnect:
+      analyticsService.trackWalletConnect.bind(analyticsService),
+    trackTransactionCompleted:
+      analyticsService.trackTransactionCompleted.bind(analyticsService),
     trackError: analyticsService.trackError.bind(analyticsService),
     setWalletAddress: analyticsService.setWalletAddress.bind(analyticsService),
   };

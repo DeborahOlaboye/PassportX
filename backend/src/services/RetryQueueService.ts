@@ -50,7 +50,13 @@ export class RetryQueueService {
     contractAddress?: string;
     transactionHash?: string;
     blockHeight?: number;
-    errorType?: 'network' | 'validation' | 'timeout' | 'rate_limit' | 'server_error' | 'unknown';
+    errorType?:
+      | 'network'
+      | 'validation'
+      | 'timeout'
+      | 'rate_limit'
+      | 'server_error'
+      | 'unknown';
     error?: string;
     maxAttempts?: number;
     metadata?: Record<string, any>;
@@ -71,7 +77,7 @@ export class RetryQueueService {
       lastError: params.error,
       errorType: params.errorType || 'unknown',
       status: 'pending',
-      metadata: params.metadata
+      metadata: params.metadata,
     });
 
     await retryItem.save();
@@ -97,7 +103,7 @@ export class RetryQueueService {
       processed: 0,
       succeeded: 0,
       failed: 0,
-      skipped: 0
+      skipped: 0,
     };
 
     try {
@@ -122,10 +128,12 @@ export class RetryQueueService {
   /**
    * Get items ready for retry
    */
-  private async getItemsReadyForRetry(limit: number = 100): Promise<IRetryQueueItem[]> {
+  private async getItemsReadyForRetry(
+    limit: number = 100
+  ): Promise<IRetryQueueItem[]> {
     return await RetryQueue.find({
       status: { $in: ['pending', 'retrying'] },
-      nextRetryAt: { $lte: new Date() }
+      nextRetryAt: { $lte: new Date() },
     })
       .limit(limit)
       .sort({ nextRetryAt: 1 });
@@ -188,7 +196,10 @@ export class RetryQueueService {
   /**
    * Handle retry failure
    */
-  private async handleRetryFailure(item: IRetryQueueItem, error: unknown): Promise<void> {
+  private async handleRetryFailure(
+    item: IRetryQueueItem,
+    error: unknown
+  ): Promise<void> {
     item.lastError = error instanceof Error ? error.message : 'Unknown error';
 
     // Classify error type if not already set
@@ -198,7 +209,10 @@ export class RetryQueueService {
 
     // Check if we should continue retrying
     if (item.attemptCount >= item.maxAttempts) {
-      await this.moveToDeadLetter(item, 'Maximum retry attempts exceeded after failure');
+      await this.moveToDeadLetter(
+        item,
+        'Maximum retry attempts exceeded after failure'
+      );
       return;
     }
 
@@ -209,7 +223,10 @@ export class RetryQueueService {
     );
 
     if (!backoff.shouldRetry) {
-      await this.moveToDeadLetter(item, 'Backoff service determined not to retry');
+      await this.moveToDeadLetter(
+        item,
+        'Backoff service determined not to retry'
+      );
       return;
     }
 
@@ -222,15 +239,31 @@ export class RetryQueueService {
   /**
    * Classify error type from error object
    */
-  private classifyError(error: unknown): 'network' | 'validation' | 'timeout' | 'rate_limit' | 'server_error' | 'unknown' {
-    const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
-    const errorCode = (error instanceof Error && 'code' in error ? (error as NodeJS.ErrnoException).code : '') || '';
+  private classifyError(
+    error: unknown
+  ):
+    | 'network'
+    | 'validation'
+    | 'timeout'
+    | 'rate_limit'
+    | 'server_error'
+    | 'unknown' {
+    const errorMessage =
+      error instanceof Error ? error.message.toLowerCase() : '';
+    const errorCode =
+      (error instanceof Error && 'code' in error
+        ? (error as NodeJS.ErrnoException).code
+        : '') || '';
 
     if (errorMessage.includes('timeout') || errorCode === 'ETIMEDOUT') {
       return 'timeout';
     }
 
-    if (errorMessage.includes('network') || errorCode === 'ECONNREFUSED' || errorCode === 'ENOTFOUND') {
+    if (
+      errorMessage.includes('network') ||
+      errorCode === 'ECONNREFUSED' ||
+      errorCode === 'ENOTFOUND'
+    ) {
       return 'network';
     }
 
@@ -252,7 +285,10 @@ export class RetryQueueService {
   /**
    * Move item to dead letter queue
    */
-  private async moveToDeadLetter(item: IRetryQueueItem, reason: string): Promise<void> {
+  private async moveToDeadLetter(
+    item: IRetryQueueItem,
+    reason: string
+  ): Promise<void> {
     item.lastError = reason;
     await this.deadLetterService.moveToDeadLetter(item);
   }
@@ -279,29 +315,33 @@ export class RetryQueueService {
         pending: 0,
         retrying: 0,
         failed: 0,
-        succeeded: 0
+        succeeded: 0,
       },
       byItemType: {
         event: 0,
-        webhook: 0
+        webhook: 0,
       },
       byErrorType: {},
-      averageAttempts: 0
+      averageAttempts: 0,
     };
 
     let totalAttempts = 0;
 
-    items.forEach(item => {
+    items.forEach((item) => {
       stats.byStatus[item.status]++;
       stats.byItemType[item.itemType]++;
 
       if (item.errorType) {
-        stats.byErrorType[item.errorType] = (stats.byErrorType[item.errorType] || 0) + 1;
+        stats.byErrorType[item.errorType] =
+          (stats.byErrorType[item.errorType] || 0) + 1;
       }
 
       totalAttempts += item.attemptCount;
 
-      if (!stats.nextRetryTime || (item.nextRetryAt && item.nextRetryAt < stats.nextRetryTime)) {
+      if (
+        !stats.nextRetryTime ||
+        (item.nextRetryAt && item.nextRetryAt < stats.nextRetryTime)
+      ) {
         if (item.status === 'pending' || item.status === 'retrying') {
           stats.nextRetryTime = item.nextRetryAt;
         }
@@ -322,7 +362,7 @@ export class RetryQueueService {
 
     const result = await RetryQueue.deleteMany({
       status: 'succeeded',
-      updatedAt: { $lt: cutoffDate }
+      updatedAt: { $lt: cutoffDate },
     });
 
     return result.deletedCount;

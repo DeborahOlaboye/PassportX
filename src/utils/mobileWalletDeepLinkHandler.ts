@@ -47,7 +47,10 @@ class MobileWalletDeepLinkHandler {
         this.handleDeepLink(event.detail);
       };
 
-      window.addEventListener('walletconnect' as any, handleCustomProtocol as any);
+      window.addEventListener(
+        'walletconnect' as any,
+        handleCustomProtocol as any
+      );
 
       // Handle hash changes for web-based deep links
       const handleHashChange = () => {
@@ -81,7 +84,10 @@ class MobileWalletDeepLinkHandler {
     if (!this.isListening) return;
 
     if (typeof window !== 'undefined') {
-      window.removeEventListener('walletconnect' as any, this.handleCustomProtocol as any);
+      window.removeEventListener(
+        'walletconnect' as any,
+        this.handleCustomProtocol as any
+      );
       window.removeEventListener('hashchange', this.handleHashChange);
       window.removeEventListener('popstate', this.handlePopState);
     }
@@ -113,7 +119,7 @@ class MobileWalletDeepLinkHandler {
       const data: DeepLinkData = {
         action: 'connect',
         sessionId: this.extractSessionId(uri),
-        data: { uri }
+        data: { uri },
       };
       this.handleDeepLink(data);
     } catch (error) {
@@ -150,7 +156,10 @@ class MobileWalletDeepLinkHandler {
   }
 
   // Utility method to create deep link URLs
-  createDeepLink(walletType: 'xverse' | 'hiro' | 'leather', uri: string): string {
+  createDeepLink(
+    walletType: 'xverse' | 'hiro' | 'leather',
+    uri: string
+  ): string {
     const baseUrls = {
       xverse: 'xverse://wc',
       hiro: 'hiro://wc',
@@ -162,7 +171,9 @@ class MobileWalletDeepLinkHandler {
   }
 
   // Check if device supports deep linking for a specific wallet
-  async canOpenWallet(walletType: 'xverse' | 'hiro' | 'leather'): Promise<boolean> {
+  async canOpenWallet(
+    walletType: 'xverse' | 'hiro' | 'leather'
+  ): Promise<boolean> {
     if (typeof window === 'undefined') return false;
 
     const deepLink = this.createDeepLink(walletType, 'test');
@@ -172,7 +183,7 @@ class MobileWalletDeepLinkHandler {
       window.location.href = deepLink;
 
       // If we're still here after a short delay, the app might not be installed
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Check if the page is still visible (app didn't open)
       return document.hidden;
@@ -183,7 +194,10 @@ class MobileWalletDeepLinkHandler {
 }
 
 // React hook for using deep link handler
-export function useMobileWalletDeepLink(sessionId: string, handler: DeepLinkHandler) {
+export function useMobileWalletDeepLink(
+  sessionId: string,
+  handler: DeepLinkHandler
+) {
   const deepLinkHandler = MobileWalletDeepLinkHandler.getInstance();
 
   useEffect(() => {
@@ -194,13 +208,19 @@ export function useMobileWalletDeepLink(sessionId: string, handler: DeepLinkHand
     };
   }, [sessionId, handler]);
 
-  const createDeepLink = useCallback((walletType: 'xverse' | 'hiro' | 'leather', uri: string) => {
-    return deepLinkHandler.createDeepLink(walletType, uri);
-  }, []);
+  const createDeepLink = useCallback(
+    (walletType: 'xverse' | 'hiro' | 'leather', uri: string) => {
+      return deepLinkHandler.createDeepLink(walletType, uri);
+    },
+    []
+  );
 
-  const canOpenWallet = useCallback(async (walletType: 'xverse' | 'hiro' | 'leather') => {
-    return deepLinkHandler.canOpenWallet(walletType);
-  }, []);
+  const canOpenWallet = useCallback(
+    async (walletType: 'xverse' | 'hiro' | 'leather') => {
+      return deepLinkHandler.canOpenWallet(walletType);
+    },
+    []
+  );
 
   return {
     createDeepLink,

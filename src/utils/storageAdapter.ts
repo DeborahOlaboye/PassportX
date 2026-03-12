@@ -28,7 +28,10 @@ export const setItem = (
   }
 };
 
-export const getItem = (key: string, area: StorageArea = 'local'): string | null => {
+export const getItem = (
+  key: string,
+  area: StorageArea = 'local'
+): string | null => {
   try {
     if (area === 'session' && available('session'))
       return sessionStorage.getItem(key);

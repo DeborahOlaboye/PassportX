@@ -9,16 +9,19 @@ const mongoose = require('mongoose');
 
 async function migrateUsers() {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/passportx';
-    
+    const mongoUri =
+      process.env.MONGODB_URI || 'mongodb://localhost:27017/passportx';
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(mongoUri);
     console.log('Connected successfully');
 
     const User = mongoose.model('User');
-    
+
     // Find users without settings field
-    const usersWithoutSettings = await User.find({ settings: { $exists: false } });
+    const usersWithoutSettings = await User.find({
+      settings: { $exists: false },
+    });
     console.log(`Found ${usersWithoutSettings.length} users without settings`);
 
     // Update users with default settings
@@ -26,15 +29,19 @@ async function migrateUsers() {
       user.settings = {
         showEmail: false,
         showBadges: true,
-        showCommunities: true
+        showCommunities: true,
       };
       await user.save();
     }
 
-    console.log(`Updated ${usersWithoutSettings.length} users with default settings`);
+    console.log(
+      `Updated ${usersWithoutSettings.length} users with default settings`
+    );
 
     // Log users with passportId
-    const usersWithPassport = await User.countDocuments({ passportId: { $exists: true } });
+    const usersWithPassport = await User.countDocuments({
+      passportId: { $exists: true },
+    });
     console.log(`${usersWithPassport} users have passportId`);
 
     console.log('Migration completed successfully');

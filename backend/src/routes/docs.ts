@@ -26,16 +26,19 @@ router.get('/spec', (_req: Request, res: Response) => {
 
 // Serve Swagger UI at /api/docs
 router.use('/', swaggerUi.serve);
-router.get('/', swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: 'PassportX API Docs',
-  customCss: '.swagger-ui .topbar { background-color: #1a1a2e; }',
-  swaggerOptions: {
-    persistAuthorization: true,
-    displayRequestDuration: true,
-    filter: true,
-    showExtensions: true,
-    showCommonExtensions: true,
-  },
-}));
+router.get(
+  '/',
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'PassportX API Docs',
+    customCss: '.swagger-ui .topbar { background-color: #1a1a2e; }',
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+      showExtensions: true,
+      showCommonExtensions: true,
+    },
+  })
+);
 
 export default router;

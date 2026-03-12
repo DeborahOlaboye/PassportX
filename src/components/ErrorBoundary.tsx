@@ -1,8 +1,10 @@
 import React from 'react';
 
-type Props = { 
-  children: React.ReactNode; 
-  fallback?: React.ReactNode | ((error: Error, reset: () => void) => React.ReactNode);
+type Props = {
+  children: React.ReactNode;
+  fallback?:
+    | React.ReactNode
+    | ((error: Error, reset: () => void) => React.ReactNode);
   onReset?: () => void;
 };
 type State = { hasError: boolean; error?: Error };
@@ -17,9 +19,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: any) {
+  componentDidCatch(_error: Error, _info: React.ErrorInfo): void {
     // Send to remote logging if desired
-    // console.error('ErrorBoundary caught', error, info);
   }
 
   reset = () => {

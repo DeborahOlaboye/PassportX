@@ -1,6 +1,6 @@
 import { UserSession } from '@stacks/connect';
-import { 
-  ContractCallOptions, 
+import {
+  ContractCallOptions,
   PostConditionMode,
   FungiblePostCondition,
   makeStandardSTXPostCondition,
@@ -9,10 +9,13 @@ import {
   stringAsciiCV,
   trueCV,
   falseCV,
-  contractPrincipalCV
+  contractPrincipalCV,
 } from '@stacks/transactions';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { BaseContractResponse, TransactionStatusResponse } from '@/types/contract';
+import {
+  BaseContractResponse,
+  TransactionStatusResponse,
+} from '@/types/contract';
 
 export interface CommunityMetadata {
   name: string;
@@ -56,7 +59,7 @@ export class CommunityContractManager {
   }
 
   private getNetwork() {
-    return this.network === 'mainnet' 
+    return this.network === 'mainnet'
       ? new StacksMainnet()
       : new StacksTestnet();
   }
@@ -83,24 +86,26 @@ export class CommunityContractManager {
     try {
       const contractId = `${this.contractAddress}.${this.contractName}`;
       const userData = this.userSession.loadUserData();
-      const senderAddress = userData.profile.stxAddress[
-        this.network === 'mainnet' ? 'mainnet' : 'testnet'
-      ];
+      const senderAddress =
+        userData.profile.stxAddress[
+          this.network === 'mainnet' ? 'mainnet' : 'testnet'
+        ];
 
       const postConditionMode = PostConditionMode.Deny;
-      const postConditions: FungiblePostCondition[] = params.stxPayment > 0 
-        ? [
-            makeStandardSTXPostCondition(
-              senderAddress,
-              FungibleConditionCode.LessEqual,
-              BigInt(params.stxPayment * 1_000_000)
-            )
-          ]
-        : [];
+      const postConditions: FungiblePostCondition[] =
+        params.stxPayment > 0
+          ? [
+              makeStandardSTXPostCondition(
+                senderAddress,
+                FungibleConditionCode.LessEqual,
+                BigInt(params.stxPayment * 1_000_000)
+              ),
+            ]
+          : [];
 
       const functionArgs = [
         stringAsciiCV(params.name),
-        stringAsciiCV(params.description)
+        stringAsciiCV(params.description),
       ];
 
       const txOptions: ContractCallOptions = {
@@ -112,17 +117,19 @@ export class CommunityContractManager {
         network: this.getNetwork(),
         postConditionMode,
         postConditions,
-        anchorMode: 'any'
+        anchorMode: 'any',
       };
 
-      const response = await (window as any).stacks?.openContractCall?.(txOptions);
+      const response = await (window as any).stacks?.openContractCall?.(
+        txOptions
+      );
 
       if (!response?.txid) {
         throw new Error('Transaction failed or was cancelled');
       }
 
       return {
-        txId: response.txid
+        txId: response.txid,
       };
     } catch (error) {
       console.error('Community creation error:', error);
@@ -149,7 +156,7 @@ export class CommunityContractManager {
       const functionArgs = [
         uintCV(communityId),
         contractPrincipalCV(memberAddress, this.contractName),
-        stringAsciiCV(role)
+        stringAsciiCV(role),
       ];
 
       const txOptions: ContractCallOptions = {
@@ -160,10 +167,12 @@ export class CommunityContractManager {
         senderKey: userData.appPrivateKey,
         network: this.getNetwork(),
         postConditionMode: PostConditionMode.Deny,
-        anchorMode: 'any'
+        anchorMode: 'any',
       };
 
-      const response = await (window as any).stacks?.openContractCall?.(txOptions);
+      const response = await (window as any).stacks?.openContractCall?.(
+        txOptions
+      );
 
       if (!response?.txid) {
         throw new Error('Failed to add community member');
@@ -193,10 +202,12 @@ export class CommunityContractManager {
           type: 'tuple',
           data: {
             'public-badges': settings.publicBadges ? trueCV() : falseCV(),
-            'allow-member-requests': settings.allowMemberRequests ? trueCV() : falseCV(),
-            'require-approval': settings.requireApproval ? trueCV() : falseCV()
-          }
-        }
+            'allow-member-requests': settings.allowMemberRequests
+              ? trueCV()
+              : falseCV(),
+            'require-approval': settings.requireApproval ? trueCV() : falseCV(),
+          },
+        },
       ];
 
       const txOptions: ContractCallOptions = {
@@ -207,10 +218,12 @@ export class CommunityContractManager {
         senderKey: userData.appPrivateKey,
         network: this.getNetwork(),
         postConditionMode: PostConditionMode.Deny,
-        anchorMode: 'any'
+        anchorMode: 'any',
       };
 
-      const response = await (window as any).stacks?.openContractCall?.(txOptions);
+      const response = await (window as any).stacks?.openContractCall?.(
+        txOptions
+      );
 
       if (!response?.txid) {
         throw new Error('Failed to update community settings');
@@ -236,7 +249,7 @@ export class CommunityContractManager {
 
       const functionArgs = [
         uintCV(communityId),
-        contractPrincipalCV(newOwnerAddress, this.contractName)
+        contractPrincipalCV(newOwnerAddress, this.contractName),
       ];
 
       const txOptions: ContractCallOptions = {
@@ -247,10 +260,12 @@ export class CommunityContractManager {
         senderKey: userData.appPrivateKey,
         network: this.getNetwork(),
         postConditionMode: PostConditionMode.Deny,
-        anchorMode: 'any'
+        anchorMode: 'any',
       };
 
-      const response = await (window as any).stacks?.openContractCall?.(txOptions);
+      const response = await (window as any).stacks?.openContractCall?.(
+        txOptions
+      );
 
       if (!response?.txid) {
         throw new Error('Failed to transfer community ownership');
@@ -281,10 +296,12 @@ export class CommunityContractManager {
         senderKey: userData.appPrivateKey,
         network: this.getNetwork(),
         postConditionMode: PostConditionMode.Deny,
-        anchorMode: 'any'
+        anchorMode: 'any',
       };
 
-      const response = await (window as any).stacks?.openContractCall?.(txOptions);
+      const response = await (window as any).stacks?.openContractCall?.(
+        txOptions
+      );
 
       if (!response?.txid) {
         throw new Error('Failed to deactivate community');
@@ -300,16 +317,17 @@ export class CommunityContractManager {
   validateTransactionStatus = async (txId: string): Promise<boolean> => {
     try {
       const network = this.getNetwork();
-      const baseUrl = this.network === 'mainnet'
-        ? 'https://api.mainnet.hiro.so'
-        : 'https://api.testnet.hiro.so';
+      const baseUrl =
+        this.network === 'mainnet'
+          ? 'https://api.mainnet.hiro.so'
+          : 'https://api.testnet.hiro.so';
 
-      const response = await fetch(
-        `${baseUrl}/extended/v1/tx/${txId}`
-      );
+      const response = await fetch(`${baseUrl}/extended/v1/tx/${txId}`);
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch transaction status: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch transaction status: ${response.statusText}`
+        );
       }
 
       const data: TransactionStatusResponse = await response.json();

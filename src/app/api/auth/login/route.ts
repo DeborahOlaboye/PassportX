@@ -18,7 +18,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     // If login successful, set cookie from backend response
-    const backendResponse = NextResponse.json(data, { status: response.status });
+    const backendResponse = NextResponse.json(data, {
+      status: response.status,
+    });
 
     // Forward cookies from backend
     const setCookieHeader = response.headers.get('set-cookie');

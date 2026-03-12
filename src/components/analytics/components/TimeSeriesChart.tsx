@@ -11,8 +11,8 @@ export function TimeSeriesChart({ data }: { data: TimeSeriesData[] }) {
     );
   }
 
-  const maxNewUsers = Math.max(...data.map(d => d.newUsers), 1);
-  const maxActiveUsers = Math.max(...data.map(d => d.activeUsers), 1);
+  const maxNewUsers = Math.max(...data.map((d) => d.newUsers), 1);
+  const maxActiveUsers = Math.max(...data.map((d) => d.activeUsers), 1);
 
   return (
     <div className="w-full h-64 flex flex-col">
@@ -26,14 +26,18 @@ export function TimeSeriesChart({ data }: { data: TimeSeriesData[] }) {
               <div
                 className="flex-1 bg-blue-400 rounded-t opacity-70 hover:opacity-100 transition-opacity"
                 style={{
-                  height: `${(item.newUsers / Math.max(maxNewUsers, 1)) * 100}%`
+                  height: `${
+                    (item.newUsers / Math.max(maxNewUsers, 1)) * 100
+                  }%`,
                 }}
                 title={`New Users: ${item.newUsers}`}
               />
               <div
                 className="flex-1 bg-green-400 rounded-t opacity-70 hover:opacity-100 transition-opacity"
                 style={{
-                  height: `${(item.activeUsers / Math.max(maxActiveUsers, 1)) * 100}%`
+                  height: `${
+                    (item.activeUsers / Math.max(maxActiveUsers, 1)) * 100
+                  }%`,
                 }}
                 title={`Active Users: ${item.activeUsers}`}
               />
@@ -41,7 +45,7 @@ export function TimeSeriesChart({ data }: { data: TimeSeriesData[] }) {
             <span className="text-xs text-gray-500 whitespace-nowrap mt-1">
               {new Date(item.date).toLocaleDateString('en-US', {
                 month: 'short',
-                day: 'numeric'
+                day: 'numeric',
               })}
             </span>
           </div>

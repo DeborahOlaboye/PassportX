@@ -1,10 +1,10 @@
-import { CategoryHandler } from './BaseCategoryHandler'
-import { FilteredBadgeEvent, BadgeCategory } from '../BadgeCategoryFilter'
-import { SkillCategoryHandler } from './SkillCategoryHandler'
-import { EventParticipationCategoryHandler } from './EventParticipationCategoryHandler'
-import { ContributionCategoryHandler } from './ContributionCategoryHandler'
-import { LeadershipCategoryHandler } from './LeadershipCategoryHandler'
-import { LearningMilestoneCategoryHandler } from './LearningMilestoneCategoryHandler'
+import { CategoryHandler } from './BaseCategoryHandler';
+import { FilteredBadgeEvent, BadgeCategory } from '../BadgeCategoryFilter';
+import { SkillCategoryHandler } from './SkillCategoryHandler';
+import { EventParticipationCategoryHandler } from './EventParticipationCategoryHandler';
+import { ContributionCategoryHandler } from './ContributionCategoryHandler';
+import { LeadershipCategoryHandler } from './LeadershipCategoryHandler';
+import { LearningMilestoneCategoryHandler } from './LearningMilestoneCategoryHandler';
 
 export class CategoryHandlerManager {
   private static instance: CategoryHandlerManager;
@@ -37,7 +37,9 @@ export class CategoryHandlerManager {
     }
 
     if (!handler.canHandle(event)) {
-      this.logger.warn(`Handler cannot handle event for category: ${event.category}`);
+      this.logger.warn(
+        `Handler cannot handle event for category: ${event.category}`
+      );
       return null;
     }
 
@@ -45,7 +47,10 @@ export class CategoryHandlerManager {
       this.logger.info(`Processing event with ${event.category} handler`);
       return await handler.processEvent(event);
     } catch (error) {
-      this.logger.error(`Error processing event with ${event.category} handler:`, error);
+      this.logger.error(
+        `Error processing event with ${event.category} handler:`,
+        error
+      );
       throw error;
     }
   }
@@ -86,20 +91,33 @@ export class CategoryHandlerManager {
   private initializeHandlers(): void {
     // Register default handlers
     this.handlers.set('skill', new SkillCategoryHandler(this.logger));
-    this.handlers.set('event participation', new EventParticipationCategoryHandler(this.logger));
-    this.handlers.set('contribution', new ContributionCategoryHandler(this.logger));
+    this.handlers.set(
+      'event participation',
+      new EventParticipationCategoryHandler(this.logger)
+    );
+    this.handlers.set(
+      'contribution',
+      new ContributionCategoryHandler(this.logger)
+    );
     this.handlers.set('leadership', new LeadershipCategoryHandler(this.logger));
-    this.handlers.set('learning milestone', new LearningMilestoneCategoryHandler(this.logger));
+    this.handlers.set(
+      'learning milestone',
+      new LearningMilestoneCategoryHandler(this.logger)
+    );
 
     this.logger.info('Initialized category handlers');
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CategoryHandlerManager] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CategoryHandlerManager] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CategoryHandlerManager] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CategoryHandlerManager] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CategoryHandlerManager] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CategoryHandlerManager] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CategoryHandlerManager] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CategoryHandlerManager] ${msg}`, ...args),
     };
   }
 }

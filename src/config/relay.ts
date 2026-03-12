@@ -10,7 +10,8 @@ export const FALLBACK_RELAY: RelayConfig = {
   protocol: 'irn',
 };
 
-export const CUSTOM_RELAY: RelayConfig | null = process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL
+export const CUSTOM_RELAY: RelayConfig | null = process.env
+  .NEXT_PUBLIC_WALLETCONNECT_RELAY_URL
   ? {
       url: process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL,
       protocol: 'irn',

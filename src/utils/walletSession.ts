@@ -46,7 +46,7 @@ type LoadOptions = {
  */
 export const loadSession = async (
   opts?: LoadOptions
-): Promise<WalletSession | null> {
+): Promise<WalletSession | null> => {
   try {
     const area = opts?.area ?? 'local';
     const raw = storageAdapter.getItem(STORAGE_KEY, area);

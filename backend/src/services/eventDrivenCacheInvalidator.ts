@@ -42,7 +42,7 @@ export class EventDrivenCacheInvalidator {
     averageInvalidationTime: 0,
     cacheHitRate: 0,
     lastInvalidationTime: 0,
-    failedInvalidations: 0
+    failedInvalidations: 0,
   };
 
   private invalidationTimings: number[] = [];
@@ -72,10 +72,14 @@ export class EventDrivenCacheInvalidator {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[EventDrivenCacheInvalidator] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[EventDrivenCacheInvalidator] ${msg}`, ...args),
     };
   }
 
@@ -88,52 +92,45 @@ export class EventDrivenCacheInvalidator {
         'badges:recent',
         'badges:count',
         'badges:search:*',
-        'badges:category:*'
+        'badges:category:*',
       ],
       patterns: [
         '^badges:user:.*:list$',
         '^badges:user:.*:count$',
         '^passport:.*$',
-        '^badge:.*$'
+        '^badge:.*$',
       ],
       priority: 'high',
       warmCache: true,
-      description: 'Invalidates user badge lists, counts, and general badge caches when badges are minted'
+      description:
+        'Invalidates user badge lists, counts, and general badge caches when badges are minted',
     });
 
     // Badge metadata update events
     this.invalidationRules.set('badge-metadata-update', {
       eventType: 'badge-metadata-update',
-      cacheKeys: [
-        'badges:list:all',
-        'badges:search:*'
-      ],
-      patterns: [
-        '^badge:.*$',
-        '^badges:category:.*$'
-      ],
+      cacheKeys: ['badges:list:all', 'badges:search:*'],
+      patterns: ['^badge:.*$', '^badges:category:.*$'],
       priority: 'medium',
       warmCache: false,
-      description: 'Invalidates specific badge caches and search results when badge metadata is updated'
+      description:
+        'Invalidates specific badge caches and search results when badge metadata is updated',
     });
 
     // Badge revocation events
     this.invalidationRules.set('badge-revocation', {
       eventType: 'badge-revocation',
-      cacheKeys: [
-        'badges:list:all',
-        'badges:recent',
-        'badges:count'
-      ],
+      cacheKeys: ['badges:list:all', 'badges:recent', 'badges:count'],
       patterns: [
         '^badges:user:.*:list$',
         '^badges:user:.*:count$',
         '^passport:.*$',
-        '^badge:.*$'
+        '^badge:.*$',
       ],
       priority: 'high',
       warmCache: true,
-      description: 'Invalidates user badge lists and passport data when badges are revoked'
+      description:
+        'Invalidates user badge lists and passport data when badges are revoked',
     });
 
     // Community creation events
@@ -143,35 +140,43 @@ export class EventDrivenCacheInvalidator {
         'communities:list:all',
         'communities:count',
         'communities:search:*',
-        'communities:tag:*'
+        'communities:tag:*',
       ],
       patterns: [
         '^communities:admin:.*:count$',
         '^community:.*$',
-        '^community:slug:.*$'
+        '^community:slug:.*$',
       ],
       priority: 'medium',
       warmCache: true,
-      description: 'Invalidates community lists and search caches when new communities are created'
+      description:
+        'Invalidates community lists and search caches when new communities are created',
     });
 
-    this.logger.info(`Initialized ${this.invalidationRules.size} cache invalidation rules`);
+    this.logger.info(
+      `Initialized ${this.invalidationRules.size} cache invalidation rules`
+    );
   }
 
-  async invalidateCacheForEvent(eventType: string, eventData: any): Promise<void> {
+  async invalidateCacheForEvent(
+    eventType: string,
+    eventData: any
+  ): Promise<void> {
     const startTime = performance.now();
 
     try {
       const rule = this.invalidationRules.get(eventType);
       if (!rule) {
-        this.logger.debug(`No invalidation rule found for event type: ${eventType}`);
+        this.logger.debug(
+          `No invalidation rule found for event type: ${eventType}`
+        );
         return;
       }
 
       this.logger.info(`Invalidating cache for ${eventType} event`, {
         priority: rule.priority,
         cacheKeys: rule.cacheKeys.length,
-        patterns: rule.patterns?.length || 0
+        patterns: rule.patterns?.length || 0,
       });
 
       // Execute invalidation based on event type
@@ -184,14 +189,17 @@ export class EventDrivenCacheInvalidator {
       if (rule.warmCache) {
         this.queueCacheWarmup(eventType, eventData);
       }
-
     } catch (error) {
       this.metrics.failedInvalidations++;
       this.logger.error(`Failed to invalidate cache for ${eventType}:`, error);
     }
   }
 
-  private async executeInvalidation(eventType: string, eventData: any, rule: CacheInvalidationRule): Promise<void> {
+  private async executeInvalidation(
+    eventType: string,
+    eventData: any,
+    rule: CacheInvalidationRule
+  ): Promise<void> {
     switch (eventType) {
       case 'badge-mint':
         await this.invalidateBadgeMint(eventData);
@@ -235,7 +243,7 @@ export class EventDrivenCacheInvalidator {
         changedFields: eventData.changedFields || [],
         timestamp: eventData.timestamp || Date.now(),
         transactionHash: eventData.transactionHash || '',
-        blockHeight: eventData.blockHeight || 0
+        blockHeight: eventData.blockHeight || 0,
       });
     }
   }
@@ -260,7 +268,10 @@ export class EventDrivenCacheInvalidator {
     // Invalidate from all cache services
     this.badgeCache.invalidate(key);
     this.communityCache.invalidate(key);
-    this.eventCache.delete({ block_identifier: { index: 0 }, transactions: [{ transaction_hash: key }] });
+    this.eventCache.delete({
+      block_identifier: { index: 0 },
+      transactions: [{ transaction_hash: key }],
+    });
   }
 
   private invalidateCachePattern(pattern: string): void {
@@ -287,12 +298,15 @@ export class EventDrivenCacheInvalidator {
     this.invalidationTimings.push(time);
 
     if (this.invalidationTimings.length > this.MAX_TIMING_SAMPLES) {
-      this.invalidationTimings = this.invalidationTimings.slice(-this.MAX_TIMING_SAMPLES);
+      this.invalidationTimings = this.invalidationTimings.slice(
+        -this.MAX_TIMING_SAMPLES
+      );
     }
 
     if (this.invalidationTimings.length > 0) {
       const sum = this.invalidationTimings.reduce((a, b) => a + b, 0);
-      this.metrics.averageInvalidationTime = sum / this.invalidationTimings.length;
+      this.metrics.averageInvalidationTime =
+        sum / this.invalidationTimings.length;
     }
   }
 
@@ -303,21 +317,21 @@ export class EventDrivenCacheInvalidator {
         this.warmupQueue.push({
           key: `badges:user:${eventData.userId}:count`,
           data: null, // Will be fetched by the warmup processor
-          ttl: 300
+          ttl: 300,
         });
         break;
       case 'badge-revocation':
         this.warmupQueue.push({
           key: `badges:user:${eventData.userId}:list`,
           data: null,
-          ttl: 300
+          ttl: 300,
         });
         break;
       case 'community-creation':
         this.warmupQueue.push({
           key: 'communities:count',
           data: null,
-          ttl: 300
+          ttl: 300,
         });
         break;
     }
@@ -350,7 +364,6 @@ export class EventDrivenCacheInvalidator {
       // 1. Fetch fresh data from the database/API
       // 2. Set it in the appropriate cache service
       // 3. Log the warmup completion
-
     } catch (error) {
       this.logger.error('Error during cache warmup:', error);
     } finally {
@@ -361,8 +374,10 @@ export class EventDrivenCacheInvalidator {
   getMetrics(): CacheInvalidationMetrics {
     return {
       ...this.metrics,
-      averageInvalidationTime: parseFloat(this.metrics.averageInvalidationTime.toFixed(4)),
-      cacheHitRate: parseFloat(this.metrics.cacheHitRate.toFixed(2))
+      averageInvalidationTime: parseFloat(
+        this.metrics.averageInvalidationTime.toFixed(4)
+      ),
+      cacheHitRate: parseFloat(this.metrics.cacheHitRate.toFixed(2)),
     };
   }
 
@@ -390,7 +405,7 @@ export class EventDrivenCacheInvalidator {
       averageInvalidationTime: 0,
       cacheHitRate: 0,
       lastInvalidationTime: 0,
-      failedInvalidations: 0
+      failedInvalidations: 0,
     };
     this.invalidationTimings = [];
     this.logger.info('Cache invalidation metrics cleared');

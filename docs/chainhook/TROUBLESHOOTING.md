@@ -36,6 +36,7 @@ node -e "const u = require('./src/config/chainhook/utils'); console.log(u.valida
 ## Problem: Events Not Being Received
 
 ### Symptom
+
 Badge mints happen on-chain, but the backend never receives a webhook POST.
 
 ### Causes and Fixes
@@ -94,6 +95,7 @@ STACKS_NETWORK=mainnet     # Stacks mainnet
 ## Problem: 401 Unauthorized on Webhook POST
 
 ### Symptom
+
 Backend returns `401 MISSING_SIGNATURE` or `401 INVALID_SIGNATURE`.
 
 ### Causes and Fixes
@@ -128,6 +130,7 @@ WEBHOOK_SECRET_KEY=my-secret-token        # used to verify the delivery
 **3. Timestamp too old (replay protection)**
 
 Webhook requests older than 5 minutes are rejected. This usually happens when:
+
 - Replaying test events from a saved file (timestamps are stale)
 - The server clock is out of sync
 
@@ -144,14 +147,17 @@ WEBHOOK_SIGNATURE_ALGORITHM=sha256   # must match what Chainhook uses
 ## Problem: Events Arrive But Duplicated
 
 ### Symptom
+
 The same badge is created twice or community creation runs twice.
 
 ### Cause
+
 Chainhook may deliver the same event multiple times (at-least-once delivery).
 Both a `stacks-contract-call` and `stacks-print` predicate may fire for the
 same on-chain action.
 
 ### Fix
+
 Check that the backend handler uses idempotency guards:
 
 ```typescript
@@ -180,13 +186,16 @@ curl -X DELETE http://localhost:20456/v1/chainhooks/pred_badge_mint_call
 ## Problem: Chainhook Node Connection Lost
 
 ### Symptom
+
 Logs show `CHAINHOOK_CONNECTION_FAILED`. Events stop arriving after some time.
 
 ### Cause
+
 The Chainhook node restarted or became unreachable. Predicates are lost when
 the node restarts (they are not persisted by default).
 
 ### Fix
+
 `ChainhookConnectionRecovery` handles automatic reconnection with exponential
 backoff. If it isn't working:
 
@@ -211,6 +220,7 @@ curl -X POST http://localhost:3001/api/chainhook/register \
 ## Problem: Reorg Not Handled Correctly
 
 ### Symptom
+
 After a chain reorganisation, stale badge records persist or users see
 incorrect data.
 
@@ -232,7 +242,7 @@ reorg handler can find and reverse them:
 ```typescript
 await Badge.create({
   ...badgeData,
-  blockHeight: event.blockHeight,   // ← required for reorg rollback
+  blockHeight: event.blockHeight, // ← required for reorg rollback
   transactionId: event.transactionHash,
 });
 ```
@@ -247,10 +257,12 @@ Check that `ReorgAwareCache.onReorg()` is wired to the reorg WebSocket event.
 ## Problem: Wrong Contract Address
 
 ### Symptom
+
 Predicates register successfully but no events arrive, even though on-chain
 transactions are happening.
 
 ### Cause
+
 The contract identifier in the predicate does not match the deployed contract.
 
 ### Fix
@@ -277,10 +289,12 @@ curl http://localhost:20456/v1/chainhooks | jq '.[] | {name, contract: .if_this.
 ## Problem: Large Event Batches Timing Out
 
 ### Symptom
+
 Webhook handler returns 504 or the Chainhook node marks the predicate as
 failing because the POST takes too long.
 
 ### Cause
+
 Processing many events synchronously in a single request takes too long.
 
 ### Fix
@@ -308,6 +322,7 @@ CHAINHOOK_MAX_BATCH_SIZE=50   # default 100 — reduce if timeouts persist
 ## Problem: Missing Environment Variables
 
 ### Symptom
+
 Server crashes on startup with `EnvValidator` errors.
 
 ### Fix
@@ -373,17 +388,17 @@ curl http://localhost:3001/api/retry/dead-letter | jq .
 
 ## Error Code Reference
 
-| Code | Meaning | Where thrown |
-|---|---|---|
-| `CHAINHOOK_CONNECTION_FAILED` | Cannot reach Chainhook node | `ChainhookConnectionRecovery` |
-| `CHAINHOOK_INVALID_CONFIG` | Missing required config value | `validateChainhookConfig()` |
-| `CHAINHOOK_PREDICATE_ERROR` | Predicate registration failed | `ChainhookPredicateManager` |
-| `CHAINHOOK_EVENT_PROCESSING_ERROR` | Handler threw during event processing | `chainhookEventProcessor` |
-| `CHAINHOOK_TIMEOUT` | Node request timed out | `ChainhookPredicateManager` |
-| `CHAINHOOK_UNAUTHORIZED` | Node rejected request (bad API key) | `ChainhookPredicateManager` |
-| `MISSING_SIGNATURE` | Webhook POST has no signature header | `webhookValidation.ts` |
-| `INVALID_SIGNATURE` | Signature does not match computed HMAC | `webhookValidation.ts` |
-| `EXPIRED_TIMESTAMP` | Webhook timestamp older than 5 min | `webhookValidation.ts` |
+| Code                               | Meaning                                | Where thrown                  |
+| ---------------------------------- | -------------------------------------- | ----------------------------- |
+| `CHAINHOOK_CONNECTION_FAILED`      | Cannot reach Chainhook node            | `ChainhookConnectionRecovery` |
+| `CHAINHOOK_INVALID_CONFIG`         | Missing required config value          | `validateChainhookConfig()`   |
+| `CHAINHOOK_PREDICATE_ERROR`        | Predicate registration failed          | `ChainhookPredicateManager`   |
+| `CHAINHOOK_EVENT_PROCESSING_ERROR` | Handler threw during event processing  | `chainhookEventProcessor`     |
+| `CHAINHOOK_TIMEOUT`                | Node request timed out                 | `ChainhookPredicateManager`   |
+| `CHAINHOOK_UNAUTHORIZED`           | Node rejected request (bad API key)    | `ChainhookPredicateManager`   |
+| `MISSING_SIGNATURE`                | Webhook POST has no signature header   | `webhookValidation.ts`        |
+| `INVALID_SIGNATURE`                | Signature does not match computed HMAC | `webhookValidation.ts`        |
+| `EXPIRED_TIMESTAMP`                | Webhook timestamp older than 5 min     | `webhookValidation.ts`        |
 
 ---
 

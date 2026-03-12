@@ -83,7 +83,12 @@ jest.mock('../../middleware/webhookValidation', () => ({
 }));
 jest.mock('../../utils/logger', () => ({
   __esModule: true,
-  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  default: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 import express from 'express';
@@ -105,7 +110,9 @@ app.use(
     res: express.Response,
     _next: express.NextFunction
   ) => {
-    res.status(err.status ?? err.statusCode ?? 500).json({ error: err.message });
+    res
+      .status(err.status ?? err.statusCode ?? 500)
+      .json({ error: err.message });
   }
 );
 
@@ -141,10 +148,7 @@ describe('POST /badges/issue/batch', () => {
   });
 
   it('returns 400 when batch exceeds MAX_BATCH_SIZE (100)', async () => {
-    const addrs = Array.from(
-      { length: 101 },
-      () => VALID_ADDR_1
-    );
+    const addrs = Array.from({ length: 101 }, () => VALID_ADDR_1);
     const res = await request(app)
       .post(ENDPOINT)
       .send({ ...BASE_BODY, recipientAddresses: addrs });
@@ -153,8 +157,9 @@ describe('POST /badges/issue/batch', () => {
   });
 
   it('accepts exactly MAX_BATCH_SIZE (100) recipients', async () => {
-    const addrs = Array.from({ length: 100 }, (_, i) =>
-      `SP${String(i).padStart(39, '0')}`
+    const addrs = Array.from(
+      { length: 100 },
+      (_, i) => `SP${String(i).padStart(39, '0')}`
     );
     // All valid format — will be accepted by the route (service mock resolves)
     const res = await request(app)

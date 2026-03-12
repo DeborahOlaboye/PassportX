@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { useWalletConnect, ConnectedWallet } from '@/contexts/WalletConnectContext';
+import {
+  useWalletConnect,
+  ConnectedWallet,
+} from '@/contexts/WalletConnectContext';
 import QRCodeDisplay from './QRCodeDisplay';
 import MobileWalletSelector from './MobileWalletSelector';
 
@@ -41,7 +44,11 @@ export default function WalletSelector({ onClose }: WalletSelectorProps) {
     // Detect mobile device
     const checkMobile = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      setIsMobile(/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent));
+      setIsMobile(
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+          userAgent
+        )
+      );
     };
 
     checkMobile();
@@ -90,10 +97,7 @@ export default function WalletSelector({ onClose }: WalletSelectorProps) {
 
         <div className="p-6 space-y-3">
           {showQR ? (
-            <QRCodeDisplay
-              onBack={() => setShowQR(false)}
-              onClose={onClose}
-            />
+            <QRCodeDisplay onBack={() => setShowQR(false)} onClose={onClose} />
           ) : (
             <>
               <div className="space-y-3">
@@ -107,8 +111,12 @@ export default function WalletSelector({ onClose }: WalletSelectorProps) {
                     <div className="flex items-center space-x-3">
                       <span className="text-2xl">{wallet.icon}</span>
                       <div>
-                        <p className="font-semibold text-gray-900">{wallet.name}</p>
-                        <p className="text-sm text-gray-500">{wallet.description}</p>
+                        <p className="font-semibold text-gray-900">
+                          {wallet.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {wallet.description}
+                        </p>
                       </div>
                     </div>
                   </button>

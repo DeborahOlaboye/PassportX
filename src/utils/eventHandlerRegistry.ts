@@ -2,7 +2,7 @@
 import {
   ChainhookEvent,
   EventHandlerResponse,
-  PredicateResult
+  PredicateResult,
 } from '../types/chainhook';
 
 /**
@@ -44,7 +44,10 @@ export type ActionHandler = (data: ActionData) => Promise<unknown>;
 export class EventHandlerRegistry {
   private handlers: Map<string, EventHandler[]> = new Map();
   private actionHandlers: Map<string, ActionHandler> = new Map();
-  private errorHandlers: ((error: Error, event: ChainhookEvent) => Promise<void>)[] = [];
+  private errorHandlers: ((
+    error: Error,
+    event: ChainhookEvent
+  ) => Promise<void>)[] = [];
 
   /**
    * Register an event handler
@@ -91,13 +94,13 @@ export class EventHandlerRegistry {
           await handler(event, context);
           actions.push({
             name: handler.name || 'anonymous',
-            status: 'success' as const
+            status: 'success' as const,
           });
         } catch (error) {
           actions.push({
             name: handler.name || 'anonymous',
             status: 'failed' as const,
-            error: (error as Error).message
+            error: (error as Error).message,
           });
 
           // Call error handlers
@@ -116,7 +119,7 @@ export class EventHandlerRegistry {
         eventHash: this.hashEvent(event),
         handledAt: Date.now(),
         processingTimeMs: Date.now() - startTime,
-        actions
+        actions,
       };
     } catch (error) {
       return {
@@ -128,9 +131,9 @@ export class EventHandlerRegistry {
           {
             name: 'dispatch',
             status: 'failed' as const,
-            error: (error as Error).message
-          }
-        ]
+            error: (error as Error).message,
+          },
+        ],
       };
     }
   }
@@ -155,14 +158,14 @@ export class EventHandlerRegistry {
           const result = await handler({
             event: predicateResult.event,
             predicateId: predicateResult.predicateId,
-            ...context
+            ...context,
           });
           results.push({ action: actionName, status: 'success', result });
         } catch (error) {
           results.push({
             action: actionName,
             status: 'failed',
-            error: (error as Error).message
+            error: (error as Error).message,
           });
         }
       }
@@ -281,7 +284,9 @@ export class EventHandlerBuilder {
   /**
    * Register error handler
    */
-  onError(handler: (error: Error, event: ChainhookEvent) => Promise<void>): this {
+  onError(
+    handler: (error: Error, event: ChainhookEvent) => Promise<void>
+  ): this {
     this.registry.registerErrorHandler(handler);
     return this;
   }

@@ -1,59 +1,59 @@
-'use client'
+'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
-  currentPage: number
-  totalPages: number
-  onPageChange: (page: number) => void
-  className?: string
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  className?: string;
 }
 
 export default function Pagination({
   currentPage,
   totalPages,
   onPageChange,
-  className = ''
+  className = '',
 }: PaginationProps) {
-  if (totalPages <= 1) return null
+  if (totalPages <= 1) return null;
 
   const getPageNumbers = () => {
-    const pages: (number | string)[] = []
-    const maxVisible = 7
+    const pages: (number | string)[] = [];
+    const maxVisible = 7;
 
     if (totalPages <= maxVisible) {
       // Show all pages if total is less than max visible
       for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
+        pages.push(i);
       }
     } else {
       // Always show first page
-      pages.push(1)
+      pages.push(1);
 
       if (currentPage > 3) {
-        pages.push('...')
+        pages.push('...');
       }
 
       // Show pages around current page
-      const start = Math.max(2, currentPage - 1)
-      const end = Math.min(totalPages - 1, currentPage + 1)
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
 
       for (let i = start; i <= end; i++) {
-        pages.push(i)
+        pages.push(i);
       }
 
       if (currentPage < totalPages - 2) {
-        pages.push('...')
+        pages.push('...');
       }
 
       // Always show last page
-      pages.push(totalPages)
+      pages.push(totalPages);
     }
 
-    return pages
-  }
+    return pages;
+  };
 
-  const pages = getPageNumbers()
+  const pages = getPageNumbers();
 
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
@@ -76,14 +76,17 @@ export default function Pagination({
         {pages.map((page, index) => {
           if (page === '...') {
             return (
-              <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
+              <span
+                key={`ellipsis-${index}`}
+                className="px-3 py-2 text-gray-500"
+              >
                 ...
               </span>
-            )
+            );
           }
 
-          const pageNum = page as number
-          const isActive = pageNum === currentPage
+          const pageNum = page as number;
+          const isActive = pageNum === currentPage;
 
           return (
             <button
@@ -97,7 +100,7 @@ export default function Pagination({
             >
               {pageNum}
             </button>
-          )
+          );
         })}
       </div>
 
@@ -115,24 +118,29 @@ export default function Pagination({
         <ChevronRight className="w-5 h-5" />
       </button>
     </div>
-  )
+  );
 }
 
 // Results info component
 interface ResultsInfoProps {
-  currentPage: number
-  limit: number
-  total: number
-  className?: string
+  currentPage: number;
+  limit: number;
+  total: number;
+  className?: string;
 }
 
-export function ResultsInfo({ currentPage, limit, total, className = '' }: ResultsInfoProps) {
-  const start = (currentPage - 1) * limit + 1
-  const end = Math.min(currentPage * limit, total)
+export function ResultsInfo({
+  currentPage,
+  limit,
+  total,
+  className = '',
+}: ResultsInfoProps) {
+  const start = (currentPage - 1) * limit + 1;
+  const end = Math.min(currentPage * limit, total);
 
   return (
     <div className={`text-sm text-gray-600 ${className}`}>
       Showing {start} - {end} of {total} badges
     </div>
-  )
+  );
 }

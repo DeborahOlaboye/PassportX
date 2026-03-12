@@ -10,7 +10,7 @@ import {
   QrCode,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
 } from 'lucide-react';
 
 interface TutorialStep {
@@ -33,8 +33,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
           <Smartphone className="w-8 h-8 text-blue-600" />
         </div>
         <p className="text-gray-600">
-          This tutorial will guide you through connecting your mobile wallet to PassportX
-          for secure blockchain interactions.
+          This tutorial will guide you through connecting your mobile wallet to
+          PassportX for secure blockchain interactions.
         </p>
       </div>
     ),
@@ -91,7 +91,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
             <div>
               <h4 className="font-medium text-blue-900">Security Note</h4>
               <p className="text-sm text-blue-700">
-                The QR code contains encrypted connection data and expires after 5 minutes.
+                The QR code contains encrypted connection data and expires after
+                5 minutes.
               </p>
             </div>
           </div>
@@ -109,7 +110,9 @@ const TUTORIAL_STEPS: TutorialStep[] = [
         <div className="bg-gray-50 rounded-lg p-6 text-center">
           <Smartphone className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-700 mb-2">Open your mobile wallet app</p>
-          <p className="text-sm text-gray-500">Navigate to the WalletConnect or scan section</p>
+          <p className="text-sm text-gray-500">
+            Navigate to the WalletConnect or scan section
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,7 +143,9 @@ const TUTORIAL_STEPS: TutorialStep[] = [
           <div className="flex items-center gap-3">
             <CheckCircle className="w-6 h-6 text-green-600" />
             <div>
-              <h4 className="font-medium text-green-900">Connection Detected</h4>
+              <h4 className="font-medium text-green-900">
+                Connection Detected
+              </h4>
               <p className="text-sm text-green-700">
                 Your mobile wallet has scanned the QR code successfully.
               </p>
@@ -163,7 +168,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
             <div>
               <h4 className="font-medium text-yellow-900">Review Carefully</h4>
               <p className="text-sm text-yellow-700">
-                Always verify the connection details match what you expect before approving.
+                Always verify the connection details match what you expect
+                before approving.
               </p>
             </div>
           </div>
@@ -181,10 +187,12 @@ const TUTORIAL_STEPS: TutorialStep[] = [
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
           <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
-        <h3 className="text-xl font-semibold text-green-900">Successfully Connected!</h3>
+        <h3 className="text-xl font-semibold text-green-900">
+          Successfully Connected!
+        </h3>
         <p className="text-gray-600">
-          Your mobile wallet is now securely connected to PassportX.
-          You can now interact with blockchain features.
+          Your mobile wallet is now securely connected to PassportX. You can now
+          interact with blockchain features.
         </p>
 
         <div className="bg-gray-50 rounded-lg p-4 text-left">
@@ -204,7 +212,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 export default function MobileWalletTutorial() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [_progress, setProgress] = useState(0);
 
   const currentTutorialStep = TUTORIAL_STEPS[currentStep];
   const totalSteps = TUTORIAL_STEPS.length;
@@ -231,7 +239,9 @@ export default function MobileWalletTutorial() {
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-center mb-2">Mobile Wallet Connection Tutorial</h2>
+        <h2 className="text-2xl font-bold text-center mb-2">
+          Mobile Wallet Connection Tutorial
+        </h2>
         <p className="text-gray-600 text-center">
           Follow these steps to connect your mobile wallet securely
         </p>
@@ -275,9 +285,7 @@ export default function MobileWalletTutorial() {
 
       {/* Step Content */}
       <div className="min-h-96 flex items-center justify-center mb-6">
-        <div className="w-full max-w-2xl">
-          {currentTutorialStep.content}
-        </div>
+        <div className="w-full max-w-2xl">{currentTutorialStep.content}</div>
       </div>
 
       {/* Controls */}
@@ -296,7 +304,11 @@ export default function MobileWalletTutorial() {
             onClick={() => setIsPlaying(!isPlaying)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
             {isPlaying ? 'Pause' : 'Play'}
           </button>
         </div>
@@ -314,7 +326,9 @@ export default function MobileWalletTutorial() {
       {/* Step Info */}
       <div className="mt-6 text-center text-sm text-gray-500">
         <p>{currentTutorialStep.description}</p>
-        <p className="mt-1">Estimated time: {currentTutorialStep.duration} seconds</p>
+        <p className="mt-1">
+          Estimated time: {currentTutorialStep.duration} seconds
+        </p>
       </div>
     </div>
   );

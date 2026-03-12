@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useNetwork } from '@/contexts/NetworkContext';
-import { networkManager } from '@/utils/networkManager';
 
 interface NetworkStatusProps {
   showDetails?: boolean;
   className?: string;
 }
 
-export function NetworkStatus({ showDetails = false, className = '' }: NetworkStatusProps) {
+export function NetworkStatus({
+  showDetails = false,
+  className = '',
+}: NetworkStatusProps) {
   const { currentNetwork, config, isSwitching } = useNetwork();
   const [isOnline, setIsOnline] = useState(true);
   const [latency, setLatency] = useState<number | null>(null);
@@ -104,7 +106,9 @@ export function NetworkStatus({ showDetails = false, className = '' }: NetworkSt
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Latency:</span>
             <span className="font-mono text-sm">
-              {latency < 1000 ? `${latency}ms` : `${(latency / 1000).toFixed(1)}s`}
+              {latency < 1000
+                ? `${latency}ms`
+                : `${(latency / 1000).toFixed(1)}s`}
             </span>
           </div>
         )}
@@ -112,7 +116,9 @@ export function NetworkStatus({ showDetails = false, className = '' }: NetworkSt
         {blockHeight !== null && (
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Block Height:</span>
-            <span className="font-mono text-sm">{blockHeight.toLocaleString()}</span>
+            <span className="font-mono text-sm">
+              {blockHeight.toLocaleString()}
+            </span>
           </div>
         )}
 

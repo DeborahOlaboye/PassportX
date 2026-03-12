@@ -25,7 +25,10 @@ export const generateKeyFromPassword = async (
   return { key, salt: s } as const;
 };
 
-export const encrypt = async (key: CryptoKey, data: string): Promise<string> => {
+export const encrypt = async (
+  key: CryptoKey,
+  data: string
+): Promise<string> => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const enc = new TextEncoder();
   const cipher = await crypto.subtle.encrypt(
@@ -40,7 +43,10 @@ export const encrypt = async (key: CryptoKey, data: string): Promise<string> => 
   return btoa(String.fromCharCode(...out));
 };
 
-export const decrypt = async (key: CryptoKey, dataB64: string): Promise<string> => {
+export const decrypt = async (
+  key: CryptoKey,
+  dataB64: string
+): Promise<string> => {
   const raw = Uint8Array.from(atob(dataB64), (c) => c.charCodeAt(0));
   const iv = raw.slice(0, 12);
   const cipher = raw.slice(12);

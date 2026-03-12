@@ -1,6 +1,9 @@
 // Unit tests for Chainhook event handlers
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { EventHandlerRegistry, EventHandlerBuilder } from '../src/utils/eventHandlerRegistry';
+import {
+  EventHandlerRegistry,
+  EventHandlerBuilder,
+} from '../src/utils/eventHandlerRegistry';
 import { MockChainhookEventFactory } from '../src/utils/mockChainhookEvents';
 import { ChainhookEvent } from '../src/types/chainhook';
 
@@ -139,7 +142,7 @@ describe('Event Handler Registry', () => {
         matched: true,
         event,
         matchedAt: Date.now(),
-        actions: ['notify']
+        actions: ['notify'],
       };
 
       const results = await registry.executeActions(predicateResult);
@@ -160,7 +163,7 @@ describe('Event Handler Registry', () => {
         matched: true,
         event,
         matchedAt: Date.now(),
-        actions: ['notify']
+        actions: ['notify'],
       };
 
       const results = await registry.executeActions(predicateResult);
@@ -176,7 +179,7 @@ describe('Event Handler Registry', () => {
         matched: true,
         event,
         matchedAt: Date.now(),
-        actions: ['non-existent-action']
+        actions: ['non-existent-action'],
       };
 
       const results = await registry.executeActions(predicateResult);
@@ -220,9 +223,7 @@ describe('Event Handler Registry', () => {
       const handler = jest.fn().mockRejectedValue(new Error('Test error'));
 
       const builder = new EventHandlerBuilder(registry);
-      builder
-        .onBadgeMint(handler)
-        .onError(errorHandler);
+      builder.onBadgeMint(handler).onError(errorHandler);
 
       const event = MockChainhookEventFactory.createBadgeMintEvent();
       await registry.dispatch('badge-mint', event);

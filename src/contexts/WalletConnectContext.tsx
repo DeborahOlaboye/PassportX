@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from 'react';
 
 export interface ConnectedWallet {
   address: string;
@@ -19,16 +25,21 @@ export interface WalletConnectContextType {
   clearError: () => void;
 }
 
-const WalletConnectContext = createContext<WalletConnectContextType | undefined>(undefined);
+const WalletConnectContext = createContext<
+  WalletConnectContextType | undefined
+>(undefined);
 
 interface WalletConnectProviderProps {
   children: ReactNode;
 }
 
-export function WalletConnectProvider({ children }: WalletConnectProviderProps) {
+export function WalletConnectProvider({
+  children,
+}: WalletConnectProviderProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [connectedWallet, setConnectedWallet] = useState<ConnectedWallet | null>(null);
+  const [connectedWallet, setConnectedWallet] =
+    useState<ConnectedWallet | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const connectWallet = useCallback(async (wallet: ConnectedWallet) => {
@@ -43,7 +54,8 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       setConnectedWallet(wallet);
       setIsConnected(true);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to connect wallet';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to connect wallet';
       setError(errorMessage);
       setIsConnected(false);
     } finally {
@@ -64,7 +76,8 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       setConnectedWallet(null);
       setIsConnected(false);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to disconnect wallet';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to disconnect wallet';
       setError(errorMessage);
     } finally {
       setIsConnecting(false);
@@ -86,14 +99,18 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
   };
 
   return (
-    <WalletConnectContext.Provider value={value}>{children}</WalletConnectContext.Provider>
+    <WalletConnectContext.Provider value={value}>
+      {children}
+    </WalletConnectContext.Provider>
   );
 }
 
 export function useWalletConnect() {
   const context = useContext(WalletConnectContext);
   if (context === undefined) {
-    throw new Error('useWalletConnect must be used within a WalletConnectProvider');
+    throw new Error(
+      'useWalletConnect must be used within a WalletConnectProvider'
+    );
   }
   return context;
 }

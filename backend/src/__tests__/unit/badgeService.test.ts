@@ -155,10 +155,16 @@ describe('badgeService', () => {
         isActive: true,
         community: { admins: ['SP_OTHER_ADMIN'] },
       });
-      (BadgeTemplate.findById as jest.Mock).mockReturnValue({ populate: mockPopulate });
+      (BadgeTemplate.findById as jest.Mock).mockReturnValue({
+        populate: mockPopulate,
+      });
 
       await expect(
-        badgeService.validateBadgeIssuance(templateId, recipientAddress, issuerAddress)
+        badgeService.validateBadgeIssuance(
+          templateId,
+          recipientAddress,
+          issuerAddress
+        )
       ).rejects.toThrow('Only community admin can issue badges');
     });
 
@@ -167,10 +173,16 @@ describe('badgeService', () => {
         isActive: true,
         community: { admin: issuerAddress }, // old wrong field — should still fail
       });
-      (BadgeTemplate.findById as jest.Mock).mockReturnValue({ populate: mockPopulate });
+      (BadgeTemplate.findById as jest.Mock).mockReturnValue({
+        populate: mockPopulate,
+      });
 
       await expect(
-        badgeService.validateBadgeIssuance(templateId, recipientAddress, issuerAddress)
+        badgeService.validateBadgeIssuance(
+          templateId,
+          recipientAddress,
+          issuerAddress
+        )
       ).rejects.toThrow('Only community admin can issue badges');
     });
 
@@ -179,11 +191,17 @@ describe('badgeService', () => {
         isActive: true,
         community: { admins: [issuerAddress, 'SP_OTHER'] },
       });
-      (BadgeTemplate.findById as jest.Mock).mockReturnValue({ populate: mockPopulate });
+      (BadgeTemplate.findById as jest.Mock).mockReturnValue({
+        populate: mockPopulate,
+      });
       (Badge.findOne as jest.Mock).mockResolvedValue(null); // no existing badge
 
       await expect(
-        badgeService.validateBadgeIssuance(templateId, recipientAddress, issuerAddress)
+        badgeService.validateBadgeIssuance(
+          templateId,
+          recipientAddress,
+          issuerAddress
+        )
       ).resolves.not.toThrow();
     });
   });

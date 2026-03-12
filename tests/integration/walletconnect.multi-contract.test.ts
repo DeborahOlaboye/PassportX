@@ -1,4 +1,8 @@
-import { isTestnetConfigured, connectWallet, signAndSubmit } from './helpers/walletConnectHelper';
+import {
+  isTestnetConfigured,
+  connectWallet,
+  signAndSubmit,
+} from './helpers/walletConnectHelper';
 
 describe('Multi-contract interactions via WalletConnect (placeholder)', () => {
   it('skips when not configured', async () => {

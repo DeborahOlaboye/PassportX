@@ -6,30 +6,38 @@ import {
   BadgeMetadataUpdateEvent,
   BadgeRevocationEvent,
   CommunityUpdateEvent,
-  CommunityCreationEvent
+  CommunityCreationEvent,
 } from '../types/handlers';
 
 export class EventMapper {
   private static logger = {
-    debug: (msg: string, ...args: any[]) => console.debug(`[EventMapper] ${msg}`, ...args),
-    info: (msg: string, ...args: any[]) => console.info(`[EventMapper] ${msg}`, ...args),
-    warn: (msg: string, ...args: any[]) => console.warn(`[EventMapper] ${msg}`, ...args),
-    error: (msg: string, ...args: any[]) => console.error(`[EventMapper] ${msg}`, ...args)
+    debug: (msg: string, ...args: unknown[]) =>
+      console.debug(`[EventMapper] ${msg}`, ...args),
+    info: (msg: string, ...args: unknown[]) =>
+      console.info(`[EventMapper] ${msg}`, ...args),
+    warn: (msg: string, ...args: unknown[]) =>
+      console.warn(`[EventMapper] ${msg}`, ...args),
+    error: (msg: string, ...args: unknown[]) =>
+      console.error(`[EventMapper] ${msg}`, ...args),
   };
 
-  static mapBadgeMintEvent(payload: any): BadgeMintEvent {
+  static mapBadgeMintEvent(payload: Record<string, unknown>): BadgeMintEvent {
     try {
       const event: BadgeMintEvent = {
-        userId: payload.userId || payload.user_id || '',
-        badgeId: payload.badgeId || payload.badge_id || '',
-        badgeName: payload.badgeName || payload.badge_name || '',
-        criteria: payload.criteria || '',
-        contractAddress: payload.contractAddress || payload.contract_address || '',
-        transactionHash: payload.transactionHash || payload.tx_hash || '',
-        blockHeight: payload.blockHeight || payload.block_height || 0,
-        timestamp: payload.timestamp || Date.now()
+        userId: String(payload.userId || payload.user_id || ''),
+        badgeId: String(payload.badgeId || payload.badge_id || ''),
+        badgeName: String(payload.badgeName || payload.badge_name || ''),
+        criteria: String(payload.criteria || ''),
+        contractAddress: String(
+          payload.contractAddress || payload.contract_address || ''
+        ),
+        transactionHash: String(
+          payload.transactionHash || payload.tx_hash || ''
+        ),
+        blockHeight: Number(payload.blockHeight || payload.block_height || 0),
+        timestamp: Number(payload.timestamp || Date.now()),
       };
-      
+
       this.logger.debug('Mapped badge mint event', event);
       return event;
     } catch (error) {
@@ -38,19 +46,27 @@ export class EventMapper {
     }
   }
 
-  static mapBadgeVerificationEvent(payload: any): BadgeVerificationEvent {
+  static mapBadgeVerificationEvent(
+    payload: Record<string, unknown>
+  ): BadgeVerificationEvent {
     try {
       const event: BadgeVerificationEvent = {
-        userId: payload.userId || payload.user_id || '',
-        badgeId: payload.badgeId || payload.badge_id || '',
-        badgeName: payload.badgeName || payload.badge_name || '',
-        verificationData: payload.verificationData || payload.verification_data || {},
-        contractAddress: payload.contractAddress || payload.contract_address || '',
-        transactionHash: payload.transactionHash || payload.tx_hash || '',
-        blockHeight: payload.blockHeight || payload.block_height || 0,
-        timestamp: payload.timestamp || Date.now()
+        userId: String(payload.userId || payload.user_id || ''),
+        badgeId: String(payload.badgeId || payload.badge_id || ''),
+        badgeName: String(payload.badgeName || payload.badge_name || ''),
+        verificationData: (payload.verificationData ||
+          payload.verification_data ||
+          {}) as unknown,
+        contractAddress: String(
+          payload.contractAddress || payload.contract_address || ''
+        ),
+        transactionHash: String(
+          payload.transactionHash || payload.tx_hash || ''
+        ),
+        blockHeight: Number(payload.blockHeight || payload.block_height || 0),
+        timestamp: Number(payload.timestamp || Date.now()),
       };
-      
+
       this.logger.debug('Mapped badge verification event', event);
       return event;
     } catch (error) {
@@ -59,27 +75,59 @@ export class EventMapper {
     }
   }
 
-  static mapBadgeMetadataUpdateEvent(payload: any): BadgeMetadataUpdateEvent {
+  static mapBadgeMetadataUpdateEvent(
+    payload: Record<string, unknown>
+  ): BadgeMetadataUpdateEvent {
     try {
       const event: BadgeMetadataUpdateEvent = {
-        badgeId: payload.badgeId || payload.badge_id || '',
-        badgeName: payload.badgeName || payload.badge_name || '',
-        level: payload.level || payload.badge_level || undefined,
-        category: payload.category || payload.badge_category || undefined,
-        description: payload.description || payload.badge_description || undefined,
-        previousLevel: payload.previousLevel || payload.previous_level || undefined,
-        previousCategory: payload.previousCategory || payload.previous_category || undefined,
-        previousDescription: payload.previousDescription || payload.previous_description || undefined,
-        contractAddress: payload.contractAddress || payload.contract_address || '',
-        transactionHash: payload.transactionHash || payload.tx_hash || '',
-        blockHeight: payload.blockHeight || payload.block_height || 0,
-        timestamp: payload.timestamp || Date.now()
+        badgeId: String(payload.badgeId || payload.badge_id || ''),
+        badgeName: String(payload.badgeName || payload.badge_name || ''),
+        level:
+          payload.level !== undefined
+            ? Number(payload.level)
+            : payload.badge_level !== undefined
+            ? Number(payload.badge_level)
+            : undefined,
+        category: payload.category
+          ? String(payload.category)
+          : payload.badge_category
+          ? String(payload.badge_category)
+          : undefined,
+        description: payload.description
+          ? String(payload.description)
+          : payload.badge_description
+          ? String(payload.badge_description)
+          : undefined,
+        previousLevel:
+          payload.previousLevel !== undefined
+            ? Number(payload.previousLevel)
+            : payload.previous_level !== undefined
+            ? Number(payload.previous_level)
+            : undefined,
+        previousCategory: payload.previousCategory
+          ? String(payload.previousCategory)
+          : payload.previous_category
+          ? String(payload.previous_category)
+          : undefined,
+        previousDescription: payload.previousDescription
+          ? String(payload.previousDescription)
+          : payload.previous_description
+          ? String(payload.previous_description)
+          : undefined,
+        contractAddress: String(
+          payload.contractAddress || payload.contract_address || ''
+        ),
+        transactionHash: String(
+          payload.transactionHash || payload.tx_hash || ''
+        ),
+        blockHeight: Number(payload.blockHeight || payload.block_height || 0),
+        timestamp: Number(payload.timestamp || Date.now()),
       };
-      
+
       this.logger.debug('Mapped badge metadata update event', {
         badgeId: event.badgeId,
         level: event.level,
-        category: event.category
+        category: event.category,
       });
       return event;
     } catch (error) {
@@ -88,26 +136,39 @@ export class EventMapper {
     }
   }
 
-  static mapBadgeRevocationEvent(payload: any): BadgeRevocationEvent {
+  static mapBadgeRevocationEvent(
+    payload: Record<string, unknown>
+  ): BadgeRevocationEvent {
     try {
+      const revocationType = String(
+        payload.revocationType || payload.revocation_type || 'soft'
+      ) as 'soft' | 'hard';
+
       const event: BadgeRevocationEvent = {
-        userId: payload.userId || payload.user_id || '',
-        badgeId: payload.badgeId || payload.badge_id || '',
-        badgeName: payload.badgeName || payload.badge_name || '',
-        revocationType: payload.revocationType || payload.revocation_type || 'soft',
-        reason: payload.reason || undefined,
-        issuerId: payload.issuerId || payload.issuer_id || '',
-        contractAddress: payload.contractAddress || payload.contract_address || '',
-        transactionHash: payload.transactionHash || payload.tx_hash || '',
-        blockHeight: payload.blockHeight || payload.block_height || 0,
-        timestamp: payload.timestamp || Date.now(),
-        previousActive: payload.previousActive !== undefined ? payload.previousActive : true
+        userId: String(payload.userId || payload.user_id || ''),
+        badgeId: String(payload.badgeId || payload.badge_id || ''),
+        badgeName: String(payload.badgeName || payload.badge_name || ''),
+        revocationType,
+        reason: payload.reason ? String(payload.reason) : undefined,
+        issuerId: String(payload.issuerId || payload.issuer_id || ''),
+        contractAddress: String(
+          payload.contractAddress || payload.contract_address || ''
+        ),
+        transactionHash: String(
+          payload.transactionHash || payload.tx_hash || ''
+        ),
+        blockHeight: Number(payload.blockHeight || payload.block_height || 0),
+        timestamp: Number(payload.timestamp || Date.now()),
+        previousActive:
+          payload.previousActive !== undefined
+            ? Boolean(payload.previousActive)
+            : true,
       };
-      
+
       this.logger.debug('Mapped badge revocation event', {
         badgeId: event.badgeId,
         userId: event.userId,
-        revocationType: event.revocationType
+        revocationType: event.revocationType,
       });
       return event;
     } catch (error) {
@@ -116,20 +177,35 @@ export class EventMapper {
     }
   }
 
-  static mapCommunityUpdateEvent(payload: any): CommunityUpdateEvent {
+  static mapCommunityUpdateEvent(
+    payload: Record<string, unknown>
+  ): CommunityUpdateEvent {
     try {
+      const updateType = String(
+        payload.updateType || payload.update_type || 'announcement'
+      ) as 'member_joined' | 'member_left' | 'announcement' | 'event';
+
+      const affectedUsers = payload.affectedUsers || payload.affected_users;
       const event: CommunityUpdateEvent = {
-        communityId: payload.communityId || payload.community_id || '',
-        communityName: payload.communityName || payload.community_name || '',
-        updateType: payload.updateType || payload.update_type || 'announcement',
-        affectedUsers: payload.affectedUsers || payload.affected_users || [],
-        data: payload.data || {},
-        contractAddress: payload.contractAddress || payload.contract_address || '',
-        transactionHash: payload.transactionHash || payload.tx_hash || '',
-        blockHeight: payload.blockHeight || payload.block_height || 0,
-        timestamp: payload.timestamp || Date.now()
+        communityId: String(payload.communityId || payload.community_id || ''),
+        communityName: String(
+          payload.communityName || payload.community_name || ''
+        ),
+        updateType,
+        affectedUsers: Array.isArray(affectedUsers)
+          ? (affectedUsers as unknown[]).map(String)
+          : [],
+        data: (payload.data || {}) as unknown,
+        contractAddress: String(
+          payload.contractAddress || payload.contract_address || ''
+        ),
+        transactionHash: String(
+          payload.transactionHash || payload.tx_hash || ''
+        ),
+        blockHeight: Number(payload.blockHeight || payload.block_height || 0),
+        timestamp: Number(payload.timestamp || Date.now()),
       };
-      
+
       this.logger.debug('Mapped community update event', event);
       return event;
     } catch (error) {
@@ -138,24 +214,36 @@ export class EventMapper {
     }
   }
 
-  static mapCommunityCreationEvent(payload: any): CommunityCreationEvent {
+  static mapCommunityCreationEvent(
+    payload: Record<string, unknown>
+  ): CommunityCreationEvent {
     try {
       const event: CommunityCreationEvent = {
-        communityId: payload.communityId || payload.community_id || '',
-        communityName: payload.communityName || payload.community_name || '',
-        description: payload.description || '',
-        ownerAddress: payload.ownerAddress || payload.owner_address || '',
-        createdAtBlockHeight: payload.createdAtBlockHeight || payload.created_at_block_height || 0,
-        contractAddress: payload.contractAddress || payload.contract_address || '',
-        transactionHash: payload.transactionHash || payload.tx_hash || '',
-        blockHeight: payload.blockHeight || payload.block_height || 0,
-        timestamp: payload.timestamp || Date.now()
+        communityId: String(payload.communityId || payload.community_id || ''),
+        communityName: String(
+          payload.communityName || payload.community_name || ''
+        ),
+        description: String(payload.description || ''),
+        ownerAddress: String(
+          payload.ownerAddress || payload.owner_address || ''
+        ),
+        createdAtBlockHeight: Number(
+          payload.createdAtBlockHeight || payload.created_at_block_height || 0
+        ),
+        contractAddress: String(
+          payload.contractAddress || payload.contract_address || ''
+        ),
+        transactionHash: String(
+          payload.transactionHash || payload.tx_hash || ''
+        ),
+        blockHeight: Number(payload.blockHeight || payload.block_height || 0),
+        timestamp: Number(payload.timestamp || Date.now()),
       };
-      
+
       this.logger.debug('Mapped community creation event', {
         communityId: event.communityId,
         communityName: event.communityName,
-        ownerAddress: event.ownerAddress
+        ownerAddress: event.ownerAddress,
       });
       return event;
     } catch (error) {
@@ -167,39 +255,43 @@ export class EventMapper {
   static getNotificationTypeFromEvent(eventType: string): NotificationType {
     const typeMap: Record<string, NotificationType> = {
       'badge-mint': 'badge_received',
-      'badge_mint': 'badge_received',
+      badge_mint: 'badge_received',
       'badge-issued': 'badge_issued',
-      'badge_issued': 'badge_issued',
+      badge_issued: 'badge_issued',
       'badge-verify': 'badge_verified',
-      'badge_verify': 'badge_verified',
+      badge_verify: 'badge_verified',
       'badge-verified': 'badge_verified',
-      'badge_verified': 'badge_verified',
+      badge_verified: 'badge_verified',
       'badge-metadata-update': 'badge_metadata_updated',
-      'badge_metadata_update': 'badge_metadata_updated',
+      badge_metadata_update: 'badge_metadata_updated',
       'badge-metadata-updated': 'badge_metadata_updated',
-      'badge_metadata_updated': 'badge_metadata_updated',
+      badge_metadata_updated: 'badge_metadata_updated',
       'badge-revocation': 'badge_revoked',
-      'badge_revocation': 'badge_revoked',
+      badge_revocation: 'badge_revoked',
       'badge-revoked': 'badge_revoked',
-      'badge_revoked': 'badge_revoked',
+      badge_revoked: 'badge_revoked',
       'community-update': 'community_update',
-      'community_update': 'community_update',
+      community_update: 'community_update',
       'community-created': 'community_created',
-      'community_created': 'community_created',
+      community_created: 'community_created',
       'community-creation': 'community_created',
-      'community_creation': 'community_created',
+      community_creation: 'community_created',
       'community-invite': 'community_invite',
-      'community_invite': 'community_invite',
+      community_invite: 'community_invite',
       'system-announcement': 'system_announcement',
-      'system_announcement': 'system_announcement'
+      system_announcement: 'system_announcement',
     };
 
     const notificationType = typeMap[eventType] || 'system_announcement';
-    this.logger.debug(`Mapped event type '${eventType}' to notification type '${notificationType}'`);
+    this.logger.debug(
+      `Mapped event type '${eventType}' to notification type '${notificationType}'`
+    );
     return notificationType;
   }
 
-  static extractEventType(chainhookEvent: ChainhookEventPayload): string | null {
+  static extractEventType(
+    chainhookEvent: ChainhookEventPayload
+  ): string | null {
     try {
       if (!chainhookEvent || !chainhookEvent.transactions) {
         this.logger.debug('No transactions found in chainhook event');
@@ -214,23 +306,27 @@ export class EventMapper {
 
           if (op.type === 'contract_call' && op.contract_call) {
             const method = op.contract_call.method;
-            
+
             if (method === 'mint' || method === 'mint-badge') {
               this.logger.debug('Detected badge-mint event');
               return 'badge-mint';
             }
-            
+
             if (method === 'verify' || method === 'verify-badge') {
               this.logger.debug('Detected badge-verify event');
               return 'badge-verify';
             }
-            
+
             if (method === 'issue-badge') {
               this.logger.debug('Detected badge-issued event');
               return 'badge-issued';
             }
 
-            if (method === 'update-metadata' || method === 'set-metadata' || method === 'metadata-update') {
+            if (
+              method === 'update-metadata' ||
+              method === 'set-metadata' ||
+              method === 'metadata-update'
+            ) {
               this.logger.debug('Detected badge-metadata-update event');
               return 'badge-metadata-update';
             }
@@ -259,13 +355,20 @@ export class EventMapper {
                   return 'badge-issued';
                 }
                 if (event.topic.includes('metadata')) {
-                  this.logger.debug('Detected badge-metadata-update event from topic');
+                  this.logger.debug(
+                    'Detected badge-metadata-update event from topic'
+                  );
                   return 'badge-metadata-update';
                 }
               }
 
-              if (event.topic.includes('community') && event.topic.includes('created')) {
-                this.logger.debug('Detected community-creation event from topic');
+              if (
+                event.topic.includes('community') &&
+                event.topic.includes('created')
+              ) {
+                this.logger.debug(
+                  'Detected community-creation event from topic'
+                );
                 return 'community-creation';
               }
             }
@@ -281,13 +384,16 @@ export class EventMapper {
     }
   }
 
-  static extractUserIdFromEvent(chainhookEvent: ChainhookEventPayload, eventPayload: any): string | null {
+  static extractUserIdFromEvent(
+    _chainhookEvent: ChainhookEventPayload,
+    eventPayload: Record<string, unknown>
+  ): string | null {
     try {
       const userId = eventPayload?.userId || eventPayload?.user_id || null;
       if (userId) {
         this.logger.debug(`Extracted userId: ${userId}`);
       }
-      return userId;
+      return userId ? String(userId) : null;
     } catch (error) {
       this.logger.error('Error extracting user ID:', error);
       return null;
@@ -296,10 +402,16 @@ export class EventMapper {
 
   static extractTransactionHash(chainhookEvent: ChainhookEventPayload): string {
     try {
-      if (chainhookEvent && chainhookEvent.transactions && chainhookEvent.transactions.length > 0) {
+      if (
+        chainhookEvent &&
+        chainhookEvent.transactions &&
+        chainhookEvent.transactions.length > 0
+      ) {
         const hash = chainhookEvent.transactions[0].transaction_hash || '';
         if (hash) {
-          this.logger.debug(`Extracted transaction hash: ${hash.substring(0, 8)}...`);
+          this.logger.debug(
+            `Extracted transaction hash: ${hash.substring(0, 8)}...`
+          );
         }
         return hash;
       }

@@ -11,7 +11,10 @@ export class BadgeCacheService {
   private logger: any;
   private config: CacheConfig;
 
-  constructor(config: CacheConfig = { enabled: true, ttl: 300, provider: 'memory' }, logger?: any) {
+  constructor(
+    config: CacheConfig = { enabled: true, ttl: 300, provider: 'memory' },
+    logger?: any
+  ) {
     this.config = config;
     this.logger = logger || this.getDefaultLogger();
     this.startCleanupInterval();
@@ -19,10 +22,14 @@ export class BadgeCacheService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeCacheService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeCacheService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeCacheService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeCacheService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeCacheService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeCacheService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeCacheService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeCacheService] ${msg}`, ...args),
     };
   }
 
@@ -110,7 +117,9 @@ export class BadgeCacheService {
       }
 
       if (invalidated > 0) {
-        this.logger.info(`Cache invalidated ${invalidated} entries matching pattern: ${pattern}`);
+        this.logger.info(
+          `Cache invalidated ${invalidated} entries matching pattern: ${pattern}`
+        );
       }
     } catch (error) {
       this.logger.error(`Failed to compile regex pattern: ${pattern}`, error);
@@ -154,26 +163,31 @@ export class BadgeCacheService {
       this.logger.info('Invalidating cache due to badge minting', {
         badgeId: event.badgeId,
         userId: event.userId,
-        badgeName: event.badgeName
+        badgeName: event.badgeName,
       });
 
-      const invalidatedCount = this.invalidateMultiple([
-        `badges:user:${event.userId}`,
-        `badges:user:${event.userId}:list`,
-        `badges:user:${event.userId}:count`,
-        `badges:list:.*`,
-        `badges:search:.*`,
-        `badges:category:.*`,
-        `badges:recent`,
-        `passport:${event.userId}`,
-        `badge:${event.badgeId}`,
-        'badges:count'
-      ].filter(key => key !== null) as string[]);
+      const invalidatedCount = this.invalidateMultiple(
+        [
+          `badges:user:${event.userId}`,
+          `badges:user:${event.userId}:list`,
+          `badges:user:${event.userId}:count`,
+          `badges:list:.*`,
+          `badges:search:.*`,
+          `badges:category:.*`,
+          `badges:recent`,
+          `passport:${event.userId}`,
+          `badge:${event.badgeId}`,
+          'badges:count',
+        ].filter((key) => key !== null) as string[]
+      );
 
-      this.logger.debug(`Invalidated ${invalidatedCount} cache entries for badge minting`, {
-        badgeId: event.badgeId,
-        userId: event.userId
-      });
+      this.logger.debug(
+        `Invalidated ${invalidatedCount} cache entries for badge minting`,
+        {
+          badgeId: event.badgeId,
+          userId: event.userId,
+        }
+      );
     } catch (error) {
       this.logger.error('Error invalidating cache for badge minting:', error);
     }
@@ -185,7 +199,7 @@ export class BadgeCacheService {
       enabled: this.config.enabled,
       ttl: this.config.ttl,
       provider: this.config.provider,
-      keys: Array.from(this.cache.keys())
+      keys: Array.from(this.cache.keys()),
     };
   }
 }

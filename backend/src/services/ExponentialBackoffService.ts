@@ -26,7 +26,7 @@ export class ExponentialBackoffService {
     maxDelayMs: 300000, // 5 minutes
     multiplier: 2,
     jitterFactor: 0.1,
-    maxAttempts: 5
+    maxAttempts: 5,
   };
 
   constructor(private config: Partial<BackoffConfig> = {}) {
@@ -36,7 +36,10 @@ export class ExponentialBackoffService {
   /**
    * Calculate the next retry delay with exponential backoff and jitter
    */
-  calculateBackoff(attemptNumber: number, customConfig?: Partial<BackoffConfig>): BackoffResult {
+  calculateBackoff(
+    attemptNumber: number,
+    customConfig?: Partial<BackoffConfig>
+  ): BackoffResult {
     const config = { ...this.config, ...customConfig } as BackoffConfig;
 
     if (attemptNumber >= config.maxAttempts) {
@@ -44,7 +47,7 @@ export class ExponentialBackoffService {
         delayMs: 0,
         nextRetryAt: new Date(),
         shouldRetry: false,
-        attemptNumber
+        attemptNumber,
       };
     }
 
@@ -64,7 +67,7 @@ export class ExponentialBackoffService {
       delayMs,
       nextRetryAt,
       shouldRetry: true,
-      attemptNumber: attemptNumber + 1
+      attemptNumber: attemptNumber + 1,
     };
   }
 
@@ -81,7 +84,13 @@ export class ExponentialBackoffService {
    */
   getErrorSpecificBackoff(
     attemptNumber: number,
-    errorType: 'network' | 'validation' | 'timeout' | 'rate_limit' | 'server_error' | 'unknown'
+    errorType:
+      | 'network'
+      | 'validation'
+      | 'timeout'
+      | 'rate_limit'
+      | 'server_error'
+      | 'unknown'
   ): BackoffResult {
     let customConfig: Partial<BackoffConfig> = {};
 
@@ -91,7 +100,7 @@ export class ExponentialBackoffService {
         customConfig = {
           initialDelayMs: 5000,
           maxDelayMs: 600000, // 10 minutes
-          multiplier: 3
+          multiplier: 3,
         };
         break;
 
@@ -100,7 +109,7 @@ export class ExponentialBackoffService {
         customConfig = {
           initialDelayMs: 500,
           maxDelayMs: 60000, // 1 minute
-          multiplier: 2
+          multiplier: 2,
         };
         break;
 
@@ -109,7 +118,7 @@ export class ExponentialBackoffService {
         customConfig = {
           initialDelayMs: 2000,
           maxDelayMs: 120000, // 2 minutes
-          multiplier: 2.5
+          multiplier: 2.5,
         };
         break;
 
@@ -118,7 +127,7 @@ export class ExponentialBackoffService {
         customConfig = {
           initialDelayMs: 1000,
           maxDelayMs: 300000, // 5 minutes
-          multiplier: 2
+          multiplier: 2,
         };
         break;
 
@@ -128,7 +137,7 @@ export class ExponentialBackoffService {
           delayMs: 0,
           nextRetryAt: new Date(),
           shouldRetry: false,
-          attemptNumber
+          attemptNumber,
         };
 
       default:
@@ -150,7 +159,10 @@ export class ExponentialBackoffService {
   /**
    * Calculate total time spent retrying
    */
-  calculateTotalRetryTime(attemptNumber: number, customConfig?: Partial<BackoffConfig>): number {
+  calculateTotalRetryTime(
+    attemptNumber: number,
+    customConfig?: Partial<BackoffConfig>
+  ): number {
     const config = { ...this.config, ...customConfig } as BackoffConfig;
     let totalTime = 0;
 

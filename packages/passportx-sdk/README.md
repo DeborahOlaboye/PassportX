@@ -37,14 +37,16 @@ import { PassportX } from '@passportx/sdk';
 // Initialize the SDK
 const client = new PassportX({
   apiUrl: 'https://api.passportx.app',
-  network: 'mainnet'
+  network: 'mainnet',
 });
 
 // Get user badges
-const badges = await client.getUserBadges('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+const badges = await client.getUserBadges(
+  'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+);
 
 console.log(`User has ${badges.length} badges`);
-badges.forEach(badge => {
+badges.forEach((badge) => {
   console.log(`${badge.template.icon} ${badge.template.name}`);
 });
 ```
@@ -63,12 +65,12 @@ const client = new PassportX();
 const client = new PassportX({
   apiUrl: 'https://api.passportx.app',
   network: 'testnet',
-  timeout: 15000
+  timeout: 15000,
 });
 
 // With API key for authenticated requests
 const client = new PassportX({
-  apiKey: 'your-api-key-here'
+  apiKey: 'your-api-key-here',
 });
 ```
 
@@ -76,7 +78,9 @@ const client = new PassportX({
 
 ```typescript
 // Get all badges for a user
-const badges = await client.getUserBadges('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+const badges = await client.getUserBadges(
+  'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+);
 
 // With filtering and pagination
 const badges = await client.getUserBadges(
@@ -85,12 +89,12 @@ const badges = await client.getUserBadges(
     category: 'achievement',
     level: 3,
     limit: 10,
-    offset: 0
+    offset: 0,
   }
 );
 
 // Process badges
-badges.forEach(badge => {
+badges.forEach((badge) => {
   console.log(`Badge: ${badge.template.name}`);
   console.log(`Level: ${badge.metadata.level}`);
   console.log(`Category: ${badge.metadata.category}`);
@@ -133,7 +137,7 @@ console.log(`Description: ${community.description}`);
 // Get all badge templates in a community
 const templates = await client.getCommunityBadges('community_id');
 
-templates.forEach(template => {
+templates.forEach((template) => {
   console.log(`${template.icon} ${template.name} (Level ${template.level})`);
   console.log(`Requirements: ${template.requirements}`);
 });
@@ -142,7 +146,7 @@ templates.forEach(template => {
 const members = await client.getCommunityMembers('community_id', { limit: 20 });
 
 console.log(`Total members: ${members.pagination.total}`);
-members.data.forEach(member => {
+members.data.forEach((member) => {
   console.log(`${member.name}: ${member.badgeCount} badges`);
 });
 
@@ -167,7 +171,7 @@ console.log(`Badge templates: ${analytics.totalBadgeTemplates}`);
 // Get all public communities
 const communities = await client.listCommunities({ limit: 10 });
 
-communities.data.forEach(community => {
+communities.data.forEach((community) => {
   console.log(`${community.name} - ${community.memberCount} members`);
 });
 
@@ -175,14 +179,14 @@ communities.data.forEach(community => {
 const results = await client.listCommunities({
   search: 'developer',
   tags: ['tech', 'programming'],
-  limit: 20
+  limit: 20,
 });
 
 // Check if there are more results
 if (results.pagination.hasMore) {
   const nextPage = await client.listCommunities({
     search: 'developer',
-    offset: results.pagination.offset + results.pagination.limit
+    offset: results.pagination.offset + results.pagination.limit,
   });
 }
 ```
@@ -218,6 +222,7 @@ new PassportX(config?: PassportXConfig)
 ```
 
 **Parameters:**
+
 - `config` (optional): Configuration object
   - `apiUrl`: Base URL for the API (default: 'https://api.passportx.app')
   - `network`: Stacks network ('mainnet' | 'testnet' | 'devnet')
@@ -227,63 +232,83 @@ new PassportX(config?: PassportXConfig)
 #### Methods
 
 ##### getUserBadges
+
 ```typescript
 getUserBadges(address: string, options?: BadgeQueryOptions): Promise<BadgeWithTemplate[]>
 ```
+
 Get all badges for a specific user address.
 
 ##### getBadge
+
 ```typescript
 getBadge(badgeId: string): Promise<BadgeWithTemplate>
 ```
+
 Get detailed information about a specific badge.
 
 ##### getBadgeMetadata
+
 ```typescript
 getBadgeMetadata(badgeId: string): Promise<BadgeMetadata>
 ```
+
 Get metadata for a specific badge.
 
 ##### getCommunity
+
 ```typescript
 getCommunity(idOrSlug: string): Promise<Community>
 ```
+
 Get information about a community by ID or slug.
 
 ##### getCommunityBadges
+
 ```typescript
 getCommunityBadges(communityId: string): Promise<BadgeTemplate[]>
 ```
+
 Get all badge templates for a community.
 
 ##### getCommunityMembers
+
 ```typescript
 getCommunityMembers(communityId: string, options?: QueryOptions): Promise<PaginatedResponse<any>>
 ```
+
 Get community members with pagination.
 
 ##### listCommunities
+
 ```typescript
 listCommunities(options?: QueryOptions): Promise<PaginatedResponse<Community>>
 ```
+
 List all public communities.
 
 ##### getCommunityAnalytics
+
 ```typescript
 getCommunityAnalytics(communityId: string): Promise<any>
 ```
+
 Get analytics data for a community.
 
 ##### getCommunityLeaderboard
+
 ```typescript
 getCommunityLeaderboard(communityId: string, limit?: number): Promise<any[]>
 ```
+
 Get the top badge earners in a community.
 
 ##### verifyBadge
+
 ```typescript
 verifyBadge(badgeId: string): Promise<boolean>
 ```
+
 Verify if a badge exists and is valid.
 
 ## TypeScript Support
@@ -320,6 +345,7 @@ MIT © PassportX Team
 ## Support
 
 If you have questions or need help, please:
+
 - Check the [documentation](https://docs.passportx.app)
 - Open an [issue](https://github.com/DeborahOlaboye/PassportX/issues)
 - Join our community discussions

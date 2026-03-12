@@ -1,9 +1,8 @@
 import { Router, Request, Response } from 'express';
 import ChainhookManager from '../services/chainhookManager';
-import { authenticateToken as authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import EventReplayService from '../services/EventReplayService';
 import ChainhookEventProcessor from '../services/chainhookEventProcessor';
-import logger from '../utils/logger';
 
 const router = Router();
 let chainhookManager: ChainhookManager | null = null;
@@ -43,14 +42,13 @@ router.post('/start', authMiddleware, async (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    if (chainhookManager.isActive()) {
+    if (chainhookManager.isRunning()) {
       return res
         .status(400)
         .json({ error: 'Chainhook manager is already running' });
     }
 
     await chainhookManager.start();
-    logger.info('Chainhook manager started');
 
     res.json({
       message: 'Chainhook manager started successfully',
@@ -73,14 +71,13 @@ router.post('/stop', authMiddleware, async (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    if (!chainhookManager.isActive()) {
+    if (!chainhookManager.isRunning()) {
       return res
         .status(400)
         .json({ error: 'Chainhook manager is not running' });
     }
 
     await chainhookManager.stop();
-    logger.info('Chainhook manager stopped');
 
     res.json({
       message: 'Chainhook manager stopped successfully',
@@ -150,16 +147,6 @@ router.post('/subscriptions', authMiddleware, (req: Request, res: Response) => {
     if (!name || !eventType) {
       return res.status(400).json({ error: 'name and eventType are required' });
     }
-    if (typeof name !== 'string' || name.length > 200) {
-      return res
-        .status(400)
-        .json({ error: 'name must be a string of at most 200 characters' });
-    }
-    if (typeof eventType !== 'string' || eventType.length > 100) {
-      return res.status(400).json({
-        error: 'eventType must be a string of at most 100 characters',
-      });
-    }
 
     const subscriptionManager = chainhookManager.getSubscriptionManager();
     const subscription = subscriptionManager.createSubscription(
@@ -204,7 +191,6 @@ router.delete(
         message: 'Subscription deleted successfully',
       });
     } catch (error) {
-      logger.error('Failed to delete subscription', { error });
       res.status(500).json({
         error: 'Failed to delete subscription',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -253,23 +239,12 @@ router.post('/predicates', authMiddleware, (req: Request, res: Response) => {
         error: 'name, type, network, if_this, and then_that are required',
       });
     }
-    if (typeof name !== 'string' || name.length > 200) {
-      return res
-        .status(400)
-        .json({ error: 'name must be a string of at most 200 characters' });
-    }
-    const VALID_NETWORKS = new Set(['mainnet', 'testnet']);
-    if (typeof network !== 'string' || !VALID_NETWORKS.has(network)) {
-      return res
-        .status(400)
-        .json({ error: 'network must be "mainnet" or "testnet"' });
-    }
 
     const predicateManager = chainhookManager.getPredicateManager();
     const predicate = predicateManager.createPredicate(
       name,
       type,
-      network as 'mainnet' | 'testnet' | 'devnet',
+      network,
       if_this,
       then_that
     );
@@ -309,7 +284,6 @@ router.delete(
         message: 'Predicate deleted successfully',
       });
     } catch (error) {
-      logger.error('Failed to delete predicate', { error });
       res.status(500).json({
         error: 'Failed to delete predicate',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -326,16 +300,14 @@ router.get('/logs', authMiddleware, (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    const chainhookLogger = chainhookManager.getLogger();
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 1000);
-    const logs = chainhookLogger.getLogs(undefined, limit);
+    const logger = chainhookManager.getLogger();
+    const limit = parseInt(req.query.limit as string) || 100;
+    const logs = logger.getLogs(undefined, limit);
 
     res.json({
       logs,
-      total: chainhookLogger.getLogCount(),
-      statistics: chainhookLogger.getLogStatistics(),
+      total: logger.getLogCount(),
+      statistics: logger.getLogStatistics(),
     });
   } catch (error) {
     logger.error('Failed to get logs', { error });
@@ -354,11 +326,9 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    const chainhookLogger = chainhookManager.getLogger();
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 500);
-    const errorLogs = chainhookLogger.getErrorLogs(limit);
+    const logger = chainhookManager.getLogger();
+    const limit = parseInt(req.query.limit as string) || 50;
+    const errorLogs = logger.getErrorLogs(limit);
 
     res.json({
       logs: errorLogs,
@@ -373,23 +343,6 @@ router.get('/logs/errors', authMiddleware, (req: Request, res: Response) => {
   }
 });
 
-const MAX_BLOCK_RANGE = 100_000;
-const MAX_HISTORICAL_LIMIT = 1000;
-
-/** Returns a valid Date or undefined; never returns an Invalid Date object. */
-function safeDate(value: unknown): Date | undefined {
-  if (!value || typeof value !== 'string') return undefined;
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? undefined : d;
-}
-
-/** Returns a validated non-negative integer or undefined. */
-function safeBlock(value: unknown): number | undefined {
-  if (value === undefined || value === null || value === '') return undefined;
-  const n = typeof value === 'number' ? value : parseInt(value as string, 10);
-  return isNaN(n) || n < 0 ? undefined : n;
-}
-
 router.get(
   '/events/historical',
   authMiddleware,
@@ -397,46 +350,29 @@ router.get(
     try {
       const replayService = new EventReplayService();
 
-      const startBlock = safeBlock(req.query.startBlock);
-      const endBlock = safeBlock(req.query.endBlock);
-
-      // Reject requests where endBlock < startBlock or range exceeds cap
-      if (
-        startBlock !== undefined &&
-        endBlock !== undefined &&
-        endBlock < startBlock
-      ) {
-        return res
-          .status(400)
-          .json({ error: 'endBlock must be >= startBlock' });
-      }
-      if (
-        startBlock !== undefined &&
-        endBlock !== undefined &&
-        endBlock - startBlock > MAX_BLOCK_RANGE
-      ) {
-        return res.status(400).json({
-          error: `Block range must not exceed ${MAX_BLOCK_RANGE.toLocaleString()} blocks`,
-        });
-      }
-
-      const rawLimit = parseInt(req.query.limit as string, 10);
-      const rawOffset = parseInt(req.query.offset as string, 10);
-
       const filters = {
         eventType: req.query.eventType as string,
         contractAddress: req.query.contractAddress as string,
         method: req.query.method as string,
-        startDate: safeDate(req.query.startDate),
-        endDate: safeDate(req.query.endDate),
-        startBlock,
-        endBlock,
+        startDate: req.query.startDate
+          ? new Date(req.query.startDate as string)
+          : undefined,
+        endDate: req.query.endDate
+          ? new Date(req.query.endDate as string)
+          : undefined,
+        startBlock: req.query.startBlock
+          ? parseInt(req.query.startBlock as string)
+          : undefined,
+        endBlock: req.query.endBlock
+          ? parseInt(req.query.endBlock as string)
+          : undefined,
         transactionHash: req.query.transactionHash as string,
-        limit:
-          isNaN(rawLimit) || rawLimit < 1
-            ? 100
-            : Math.min(rawLimit, MAX_HISTORICAL_LIMIT),
-        offset: isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset,
+        limit: req.query.limit
+          ? parseInt(req.query.limit as string)
+          : undefined,
+        offset: req.query.offset
+          ? parseInt(req.query.offset as string)
+          : undefined,
       };
 
       const events = await replayService.getHistoricalEvents(filters);
@@ -447,7 +383,6 @@ router.get(
         filters,
       });
     } catch (error) {
-      logger.error('Failed to fetch historical events', { error });
       res.status(500).json({
         error: 'Failed to fetch historical events',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -463,36 +398,22 @@ router.get(
     try {
       const replayService = new EventReplayService();
 
-      const startBlock = safeBlock(req.query.startBlock);
-      const endBlock = safeBlock(req.query.endBlock);
-
-      if (
-        startBlock !== undefined &&
-        endBlock !== undefined &&
-        endBlock < startBlock
-      ) {
-        return res
-          .status(400)
-          .json({ error: 'endBlock must be >= startBlock' });
-      }
-      if (
-        startBlock !== undefined &&
-        endBlock !== undefined &&
-        endBlock - startBlock > MAX_BLOCK_RANGE
-      ) {
-        return res.status(400).json({
-          error: `Block range must not exceed ${MAX_BLOCK_RANGE.toLocaleString()} blocks`,
-        });
-      }
-
       const filters = {
         eventType: req.query.eventType as string,
         contractAddress: req.query.contractAddress as string,
         method: req.query.method as string,
-        startDate: safeDate(req.query.startDate),
-        endDate: safeDate(req.query.endDate),
-        startBlock,
-        endBlock,
+        startDate: req.query.startDate
+          ? new Date(req.query.startDate as string)
+          : undefined,
+        endDate: req.query.endDate
+          ? new Date(req.query.endDate as string)
+          : undefined,
+        startBlock: req.query.startBlock
+          ? parseInt(req.query.startBlock as string)
+          : undefined,
+        endBlock: req.query.endBlock
+          ? parseInt(req.query.endBlock as string)
+          : undefined,
         transactionHash: req.query.transactionHash as string,
       };
 
@@ -500,7 +421,6 @@ router.get(
 
       res.json(statistics);
     } catch (error) {
-      logger.error('Failed to get event statistics', { error });
       res.status(500).json({
         error: 'Failed to get event statistics',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -521,48 +441,24 @@ router.post(
       }
 
       const replayService = new EventReplayService();
-      const eventProcessor = new ChainhookEventProcessor();
+      const eventProcessor = chainhookManager.getEventProcessor();
 
-      const startBlock = safeBlock(req.body.startBlock);
-      const endBlock = safeBlock(req.body.endBlock);
-
-      if (
-        startBlock !== undefined &&
-        endBlock !== undefined &&
-        endBlock < startBlock
-      ) {
-        return res
-          .status(400)
-          .json({ error: 'endBlock must be >= startBlock' });
+      if (!eventProcessor) {
+        return res.status(503).json({ error: 'Event processor not available' });
       }
-      if (
-        startBlock !== undefined &&
-        endBlock !== undefined &&
-        endBlock - startBlock > MAX_BLOCK_RANGE
-      ) {
-        return res.status(400).json({
-          error: `Block range must not exceed ${MAX_BLOCK_RANGE.toLocaleString()} blocks`,
-        });
-      }
-
-      const rawLimit =
-        typeof req.body.limit === 'number'
-          ? req.body.limit
-          : parseInt(req.body.limit, 10);
 
       const filters = {
         eventType: req.body.eventType,
         contractAddress: req.body.contractAddress,
         method: req.body.method,
-        startDate: safeDate(req.body.startDate),
-        endDate: safeDate(req.body.endDate),
-        startBlock,
-        endBlock,
+        startDate: req.body.startDate
+          ? new Date(req.body.startDate)
+          : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+        startBlock: req.body.startBlock,
+        endBlock: req.body.endBlock,
         transactionHash: req.body.transactionHash,
-        limit:
-          isNaN(rawLimit) || rawLimit < 1
-            ? 100
-            : Math.min(rawLimit, MAX_HISTORICAL_LIMIT),
+        limit: req.body.limit || 100,
       };
 
       const result = await replayService.replayEvents(filters, eventProcessor);
@@ -572,7 +468,6 @@ router.post(
         ...result,
       });
     } catch (error) {
-      logger.error('Failed to replay events', { error });
       res.status(500).json({
         error: 'Failed to replay events',
         message: error instanceof Error ? error.message : 'Unknown error',

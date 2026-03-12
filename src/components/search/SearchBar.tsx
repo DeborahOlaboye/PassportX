@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useRef } from 'react'
-import { Search, X } from 'lucide-react'
-import ErrorBoundary from '../ErrorBoundary'
-import FallbackUI from '../FallbackUI'
+import { useState, useEffect, useRef } from 'react';
+import { Search, X } from 'lucide-react';
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
 
 interface SearchSuggestion {
-  id: string
-  name: string
-  description: string
-  category: string
+  id: string;
+  name: string;
+  description: string;
+  category: string;
 }
 
 interface SearchBarProps {
-  onSearch: (query: string) => void
-  placeholder?: string
-  showSuggestions?: boolean
-  className?: string
+  onSearch: (query: string) => void;
+  placeholder?: string;
+  showSuggestions?: boolean;
+  className?: string;
 }
 
 export default function SearchBar(props: SearchBarProps) {
@@ -24,98 +24,105 @@ export default function SearchBar(props: SearchBarProps) {
     <ErrorBoundary fallback={<FallbackUI message="Search bar error" />}>
       <SearchBarInner {...props} />
     </ErrorBoundary>
-  )
+  );
 }
 
 function SearchBarInner({
   onSearch,
   placeholder = 'Search badges by name, description, or issuer...',
   showSuggestions = true,
-  className = ''
+  className = '',
 }: SearchBarProps) {
-  const [query, setQuery] = useState('')
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
-  const [showSuggestions, setShowSuggestionsVisible] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const searchRef = useRef<HTMLDivElement>(null)
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestionsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (query.length >= 2 && showSuggestions) {
-        fetchSuggestions(query)
+        fetchSuggestions(query);
       } else {
-        setSuggestions([])
+        setSuggestions([]);
       }
-    }, 300)
+    }, 300);
 
-    return () => clearTimeout(timer)
-  }, [query, showSuggestions])
+    return () => clearTimeout(timer);
+  }, [query, showSuggestions]);
 
   // Close suggestions on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSuggestionsVisible(false)
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestionsVisible(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchSuggestions = async (searchQuery: string) => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const response = await fetch(`/api/badges/suggestions?q=${encodeURIComponent(searchQuery)}`)
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch(
+        `/api/badges/suggestions?q=${encodeURIComponent(searchQuery)}`
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch suggestions: ${response.statusText}`)
+        throw new Error(`Failed to fetch suggestions: ${response.statusText}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success) {
-        setSuggestions(data.data)
-        setShowSuggestionsVisible(true)
+        setSuggestions(data.data);
+        setShowSuggestionsVisible(true);
       } else {
-        throw new Error(data.error || 'Failed to fetch suggestions')
+        throw new Error(data.error || 'Failed to fetch suggestions');
       }
     } catch (error) {
-      console.error('Error fetching suggestions:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load suggestions')
-      setSuggestions([])
+      console.error('Error fetching suggestions:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to load suggestions'
+      );
+      setSuggestions([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSearch = () => {
-    onSearch(query)
-    setShowSuggestionsVisible(false)
-  }
+    onSearch(query);
+    setShowSuggestionsVisible(false);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch()
+      handleSearch();
     } else if (e.key === 'Escape') {
-      setShowSuggestionsVisible(false)
+      setShowSuggestionsVisible(false);
     }
-  }
+  };
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    setQuery(suggestion.name)
-    onSearch(suggestion.name)
-    setShowSuggestionsVisible(false)
-  }
+    setQuery(suggestion.name);
+    onSearch(suggestion.name);
+    setShowSuggestionsVisible(false);
+  };
 
   const handleClear = () => {
-    setQuery('')
-    onSearch('')
-    setSuggestions([])
-  }
+    setQuery('');
+    onSearch('');
+    setSuggestions([]);
+  };
 
   return (
     <div ref={searchRef} className={`relative w-full ${className}`}>
@@ -130,17 +137,24 @@ function SearchBarInner({
           aria-label="Search badges"
           aria-describedby="search-description"
           aria-autocomplete="list"
-          aria-controls={showSuggestionsVisible && suggestions.length > 0 ? 'search-suggestions' : undefined}
+          aria-controls={
+            showSuggestionsVisible && suggestions.length > 0
+              ? 'search-suggestions'
+              : undefined
+          }
           aria-expanded={showSuggestionsVisible && suggestions.length > 0}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyPress}
-          onFocus={() => suggestions.length > 0 && setShowSuggestionsVisible(true)}
+          onFocus={() =>
+            suggestions.length > 0 && setShowSuggestionsVisible(true)
+          }
           placeholder={placeholder}
           className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <span id="search-description" className="sr-only">
-          Search for badges by name, description, or issuer. Use arrow keys to navigate suggestions.
+          Search for badges by name, description, or issuer. Use arrow keys to
+          navigate suggestions.
         </span>
 
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -165,12 +179,16 @@ function SearchBarInner({
           className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto"
         >
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500" role="status" aria-live="polite">
+            <div
+              className="p-4 text-center text-gray-500"
+              role="status"
+              aria-live="polite"
+            >
               Loading suggestions...
             </div>
           ) : (
             <ul className="py-2">
-              {suggestions.map((suggestion, index) => (
+              {suggestions.map((suggestion) => (
                 <li key={suggestion.id} role="option" aria-selected={false}>
                   <button
                     onClick={() => handleSuggestionClick(suggestion)}
@@ -179,7 +197,9 @@ function SearchBarInner({
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900">{suggestion.name}</p>
+                        <p className="font-medium text-gray-900">
+                          {suggestion.name}
+                        </p>
                         <p className="text-sm text-gray-600 line-clamp-1">
                           {suggestion.description}
                         </p>
@@ -197,11 +217,17 @@ function SearchBarInner({
       )}
 
       {/* No results */}
-      {showSuggestionsVisible && query.length >= 2 && suggestions.length === 0 && !isLoading && !error && (
-        <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-4">
-          <p className="text-gray-500 text-center">No badges found matching "{query}"</p>
-        </div>
-      )}
+      {showSuggestionsVisible &&
+        query.length >= 2 &&
+        suggestions.length === 0 &&
+        !isLoading &&
+        !error && (
+          <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+            <p className="text-gray-500 text-center">
+              No badges found matching "{query}"
+            </p>
+          </div>
+        )}
 
       {/* Error message */}
       {error && showSuggestionsVisible && (
@@ -210,6 +236,5 @@ function SearchBarInner({
         </div>
       )}
     </div>
-  )
+  );
 }
-

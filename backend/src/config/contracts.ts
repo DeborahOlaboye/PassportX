@@ -7,132 +7,146 @@ import {
   validateContractAddress,
   validateAddressNetwork,
   validateContractAddresses,
-  formatValidationErrors
+  formatValidationErrors,
 } from '../utils/addressValidation';
 
 export interface ContractConfig {
-  address: string
-  name: string
+  address: string;
+  name: string;
 }
 
 export interface NetworkContracts {
-  badgeReader: ContractConfig
-  badgeIssuer: ContractConfig
-  badgeMetadata: ContractConfig
-  passportNft: ContractConfig
-  passportCore: ContractConfig
-  communityManager: ContractConfig
-  accessControl: ContractConfig
+  badgeReader: ContractConfig;
+  badgeIssuer: ContractConfig;
+  badgeMetadata: ContractConfig;
+  passportNft: ContractConfig;
+  passportCore: ContractConfig;
+  communityManager: ContractConfig;
+  accessControl: ContractConfig;
 }
 
 const DEVNET_CONTRACTS: NetworkContracts = {
   badgeReader: {
-    address: process.env.DEVNET_BADGE_READER_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'badge-reader'
+    address:
+      process.env.DEVNET_BADGE_READER_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'badge-reader',
   },
   badgeIssuer: {
-    address: process.env.DEVNET_BADGE_ISSUER_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'badge-issuer'
+    address:
+      process.env.DEVNET_BADGE_ISSUER_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'badge-issuer',
   },
   badgeMetadata: {
-    address: process.env.DEVNET_BADGE_METADATA_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'badge-metadata'
+    address:
+      process.env.DEVNET_BADGE_METADATA_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'badge-metadata',
   },
   passportNft: {
-    address: process.env.DEVNET_PASSPORT_NFT_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'passport-nft'
+    address:
+      process.env.DEVNET_PASSPORT_NFT_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'passport-nft',
   },
   passportCore: {
-    address: process.env.DEVNET_PASSPORT_CORE_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'passport-core'
+    address:
+      process.env.DEVNET_PASSPORT_CORE_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'passport-core',
   },
   communityManager: {
-    address: process.env.DEVNET_COMMUNITY_MANAGER_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'community-manager'
+    address:
+      process.env.DEVNET_COMMUNITY_MANAGER_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'community-manager',
   },
   accessControl: {
-    address: process.env.DEVNET_ACCESS_CONTROL_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    name: 'access-control'
-  }
-}
+    address:
+      process.env.DEVNET_ACCESS_CONTROL_ADDRESS ||
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    name: 'access-control',
+  },
+};
 
 const TESTNET_CONTRACTS: NetworkContracts = {
   badgeReader: {
     address: process.env.TESTNET_BADGE_READER_ADDRESS || '',
-    name: 'badge-reader'
+    name: 'badge-reader',
   },
   badgeIssuer: {
     address: process.env.TESTNET_BADGE_ISSUER_ADDRESS || '',
-    name: 'badge-issuer'
+    name: 'badge-issuer',
   },
   badgeMetadata: {
     address: process.env.TESTNET_BADGE_METADATA_ADDRESS || '',
-    name: 'badge-metadata'
+    name: 'badge-metadata',
   },
   passportNft: {
     address: process.env.TESTNET_PASSPORT_NFT_ADDRESS || '',
-    name: 'passport-nft'
+    name: 'passport-nft',
   },
   passportCore: {
     address: process.env.TESTNET_PASSPORT_CORE_ADDRESS || '',
-    name: 'passport-core'
+    name: 'passport-core',
   },
   communityManager: {
     address: process.env.TESTNET_COMMUNITY_MANAGER_ADDRESS || '',
-    name: 'community-manager'
+    name: 'community-manager',
   },
   accessControl: {
     address: process.env.TESTNET_ACCESS_CONTROL_ADDRESS || '',
-    name: 'access-control'
-  }
-}
+    name: 'access-control',
+  },
+};
 
 const MAINNET_CONTRACTS: NetworkContracts = {
   badgeReader: {
     // Update these addresses after mainnet deployment
     address: process.env.MAINNET_BADGE_READER_ADDRESS || '',
-    name: 'badge-reader'
+    name: 'badge-reader',
   },
   badgeIssuer: {
     address: process.env.MAINNET_BADGE_ISSUER_ADDRESS || '',
-    name: 'badge-issuer'
+    name: 'badge-issuer',
   },
   badgeMetadata: {
     address: process.env.MAINNET_BADGE_METADATA_ADDRESS || '',
-    name: 'badge-metadata'
+    name: 'badge-metadata',
   },
   passportNft: {
     address: process.env.MAINNET_PASSPORT_NFT_ADDRESS || '',
-    name: 'passport-nft'
+    name: 'passport-nft',
   },
   passportCore: {
     address: process.env.MAINNET_PASSPORT_CORE_ADDRESS || '',
-    name: 'passport-core'
+    name: 'passport-core',
   },
   communityManager: {
     address: process.env.MAINNET_COMMUNITY_MANAGER_ADDRESS || '',
-    name: 'community-manager'
+    name: 'community-manager',
   },
   accessControl: {
     address: process.env.MAINNET_ACCESS_CONTROL_ADDRESS || '',
-    name: 'access-control'
-  }
-}
+    name: 'access-control',
+  },
+};
 
 /**
  * Get contracts for current network
  */
 export function getContracts(): NetworkContracts {
-  const network = process.env.STACKS_NETWORK || 'devnet'
+  const network = process.env.STACKS_NETWORK || 'devnet';
 
   switch (network.toLowerCase()) {
     case 'mainnet':
-      return MAINNET_CONTRACTS
+      return MAINNET_CONTRACTS;
     case 'testnet':
-      return TESTNET_CONTRACTS
+      return TESTNET_CONTRACTS;
     case 'devnet':
     default:
-      return DEVNET_CONTRACTS
+      return DEVNET_CONTRACTS;
   }
 }
 
@@ -140,7 +154,7 @@ export function getContracts(): NetworkContracts {
  * Get fully qualified contract identifier
  */
 export function getContractId(contract: ContractConfig): string {
-  return `${contract.address}.${contract.name}`
+  return `${contract.address}.${contract.name}`;
 }
 
 /**
@@ -168,16 +182,23 @@ export function verifyContractConfiguration(): boolean {
   }
 
   const validation = validateContractAddresses(contractAddresses);
-  
+
   if (!validation.valid) {
-    console.error(`Contract address validation failed:\n${formatValidationErrors(validation.errors)}`);
+    console.error(
+      `Contract address validation failed:\n${formatValidationErrors(
+        validation.errors
+      )}`
+    );
     return false;
   }
 
   const expectedNetwork = network === 'mainnet' ? 'mainnet' : 'testnet';
   if (network !== 'devnet') {
     for (const [name, address] of Object.entries(contractAddresses)) {
-      const networkValidation = validateAddressNetwork(address, expectedNetwork);
+      const networkValidation = validateAddressNetwork(
+        address,
+        expectedNetwork
+      );
       if (!networkValidation.valid) {
         console.error(`${name}: ${networkValidation.error}`);
         return false;
@@ -193,17 +214,18 @@ export function verifyContractConfiguration(): boolean {
  * Get contract explorer URL
  */
 export function getContractExplorerUrl(contract: ContractConfig): string {
-  const network = process.env.STACKS_NETWORK || 'devnet'
-  const baseUrl = network === 'mainnet'
-    ? 'https://explorer.stacks.co'
-    : 'https://explorer.hiro.so'
+  const network = process.env.STACKS_NETWORK || 'devnet';
+  const baseUrl =
+    network === 'mainnet'
+      ? 'https://explorer.stacks.co'
+      : 'https://explorer.hiro.so';
 
-  return `${baseUrl}/txid/${getContractId(contract)}?chain=${network}`
+  return `${baseUrl}/txid/${getContractId(contract)}?chain=${network}`;
 }
 
 export default {
   getContracts,
   getContractId,
   verifyContractConfiguration,
-  getContractExplorerUrl
-}
+  getContractExplorerUrl,
+};

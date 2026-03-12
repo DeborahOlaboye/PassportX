@@ -1,4 +1,7 @@
-import { ServerOptions as ChainhookServerOptions, ChainhookNodeOptions } from '@hirosystems/chainhook-client';
+import {
+  ServerOptions as ChainhookServerOptions,
+  ChainhookNodeOptions,
+} from '@hirosystems/chainhook-client';
 
 export interface IChainhookConfig {
   nodeUrl: string;
@@ -34,7 +37,7 @@ export interface IChainhookEvent {
   };
   type: string;
   timestamp: number;
-  transactions: any[];
+  transactions: unknown[];
   metadata: {
     bitcoin_anchor_block_identifier: {
       index: number;

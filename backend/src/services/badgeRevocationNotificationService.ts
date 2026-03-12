@@ -39,10 +39,13 @@ export class BadgeRevocationNotificationService extends EventEmitter {
     hardRevokeNotifications: 0,
     notificationsByMethod: new Map(),
     userNotificationCounts: new Map(),
-    averageNotificationDelay: 0
+    averageNotificationDelay: 0,
   };
   private notificationDelays: number[] = [];
-  private notificationCallbacks: Map<string, (notification: RevocationNotification) => Promise<void>> = new Map();
+  private notificationCallbacks: Map<
+    string,
+    (notification: RevocationNotification) => Promise<void>
+  > = new Map();
   private processingTimer: NodeJS.Timeout | null = null;
   private readonly BATCH_SIZE = 100;
   private readonly BATCH_TIMEOUT = 500;
@@ -56,14 +59,21 @@ export class BadgeRevocationNotificationService extends EventEmitter {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[RevocationNotificationService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[RevocationNotificationService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[RevocationNotificationService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[RevocationNotificationService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[RevocationNotificationService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[RevocationNotificationService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[RevocationNotificationService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[RevocationNotificationService] ${msg}`, ...args),
     };
   }
 
-  registerNotificationHandler(method: 'email' | 'in-app' | 'webhook' | 'push', handler: (notification: RevocationNotification) => Promise<void>): void {
+  registerNotificationHandler(
+    method: 'email' | 'in-app' | 'webhook' | 'push',
+    handler: (notification: RevocationNotification) => Promise<void>
+  ): void {
     this.notificationCallbacks.set(method, handler);
     this.logger.info(`Notification handler registered for ${method}`);
   }
@@ -81,7 +91,7 @@ export class BadgeRevocationNotificationService extends EventEmitter {
       notificationSent: false,
       notificationMethod,
       deliveryStatus: 'pending',
-      retryCount: 0
+      retryCount: 0,
     };
 
     this.notificationQueue.push(notification);
@@ -99,13 +109,16 @@ export class BadgeRevocationNotificationService extends EventEmitter {
     this.logger.debug('Revocation notification queued', {
       userId: event.userId,
       badgeId: event.badgeId,
-      method: notificationMethod
+      method: notificationMethod,
     });
 
     if (this.notificationQueue.length >= this.BATCH_SIZE) {
       await this.processBatch();
     } else if (!this.processingTimer) {
-      this.processingTimer = setTimeout(() => this.processBatch(), this.BATCH_TIMEOUT);
+      this.processingTimer = setTimeout(
+        () => this.processBatch(),
+        this.BATCH_TIMEOUT
+      );
     }
 
     return notification;
@@ -118,11 +131,16 @@ export class BadgeRevocationNotificationService extends EventEmitter {
     const notifications: RevocationNotification[] = [];
 
     for (const event of events) {
-      const notification = await this.notifyBadgeRevocation(event, notificationMethod);
+      const notification = await this.notifyBadgeRevocation(
+        event,
+        notificationMethod
+      );
       notifications.push(notification);
     }
 
-    this.logger.info(`Batch revocation notifications queued for ${events.length} events`);
+    this.logger.info(
+      `Batch revocation notifications queued for ${events.length} events`
+    );
     return notifications;
   }
 
@@ -141,7 +159,7 @@ export class BadgeRevocationNotificationService extends EventEmitter {
 
     try {
       const results = await Promise.allSettled(
-        batch.map(notification => this.sendNotification(notification))
+        batch.map((notification) => this.sendNotification(notification))
       );
 
       results.forEach((result, index) => {
@@ -163,63 +181,85 @@ export class BadgeRevocationNotificationService extends EventEmitter {
       this.updateAverageDelay();
 
       this.logger.debug(`Processed batch of ${batch.length} notifications`, {
-        sent: results.filter(r => r.status === 'fulfilled').length,
-        failed: results.filter(r => r.status === 'rejected').length,
-        time: processingTime
+        sent: results.filter((r) => r.status === 'fulfilled').length,
+        failed: results.filter((r) => r.status === 'rejected').length,
+        time: processingTime,
       });
     } catch (error) {
       this.logger.error('Error processing notification batch', { error });
     }
 
     if (this.notificationQueue.length > 0) {
-      this.processingTimer = setTimeout(() => this.processBatch(), this.BATCH_TIMEOUT);
+      this.processingTimer = setTimeout(
+        () => this.processBatch(),
+        this.BATCH_TIMEOUT
+      );
     }
   }
 
-  private async sendNotification(notification: RevocationNotification): Promise<void> {
+  private async sendNotification(
+    notification: RevocationNotification
+  ): Promise<void> {
     try {
       if (notification.notificationMethod === 'all') {
         const handlers = Array.from(this.notificationCallbacks.values());
-        await Promise.all(handlers.map(h => h(notification)));
+        await Promise.all(handlers.map((h) => h(notification)));
       } else {
-        const handler = this.notificationCallbacks.get(notification.notificationMethod);
+        const handler = this.notificationCallbacks.get(
+          notification.notificationMethod
+        );
         if (handler) {
           await handler(notification);
         }
       }
 
-      const methodCount = this.metrics.notificationsByMethod.get(notification.notificationMethod) || 0;
-      this.metrics.notificationsByMethod.set(notification.notificationMethod, methodCount + 1);
+      const methodCount =
+        this.metrics.notificationsByMethod.get(
+          notification.notificationMethod
+        ) || 0;
+      this.metrics.notificationsByMethod.set(
+        notification.notificationMethod,
+        methodCount + 1
+      );
 
       this.logger.debug('Notification sent successfully', {
         userId: notification.userId,
         badgeId: notification.badgeId,
-        method: notification.notificationMethod
+        method: notification.notificationMethod,
       });
     } catch (error) {
       throw error;
     }
   }
 
-  private handleNotificationFailure(notification: RevocationNotification, error: any): void {
+  private handleNotificationFailure(
+    notification: RevocationNotification,
+    error: any
+  ): void {
     notification.retryCount++;
 
     if (notification.retryCount < this.MAX_RETRIES) {
       notification.deliveryStatus = 'pending';
       this.notificationQueue.push(notification);
-      this.logger.warn(`Notification retry queued (attempt ${notification.retryCount}/${this.MAX_RETRIES})`, {
-        userId: notification.userId,
-        badgeId: notification.badgeId
-      });
+      this.logger.warn(
+        `Notification retry queued (attempt ${notification.retryCount}/${this.MAX_RETRIES})`,
+        {
+          userId: notification.userId,
+          badgeId: notification.badgeId,
+        }
+      );
     } else {
       notification.deliveryStatus = 'failed';
       this.metrics.failedNotifications++;
       this.metrics.pendingNotifications--;
-      this.logger.error(`Notification failed after ${this.MAX_RETRIES} retries`, {
-        userId: notification.userId,
-        badgeId: notification.badgeId,
-        error
-      });
+      this.logger.error(
+        `Notification failed after ${this.MAX_RETRIES} retries`,
+        {
+          userId: notification.userId,
+          badgeId: notification.badgeId,
+          error,
+        }
+      );
       this.emit('notification-failed', notification);
     }
 
@@ -234,7 +274,8 @@ export class BadgeRevocationNotificationService extends EventEmitter {
   private updateAverageDelay(): void {
     if (this.notificationDelays.length > 0) {
       const sum = this.notificationDelays.reduce((a, b) => a + b, 0);
-      this.metrics.averageNotificationDelay = sum / this.notificationDelays.length;
+      this.metrics.averageNotificationDelay =
+        sum / this.notificationDelays.length;
 
       if (this.notificationDelays.length > 1000) {
         this.notificationDelays = this.notificationDelays.slice(-1000);
@@ -242,24 +283,34 @@ export class BadgeRevocationNotificationService extends EventEmitter {
     }
   }
 
-  getUserNotificationHistory(userId: string, limit: number = 100): RevocationNotification[] {
+  getUserNotificationHistory(
+    userId: string,
+    limit: number = 100
+  ): RevocationNotification[] {
     return this.notificationHistory
-      .filter(n => n.userId === userId)
+      .filter((n) => n.userId === userId)
       .slice(-limit);
   }
 
-  getNotificationsByMethod(method: string, limit: number = 100): RevocationNotification[] {
+  getNotificationsByMethod(
+    method: string,
+    limit: number = 100
+  ): RevocationNotification[] {
     return this.notificationHistory
-      .filter(n => n.notificationMethod === method || n.notificationMethod === 'all')
+      .filter(
+        (n) => n.notificationMethod === method || n.notificationMethod === 'all'
+      )
       .slice(-limit);
   }
 
   getFailedNotifications(): RevocationNotification[] {
-    return this.notificationHistory.filter(n => n.deliveryStatus === 'failed');
+    return this.notificationHistory.filter(
+      (n) => n.deliveryStatus === 'failed'
+    );
   }
 
   getPendingNotifications(): RevocationNotification[] {
-    return this.notificationQueue.filter(n => n.deliveryStatus === 'pending');
+    return this.notificationQueue.filter((n) => n.deliveryStatus === 'pending');
   }
 
   getMetrics(): NotificationMetrics {
@@ -267,22 +318,31 @@ export class BadgeRevocationNotificationService extends EventEmitter {
       ...this.metrics,
       pendingNotifications: this.notificationQueue.length,
       notificationsByMethod: new Map(this.metrics.notificationsByMethod),
-      userNotificationCounts: new Map(this.metrics.userNotificationCounts)
+      userNotificationCounts: new Map(this.metrics.userNotificationCounts),
     };
   }
 
   getDetailedMetrics() {
-    const successRate = this.metrics.totalNotifications > 0
-      ? ((this.metrics.sentNotifications / this.metrics.totalNotifications) * 100).toFixed(2) + '%'
-      : '0%';
+    const successRate =
+      this.metrics.totalNotifications > 0
+        ? (
+            (this.metrics.sentNotifications / this.metrics.totalNotifications) *
+            100
+          ).toFixed(2) + '%'
+        : '0%';
 
     return {
       ...this.getMetrics(),
       successRate,
-      failureRate: this.metrics.totalNotifications > 0
-        ? ((this.metrics.failedNotifications / this.metrics.totalNotifications) * 100).toFixed(2) + '%'
-        : '0%',
-      mostNotifiedUser: this.getMostNotifiedUser()
+      failureRate:
+        this.metrics.totalNotifications > 0
+          ? (
+              (this.metrics.failedNotifications /
+                this.metrics.totalNotifications) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
+      mostNotifiedUser: this.getMostNotifiedUser(),
     };
   }
 
@@ -290,7 +350,10 @@ export class BadgeRevocationNotificationService extends EventEmitter {
     let maxUser: string | null = null;
     let maxCount = 0;
 
-    for (const [userId, count] of this.metrics.userNotificationCounts.entries()) {
+    for (const [
+      userId,
+      count,
+    ] of this.metrics.userNotificationCounts.entries()) {
       if (count > maxCount) {
         maxCount = count;
         maxUser = userId;
@@ -310,7 +373,7 @@ export class BadgeRevocationNotificationService extends EventEmitter {
       hardRevokeNotifications: 0,
       notificationsByMethod: new Map(),
       userNotificationCounts: new Map(),
-      averageNotificationDelay: 0
+      averageNotificationDelay: 0,
     };
     this.notificationDelays = [];
     this.logger.info('Notification metrics reset');

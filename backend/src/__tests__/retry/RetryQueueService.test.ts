@@ -20,7 +20,7 @@ describe('RetryQueueService', () => {
         originalPayload: { test: 'data' },
         eventType: 'test-event',
         error: 'Test error',
-        errorType: 'network'
+        errorType: 'network',
       });
 
       expect(item).toBeDefined();
@@ -35,7 +35,7 @@ describe('RetryQueueService', () => {
         originalPayload: { test: 'data' },
         targetUrl: 'https://example.com/webhook',
         error: 'Connection failed',
-        errorType: 'network'
+        errorType: 'network',
       });
 
       expect(item.nextRetryAt).toBeDefined();
@@ -48,13 +48,13 @@ describe('RetryQueueService', () => {
       await service.addToQueue({
         itemType: 'event',
         originalPayload: {},
-        errorType: 'network'
+        errorType: 'network',
       });
 
       await service.addToQueue({
         itemType: 'webhook',
         originalPayload: {},
-        errorType: 'timeout'
+        errorType: 'timeout',
       });
 
       const stats = await service.getStatistics();
@@ -73,7 +73,7 @@ describe('RetryQueueService', () => {
 
       const item = await service.addToQueue({
         itemType: 'event',
-        originalPayload: {}
+        originalPayload: {},
       });
 
       item.status = 'succeeded';

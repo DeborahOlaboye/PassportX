@@ -2,7 +2,7 @@ import {
   ChainhookEventPayload,
   ChainhookEventHandler,
   NotificationPayload,
-  BadgeVerificationEvent
+  BadgeVerificationEvent,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
@@ -21,7 +21,9 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
   }
 
   private getCacheKey(event: ChainhookEventPayload): string {
-    return `${event.block_identifier?.index}:${event.transactions?.[0]?.transaction_hash || ''}`;
+    return `${event.block_identifier?.index}:${
+      event.transactions?.[0]?.transaction_hash || ''
+    }`;
   }
 
   private isCacheValid(cachedTime: number): boolean {
@@ -101,10 +103,10 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
         for (const op of tx.operations) {
           if (op.type === 'contract_call' && op.contract_call) {
             const method = op.contract_call.method;
-            
+
             if (method === 'verify' || method === 'verify-badge') {
-              const args = op.contract_call.args || [];
-              
+              const args = (op.contract_call.args || []) as unknown[];
+
               const verificationEvent: BadgeVerificationEvent = {
                 userId: this.extractUserId(args),
                 badgeId: this.extractBadgeId(args),
@@ -113,7 +115,7 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
                 contractAddress: op.contract_call.contract,
                 transactionHash: tx.transaction_hash,
                 blockHeight: event.block_identifier.index,
-                timestamp: event.metadata?.pox_cycle_position || Date.now()
+                timestamp: event.metadata?.pox_cycle_position || Date.now(),
               };
 
               if (verificationEvent.userId) {
@@ -126,16 +128,20 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
           if (op.events) {
             for (const evt of op.events) {
               if (evt.topic && evt.topic.includes('verify')) {
-                const verificationEvent = EventMapper.mapBadgeVerificationEvent({
-                  ...evt.value,
-                  contractAddress: evt.contract_address,
-                  transactionHash: tx.transaction_hash,
-                  blockHeight: event.block_identifier.index,
-                  timestamp: event.metadata?.pox_cycle_position || Date.now()
-                });
+                const evtValue = evt.value as Record<string, unknown>;
+                const verificationEvent = EventMapper.mapBadgeVerificationEvent(
+                  {
+                    ...evtValue,
+                    contractAddress: evt.contract_address,
+                    transactionHash: tx.transaction_hash,
+                    blockHeight: event.block_identifier.index,
+                    timestamp: event.metadata?.pox_cycle_position || Date.now(),
+                  }
+                );
 
                 if (verificationEvent.userId) {
-                  const notification = this.createNotification(verificationEvent);
+                  const notification =
+                    this.createNotification(verificationEvent);
                   notifications.push(notification);
                 }
               }
@@ -155,35 +161,42 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
     return 'badge-verify';
   }
 
-  private extractUserId(args: any[]): string {
+  private extractUserId(args: unknown[]): string {
     if (!args || args.length === 0) return '';
-    return args[0]?.value || args[0] || '';
+    const arg = args[0] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractBadgeId(args: any[]): string {
+  private extractBadgeId(args: unknown[]): string {
     if (!args || args.length < 2) return '';
-    return args[1]?.value || args[1] || '';
+    const arg = args[1] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractBadgeName(args: any[]): string {
+  private extractBadgeName(args: unknown[]): string {
     if (!args || args.length < 3) return '';
-    return args[2]?.value || args[2] || '';
+    const arg = args[2] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractVerificationData(args: any[]): Record<string, any> {
+  private extractVerificationData(args: unknown[]): Record<string, unknown> {
     if (!args || args.length < 4) return {};
     const data = args[3];
-    
-    if (typeof data === 'object') {
-      return data;
+
+    if (typeof data === 'object' && data !== null) {
+      return data as Record<string, unknown>;
     }
-    
+
     return { raw: data };
   }
 
-  private createNotification(verificationEvent: BadgeVerificationEvent): NotificationPayload {
-    const verificationStatus = this.getVerificationStatus(verificationEvent.verificationData);
-    
+  private createNotification(
+    verificationEvent: BadgeVerificationEvent
+  ): NotificationPayload {
+    const verificationStatus = this.getVerificationStatus(
+      verificationEvent.verificationData
+    );
+
     return {
       userId: verificationEvent.userId,
       type: 'badge_verified',
@@ -198,14 +211,18 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
         transactionHash: verificationEvent.transactionHash,
         blockHeight: verificationEvent.blockHeight,
         timestamp: verificationEvent.timestamp,
-        verificationData: verificationEvent.verificationData
-      }
+        verificationData: verificationEvent.verificationData,
+      },
     };
   }
 
-  private getVerificationStatus(verificationData: any): string {
-    if (typeof verificationData === 'object' && verificationData.status) {
-      return verificationData.status;
+  private getVerificationStatus(verificationData: unknown): string {
+    if (
+      typeof verificationData === 'object' &&
+      verificationData !== null &&
+      'status' in verificationData
+    ) {
+      return String((verificationData as { status: unknown }).status);
     }
     return 'verified';
   }

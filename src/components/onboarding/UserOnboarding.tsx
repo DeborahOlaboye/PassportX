@@ -21,7 +21,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 2,
     title: 'Connect Your Wallet',
-    description: 'Connect your Stacks wallet to get started and create your unique passport.',
+    description:
+      'Connect your Stacks wallet to get started and create your unique passport.',
   },
   {
     id: 3,
@@ -35,8 +36,9 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     id: 5,
-    title: 'You\'re All Set!',
-    description: 'Start earning badges and building your achievement portfolio.',
+    title: "You're All Set!",
+    description:
+      'Start earning badges and building your achievement portfolio.',
   },
 ];
 
@@ -49,7 +51,13 @@ export function UserOnboarding() {
 }
 
 function UserOnboardingInner() {
-  const { user, isAuthenticated, connectWallet, initializePassport, updateProfile } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    connectWallet,
+    initializePassport,
+    updateProfile,
+  } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,7 +131,9 @@ function UserOnboardingInner() {
     }
   };
 
-  const currentStepData = ONBOARDING_STEPS.find(step => step.id === currentStep);
+  const currentStepData = ONBOARDING_STEPS.find(
+    (step) => step.id === currentStep
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -158,11 +168,13 @@ function UserOnboardingInner() {
           {currentStep === 1 && (
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="font-semibold text-blue-900 mb-2">What is PassportX?</h3>
+                <h3 className="font-semibold text-blue-900 mb-2">
+                  What is PassportX?
+                </h3>
                 <p className="text-blue-800">
-                  PassportX is a digital achievement passport that lives on the Stacks blockchain.
-                  Earn badges from communities, showcase your skills, and build a verifiable
-                  record of your accomplishments.
+                  PassportX is a digital achievement passport that lives on the
+                  Stacks blockchain. Earn badges from communities, showcase your
+                  skills, and build a verifiable record of your accomplishments.
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-4 mt-6">
@@ -202,8 +214,12 @@ function UserOnboardingInner() {
               ) : (
                 <div>
                   <div className="text-6xl mb-4">✅</div>
-                  <p className="text-green-600 font-medium">Wallet Connected!</p>
-                  <p className="text-gray-600 mt-2">Address: {user?.stacksAddress?.slice(0, 12)}...</p>
+                  <p className="text-green-600 font-medium">
+                    Wallet Connected!
+                  </p>
+                  <p className="text-gray-600 mt-2">
+                    Address: {user?.stacksAddress?.slice(0, 12)}...
+                  </p>
                 </div>
               )}
             </div>
@@ -212,40 +228,55 @@ function UserOnboardingInner() {
           {currentStep === 3 && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Display Name
                 </label>
                 <input
                   type="text"
                   id="name"
                   value={profileData.name}
-                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, name: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Your name"
                 />
               </div>
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="bio"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Bio
                 </label>
                 <textarea
                   id="bio"
                   value={profileData.bio}
-                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, bio: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Tell us about yourself..."
                   rows={4}
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email (Optional)
                 </label>
                 <input
                   type="email"
                   id="email"
                   value={profileData.email}
-                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, email: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="your.email@example.com"
                 />
@@ -261,12 +292,17 @@ function UserOnboardingInner() {
                     type="checkbox"
                     checked={privacySettings.isPublic}
                     onChange={(e) =>
-                      setPrivacySettings({ ...privacySettings, isPublic: e.target.checked })
+                      setPrivacySettings({
+                        ...privacySettings,
+                        isPublic: e.target.checked,
+                      })
                     }
                     className="mt-1 mr-3"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">Make profile public</p>
+                    <p className="font-medium text-gray-900">
+                      Make profile public
+                    </p>
                     <p className="text-sm text-gray-600">
                       Allow others to view your passport and badges
                     </p>
@@ -279,12 +315,17 @@ function UserOnboardingInner() {
                     type="checkbox"
                     checked={privacySettings.showEmail}
                     onChange={(e) =>
-                      setPrivacySettings({ ...privacySettings, showEmail: e.target.checked })
+                      setPrivacySettings({
+                        ...privacySettings,
+                        showEmail: e.target.checked,
+                      })
                     }
                     className="mt-1 mr-3"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">Show email address</p>
+                    <p className="font-medium text-gray-900">
+                      Show email address
+                    </p>
                     <p className="text-sm text-gray-600">
                       Display your email on your public profile
                     </p>
@@ -297,7 +338,10 @@ function UserOnboardingInner() {
                     type="checkbox"
                     checked={privacySettings.showBadges}
                     onChange={(e) =>
-                      setPrivacySettings({ ...privacySettings, showBadges: e.target.checked })
+                      setPrivacySettings({
+                        ...privacySettings,
+                        showBadges: e.target.checked,
+                      })
                     }
                     className="mt-1 mr-3"
                   />
@@ -349,7 +393,11 @@ function UserOnboardingInner() {
               disabled={isLoading || (currentStep === 2 && !isAuthenticated)}
               className="px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Loading...' : currentStep === 5 ? 'Get Started' : 'Next'}
+              {isLoading
+                ? 'Loading...'
+                : currentStep === 5
+                ? 'Get Started'
+                : 'Next'}
             </button>
           </div>
         </div>
@@ -357,4 +405,3 @@ function UserOnboardingInner() {
     </div>
   );
 }
-

@@ -66,7 +66,8 @@ router.get(
     try {
       const { address } = req.params;
       const rawLimit = parseInt(req.query.limit as string, 10);
-      const safeLimit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
+      const safeLimit =
+        isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
 
       if (!passportService.validateAddress(address)) {
         throw createError('Invalid Stacks address', 400);

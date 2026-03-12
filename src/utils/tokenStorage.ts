@@ -12,7 +12,10 @@ const STORAGE_KEY = 'passportx_auth_token_v1';
 /**
  * Store auth token (optionally encrypted).
  */
-export const storeAuthToken = async (token: AuthToken, area: StorageArea = 'local'): Promise<boolean> => {
+export const storeAuthToken = async (
+  token: AuthToken,
+  area: StorageArea = 'local'
+): Promise<boolean> => {
   try {
     const payload = JSON.stringify(token);
     const storage = area === 'session' ? sessionStorage : localStorage;
@@ -27,7 +30,9 @@ export const storeAuthToken = async (token: AuthToken, area: StorageArea = 'loca
 /**
  * Retrieve auth token from storage.
  */
-export const retrieveAuthToken = (area: StorageArea = 'local'): AuthToken | null => {
+export const retrieveAuthToken = (
+  area: StorageArea = 'local'
+): AuthToken | null => {
   try {
     const storage = area === 'session' ? sessionStorage : localStorage;
     const raw = storage.getItem(STORAGE_KEY);
@@ -44,8 +49,10 @@ export const retrieveAuthToken = (area: StorageArea = 'local'): AuthToken | null
  */
 export const clearAuthToken = (): boolean => {
   try {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
-    if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(STORAGE_KEY);
+    if (typeof localStorage !== 'undefined')
+      localStorage.removeItem(STORAGE_KEY);
+    if (typeof sessionStorage !== 'undefined')
+      sessionStorage.removeItem(STORAGE_KEY);
     return true;
   } catch (e) {
     console.warn('Failed to clear auth token', e);

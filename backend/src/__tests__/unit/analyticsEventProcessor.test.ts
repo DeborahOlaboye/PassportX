@@ -1,25 +1,25 @@
-import AnalyticsEventProcessor from '../../services/analyticsEventProcessor'
-import AnalyticsAggregator from '../../services/analyticsAggregator'
+import AnalyticsEventProcessor from '../../services/analyticsEventProcessor';
+import AnalyticsAggregator from '../../services/analyticsAggregator';
 
 describe('AnalyticsEventProcessor', () => {
-  let processor: AnalyticsEventProcessor
-  let aggregator: AnalyticsAggregator
-  let mockLogger: any
+  let processor: AnalyticsEventProcessor;
+  let aggregator: AnalyticsAggregator;
+  let mockLogger: any;
 
   beforeEach(() => {
-    aggregator = new AnalyticsAggregator()
+    aggregator = new AnalyticsAggregator();
     mockLogger = {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
-    }
-    processor = new AnalyticsEventProcessor(aggregator, mockLogger)
-  })
+      error: jest.fn(),
+    };
+    processor = new AnalyticsEventProcessor(aggregator, mockLogger);
+  });
 
   afterEach(async () => {
-    await processor.cleanup()
-  })
+    await processor.cleanup();
+  });
 
   describe('event processing', () => {
     it('should queue badge issued events', async () => {
@@ -29,17 +29,17 @@ describe('AnalyticsEventProcessor', () => {
         badgeName: 'Developer Pro',
         contractAddress: 'SP123...',
         blockHeight: 12345,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      };
 
-      processor.processBadgeIssuedEvent(badgeEvent)
-      await processor.flush()
+      processor.processBadgeIssuedEvent(badgeEvent);
+      await processor.flush();
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('batch processed'),
         expect.any(Object)
-      )
-    })
+      );
+    });
 
     it('should queue badge revoked events', async () => {
       const revokeEvent = {
@@ -48,28 +48,28 @@ describe('AnalyticsEventProcessor', () => {
         badgeName: 'Developer Pro',
         revocationType: 'soft' as const,
         blockHeight: 12345,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      };
 
-      processor.processBadgeRevokedEvent(revokeEvent)
-      await processor.flush()
+      processor.processBadgeRevokedEvent(revokeEvent);
+      await processor.flush();
 
-      expect(mockLogger.info).toHaveBeenCalled()
-    })
+      expect(mockLogger.info).toHaveBeenCalled();
+    });
 
     it('should queue user joined events', async () => {
       const userEvent = {
         userId: 'user-1',
         username: 'john_doe',
         walletAddress: 'SP123...',
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      };
 
-      processor.processUserJoinedEvent(userEvent)
-      await processor.flush()
+      processor.processUserJoinedEvent(userEvent);
+      await processor.flush();
 
-      expect(mockLogger.info).toHaveBeenCalled()
-    })
+      expect(mockLogger.info).toHaveBeenCalled();
+    });
 
     it('should queue community created events', async () => {
       const communityEvent = {
@@ -77,15 +77,15 @@ describe('AnalyticsEventProcessor', () => {
         communityName: 'Developers',
         creatorId: 'user-1',
         blockHeight: 12345,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      };
 
-      processor.processCommunityCreatedEvent(communityEvent)
-      await processor.flush()
+      processor.processCommunityCreatedEvent(communityEvent);
+      await processor.flush();
 
-      expect(mockLogger.info).toHaveBeenCalled()
-    })
-  })
+      expect(mockLogger.info).toHaveBeenCalled();
+    });
+  });
 
   describe('batching', () => {
     it('should batch multiple events', async () => {
@@ -96,20 +96,20 @@ describe('AnalyticsEventProcessor', () => {
           badgeName: 'Badge',
           contractAddress: 'SP123...',
           blockHeight: 12345,
-          timestamp: Date.now()
-        })
+          timestamp: Date.now(),
+        });
       }
 
-      await processor.flush()
+      await processor.flush();
 
-      const metrics = processor.getMetrics()
-      expect(metrics.eventsProcessed).toBe(5)
-    })
+      const metrics = processor.getMetrics();
+      expect(metrics.eventsProcessed).toBe(5);
+    });
 
     it('should process batch when threshold is reached', async () => {
-      jest.useFakeTimers()
+      jest.useFakeTimers();
 
-      const batchSize = 50
+      const batchSize = 50;
       for (let i = 0; i < batchSize; i++) {
         processor.processBadgeIssuedEvent({
           badgeId: `badge-${i}`,
@@ -117,16 +117,16 @@ describe('AnalyticsEventProcessor', () => {
           badgeName: 'Badge',
           contractAddress: 'SP123...',
           blockHeight: 12345,
-          timestamp: Date.now()
-        })
+          timestamp: Date.now(),
+        });
       }
 
-      const metrics = processor.getMetrics()
-      expect(metrics.eventsProcessed).toBe(batchSize)
+      const metrics = processor.getMetrics();
+      expect(metrics.eventsProcessed).toBe(batchSize);
 
-      jest.useRealTimers()
-    })
-  })
+      jest.useRealTimers();
+    });
+  });
 
   describe('metrics', () => {
     it('should track processed events', async () => {
@@ -136,18 +136,18 @@ describe('AnalyticsEventProcessor', () => {
         badgeName: 'Badge',
         contractAddress: 'SP123...',
         blockHeight: 12345,
-        timestamp: Date.now()
-      })
+        timestamp: Date.now(),
+      });
 
-      await processor.flush()
+      await processor.flush();
 
-      const metrics = processor.getMetrics()
-      expect(metrics.eventsProcessed).toBeGreaterThan(0)
-    })
+      const metrics = processor.getMetrics();
+      expect(metrics.eventsProcessed).toBeGreaterThan(0);
+    });
 
     it('should track failed events', async () => {
-      const metrics = processor.getMetrics()
-      expect(metrics.eventsFailed).toBeGreaterThanOrEqual(0)
-    })
-  })
-})
+      const metrics = processor.getMetrics();
+      expect(metrics.eventsFailed).toBeGreaterThanOrEqual(0);
+    });
+  });
+});

@@ -27,7 +27,7 @@ export class BadgeCountUpdateService extends EventEmitter {
     successfulUpdates: 0,
     failedUpdates: 0,
     averageUpdateTime: 0,
-    usersWithZeroBadges: 0
+    usersWithZeroBadges: 0,
   };
   private updateTimes: number[] = [];
   private updateCallbacks: ((update: BadgeCountUpdate) => Promise<void>)[] = [];
@@ -40,23 +40,33 @@ export class BadgeCountUpdateService extends EventEmitter {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeCountUpdateService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeCountUpdateService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeCountUpdateService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeCountUpdateService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeCountUpdateService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeCountUpdateService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeCountUpdateService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeCountUpdateService] ${msg}`, ...args),
     };
   }
 
-  registerUpdateCallback(callback: (update: BadgeCountUpdate) => Promise<void>): void {
+  registerUpdateCallback(
+    callback: (update: BadgeCountUpdate) => Promise<void>
+  ): void {
     this.updateCallbacks.push(callback);
     this.logger.debug('Badge count update callback registered');
   }
 
-  async incrementBadgeCount(userId: string, revocationType?: 'soft' | 'hard'): Promise<BadgeCountUpdate> {
+  async incrementBadgeCount(
+    userId: string,
+    revocationType?: 'soft' | 'hard'
+  ): Promise<BadgeCountUpdate> {
     const startTime = Date.now();
 
     try {
-      const current = this.userBadgeCounts.get(userId) || this.createEmptyCount(userId);
+      const current =
+        this.userBadgeCounts.get(userId) || this.createEmptyCount(userId);
 
       if (!revocationType) {
         current.totalBadges++;
@@ -82,11 +92,15 @@ export class BadgeCountUpdateService extends EventEmitter {
     }
   }
 
-  async decrementBadgeCount(userId: string, revocationType: 'soft' | 'hard'): Promise<BadgeCountUpdate> {
+  async decrementBadgeCount(
+    userId: string,
+    revocationType: 'soft' | 'hard'
+  ): Promise<BadgeCountUpdate> {
     const startTime = Date.now();
 
     try {
-      const current = this.userBadgeCounts.get(userId) || this.createEmptyCount(userId);
+      const current =
+        this.userBadgeCounts.get(userId) || this.createEmptyCount(userId);
 
       if (current.totalBadges > 0) {
         current.totalBadges--;
@@ -100,7 +114,8 @@ export class BadgeCountUpdateService extends EventEmitter {
         current.hardRevokedBadges++;
       }
 
-      current.revokedBadges = current.softRevokedBadges + current.hardRevokedBadges;
+      current.revokedBadges =
+        current.softRevokedBadges + current.hardRevokedBadges;
       current.lastUpdated = Date.now();
       this.userBadgeCounts.set(userId, current);
 
@@ -111,7 +126,11 @@ export class BadgeCountUpdateService extends EventEmitter {
       await this.notifyUpdateCallbacks(current);
       this.emit('count-updated', current);
 
-      this.logger.debug('Badge count decremented', { userId, revocationType, newTotal: current.totalBadges });
+      this.logger.debug('Badge count decremented', {
+        userId,
+        revocationType,
+        newTotal: current.totalBadges,
+      });
       return current;
     } catch (error) {
       const updateTime = Date.now() - startTime;
@@ -121,13 +140,16 @@ export class BadgeCountUpdateService extends EventEmitter {
     }
   }
 
-  async updateUserBadgeCounts(userId: string, counts: {
-    totalBadges: number;
-    activeBadges: number;
-    revokedBadges?: number;
-    softRevokedBadges?: number;
-    hardRevokedBadges?: number;
-  }): Promise<BadgeCountUpdate> {
+  async updateUserBadgeCounts(
+    userId: string,
+    counts: {
+      totalBadges: number;
+      activeBadges: number;
+      revokedBadges?: number;
+      softRevokedBadges?: number;
+      hardRevokedBadges?: number;
+    }
+  ): Promise<BadgeCountUpdate> {
     const startTime = Date.now();
 
     try {
@@ -138,7 +160,7 @@ export class BadgeCountUpdateService extends EventEmitter {
         revokedBadges: counts.revokedBadges ?? 0,
         softRevokedBadges: counts.softRevokedBadges ?? 0,
         hardRevokedBadges: counts.hardRevokedBadges ?? 0,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
 
       this.userBadgeCounts.set(userId, update);
@@ -173,7 +195,7 @@ export class BadgeCountUpdateService extends EventEmitter {
       revokedBadges: 0,
       softRevokedBadges: 0,
       hardRevokedBadges: 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
   }
 
@@ -206,7 +228,10 @@ export class BadgeCountUpdateService extends EventEmitter {
       try {
         await callback(update);
       } catch (error) {
-        this.logger.error('Error in update callback', { error, userId: update.userId });
+        this.logger.error('Error in update callback', {
+          error,
+          userId: update.userId,
+        });
       }
     }
   }
@@ -247,10 +272,11 @@ export class BadgeCountUpdateService extends EventEmitter {
     return this.updateHistory.slice(-limit);
   }
 
-  getUserUpdateHistory(userId: string, limit: number = 100): BadgeCountUpdate[] {
-    return this.updateHistory
-      .filter(h => h.userId === userId)
-      .slice(-limit);
+  getUserUpdateHistory(
+    userId: string,
+    limit: number = 100
+  ): BadgeCountUpdate[] {
+    return this.updateHistory.filter((h) => h.userId === userId).slice(-limit);
   }
 
   getMetrics(): CountUpdateMetrics {
@@ -258,13 +284,26 @@ export class BadgeCountUpdateService extends EventEmitter {
   }
 
   getDetailedMetrics() {
-    const successRate = this.metrics.totalUpdates > 0
-      ? ((this.metrics.successfulUpdates / this.metrics.totalUpdates) * 100).toFixed(2) + '%'
-      : '0%';
+    const successRate =
+      this.metrics.totalUpdates > 0
+        ? (
+            (this.metrics.successfulUpdates / this.metrics.totalUpdates) *
+            100
+          ).toFixed(2) + '%'
+        : '0%';
 
-    const totalBadges = Array.from(this.userBadgeCounts.values()).reduce((sum, c) => sum + c.totalBadges, 0);
-    const totalActiveBadges = Array.from(this.userBadgeCounts.values()).reduce((sum, c) => sum + c.activeBadges, 0);
-    const totalRevokedBadges = Array.from(this.userBadgeCounts.values()).reduce((sum, c) => sum + c.revokedBadges, 0);
+    const totalBadges = Array.from(this.userBadgeCounts.values()).reduce(
+      (sum, c) => sum + c.totalBadges,
+      0
+    );
+    const totalActiveBadges = Array.from(this.userBadgeCounts.values()).reduce(
+      (sum, c) => sum + c.activeBadges,
+      0
+    );
+    const totalRevokedBadges = Array.from(this.userBadgeCounts.values()).reduce(
+      (sum, c) => sum + c.revokedBadges,
+      0
+    );
 
     return {
       ...this.getMetrics(),
@@ -273,9 +312,10 @@ export class BadgeCountUpdateService extends EventEmitter {
       totalBadgesTracked: totalBadges,
       totalActiveBadges,
       totalRevokedBadges,
-      revocationRate: totalBadges > 0
-        ? ((totalRevokedBadges / totalBadges) * 100).toFixed(2) + '%'
-        : '0%'
+      revocationRate:
+        totalBadges > 0
+          ? ((totalRevokedBadges / totalBadges) * 100).toFixed(2) + '%'
+          : '0%',
     };
   }
 
@@ -285,7 +325,7 @@ export class BadgeCountUpdateService extends EventEmitter {
       successfulUpdates: 0,
       failedUpdates: 0,
       averageUpdateTime: 0,
-      usersWithZeroBadges: 0
+      usersWithZeroBadges: 0,
     };
     this.updateTimes = [];
     this.logger.info('Badge count update metrics reset');

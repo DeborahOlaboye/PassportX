@@ -5,6 +5,7 @@ This document describes the type definitions for contract calls in PassportX.
 ## Overview
 
 All contract calls in PassportX are now fully typed to provide:
+
 - IDE autocomplete support
 - Type safety at compile time
 - Clear documentation of expected response structures
@@ -120,7 +121,11 @@ Generic wrapper for all backend API responses.
 ```typescript
 interface TransactionStatusResponse {
   tx_id: string;
-  tx_status: 'pending' | 'success' | 'abort_by_response' | 'abort_by_post_condition';
+  tx_status:
+    | 'pending'
+    | 'success'
+    | 'abort_by_response'
+    | 'abort_by_post_condition';
   tx_result?: {
     hex: string;
     repr: string;
@@ -161,7 +166,7 @@ const result = await issueBadge({
   templateId: 1,
   communityId: 1,
   recipientName: 'John Doe',
-  recipientEmail: 'john@example.com'
+  recipientEmail: 'john@example.com',
 });
 
 // result is typed as BadgeIssuerResponse
@@ -185,8 +190,8 @@ const result = await createCommunity({
     allowMemberInvites: true,
     requireApproval: false,
     allowBadgeIssuance: true,
-    allowCustomBadges: true
-  }
+    allowCustomBadges: true,
+  },
 });
 
 // result is typed as CommunityContractResponse
@@ -204,12 +209,10 @@ import { uintCV, stringAsciiCV } from '@stacks/transactions';
 const { callContract } = useContractCall();
 
 // functionArgs is now typed as ClarityValue[]
-const result = await callContract(
-  'ST1234...',
-  'my-contract',
-  'my-function',
-  [uintCV(1), stringAsciiCV('test')]
-);
+const result = await callContract('ST1234...', 'my-contract', 'my-function', [
+  uintCV(1),
+  stringAsciiCV('test'),
+]);
 ```
 
 ## Type Safety Benefits

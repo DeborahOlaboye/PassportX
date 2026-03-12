@@ -9,12 +9,12 @@ import {
   isSafeFromInjection,
   isValidStacksAddress,
   isValidCustomUrl,
-  sanitizeInput
-} from './validation'
+  sanitizeInput,
+} from './validation';
 
 export interface ValidationError {
-  status: number
-  message: string
+  status: number;
+  message: string;
 }
 
 /**
@@ -25,25 +25,29 @@ export interface ValidationError {
  */
 export const validateQueryParam = (
   value: unknown,
-  validatorFn: (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }
+  validatorFn: (val: unknown) => {
+    isValid: boolean;
+    sanitized?: string;
+    error?: string;
+  }
 ) => {
   if (value === undefined || value === null) {
     return {
       isValid: false,
-      error: 'Query parameter is required'
-    }
+      error: 'Query parameter is required',
+    };
   }
 
   if (typeof value !== 'string') {
     return {
       isValid: false,
-      error: 'Query parameter must be a string'
-    }
+      error: 'Query parameter must be a string',
+    };
   }
 
-  const result = validatorFn(value)
-  return result
-}
+  const result = validatorFn(value);
+  return result;
+};
 
 /**
  * Safe wrapper for API route handlers
@@ -54,37 +58,40 @@ export const validateQueryParam = (
  */
 export const validateApiQueryParams = (
   searchParams: Record<string, string | string[] | undefined>,
-  requiredParams: Record<string, (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }>
+  requiredParams: Record<
+    string,
+    (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }
+  >
 ): Record<string, string> => {
-  const validated: Record<string, string> = {}
+  const validated: Record<string, string> = {};
 
   for (const [paramName, validator] of Object.entries(requiredParams)) {
-    const paramValue = searchParams[paramName]
+    const paramValue = searchParams[paramName];
 
     if (!paramValue) {
       throw {
         status: 400,
-        message: `Missing required parameter: ${paramName}`
-      }
+        message: `Missing required parameter: ${paramName}`,
+      };
     }
 
     // Handle array values (e.g., ?param=value1&param=value2)
-    const singleValue = Array.isArray(paramValue) ? paramValue[0] : paramValue
+    const singleValue = Array.isArray(paramValue) ? paramValue[0] : paramValue;
 
-    const result = validateQueryParam(singleValue, validator)
+    const result = validateQueryParam(singleValue, validator);
 
     if (!result.isValid) {
       throw {
         status: 400,
-        message: result.error || `Invalid parameter: ${paramName}`
-      }
+        message: result.error || `Invalid parameter: ${paramName}`,
+      };
     }
 
-    validated[paramName] = result.sanitized || ''
+    validated[paramName] = result.sanitized || '';
   }
 
-  return validated
-}
+  return validated;
+};
 
 /**
  * Validates custom URL from API request
@@ -92,8 +99,8 @@ export const validateApiQueryParams = (
  * @returns Validation result
  */
 export const validateCustomUrlApiParam = (customUrl: unknown) => {
-  return validateQueryParam(customUrl, validateCustomUrlParameter)
-}
+  return validateQueryParam(customUrl, validateCustomUrlParameter);
+};
 
 /**
  * Validates userId from API request
@@ -101,8 +108,8 @@ export const validateCustomUrlApiParam = (customUrl: unknown) => {
  * @returns Validation result
  */
 export const validateUserIdApiParam = (userId: unknown) => {
-  return validateQueryParam(userId, validateUserIdParameter)
-}
+  return validateQueryParam(userId, validateUserIdParameter);
+};
 
 /**
  * Validates Stacks address from API request
@@ -113,31 +120,31 @@ export const validateStacksAddressApiParam = (address: unknown) => {
   if (!address || typeof address !== 'string') {
     return {
       isValid: false,
-      error: 'Stacks address is required and must be a string'
-    }
+      error: 'Stacks address is required and must be a string',
+    };
   }
 
-  const trimmed = address.trim()
+  const trimmed = address.trim();
 
   if (!isValidStacksAddress(trimmed)) {
     return {
       isValid: false,
-      error: 'Invalid Stacks address format'
-    }
+      error: 'Invalid Stacks address format',
+    };
   }
 
   if (!isSafeFromInjection(trimmed)) {
     return {
       isValid: false,
-      error: 'Invalid characters detected in address'
-    }
+      error: 'Invalid characters detected in address',
+    };
   }
 
   return {
     isValid: true,
-    sanitized: trimmed
-  }
-}
+    sanitized: trimmed,
+  };
+};
 
 /**
  * Creates API error response
@@ -145,15 +152,18 @@ export const validateStacksAddressApiParam = (address: unknown) => {
  * @param status - HTTP status code
  * @returns Response object
  */
-export const createApiErrorResponse = (message: string, status: number = 400) => {
+export const createApiErrorResponse = (
+  message: string,
+  status: number = 400
+) => {
   return {
     status,
     body: {
       error: message,
-      timestamp: new Date().toISOString()
-    }
-  }
-}
+      timestamp: new Date().toISOString(),
+    },
+  };
+};
 
 /**
  * Validates JSON request body
@@ -163,31 +173,37 @@ export const createApiErrorResponse = (message: string, status: number = 400) =>
  */
 export const validateRequestBody = (
   body: unknown,
-  schema: Record<string, (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }>
+  schema: Record<
+    string,
+    (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }
+  >
 ): Record<string, string> => {
   if (!body || typeof body !== 'object') {
-    throw createApiErrorResponse('Request body must be a JSON object', 400)
+    throw createApiErrorResponse('Request body must be a JSON object', 400);
   }
 
-  const validated: Record<string, string> = {}
-  const bodyObj = body as Record<string, unknown>
+  const validated: Record<string, string> = {};
+  const bodyObj = body as Record<string, unknown>;
 
   for (const [fieldName, validator] of Object.entries(schema)) {
     if (!(fieldName in bodyObj)) {
-      throw createApiErrorResponse(`Missing required field: ${fieldName}`, 400)
+      throw createApiErrorResponse(`Missing required field: ${fieldName}`, 400);
     }
 
-    const result = validator(bodyObj[fieldName])
+    const result = validator(bodyObj[fieldName]);
 
     if (!result.isValid) {
-      throw createApiErrorResponse(result.error || `Invalid field: ${fieldName}`, 400)
+      throw createApiErrorResponse(
+        result.error || `Invalid field: ${fieldName}`,
+        400
+      );
     }
 
-    validated[fieldName] = result.sanitized || ''
+    validated[fieldName] = result.sanitized || '';
   }
 
-  return validated
-}
+  return validated;
+};
 
 /**
  * Combines multiple field validators for complex objects
@@ -197,11 +213,14 @@ export const validateRequestBody = (
  */
 export const validateMultipleFields = (
   data: unknown,
-  validators: Record<string, (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }>
+  validators: Record<
+    string,
+    (val: unknown) => { isValid: boolean; sanitized?: string; error?: string }
+  >
 ): Record<string, string> => {
   if (!data || typeof data !== 'object') {
-    throw createApiErrorResponse('Data must be an object', 400)
+    throw createApiErrorResponse('Data must be an object', 400);
   }
 
-  return validateRequestBody(data, validators)
-}
+  return validateRequestBody(data, validators);
+};

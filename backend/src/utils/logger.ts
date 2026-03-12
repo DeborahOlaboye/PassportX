@@ -23,7 +23,11 @@ function emit(level: LogLevel, message: string, meta?: any): void {
   if (!isEnabled(level)) return;
 
   if (isProduction) {
-    const entry: Record<string, unknown> = { level, time: timestamp(), message };
+    const entry: Record<string, unknown> = {
+      level,
+      time: timestamp(),
+      message,
+    };
     if (meta !== undefined) entry.meta = meta;
     process.stdout.write(JSON.stringify(entry) + '\n');
     return;
@@ -31,16 +35,24 @@ function emit(level: LogLevel, message: string, meta?: any): void {
 
   const prefix = `[${level.toUpperCase()}] ${timestamp()}`;
   switch (level) {
-    case 'error': console.error(prefix, ...formatArgs(message, meta)); break;
-    case 'warn':  console.warn(prefix,  ...formatArgs(message, meta)); break;
-    case 'debug': console.debug(prefix, ...formatArgs(message, meta)); break;
-    default:      console.log(prefix,   ...formatArgs(message, meta)); break;
+    case 'error':
+      console.error(prefix, ...formatArgs(message, meta));
+      break;
+    case 'warn':
+      console.warn(prefix, ...formatArgs(message, meta));
+      break;
+    case 'debug':
+      console.debug(prefix, ...formatArgs(message, meta));
+      break;
+    default:
+      console.log(prefix, ...formatArgs(message, meta));
+      break;
   }
 }
 
 const logger = {
-  info:  (message: string, meta?: any) => emit('info',  message, meta),
-  warn:  (message: string, meta?: any) => emit('warn',  message, meta),
+  info: (message: string, meta?: any) => emit('info', message, meta),
+  warn: (message: string, meta?: any) => emit('warn', message, meta),
   error: (message: string, meta?: any) => emit('error', message, meta),
   debug: (message: string, meta?: any) => emit('debug', message, meta),
 };

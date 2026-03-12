@@ -3,9 +3,14 @@ import { TransactionRequest } from '@/types/transaction-signing';
 import { ClarityValue } from '@stacks/transactions';
 
 export function useSTXTransfer() {
-  const { signTransaction, broadcastTransaction, estimateGas } = useTransactionSigning();
+  const { signTransaction, broadcastTransaction, estimateGas } =
+    useTransactionSigning();
 
-  const transferSTX = async (recipient: string, amount: string, memo?: string) => {
+  const transferSTX = async (
+    recipient: string,
+    amount: string,
+    memo?: string
+  ) => {
     const request: TransactionRequest = {
       type: 'stx-transfer',
       recipient,
@@ -34,7 +39,8 @@ export function useSTXTransfer() {
 }
 
 export function useContractCall() {
-  const { signTransaction, broadcastTransaction, estimateGas } = useTransactionSigning();
+  const { signTransaction, broadcastTransaction, estimateGas } =
+    useTransactionSigning();
 
   const callContract = async (
     contractAddress: string,

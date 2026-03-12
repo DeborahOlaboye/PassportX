@@ -33,42 +33,45 @@ export function validateContractAddress(
   if (!address) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} is not configured`
+      error: `Contract address for ${contractName} is not configured`,
     };
   }
 
   if (typeof address !== 'string') {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must be a string`
+      error: `Contract address for ${contractName} must be a string`,
     };
   }
 
   if (!address.startsWith('S')) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must start with 'S' (got: ${address.substring(0, 2)})`
+      error: `Contract address for ${contractName} must start with 'S' (got: ${address.substring(
+        0,
+        2
+      )})`,
     };
   }
 
   if (!address.startsWith('SP') && !address.startsWith('ST')) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must start with 'SP' (mainnet) or 'ST' (testnet)`
+      error: `Contract address for ${contractName} must start with 'SP' (mainnet) or 'ST' (testnet)`,
     };
   }
 
   if (address.length !== 41) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must be 41 characters long (got: ${address.length})`
+      error: `Contract address for ${contractName} must be 41 characters long (got: ${address.length})`,
     };
   }
 
   if (!isValidStacksAddress(address)) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} has invalid format. Expected: S[P|T] + 39 alphanumeric characters`
+      error: `Contract address for ${contractName} has invalid format. Expected: S[P|T] + 39 alphanumeric characters`,
     };
   }
 
@@ -85,7 +88,7 @@ export function validateAddressNetwork(
   if (!isValidStacksAddress(address)) {
     return {
       valid: false,
-      error: 'Invalid Stacks address format'
+      error: 'Invalid Stacks address format',
     };
   }
 
@@ -95,14 +98,20 @@ export function validateAddressNetwork(
   if (expectedNetwork === 'mainnet' && !isMainnet) {
     return {
       valid: false,
-      error: `Expected mainnet address (SP...) but got: ${address.substring(0, 2)}`
+      error: `Expected mainnet address (SP...) but got: ${address.substring(
+        0,
+        2
+      )}`,
     };
   }
 
   if (expectedNetwork === 'testnet' && !isTestnet) {
     return {
       valid: false,
-      error: `Expected testnet address (ST...) but got: ${address.substring(0, 2)}`
+      error: `Expected testnet address (ST...) but got: ${address.substring(
+        0,
+        2
+      )}`,
     };
   }
 
@@ -112,9 +121,10 @@ export function validateAddressNetwork(
 /**
  * Validate multiple contract addresses at once
  */
-export function validateContractAddresses(
-  addresses: Record<string, string>
-): { valid: boolean; errors: string[] } {
+export function validateContractAddresses(addresses: Record<string, string>): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   for (const [name, address] of Object.entries(addresses)) {
@@ -126,7 +136,7 @@ export function validateContractAddresses(
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 

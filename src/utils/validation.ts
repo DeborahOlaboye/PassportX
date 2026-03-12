@@ -11,12 +11,12 @@
  */
 export const isValidStacksAddress = (addr: string): boolean => {
   if (!addr || typeof addr !== 'string') {
-    return false
+    return false;
   }
   // Match Stacks address format: S[PM][A-Z0-9]{39}
-  const stacksAddressPattern = /^S[PM][A-Z0-9]{39}$/i
-  return stacksAddressPattern.test(addr)
-}
+  const stacksAddressPattern = /^S[PM][A-Z0-9]{39}$/i;
+  return stacksAddressPattern.test(addr);
+};
 
 /**
  * Validates if a string is a valid custom URL slug
@@ -26,14 +26,14 @@ export const isValidStacksAddress = (addr: string): boolean => {
  */
 export const isValidCustomUrl = (url: string): boolean => {
   if (!url || typeof url !== 'string') {
-    return false
+    return false;
   }
-  
+
   // Allow alphanumeric, hyphens, underscores
   // Must be 3-50 characters long
-  const customUrlPattern = /^[a-zA-Z0-9_-]{3,50}$/
-  return customUrlPattern.test(url)
-}
+  const customUrlPattern = /^[a-zA-Z0-9_-]{3,50}$/;
+  return customUrlPattern.test(url);
+};
 
 /**
  * Validates if a string is a valid user ID format
@@ -43,14 +43,14 @@ export const isValidCustomUrl = (url: string): boolean => {
  */
 export const isValidUserId = (userId: string): boolean => {
   if (!userId || typeof userId !== 'string') {
-    return false
+    return false;
   }
-  
+
   // Allow alphanumeric characters, underscores
   // Must be 6-50 characters long
-  const userIdPattern = /^[a-zA-Z0-9_]{6,50}$/
-  return userIdPattern.test(userId)
-}
+  const userIdPattern = /^[a-zA-Z0-9_]{6,50}$/;
+  return userIdPattern.test(userId);
+};
 
 /**
  * Sanitizes a string by removing dangerous characters
@@ -59,79 +59,83 @@ export const isValidUserId = (userId: string): boolean => {
  */
 export const sanitizeInput = (input: string): string => {
   if (!input || typeof input !== 'string') {
-    return ''
+    return '';
   }
-  
+
   // Remove any characters that could be used in injection attacks
   return input
     .trim()
     .replace(/[<>'"{}[\]()]/g, '') // Remove HTML/script tags and special chars
-    .substring(0, 100) // Limit length
-}
+    .substring(0, 100); // Limit length
+};
 
 /**
  * Validates route parameters for userId routes
  * @param userId - The userId parameter from route
  * @returns validation result object
  */
-export const validateUserIdParameter = (userId: unknown): {
-  isValid: boolean
-  error?: string
-  sanitized?: string
+export const validateUserIdParameter = (
+  userId: unknown
+): {
+  isValid: boolean;
+  error?: string;
+  sanitized?: string;
 } => {
   if (!userId || typeof userId !== 'string') {
     return {
       isValid: false,
-      error: 'User ID is required and must be a string'
-    }
+      error: 'User ID is required and must be a string',
+    };
   }
 
-  const trimmedUserId = userId.trim()
-  
+  const trimmedUserId = userId.trim();
+
   if (!isValidUserId(trimmedUserId) && !isValidStacksAddress(trimmedUserId)) {
     return {
       isValid: false,
-      error: 'Invalid user ID format'
-    }
+      error: 'Invalid user ID format',
+    };
   }
 
   return {
     isValid: true,
-    sanitized: trimmedUserId
-  }
-}
+    sanitized: trimmedUserId,
+  };
+};
 
 /**
  * Validates route parameters for customUrl routes
  * @param customUrl - The customUrl parameter from route
  * @returns validation result object
  */
-export const validateCustomUrlParameter = (customUrl: unknown): {
-  isValid: boolean
-  error?: string
-  sanitized?: string
+export const validateCustomUrlParameter = (
+  customUrl: unknown
+): {
+  isValid: boolean;
+  error?: string;
+  sanitized?: string;
 } => {
   if (!customUrl || typeof customUrl !== 'string') {
     return {
       isValid: false,
-      error: 'Custom URL is required and must be a string'
-    }
+      error: 'Custom URL is required and must be a string',
+    };
   }
 
-  const trimmedUrl = customUrl.trim().toLowerCase()
-  
+  const trimmedUrl = customUrl.trim().toLowerCase();
+
   if (!isValidCustomUrl(trimmedUrl)) {
     return {
       isValid: false,
-      error: 'Invalid custom URL format'
-    }
+      error: 'Invalid custom URL format',
+    };
   }
 
   return {
     isValid: true,
-    sanitized: trimmedUrl
-  }
-}
+    sanitized: trimmedUrl,
+  };
+};
 
 /**
  * Validates that input doesn't contain SQL/NoSQL injection patterns
@@ -140,7 +144,7 @@ export const validateCustomUrlParameter = (customUrl: unknown): {
  */
 export const isSafeFromInjection = (input: string): boolean => {
   if (!input || typeof input !== 'string') {
-    return true
+    return true;
   }
 
   // Check for common injection patterns
@@ -149,7 +153,7 @@ export const isSafeFromInjection = (input: string): boolean => {
     /(union|select|insert|update|delete|drop|create)/i, // SQL keywords
     /(<script|javascript:|onerror|onload)/i, // XSS patterns
     /(\{\{|\}\}|{%|%})/i, // Template injection
-  ]
+  ];
 
-  return !injectionPatterns.some(pattern => pattern.test(input))
-}
+  return !injectionPatterns.some((pattern) => pattern.test(input));
+};

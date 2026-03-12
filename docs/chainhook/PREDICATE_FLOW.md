@@ -164,15 +164,15 @@ ChainhookEventObserver.start()
 Individual predicates are enabled or disabled via environment variables.
 This allows you to enable only the events you need:
 
-| Env Var | Default | Predicate enabled |
-|---|---|---|
-| `CHAINHOOK_ENABLE_BADGE_MINT` | `false` | `pred_badge_mint_call` |
-| `CHAINHOOK_ENABLE_BADGE_MINT_EVENT` | `false` | `pred_badge_mint_event` |
-| `CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE` | `false` | `pred_badge_metadata_update_call` |
+| Env Var                                        | Default | Predicate enabled                  |
+| ---------------------------------------------- | ------- | ---------------------------------- |
+| `CHAINHOOK_ENABLE_BADGE_MINT`                  | `false` | `pred_badge_mint_call`             |
+| `CHAINHOOK_ENABLE_BADGE_MINT_EVENT`            | `false` | `pred_badge_mint_event`            |
+| `CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE`       | `false` | `pred_badge_metadata_update_call`  |
 | `CHAINHOOK_ENABLE_BADGE_METADATA_UPDATE_EVENT` | `false` | `pred_badge_metadata_update_event` |
-| `CHAINHOOK_ENABLE_BADGE_REVOCATION` | `false` | `pred_badge_revocation_call` |
-| `CHAINHOOK_ENABLE_BADGE_REVOCATION_EVENT` | `false` | `pred_badge_revocation_event` |
-| `CHAINHOOK_ENABLE_EVENT_PREDICATE` | `false` | All `*_event` print predicates |
+| `CHAINHOOK_ENABLE_BADGE_REVOCATION`            | `false` | `pred_badge_revocation_call`       |
+| `CHAINHOOK_ENABLE_BADGE_REVOCATION_EVENT`      | `false` | `pred_badge_revocation_event`      |
+| `CHAINHOOK_ENABLE_EVENT_PREDICATE`             | `false` | All `*_event` print predicates     |
 
 The `communityCreation` predicate is **always enabled** (no flag required).
 

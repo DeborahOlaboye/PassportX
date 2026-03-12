@@ -4,13 +4,17 @@
  * Helper functions for handling smart contract errors in the frontend
  */
 
-import { getErrorMessage, getErrorCategory, type ErrorCode } from '../constants/errorCodes'
+import {
+  getErrorMessage,
+  getErrorCategory,
+  type ErrorCode,
+} from '../constants/errorCodes';
 
 export interface ContractError {
-  code: number
-  message: string
-  category: string
-  raw?: unknown
+  code: number;
+  message: string;
+  category: string;
+  raw?: unknown;
 }
 
 /**
@@ -21,13 +25,13 @@ export interface ContractError {
 export function parseContractError(error: unknown): ContractError {
   // Handle Stacks.js error format
   if (error && typeof error === 'object' && 'code' in error) {
-    const code = (error as { code: number }).code
+    const code = (error as { code: number }).code;
     return {
       code,
       message: getErrorMessage(code),
       category: getErrorCategory(code),
-      raw: error
-    }
+      raw: error,
+    };
   }
 
   // Handle numeric error code
@@ -36,21 +40,21 @@ export function parseContractError(error: unknown): ContractError {
       code: error,
       message: getErrorMessage(error),
       category: getErrorCategory(error),
-      raw: error
-    }
+      raw: error,
+    };
   }
 
   // Handle string error code (e.g., "u100", "(err u100)")
   if (typeof error === 'string') {
-    const match = error.match(/u?(\d+)/)
+    const match = error.match(/u?(\d+)/);
     if (match) {
-      const code = parseInt(match[1], 10)
+      const code = parseInt(match[1], 10);
       return {
         code,
         message: getErrorMessage(code),
         category: getErrorCategory(code),
-        raw: error
-      }
+        raw: error,
+      };
     }
   }
 
@@ -59,8 +63,8 @@ export function parseContractError(error: unknown): ContractError {
     code: 0,
     message: 'An unknown error occurred',
     category: 'UNKNOWN',
-    raw: error
-  }
+    raw: error,
+  };
 }
 
 /**
@@ -70,8 +74,8 @@ export function parseContractError(error: unknown): ContractError {
  */
 export function isRetryableError(error: ContractError): boolean {
   // Network errors and temporary failures are retryable
-  const retryableCodes = [108] // ERR-OPERATION-FAILED
-  return retryableCodes.includes(error.code)
+  const retryableCodes = [108]; // ERR-OPERATION-FAILED
+  return retryableCodes.includes(error.code);
 }
 
 /**
@@ -80,8 +84,8 @@ export function isRetryableError(error: ContractError): boolean {
  * @returns true if user action is required
  */
 export function requiresUserAction(error: ContractError): boolean {
-  const categories = ['PERMISSION', 'VALIDATION', 'STATE']
-  return categories.includes(error.category)
+  const categories = ['PERMISSION', 'VALIDATION', 'STATE'];
+  return categories.includes(error.category);
 }
 
 /**
@@ -90,25 +94,25 @@ export function requiresUserAction(error: ContractError): boolean {
  * @returns Error message with advice
  */
 export function getErrorAdvice(error: ContractError): string {
-  const baseMessage = error.message
+  const baseMessage = error.message;
 
   switch (error.code) {
     case 100: // ERR-OWNER-ONLY
-      return `${baseMessage}. Please contact the contract owner.`
+      return `${baseMessage}. Please contact the contract owner.`;
     case 104: // ERR-UNAUTHORIZED
-      return `${baseMessage}. Please check your permissions or connect with an authorized account.`
+      return `${baseMessage}. Please check your permissions or connect with an authorized account.`;
     case 300: // ERR-COMMUNITY-NOT-FOUND
-      return `${baseMessage}. The community may have been removed or doesn't exist yet.`
+      return `${baseMessage}. The community may have been removed or doesn't exist yet.`;
     case 600: // ERR-TEMPLATE-NOT-FOUND
-      return `${baseMessage}. Please select a valid badge template.`
+      return `${baseMessage}. Please select a valid badge template.`;
     case 700: // ERR-BATCH-TOO-LARGE
-      return `${baseMessage}. Please reduce the number of items and try again.`
+      return `${baseMessage}. Please reduce the number of items and try again.`;
     case 701: // ERR-BATCH-EMPTY
-      return `${baseMessage}. Please add at least one item.`
+      return `${baseMessage}. Please add at least one item.`;
     case 702: // ERR-BATCH-MISMATCHED-LENGTHS
-      return `${baseMessage}. Please ensure all arrays have the same length.`
+      return `${baseMessage}. Please ensure all arrays have the same length.`;
     default:
-      return baseMessage
+      return baseMessage;
   }
 }
 
@@ -117,14 +121,17 @@ export function getErrorAdvice(error: ContractError): string {
  * @param error - The contract error
  * @param context - Additional context about where/when the error occurred
  */
-export function logContractError(error: ContractError, context?: Record<string, unknown>): void {
+export function logContractError(
+  error: ContractError,
+  context?: Record<string, unknown>
+): void {
   console.error('[Contract Error]', {
     code: error.code,
     message: error.message,
     category: error.category,
     context,
-    raw: error.raw
-  })
+    raw: error.raw,
+  });
 }
 
 /**
@@ -137,18 +144,18 @@ export function createErrorNotification(
   error: ContractError,
   includeCode: boolean = false
 ): {
-  title: string
-  message: string
-  type: 'error'
-  duration?: number
+  title: string;
+  message: string;
+  type: 'error';
+  duration?: number;
 } {
-  const message = getErrorAdvice(error)
-  const title = includeCode ? `Error ${error.code}` : 'Transaction Failed'
+  const message = getErrorAdvice(error);
+  const title = includeCode ? `Error ${error.code}` : 'Transaction Failed';
 
   return {
     title,
     message,
     type: 'error',
-    duration: 5000
-  }
+    duration: 5000,
+  };
 }

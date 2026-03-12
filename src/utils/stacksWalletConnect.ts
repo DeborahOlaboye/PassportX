@@ -1,4 +1,7 @@
-import { WalletConnectProviderConfig, WalletConnectSessionConfig } from '@/types/walletconnect-config';
+import {
+  WalletConnectProviderConfig,
+  WalletConnectSessionConfig,
+} from '@/types/walletconnect-config';
 
 export interface StacksWalletConfig {
   projectId: string;
@@ -26,8 +29,12 @@ export interface StacksWalletConfig {
 }
 
 export const createStacksWalletConfig = (): StacksWalletConfig => {
-  const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'passportx_walletconnect_project';
-  const relayUrl = process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL || 'wss://relay.walletconnect.org';
+  const projectId =
+    process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ||
+    'passportx_walletconnect_project';
+  const relayUrl =
+    process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL ||
+    'wss://relay.walletconnect.org';
 
   return {
     projectId,
@@ -35,9 +42,14 @@ export const createStacksWalletConfig = (): StacksWalletConfig => {
     metadata: {
       name: 'PassportX',
       description: 'Decentralized Achievement Passport',
-      url: typeof window !== 'undefined' ? window.location.origin : 'https://passportx.app',
+      url:
+        typeof window !== 'undefined'
+          ? window.location.origin
+          : 'https://passportx.app',
       icons: [
-        typeof window !== 'undefined' ? `${window.location.origin}/icon.png` : 'https://passportx.app/icon.png'
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/icon.png`
+          : 'https://passportx.app/icon.png',
       ],
     },
     requiredNamespaces: {
@@ -63,7 +75,10 @@ export const createStacksWalletConfig = (): StacksWalletConfig => {
   };
 };
 
-export const createWalletConnectUri = (sessionTopic: string, config: StacksWalletConfig): string => {
+export const createWalletConnectUri = (
+  sessionTopic: string,
+  config: StacksWalletConfig
+): string => {
   const { projectId, relayUrl } = config;
   const relayData = 'irn'; // Default relay protocol
 
@@ -84,7 +99,9 @@ const generateSymKey = (): string => {
       array[i] = Math.floor(Math.random() * 256);
     }
   }
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join(
+    ''
+  );
 };
 
 export const getMobileWalletDeepLinks = (uri: string) => {
@@ -115,11 +132,14 @@ export const detectMobilePlatform = (): 'ios' | 'android' | 'unknown' => {
   return 'unknown';
 };
 
-export const openMobileWallet = (walletType: 'xverse' | 'hiro' | 'leather', uri: string): void => {
+export const openMobileWallet = (
+  walletType: 'xverse' | 'hiro' | 'leather',
+  uri: string
+): void => {
   const deepLinks = getMobileWalletDeepLinks(uri);
   const platform = detectMobilePlatform();
 
-  let url = deepLinks[walletType];
+  const url = deepLinks[walletType];
 
   // Try to open the app
   if (platform === 'ios') {
@@ -131,7 +151,9 @@ export const openMobileWallet = (walletType: 'xverse' | 'hiro' | 'leather', uri:
   } else {
     // Desktop - copy to clipboard as fallback
     navigator.clipboard?.writeText(uri);
-    alert(`URI copied to clipboard. Please paste it into your ${walletType} wallet.`);
+    alert(
+      `URI copied to clipboard. Please paste it into your ${walletType} wallet.`
+    );
   }
 
   // Fallback: try to open in new tab after a delay

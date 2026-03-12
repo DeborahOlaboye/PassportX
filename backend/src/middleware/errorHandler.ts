@@ -1,7 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
-import { AppError, isAppError, getErrorMessage, getErrorStatusCode } from '../errors'
+import { Request, Response, NextFunction } from 'express';
+import {
+  AppError,
+  isAppError,
+  getErrorMessage,
+  getErrorStatusCode,
+} from '../errors';
 
-export { AppError }
+export { AppError };
 
 export const errorHandler = (
   err: unknown,
@@ -9,20 +14,21 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  const statusCode = getErrorStatusCode(err)
-  const message = getErrorMessage(err)
+  const statusCode = getErrorStatusCode(err);
+  const message = getErrorMessage(err);
 
   // Log error in development
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', err)
+    console.error('Error:', err);
   }
 
   res.status(statusCode).json({
     error: message,
-    ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack })
-  })
-}
+    ...(process.env.NODE_ENV === 'development' &&
+      err instanceof Error && { stack: err.stack }),
+  });
+};
 
 export const createError = (message: string, statusCode = 500): AppError => {
-  return new AppError(message, statusCode)
-}
+  return new AppError(message, statusCode);
+};

@@ -2,13 +2,12 @@ import {
   ChainhookEventPayload,
   ChainhookEventHandler,
   NotificationPayload,
-  CommunityUpdateEvent
+  CommunityUpdateEvent,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
 export class CommunityUpdateHandler implements ChainhookEventHandler {
-  canHandle(event: ChainhookEventPayload): boolean {
-    const eventType = EventMapper.extractEventType(event);
+  canHandle(_event: ChainhookEventPayload): boolean {
     return false;
   }
 
@@ -26,11 +25,11 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
         for (const op of tx.operations) {
           if (op.type === 'contract_call' && op.contract_call) {
             const method = op.contract_call.method;
-            
+
             if (this.isCommunityMethod(method)) {
-              const args = op.contract_call.args || [];
+              const args = (op.contract_call.args || []) as unknown[];
               const updateType = this.extractUpdateType(method, args);
-              
+
               const communityEvent: CommunityUpdateEvent = {
                 communityId: this.extractCommunityId(args),
                 communityName: this.extractCommunityName(args),
@@ -40,10 +39,11 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
                 contractAddress: op.contract_call.contract,
                 transactionHash: tx.transaction_hash,
                 blockHeight: event.block_identifier.index,
-                timestamp: event.metadata?.pox_cycle_position || Date.now()
+                timestamp: event.metadata?.pox_cycle_position || Date.now(),
               };
 
-              const affectedNotifications = this.createNotifications(communityEvent);
+              const affectedNotifications =
+                this.createNotifications(communityEvent);
               notifications.push(...affectedNotifications);
             }
           }
@@ -51,15 +51,17 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
           if (op.events) {
             for (const evt of op.events) {
               if (evt.topic && evt.topic.includes('community')) {
+                const evtValue = evt.value as Record<string, unknown>;
                 const communityEvent = EventMapper.mapCommunityUpdateEvent({
-                  ...evt.value,
+                  ...evtValue,
                   contractAddress: evt.contract_address,
                   transactionHash: tx.transaction_hash,
                   blockHeight: event.block_identifier.index,
-                  timestamp: event.metadata?.pox_cycle_position || Date.now()
+                  timestamp: event.metadata?.pox_cycle_position || Date.now(),
                 });
 
-                const affectedNotifications = this.createNotifications(communityEvent);
+                const affectedNotifications =
+                  this.createNotifications(communityEvent);
                 notifications.push(...affectedNotifications);
               }
             }
@@ -86,67 +88,82 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
       'update-community',
       'invite-member',
       'announce',
-      'post-update'
+      'post-update',
     ];
     return communityMethods.includes(method);
   }
 
   private extractUpdateType(
     method: string,
-    args: any[]
+    _args: unknown[]
   ): 'member_joined' | 'member_left' | 'announcement' | 'event' {
-    const typeMap: Record<string, 'member_joined' | 'member_left' | 'announcement' | 'event'> = {
+    const typeMap: Record<
+      string,
+      'member_joined' | 'member_left' | 'announcement' | 'event'
+    > = {
       'join-community': 'member_joined',
       'leave-community': 'member_left',
       'create-community': 'event',
       'update-community': 'announcement',
       'invite-member': 'announcement',
-      'announce': 'announcement',
-      'post-update': 'announcement'
+      announce: 'announcement',
+      'post-update': 'announcement',
     };
 
     return typeMap[method] || 'announcement';
   }
 
-  private extractCommunityId(args: any[]): string {
+  private extractCommunityId(args: unknown[]): string {
     if (!args || args.length === 0) return '';
-    return args[0]?.value || args[0] || '';
+    const arg = args[0] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractCommunityName(args: any[]): string {
+  private extractCommunityName(args: unknown[]): string {
     if (!args || args.length < 2) return '';
-    return args[1]?.value || args[1] || '';
+    const arg = args[1] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractAffectedUsers(args: any[]): string[] {
+  private extractAffectedUsers(args: unknown[]): string[] {
     if (!args || args.length < 3) return [];
-    
+
     const usersArg = args[2];
-    
+
     if (Array.isArray(usersArg)) {
-      return usersArg.map(u => u?.value || u || '').filter(Boolean);
+      return usersArg
+        .map((u) => {
+          const item = u as { value?: unknown } | unknown;
+          return String((item as { value?: unknown })?.value ?? item ?? '');
+        })
+        .filter(Boolean);
     }
-    
-    if (usersArg?.value) {
-      return Array.isArray(usersArg.value) ? usersArg.value : [usersArg.value];
+
+    const typed = usersArg as { value?: unknown } | null;
+    if (typed?.value) {
+      return Array.isArray(typed.value)
+        ? (typed.value as unknown[]).map(String)
+        : [String(typed.value)];
     }
-    
-    return [usersArg] ? [usersArg] : [];
+
+    return usersArg ? [String(usersArg)] : [];
   }
 
-  private extractEventData(args: any[]): Record<string, any> {
+  private extractEventData(args: unknown[]): Record<string, unknown> {
     if (!args || args.length < 4) return {};
-    
+
     const data = args[3];
-    
-    if (typeof data === 'object') {
-      return data;
+
+    if (typeof data === 'object' && data !== null) {
+      return data as Record<string, unknown>;
     }
-    
+
     return { raw: data };
   }
 
-  private createNotifications(communityEvent: CommunityUpdateEvent): NotificationPayload[] {
+  private createNotifications(
+    communityEvent: CommunityUpdateEvent
+  ): NotificationPayload[] {
     const notifications: NotificationPayload[] = [];
 
     for (const userId of communityEvent.affectedUsers) {
@@ -166,11 +183,13 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
       communityEvent.updateType
     );
 
-    const notificationType = communityEvent.updateType === 'announcement' 
-      ? 'community_update'
-      : communityEvent.updateType === 'member_joined' || communityEvent.updateType === 'member_left'
-      ? 'community_update'
-      : 'community_invite';
+    const notificationType =
+      communityEvent.updateType === 'announcement'
+        ? 'community_update'
+        : communityEvent.updateType === 'member_joined' ||
+          communityEvent.updateType === 'member_left'
+        ? 'community_update'
+        : 'community_invite';
 
     return {
       userId,
@@ -186,8 +205,8 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
         transactionHash: communityEvent.transactionHash,
         blockHeight: communityEvent.blockHeight,
         timestamp: communityEvent.timestamp,
-        eventData: communityEvent.data
-      }
+        eventData: communityEvent.data,
+      },
     };
   }
 
@@ -195,23 +214,26 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
     communityName: string,
     updateType: 'member_joined' | 'member_left' | 'announcement' | 'event'
   ): { title: string; message: string } {
-    const contentMap: Record<typeof updateType, { title: string; message: string }> = {
-      'member_joined': {
+    const contentMap: Record<
+      typeof updateType,
+      { title: string; message: string }
+    > = {
+      member_joined: {
         title: `New Member in ${communityName}`,
-        message: `A new member has joined the ${communityName} community`
+        message: `A new member has joined the ${communityName} community`,
       },
-      'member_left': {
+      member_left: {
         title: `Member Left ${communityName}`,
-        message: `A member has left the ${communityName} community`
+        message: `A member has left the ${communityName} community`,
       },
-      'announcement': {
+      announcement: {
         title: `Announcement from ${communityName}`,
-        message: `New announcement from the ${communityName} community`
+        message: `New announcement from the ${communityName} community`,
       },
-      'event': {
+      event: {
         title: `Event in ${communityName}`,
-        message: `New event in the ${communityName} community`
-      }
+        message: `New event in the ${communityName} community`,
+      },
     };
 
     return contentMap[updateType];

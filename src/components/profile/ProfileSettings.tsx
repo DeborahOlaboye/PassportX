@@ -7,7 +7,9 @@ import FallbackUI from '../FallbackUI';
 
 export function ProfileSettings() {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Failed to load profile settings" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="Failed to load profile settings" />}
+    >
       <ProfileSettingsInner />
     </ErrorBoundary>
   );
@@ -17,7 +19,10 @@ function ProfileSettingsInner() {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     name: user?.profile?.name || '',
@@ -53,7 +58,10 @@ function ProfileSettingsInner() {
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       setIsEditing(false);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
+      setMessage({
+        type: 'error',
+        text: 'Failed to update profile. Please try again.',
+      });
     } finally {
       setIsSaving(false);
     }
@@ -64,11 +72,14 @@ function ProfileSettingsInner() {
     setMessage(null);
 
     try {
-      const response = await fetch(`/api/users/${user?.stacksAddress}/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(privacySettings),
-      });
+      const response = await fetch(
+        `/api/users/${user?.stacksAddress}/settings`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(privacySettings),
+        }
+      );
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Privacy settings updated!' });
@@ -87,7 +98,9 @@ function ProfileSettingsInner() {
       {/* Profile Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Profile Information</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Profile Information
+          </h2>
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
@@ -124,14 +137,19 @@ function ProfileSettingsInner() {
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Display Name
             </label>
             <input
               type="text"
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               disabled={!isEditing}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               placeholder="Your name"
@@ -139,13 +157,18 @@ function ProfileSettingsInner() {
           </div>
 
           <div>
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="bio"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Bio
             </label>
             <textarea
               id="bio"
               value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, bio: e.target.value })
+              }
               disabled={!isEditing}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               placeholder="Tell us about yourself..."
@@ -154,14 +177,19 @@ function ProfileSettingsInner() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Email
             </label>
             <input
               type="email"
               id="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               disabled={!isEditing}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               placeholder="your.email@example.com"
@@ -169,14 +197,19 @@ function ProfileSettingsInner() {
           </div>
 
           <div>
-            <label htmlFor="avatar" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="avatar"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Avatar URL
             </label>
             <input
               type="url"
               id="avatar"
               value={formData.avatar}
-              onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, avatar: e.target.value })
+              }
               disabled={!isEditing}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
               placeholder="https://example.com/avatar.jpg"
@@ -213,7 +246,9 @@ function ProfileSettingsInner() {
 
       {/* Privacy Settings Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Privacy Settings</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Privacy Settings
+        </h2>
 
         <div className="space-y-4">
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -222,7 +257,10 @@ function ProfileSettingsInner() {
                 type="checkbox"
                 checked={privacySettings.isPublic}
                 onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, isPublic: e.target.checked })
+                  setPrivacySettings({
+                    ...privacySettings,
+                    isPublic: e.target.checked,
+                  })
                 }
                 className="mt-1 mr-3"
               />
@@ -241,7 +279,10 @@ function ProfileSettingsInner() {
                 type="checkbox"
                 checked={privacySettings.showEmail}
                 onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, showEmail: e.target.checked })
+                  setPrivacySettings({
+                    ...privacySettings,
+                    showEmail: e.target.checked,
+                  })
                 }
                 className="mt-1 mr-3"
               />
@@ -260,7 +301,10 @@ function ProfileSettingsInner() {
                 type="checkbox"
                 checked={privacySettings.showBadges}
                 onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, showBadges: e.target.checked })
+                  setPrivacySettings({
+                    ...privacySettings,
+                    showBadges: e.target.checked,
+                  })
                 }
                 className="mt-1 mr-3"
               />
@@ -279,7 +323,10 @@ function ProfileSettingsInner() {
                 type="checkbox"
                 checked={privacySettings.showCommunities}
                 onChange={(e) =>
-                  setPrivacySettings({ ...privacySettings, showCommunities: e.target.checked })
+                  setPrivacySettings({
+                    ...privacySettings,
+                    showCommunities: e.target.checked,
+                  })
                 }
                 className="mt-1 mr-3"
               />
@@ -304,14 +351,18 @@ function ProfileSettingsInner() {
 
       {/* Account Information */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Information</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Account Information
+        </h2>
 
         <div className="space-y-4">
           <div className="flex justify-between items-center py-3 border-b border-gray-200">
             <div>
               <p className="font-medium text-gray-900">Member Since</p>
               <p className="text-sm text-gray-600">
-                {user?.joinDate ? new Date(user.joinDate).toLocaleDateString() : 'Not available'}
+                {user?.joinDate
+                  ? new Date(user.joinDate).toLocaleDateString()
+                  : 'Not available'}
               </p>
             </div>
           </div>
@@ -342,4 +393,3 @@ function ProfileSettingsInner() {
     </div>
   );
 }
-

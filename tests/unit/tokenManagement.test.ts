@@ -2,9 +2,20 @@
  * Unit tests for token management.
  */
 
-import { AuthToken, isTokenExpired, getTokenExpiryTime } from '../../src/types/auth';
-import { createAuthToken, validateTokenStructure } from '../../src/utils/sessionTokens';
-import { storeAuthToken, retrieveAuthToken, clearAuthToken } from '../../src/utils/tokenStorage';
+import {
+  AuthToken,
+  isTokenExpired,
+  getTokenExpiryTime,
+} from '../../src/types/auth';
+import {
+  createAuthToken,
+  validateTokenStructure,
+} from '../../src/utils/sessionTokens';
+import {
+  storeAuthToken,
+  retrieveAuthToken,
+  clearAuthToken,
+} from '../../src/utils/tokenStorage';
 
 describe('Token management', () => {
   afterEach(() => {
@@ -35,13 +46,13 @@ describe('Token management', () => {
       accessToken: 'token',
       account: 'ST123',
       issued: Date.now(),
-      expiresAt: Date.now() + 1000
+      expiresAt: Date.now() + 1000,
     };
     expect(isTokenExpired(token)).toBe(false);
 
     const expired: AuthToken = {
       ...token,
-      expiresAt: Date.now() - 1000
+      expiresAt: Date.now() - 1000,
     };
     expect(isTokenExpired(expired)).toBe(true);
   });

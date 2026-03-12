@@ -1,6 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useWalletConnect, ConnectedWallet } from '@/contexts/WalletConnectContext';
-import { loadSessionFromStorage, clearSessionFromStorage } from '@/utils/walletConnect';
+import {
+  useWalletConnect,
+  ConnectedWallet,
+} from '@/contexts/WalletConnectContext';
+import {
+  loadSessionFromStorage,
+  clearSessionFromStorage,
+} from '@/utils/walletConnect';
 
 export interface WalletSession {
   wallet: ConnectedWallet;
@@ -13,7 +19,8 @@ const SESSION_STORAGE_KEY = 'walletconnect_session';
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 
 export function useWalletSession() {
-  const { connectWallet, disconnectWallet, connectedWallet } = useWalletConnect();
+  const { connectWallet, disconnectWallet, connectedWallet } =
+    useWalletConnect();
   const [session, setSession] = useState<WalletSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -91,7 +98,10 @@ export function useWalletSession() {
       setSession(updatedSession);
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(updatedSession));
+        localStorage.setItem(
+          SESSION_STORAGE_KEY,
+          JSON.stringify(updatedSession)
+        );
       }
     }
   }, [session]);

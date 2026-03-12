@@ -20,13 +20,13 @@ import {
   validateBadgeDescription,
   validateBadgeCategory,
   validateBadgeLevel,
-  validateBadgeMetadata
-} from '@/lib/validation/badgeValidation'
+  validateBadgeMetadata,
+} from '@/lib/validation/badgeValidation';
 
 // Validate individual fields
-const nameError = validateBadgeName('Python Master')
+const nameError = validateBadgeName('Python Master');
 if (nameError) {
-  console.error(nameError.message)
+  console.error(nameError.message);
 }
 
 // Validate all metadata at once
@@ -34,36 +34,36 @@ const result = validateBadgeMetadata({
   name: 'Python Master',
   description: 'Mastery of Python programming language',
   category: 'skill',
-  level: 3
-})
+  level: 3,
+});
 
 if (!result.valid) {
-  result.errors.forEach(error => {
-    console.error(`${error.field}: ${error.message}`)
-  })
+  result.errors.forEach((error) => {
+    console.error(`${error.field}: ${error.message}`);
+  });
 }
 ```
 
 ### Form Integration
 
 ```typescript
-import { validateBadgeMetadata } from '@/lib/validation/badgeValidation'
+import { validateBadgeMetadata } from '@/lib/validation/badgeValidation';
 
 const handleSubmit = (formData) => {
-  const validationResult = validateBadgeMetadata(formData)
+  const validationResult = validateBadgeMetadata(formData);
 
   if (!validationResult.valid) {
-    const errors = {}
-    validationResult.errors.forEach(error => {
-      errors[error.field] = error.message
-    })
-    setValidationErrors(errors)
-    return
+    const errors = {};
+    validationResult.errors.forEach((error) => {
+      errors[error.field] = error.message;
+    });
+    setValidationErrors(errors);
+    return;
   }
 
   // Proceed with form submission
-  onSubmit(formData)
-}
+  onSubmit(formData);
+};
 ```
 
 ## Validation Constants
@@ -71,13 +71,13 @@ const handleSubmit = (formData) => {
 All validation constraints are exported via the `VALIDATION_CONSTANTS` object:
 
 ```typescript
-import { VALIDATION_CONSTANTS } from '@/lib/validation/badgeValidation'
+import { VALIDATION_CONSTANTS } from '@/lib/validation/badgeValidation';
 
-console.log(VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH) // 64
-console.log(VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH) // 10
-console.log(VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH) // 256
-console.log(VALIDATION_CONSTANTS.MIN_BADGE_LEVEL) // 1
-console.log(VALIDATION_CONSTANTS.MAX_BADGE_LEVEL) // 5
+console.log(VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH); // 64
+console.log(VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH); // 10
+console.log(VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH); // 256
+console.log(VALIDATION_CONSTANTS.MIN_BADGE_LEVEL); // 1
+console.log(VALIDATION_CONSTANTS.MAX_BADGE_LEVEL); // 5
 ```
 
 ## Valid Categories
@@ -97,9 +97,9 @@ The following badge categories are supported by default:
 You can provide custom categories for validation:
 
 ```typescript
-const customCategories = ['custom1', 'custom2', 'custom3']
+const customCategories = ['custom1', 'custom2', 'custom3'];
 
-const result = validateBadgeCategory('custom1', customCategories)
+const result = validateBadgeCategory('custom1', customCategories);
 // Returns null (valid)
 
 const result2 = validateBadgeMetadata({
@@ -107,8 +107,8 @@ const result2 = validateBadgeMetadata({
   description: 'A badge with a custom category',
   category: 'custom1',
   level: 2,
-  validCategories: customCategories
-})
+  validCategories: customCategories,
+});
 ```
 
 ## Helper Functions
@@ -118,9 +118,9 @@ const result2 = validateBadgeMetadata({
 Returns the array of valid badge categories.
 
 ```typescript
-import { getValidBadgeCategories } from '@/lib/validation/badgeValidation'
+import { getValidBadgeCategories } from '@/lib/validation/badgeValidation';
 
-const categories = getValidBadgeCategories()
+const categories = getValidBadgeCategories();
 // ['skill', 'participation', 'contribution', ...]
 ```
 
@@ -129,10 +129,10 @@ const categories = getValidBadgeCategories()
 Checks if a category is valid.
 
 ```typescript
-import { isCategoryValid } from '@/lib/validation/badgeValidation'
+import { isCategoryValid } from '@/lib/validation/badgeValidation';
 
-isCategoryValid('skill') // true
-isCategoryValid('invalid') // false
+isCategoryValid('skill'); // true
+isCategoryValid('invalid'); // false
 ```
 
 ### isLevelInValidRange(level)
@@ -140,11 +140,11 @@ isCategoryValid('invalid') // false
 Checks if a level is within the valid range (1-5).
 
 ```typescript
-import { isLevelInValidRange } from '@/lib/validation/badgeValidation'
+import { isLevelInValidRange } from '@/lib/validation/badgeValidation';
 
-isLevelInValidRange(3) // true
-isLevelInValidRange(6) // false
-isLevelInValidRange(2.5) // false (must be integer)
+isLevelInValidRange(3); // true
+isLevelInValidRange(6); // false
+isLevelInValidRange(2.5); // false (must be integer)
 ```
 
 ## Error Format
@@ -153,13 +153,13 @@ All validation functions return errors in a consistent format:
 
 ```typescript
 interface ValidationError {
-  field: string      // The field that failed validation
-  message: string    // User-friendly error message
+  field: string; // The field that failed validation
+  message: string; // User-friendly error message
 }
 
 interface BadgeValidationResult {
-  valid: boolean                // Whether validation passed
-  errors: ValidationError[]     // Array of errors (empty if valid)
+  valid: boolean; // Whether validation passed
+  errors: ValidationError[]; // Array of errors (empty if valid)
 }
 ```
 

@@ -1,7 +1,5 @@
 import { useNetwork, useNetworkChange } from '@/contexts/NetworkContext';
 import { networkManager } from '@/utils/networkManager';
-import { NetworkSwitcher } from '@/utils/networkSwitcher';
-import { NetworkType } from '@/types/network';
 
 // Re-export main hook
 export { useNetwork, useNetworkChange };
@@ -77,7 +75,7 @@ export function useNetworkApi() {
 
 // Hook for contract addresses
 export function useContractAddresses() {
-  const network = useCurrentNetwork();
+  const _network = useCurrentNetwork();
 
   return {
     passportCore: networkManager.getContractAddress('passportCore'),

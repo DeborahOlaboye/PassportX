@@ -18,7 +18,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
     };
 
     auditLog = new BadgeRevocationAuditLog(mockLogger);
@@ -52,7 +52,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       const result = await coordinator.processBadgeRevocation(event);
@@ -78,7 +78,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx456',
         blockHeight: 1001,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       const result = await coordinator.processBadgeRevocation(event);
@@ -91,7 +91,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
       const event = {
         badgeId: 'badge-1',
         transactionHash: '0xtx123',
-        revocationType: 'soft'
+        revocationType: 'soft',
       } as any;
 
       const result = await coordinator.processBadgeRevocation(event);
@@ -111,7 +111,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx789',
         blockHeight: 1002,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       await coordinator.processBadgeRevocation(event);
@@ -144,7 +144,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
           transactionHash: '0xtx1',
           blockHeight: 1000,
           timestamp: Date.now(),
-          previousActive: true
+          previousActive: true,
         },
         {
           userId: 'user-2',
@@ -156,7 +156,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
           transactionHash: '0xtx2',
           blockHeight: 1001,
           timestamp: Date.now(),
-          previousActive: true
+          previousActive: true,
         },
         {
           userId: 'user-3',
@@ -168,14 +168,14 @@ describe('BadgeRevocationCoordinator Integration', () => {
           transactionHash: '0xtx3',
           blockHeight: 1002,
           timestamp: Date.now(),
-          previousActive: true
-        }
+          previousActive: true,
+        },
       ];
 
       const results = await coordinator.processBatchRevocations(events);
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
     });
 
     it('should handle partial failures in batch', async () => {
@@ -190,10 +190,10 @@ describe('BadgeRevocationCoordinator Integration', () => {
           transactionHash: '0xtx1',
           blockHeight: 1000,
           timestamp: Date.now(),
-          previousActive: true
+          previousActive: true,
         },
         {
-          transactionHash: '0xtx2'
+          transactionHash: '0xtx2',
         } as any,
         {
           userId: 'user-3',
@@ -205,8 +205,8 @@ describe('BadgeRevocationCoordinator Integration', () => {
           transactionHash: '0xtx3',
           blockHeight: 1002,
           timestamp: Date.now(),
-          previousActive: true
-        }
+          previousActive: true,
+        },
       ];
 
       const results = await coordinator.processBatchRevocations(events);
@@ -230,13 +230,22 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       const auditSpy = jest.spyOn(auditLog, 'recordRevocation');
-      const cacheInvalidateSpy = jest.spyOn(cacheInvalidator, 'invalidateBadgeCache');
-      const notifySpy = jest.spyOn(notificationService, 'notifyBadgeRevocation');
-      const countUpdateSpy = jest.spyOn(countUpdateService, 'decrementBadgeCount');
+      const cacheInvalidateSpy = jest.spyOn(
+        cacheInvalidator,
+        'invalidateBadgeCache'
+      );
+      const notifySpy = jest.spyOn(
+        notificationService,
+        'notifyBadgeRevocation'
+      );
+      const countUpdateSpy = jest.spyOn(
+        countUpdateService,
+        'decrementBadgeCount'
+      );
 
       await coordinator.processBadgeRevocation(event);
 
@@ -257,7 +266,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       await coordinator.processBadgeRevocation(event);
@@ -284,7 +293,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx1',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       const invalidEvent = { transactionHash: '0xtx2' } as any;
@@ -307,7 +316,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       await coordinator.processBadgeRevocation(event);
@@ -332,7 +341,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       await coordinator.processBadgeRevocation(event);
@@ -360,7 +369,7 @@ describe('BadgeRevocationCoordinator Integration', () => {
         transactionHash: '0xtx123',
         blockHeight: 1000,
         timestamp: Date.now(),
-        previousActive: true
+        previousActive: true,
       };
 
       await coordinator.processBadgeRevocation(event);

@@ -1,4 +1,8 @@
-import { Account, AccountPreferences, AccountSettings } from '@/types/multi-account';
+import {
+  Account,
+  AccountPreferences,
+  AccountSettings,
+} from '@/types/multi-account';
 
 const STORAGE_KEYS = {
   ACCOUNTS: 'wallet_accounts',
@@ -52,7 +56,9 @@ export async function loadActiveAccount(): Promise<string | null> {
   }
 }
 
-export async function savePreferences(preferences: AccountPreferences): Promise<void> {
+export async function savePreferences(
+  preferences: AccountPreferences
+): Promise<void> {
   if (typeof window === 'undefined') return;
 
   try {
@@ -92,7 +98,9 @@ export async function saveAccountSettings(
   }
 }
 
-export async function loadAccountSettings(address: string): Promise<AccountSettings | null> {
+export async function loadAccountSettings(
+  address: string
+): Promise<AccountSettings | null> {
   if (typeof window === 'undefined') return null;
 
   try {
@@ -145,7 +153,10 @@ export function validateAccountAddress(address: string): boolean {
   return stacksAddressRegex.test(address);
 }
 
-export function validateAccountData(account: Account): { valid: boolean; errors: string[] } {
+export function validateAccountData(account: Account): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!validateAccountAddress(account.address)) {
@@ -181,10 +192,16 @@ export async function exportAccountData(accounts: Account[]): Promise<string> {
   return JSON.stringify(data, null, 2);
 }
 
-export async function downloadAccountExport(accounts: Account[], filename?: string): Promise<void> {
+export async function downloadAccountExport(
+  accounts: Account[],
+  filename?: string
+): Promise<void> {
   const data = await exportAccountData(accounts);
   const element = document.createElement('a');
-  element.setAttribute('href', `data:application/json;charset=utf-8,${encodeURIComponent(data)}`);
+  element.setAttribute(
+    'href',
+    `data:application/json;charset=utf-8,${encodeURIComponent(data)}`
+  );
   element.setAttribute('download', filename || `accounts-${Date.now()}.json`);
   element.style.display = 'none';
   document.body.appendChild(element);

@@ -11,7 +11,11 @@ import ErrorMonitoringService from '../services/ErrorMonitoringService';
 export interface TransactionOptions {
   retries?: number;
   retryDelay?: number;
-  isolationLevel?: 'readUncommitted' | 'readCommitted' | 'repeatableRead' | 'serializable';
+  isolationLevel?:
+    | 'readUncommitted'
+    | 'readCommitted'
+    | 'repeatableRead'
+    | 'serializable';
   timeout?: number;
 }
 
@@ -26,10 +30,14 @@ export class DatabaseTransaction {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
@@ -47,7 +55,9 @@ export class DatabaseTransaction {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         if (attempt > 0) {
-          this.logger.info(`Transaction retry attempt ${attempt + 1}/${retries}`);
+          this.logger.info(
+            `Transaction retry attempt ${attempt + 1}/${retries}`
+          );
           await this.delay(retryDelay * attempt);
         }
 
@@ -68,7 +78,7 @@ export class DatabaseTransaction {
           'DatabaseTransaction',
           {
             attempt: attempt + 1,
-            maxRetries: retries
+            maxRetries: retries,
           }
         );
       }
@@ -92,7 +102,7 @@ export class DatabaseTransaction {
 
       // Configure transaction options
       const transactionOptions: any = {
-        readPreference: 'primary'
+        readPreference: 'primary',
       };
 
       if (options.timeout) {
@@ -133,17 +143,17 @@ export class DatabaseTransaction {
     const nonRetryableErrors = [
       'ValidationError',
       'CastError',
-      'DocumentNotFoundError'
+      'DocumentNotFoundError',
     ];
 
-    return nonRetryableErrors.some(errType => error.name === errType);
+    return nonRetryableErrors.some((errType) => error.name === errType);
   }
 
   /**
    * Delay helper for retries
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

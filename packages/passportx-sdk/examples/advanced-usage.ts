@@ -10,7 +10,7 @@ async function main() {
   const client = new PassportX({
     apiUrl: 'https://api.passportx.app',
     network: 'mainnet',
-    timeout: 15000
+    timeout: 15000,
   });
 
   console.log('PassportX SDK - Advanced Usage Example\n');
@@ -44,7 +44,11 @@ async function main() {
     console.log(`     Total members: ${analytics.totalMembers}`);
     console.log(`     Total badges issued: ${analytics.totalIssuedBadges}`);
     console.log(`     Badge templates: ${analytics.totalBadgeTemplates}`);
-    console.log(`     Average badges per member: ${analytics.averageBadgesPerMember.toFixed(2)}`);
+    console.log(
+      `     Average badges per member: ${analytics.averageBadgesPerMember.toFixed(
+        2
+      )}`
+    );
   }
 
   // 4. Community leaderboard
@@ -55,7 +59,11 @@ async function main() {
 
     console.log('   Top 5 badge earners:');
     leaderboard.forEach((user, index) => {
-      console.log(`     ${index + 1}. ${user.name || user.stacksAddress.slice(0, 10) + '...'}: ${user.badgeCount} badges`);
+      console.log(
+        `     ${index + 1}. ${
+          user.name || user.stacksAddress.slice(0, 10) + '...'
+        }: ${user.badgeCount} badges`
+      );
     });
   }
 
@@ -66,14 +74,14 @@ async function main() {
   // Get first page
   const page1 = await client.getUserBadges(userAddress, {
     limit: 5,
-    offset: 0
+    offset: 0,
   });
   console.log(`   Page 1: ${page1.length} badges`);
 
   // Get second page
   const page2 = await client.getUserBadges(userAddress, {
     limit: 5,
-    offset: 5
+    offset: 5,
   });
   console.log(`   Page 2: ${page2.length} badges`);
 
@@ -81,9 +89,11 @@ async function main() {
   console.log('\n6. Searching communities...');
   const searchResults = await client.listCommunities({
     search: 'developer',
-    limit: 3
+    limit: 3,
   });
-  console.log(`   Found ${searchResults.pagination.total} communities matching "developer"`);
+  console.log(
+    `   Found ${searchResults.pagination.total} communities matching "developer"`
+  );
 
   searchResults.data.forEach((community, index) => {
     console.log(`     ${index + 1}. ${community.name}`);
@@ -100,7 +110,9 @@ async function main() {
       console.log(`   Template: ${template.name}`);
       console.log(`   Category: ${template.category}`);
       console.log(`   Level: ${template.level}`);
-      console.log(`   Requirements: ${template.requirements || 'None specified'}`);
+      console.log(
+        `   Requirements: ${template.requirements || 'None specified'}`
+      );
       console.log(`   Creator: ${template.creator}`);
     }
   }
@@ -109,13 +121,13 @@ async function main() {
 }
 
 // Run the example
-main().catch(error => {
+main().catch((error) => {
   console.error('Error:', error.message);
   if (error instanceof PassportXError) {
     console.error('Error details:', {
       code: error.code,
       statusCode: error.statusCode,
-      details: error.details
+      details: error.details,
     });
   }
   process.exit(1);

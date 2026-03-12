@@ -15,7 +15,9 @@ const WC_ENABLED = process.env.WC_ENABLED !== '0';
 describe('WalletConnect integration (scaffold)', () => {
   beforeAll(() => {
     if (!WC_ENABLED) {
-      console.warn('WalletConnect integration tests disabled (set WC_ENABLED=1 to enable)');
+      console.warn(
+        'WalletConnect integration tests disabled (set WC_ENABLED=1 to enable)'
+      );
     }
   });
 

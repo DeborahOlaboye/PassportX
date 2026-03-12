@@ -20,9 +20,10 @@ function LoginPageInner() {
   useEffect(() => {
     if (isAuthenticated && user) {
       // Check if onboarding completed
-      const onboardingCompleted = typeof window !== 'undefined'
-        ? localStorage.getItem('onboarding_completed')
-        : null;
+      const onboardingCompleted =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('onboarding_completed')
+          : null;
 
       if (user.hasPassport || onboardingCompleted) {
         router.push('/passport');
@@ -63,8 +64,8 @@ function LoginPageInner() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h2 className="font-semibold text-blue-900 mb-2">Welcome!</h2>
             <p className="text-blue-800 text-sm">
-              Connect your Stacks wallet to access your achievement passport and earn badges from
-              communities around the ecosystem.
+              Connect your Stacks wallet to access your achievement passport and
+              earn badges from communities around the ecosystem.
             </p>
           </div>
 

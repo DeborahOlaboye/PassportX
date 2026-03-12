@@ -6,7 +6,11 @@ interface BadgeDistributionItem {
   category: string;
 }
 
-export function BadgeDistributionChart({ data }: { data: BadgeDistributionItem[] }) {
+export function BadgeDistributionChart({
+  data,
+}: {
+  data: BadgeDistributionItem[];
+}) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500">
@@ -26,7 +30,7 @@ export function BadgeDistributionChart({ data }: { data: BadgeDistributionItem[]
     '#8b5cf6',
     '#ec4899',
     '#14b8a6',
-    '#f97316'
+    '#f97316',
   ];
 
   return (
@@ -47,11 +51,13 @@ export function BadgeDistributionChart({ data }: { data: BadgeDistributionItem[]
                   className="h-2 rounded-full transition-all"
                   style={{
                     width: `${percentage}%`,
-                    backgroundColor: color
+                    backgroundColor: color,
                   }}
                 />
               </div>
-              <span className="text-xs text-gray-500">{percentage}% of total</span>
+              <span className="text-xs text-gray-500">
+                {percentage}% of total
+              </span>
             </div>
           );
         })}

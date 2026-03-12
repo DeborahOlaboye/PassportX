@@ -11,13 +11,13 @@ module.exports = defineConfig({
     viewportHeight: 720,
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
-    responseTimeout: 10000
+    responseTimeout: 10000,
   },
   component: {
     devServer: {
       framework: 'react',
-      bundler: 'webpack'
+      bundler: 'webpack',
     },
-    specPattern: 'tests/e2e/components/**/*.cy.ts'
-  }
+    specPattern: 'tests/e2e/components/**/*.cy.ts',
+  },
 });

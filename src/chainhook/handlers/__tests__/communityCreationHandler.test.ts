@@ -1,5 +1,8 @@
 import { CommunityCreationHandler } from '../communityCreationHandler';
-import { ChainhookEventPayload, NotificationPayload } from '../../types/handlers';
+import {
+  ChainhookEventPayload,
+  NotificationPayload,
+} from '../../types/handlers';
 
 describe('CommunityCreationHandler', () => {
   let handler: CommunityCreationHandler;
@@ -23,20 +26,21 @@ describe('CommunityCreationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
                   method: 'create-community',
-                  args: []
-                }
-              }
-            ]
-          }
+                  args: [],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(true);
@@ -56,30 +60,32 @@ describe('CommunityCreationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
-                  method: 'other-method'
-                }
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+                  method: 'other-method',
+                },
               },
               {
                 type: 'emit',
                 events: [
                   {
                     type: 'contract_event',
-                    contract_address: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+                    contract_address:
+                      'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
                     topic: 'community-created',
-                    value: {}
-                  }
-                ]
-              }
-            ]
-          }
+                    value: {},
+                  },
+                ],
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(true);
@@ -99,19 +105,20 @@ describe('CommunityCreationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
-                  method: 'mint'
-                }
-              }
-            ]
-          }
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  method: 'mint',
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(false);
@@ -128,8 +135,8 @@ describe('CommunityCreationHandler', () => {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(false);
@@ -151,24 +158,25 @@ describe('CommunityCreationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
                   method: 'create-community',
                   args: [
                     { value: 'community-1' },
                     { value: 'My Community' },
-                    { value: 'A great community' }
-                  ]
-                }
-              }
-            ]
-          }
+                    { value: 'A great community' },
+                  ],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 100,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       const notifications = await handler.handle(event);
@@ -195,19 +203,20 @@ describe('CommunityCreationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
-                  method: 'mint'
-                }
-              }
-            ]
-          }
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-issuer',
+                  method: 'mint',
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 100,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       const notifications = await handler.handle(event);
@@ -226,8 +235,8 @@ describe('CommunityCreationHandler', () => {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 100,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       const notifications = await handler.handle(event);
@@ -265,24 +274,25 @@ describe('CommunityCreationHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.community-manager',
                   method: 'create-community',
                   args: [
                     { value: 'test-community' },
                     { value: 'Test Community' },
-                    { value: 'A test community' }
-                  ]
-                }
-              }
-            ]
-          }
+                    { value: 'A test community' },
+                  ],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 50, hash: 'xyz789' },
           pox_cycle_index: 0,
           pox_cycle_position: 100,
-          pox_cycle_length: 2100
-        }
+          pox_cycle_length: 2100,
+        },
       };
 
       const notifications = await handler.handle(event);

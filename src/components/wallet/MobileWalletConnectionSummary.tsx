@@ -9,7 +9,7 @@ import {
   Shield,
   TrendingUp,
   Users,
-  Activity
+  Activity,
 } from 'lucide-react';
 
 interface ConnectionSummary {
@@ -28,7 +28,7 @@ export default function MobileWalletConnectionSummary() {
     averageConnectionTime: 0,
     mostUsedWallet: 'None',
     lastConnectionDate: null,
-    connectionHealth: 'good'
+    connectionHealth: 'good',
   });
 
   useEffect(() => {
@@ -43,7 +43,9 @@ export default function MobileWalletConnectionSummary() {
         const parsed = JSON.parse(stored);
         setSummary({
           ...parsed,
-          lastConnectionDate: parsed.lastConnectionDate ? new Date(parsed.lastConnectionDate) : null
+          lastConnectionDate: parsed.lastConnectionDate
+            ? new Date(parsed.lastConnectionDate)
+            : null,
         });
       } catch (error) {
         // Use default values
@@ -57,31 +59,44 @@ export default function MobileWalletConnectionSummary() {
       averageConnectionTime: 8.3,
       mostUsedWallet: 'Xverse',
       lastConnectionDate: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      connectionHealth: 'excellent'
+      connectionHealth: 'excellent',
     });
   };
 
-  const successRate = summary.totalConnections > 0
-    ? Math.round((summary.successfulConnections / summary.totalConnections) * 100)
-    : 0;
+  const successRate =
+    summary.totalConnections > 0
+      ? Math.round(
+          (summary.successfulConnections / summary.totalConnections) * 100
+        )
+      : 0;
 
   const getHealthColor = (health: ConnectionSummary['connectionHealth']) => {
     switch (health) {
-      case 'excellent': return 'text-green-600 bg-green-50 border-green-200';
-      case 'good': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'fair': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'poor': return 'text-red-600 bg-red-50 border-red-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'excellent':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'good':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'fair':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'poor':
+        return 'text-red-600 bg-red-50 border-red-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   const getHealthIcon = (health: ConnectionSummary['connectionHealth']) => {
     switch (health) {
-      case 'excellent': return <CheckCircle className="w-5 h-5" />;
-      case 'good': return <TrendingUp className="w-5 h-5" />;
-      case 'fair': return <Activity className="w-5 h-5" />;
-      case 'poor': return <Shield className="w-5 h-5" />;
-      default: return <Activity className="w-5 h-5" />;
+      case 'excellent':
+        return <CheckCircle className="w-5 h-5" />;
+      case 'good':
+        return <TrendingUp className="w-5 h-5" />;
+      case 'fair':
+        return <Activity className="w-5 h-5" />;
+      case 'poor':
+        return <Shield className="w-5 h-5" />;
+      default:
+        return <Activity className="w-5 h-5" />;
     }
   };
 
@@ -94,7 +109,8 @@ export default function MobileWalletConnectionSummary() {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffHours > 0)
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     return 'Recently';
   };
 
@@ -107,7 +123,11 @@ export default function MobileWalletConnectionSummary() {
         </div>
 
         {/* Health Status */}
-        <div className={`p-4 rounded-lg border ${getHealthColor(summary.connectionHealth)}`}>
+        <div
+          className={`p-4 rounded-lg border ${getHealthColor(
+            summary.connectionHealth
+          )}`}
+        >
           <div className="flex items-center gap-3">
             {getHealthIcon(summary.connectionHealth)}
             <div>
@@ -125,22 +145,30 @@ export default function MobileWalletConnectionSummary() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="text-center p-4 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900">{summary.totalConnections}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {summary.totalConnections}
+          </div>
           <div className="text-sm text-gray-600">Total Connections</div>
         </div>
 
         <div className="text-center p-4 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{successRate}%</div>
+          <div className="text-2xl font-bold text-green-600">
+            {successRate}%
+          </div>
           <div className="text-sm text-gray-600">Success Rate</div>
         </div>
 
         <div className="text-center p-4 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{summary.averageConnectionTime}s</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {summary.averageConnectionTime}s
+          </div>
           <div className="text-sm text-gray-600">Avg. Connection Time</div>
         </div>
 
         <div className="text-center p-4 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-purple-600">{summary.mostUsedWallet}</div>
+          <div className="text-2xl font-bold text-purple-600">
+            {summary.mostUsedWallet}
+          </div>
           <div className="text-sm text-gray-600">Most Used Wallet</div>
         </div>
       </div>
@@ -160,7 +188,9 @@ export default function MobileWalletConnectionSummary() {
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <QrCode className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Successful Connections</span>
+            <span className="text-sm text-gray-600">
+              Successful Connections
+            </span>
           </div>
           <span className="text-sm font-medium text-green-600">
             {summary.successfulConnections} / {summary.totalConnections}

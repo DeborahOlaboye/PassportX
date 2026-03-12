@@ -15,12 +15,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Check for untracked TODO comments
         run: |
           echo "🔍 Checking for TODO comments in source files..."
           echo ""
-          
+
           # Search for TODO comments, excluding node_modules and common ignore patterns
           TODOS=$(grep -rn "TODO" \
             --include="*.ts" \
@@ -33,7 +33,7 @@ jobs:
             --exclude-dir=coverage \
             --exclude-dir=.next \
             src/ backend/src/ 2>/dev/null || true)
-          
+
           if [ -n "$TODOS" ]; then
             # Check if TODOs have issue references (#123 format)
             UNTRACKED_TODOS=$(echo "$TODOS" | grep -v "#[0-9]\+" || true)
