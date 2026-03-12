@@ -11,12 +11,14 @@ expect.extend({
     const pass = received >= floor && received <= ceiling;
     if (pass) {
       return {
-        message: () => `expected ${received} not to be within range ${floor} - ${ceiling}`,
+        message: () =>
+          `expected ${received} not to be within range ${floor} - ${ceiling}`,
         pass: true,
       };
     } else {
       return {
-        message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,
+        message: () =>
+          `expected ${received} to be within range ${floor} - ${ceiling}`,
         pass: false,
       };
     }
@@ -46,10 +48,18 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: jest.fn((key: string) => { delete store[key]; }),
-    clear: jest.fn(() => { store = {}; }),
-    get length() { return Object.keys(store).length; },
+    setItem: jest.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
     key: jest.fn((index: number) => Object.keys(store)[index] || null),
   };
 })();
@@ -63,10 +73,18 @@ const sessionStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: jest.fn((key: string) => { delete store[key]; }),
-    clear: jest.fn(() => { store = {}; }),
-    get length() { return Object.keys(store).length; },
+    setItem: jest.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: jest.fn(() => {
+      store = {};
+    }),
+    get length() {
+      return Object.keys(store).length;
+    },
     key: jest.fn((index: number) => Object.keys(store)[index] || null),
   };
 })();
@@ -141,7 +159,8 @@ global.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
 global.cancelAnimationFrame = jest.fn();
 
 // Test helpers
-export const waitForNextTick = () => new Promise(resolve => setTimeout(resolve, 0));
+export const waitForNextTick = () =>
+  new Promise((resolve) => setTimeout(resolve, 0));
 
 export const createMockResponse = <T>(data: T, status = 200) => ({
   ok: status >= 200 && status < 300,
@@ -152,7 +171,9 @@ export const createMockResponse = <T>(data: T, status = 200) => ({
 });
 
 export const mockFetchResponse = <T>(data: T, status = 200) => {
-  (global.fetch as jest.Mock).mockResolvedValueOnce(createMockResponse(data, status));
+  (global.fetch as jest.Mock).mockResolvedValueOnce(
+    createMockResponse(data, status)
+  );
 };
 
 export const mockFetchError = (error: Error) => {
