@@ -14,7 +14,7 @@ export interface PermissionNotification {
   principal: string;
   targetPrincipal?: string;
   communityId?: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   timestamp: Date;
   severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
 }

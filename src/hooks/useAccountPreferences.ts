@@ -6,7 +6,6 @@ import {
   AccountSortOption,
 } from '@/types/multi-account';
 import {
-  loadPreferences,
   savePreferences,
   loadAccountSettings,
   saveAccountSettings,
@@ -37,7 +36,10 @@ export function useAccountPreferences() {
   }, [contextSavePreferences]);
 
   const updatePreference = useCallback(
-    async (key: keyof AccountPreferences, value: any) => {
+    async (
+      key: keyof AccountPreferences,
+      value: AccountPreferences[keyof AccountPreferences]
+    ) => {
       try {
         const updated = {
           ...state.preferences,

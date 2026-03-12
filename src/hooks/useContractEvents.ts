@@ -391,13 +391,14 @@ export function useEventsForPrincipal<T extends ContractEvent>(
     eventName,
     (event) => {
       // Check common principal fields
+      const e = event as Record<string, unknown>;
       return (
-        (event as any).issuer === principal ||
-        (event as any).recipient === principal ||
-        (event as any).owner === principal ||
-        (event as any).member === principal ||
-        (event as any).user === principal ||
-        (event as any).creator === principal
+        e.issuer === principal ||
+        e.recipient === principal ||
+        e.owner === principal ||
+        e.member === principal ||
+        e.user === principal ||
+        e.creator === principal
       );
     },
     maxEvents

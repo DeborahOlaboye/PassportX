@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   BadgeIssuerManager,
   BadgeIssuanceParams,
-  BadgeIssuerResponse,
 } from '@/lib/contracts/badgeContractUtils';
 import {
   BadgeIssuanceBackendPayload,

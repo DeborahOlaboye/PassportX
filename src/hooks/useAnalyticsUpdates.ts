@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 export interface AnalyticsUpdate {
   timestamp: number;
   eventType: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export function useAnalyticsUpdates() {
@@ -38,7 +38,7 @@ export function useAnalyticsUpdates() {
       setLatestUpdate(data);
     });
 
-    newSocket.on('analytics:batch-update', (data: any) => {
+    newSocket.on('analytics:batch-update', (data: Record<string, unknown>) => {
       setLatestUpdate({
         timestamp: Date.now(),
         eventType: 'batch-update',
@@ -46,21 +46,27 @@ export function useAnalyticsUpdates() {
       });
     });
 
-    newSocket.on('analytics:event-processed', (data: any) => {
-      setLatestUpdate({
-        timestamp: Date.now(),
-        eventType: 'event-processed',
-        data,
-      });
-    });
+    newSocket.on(
+      'analytics:event-processed',
+      (data: Record<string, unknown>) => {
+        setLatestUpdate({
+          timestamp: Date.now(),
+          eventType: 'event-processed',
+          data,
+        });
+      }
+    );
 
-    newSocket.on('analytics:snapshot-recorded', (data: any) => {
-      setLatestUpdate({
-        timestamp: Date.now(),
-        eventType: 'snapshot-recorded',
-        data,
-      });
-    });
+    newSocket.on(
+      'analytics:snapshot-recorded',
+      (data: Record<string, unknown>) => {
+        setLatestUpdate({
+          timestamp: Date.now(),
+          eventType: 'snapshot-recorded',
+          data,
+        });
+      }
+    );
 
     setSocket(newSocket);
 
@@ -70,7 +76,7 @@ export function useAnalyticsUpdates() {
   }, []);
 
   const subscribeToEvent = useCallback(
-    (eventName: string, callback: (data: any) => void) => {
+    (eventName: string, callback: (data: Record<string, unknown>) => void) => {
       if (socket) {
         socket.on(`analytics:${eventName}`, callback);
 

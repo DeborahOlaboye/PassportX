@@ -10,8 +10,12 @@ export interface AccountDetectionConfig {
 }
 
 export function useMultiAccountDetection(config: AccountDetectionConfig = {}) {
-  const { state, addAccount, switchAccount, onAccountSwitch } =
-    useMultiAccount();
+  const {
+    state,
+    addAccount: _addAccount,
+    switchAccount,
+    onAccountSwitch: _onAccountSwitch,
+  } = useMultiAccount();
   const debounceTimer = useRef<NodeJS.Timeout>();
   const previousAccounts = useRef<string[]>([]);
 

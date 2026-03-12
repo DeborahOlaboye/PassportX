@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   CommunityContractManager,
   CreateCommunityParams,
-  CommunitySettings,
 } from '@/lib/contracts/communityContractUtils';
 import { CommunityBackendPayload, BackendApiResponse } from '@/types/contract';
 
