@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import ErrorBoundary from '../ErrorBoundary';
 import FallbackUI from '../FallbackUI';
 import {
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, ChevronDown, Trash2, Check } from 'lucide-react';
+import { Loader2, Trash2, Check } from 'lucide-react';
 import { useActivityFeed } from '@/hooks/useActivityFeed';
 
 export interface ActivityItem {
@@ -150,13 +150,13 @@ function ActivityFeedInner({
 
   useEffect(() => {
     if (socket) {
-      socket.on('activity:new', (data: any) => {
+      socket.on('activity:new', (data: { activity: ActivityItem }) => {
         const newActivity = data.activity;
         setActivities((prev) => [newActivity, ...prev]);
         setUnreadCount((prev) => prev + 1);
       });
 
-      socket.on('activity:marked-read', (data: any) => {
+      socket.on('activity:marked-read', (data: { activityId: string }) => {
         setActivities((prev) =>
           prev.map((activity) =>
             activity._id === data.activityId
@@ -173,7 +173,7 @@ function ActivityFeedInner({
         setUnreadCount(0);
       });
 
-      socket.on('activity:deleted', (data: any) => {
+      socket.on('activity:deleted', (data: { activityId: string }) => {
         setActivities((prev) =>
           prev.filter((activity) => activity._id !== data.activityId)
         );

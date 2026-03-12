@@ -10,9 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { Badge } from '@/components/ui/badge';
 import { Loader2, Wifi, WifiOff } from 'lucide-react';
 import {
   fetchAnalyticsData,

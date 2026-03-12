@@ -33,18 +33,26 @@ interface FallbackProps {
   maxRetries: number;
 }
 
-const DefaultFallback: React.FC<FallbackProps> = ({ 
-  error, 
-  retry, 
-  errorId, 
-  retryCount, 
-  maxRetries 
+const DefaultFallback: React.FC<FallbackProps> = ({
+  error,
+  retry,
+  errorId,
+  retryCount,
+  maxRetries,
 }) => (
   <div className="error-boundary-fallback p-6 bg-red-50 border border-red-200 rounded-lg">
     <div className="flex items-center mb-4">
       <div className="flex-shrink-0">
-        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+        <svg
+          className="h-5 w-5 text-red-400"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clipRule="evenodd"
+          />
         </svg>
       </div>
       <div className="ml-3">
@@ -53,12 +61,14 @@ const DefaultFallback: React.FC<FallbackProps> = ({
         </h3>
       </div>
     </div>
-    
+
     <div className="text-sm text-red-700 mb-4">
       <p>We encountered an unexpected error. Our team has been notified.</p>
       {process.env.NODE_ENV === 'development' && (
         <details className="mt-2">
-          <summary className="cursor-pointer font-medium">Error Details</summary>
+          <summary className="cursor-pointer font-medium">
+            Error Details
+          </summary>
           <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-auto">
             {error.message}
             {error.stack && `\n\n${error.stack}`}
@@ -77,7 +87,7 @@ const DefaultFallback: React.FC<FallbackProps> = ({
           Try Again ({maxRetries - retryCount} attempts left)
         </button>
       )}
-      
+
       <button
         onClick={() => window.location.reload()}
         className="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -88,7 +98,10 @@ const DefaultFallback: React.FC<FallbackProps> = ({
   </div>
 );
 
-export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class EnhancedErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   private resetTimeoutId: number | null = null;
 
   constructor(props: ErrorBoundaryProps) {
@@ -98,39 +111,41 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       error: null,
       errorId: null,
       retryCount: 0,
-      isRecovering: false
+      isRecovering: false,
     };
   }
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return {
       hasError: true,
-      error
+      error,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     const { onError, level = 'component' } = this.props;
-    
+
     // Handle the error through our centralized error handler
-    errorHandler.handleError(
-      new SystemError(
-        `React Error Boundary caught error in ${level}`,
-        'REACT_ERROR_BOUNDARY',
-        {
-          component: errorInfo.componentStack?.split('\n')[1]?.trim(),
-          action: 'render',
-          additionalData: {
-            componentStack: errorInfo.componentStack,
-            level,
-            retryCount: this.state.retryCount
-          }
-        },
-        error
+    errorHandler
+      .handleError(
+        new SystemError(
+          `React Error Boundary caught error in ${level}`,
+          'REACT_ERROR_BOUNDARY',
+          {
+            component: errorInfo.componentStack?.split('\n')[1]?.trim(),
+            action: 'render',
+            additionalData: {
+              componentStack: errorInfo.componentStack,
+              level,
+              retryCount: this.state.retryCount,
+            },
+          },
+          error
+        )
       )
-    ).then(passportXError => {
-      this.setState({ errorId: passportXError.id });
-    });
+      .then((passportXError) => {
+        this.setState({ errorId: passportXError.id });
+      });
 
     // Call custom error handler if provided
     if (onError) {
@@ -138,7 +153,10 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     }
 
     // Auto-recovery for transient errors
-    if (this.isTransientError(error) && this.state.retryCount < (this.props.maxRetries || 3)) {
+    if (
+      this.isTransientError(error) &&
+      this.state.retryCount < (this.props.maxRetries || 3)
+    ) {
       this.scheduleAutoRecovery();
     }
   }
@@ -158,7 +176,7 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       const hasResetKeyChanged = resetKeys.some(
         (key, index) => key !== prevResetKeys[index]
       );
-      
+
       if (hasResetKeyChanged) {
         this.resetErrorBoundary();
       }
@@ -183,7 +201,7 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   private scheduleAutoRecovery(): void {
     this.setState({ isRecovering: true });
-    
+
     this.resetTimeoutId = window.setTimeout(() => {
       this.retryRender();
     }, 2000); // Auto-retry after 2 seconds
@@ -191,14 +209,14 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   private retryRender = (): void => {
     const { maxRetries = 3 } = this.props;
-    
+
     if (this.state.retryCount < maxRetries) {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         hasError: false,
         error: null,
         errorId: null,
         retryCount: prevState.retryCount + 1,
-        isRecovering: false
+        isRecovering: false,
       }));
     }
   };
@@ -214,7 +232,7 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       error: null,
       errorId: null,
       retryCount: 0,
-      isRecovering: false
+      isRecovering: false,
     });
   };
 
@@ -232,22 +250,22 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
         );
       }
 
-      const fallbackElement = fallback ? 
-        fallback(error, this.retryRender, errorId || 'unknown') :
-        <DefaultFallback 
-          error={error} 
-          retry={this.retryRender} 
+      const fallbackElement = fallback ? (
+        fallback(error, this.retryRender, errorId || 'unknown')
+      ) : (
+        <DefaultFallback
+          error={error}
+          retry={this.retryRender}
           errorId={errorId || 'unknown'}
           retryCount={retryCount}
           maxRetries={maxRetries}
-        />;
+        />
+      );
 
       // If isolate is true, wrap in an error isolation container
       if (isolate) {
         return (
-          <div className="error-boundary-isolation">
-            {fallbackElement}
-          </div>
+          <div className="error-boundary-isolation">{fallbackElement}</div>
         );
       }
 
@@ -269,19 +287,24 @@ export function withErrorBoundary<P extends object>(
     </EnhancedErrorBoundary>
   );
 
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+  WrappedComponent.displayName = `withErrorBoundary(${
+    Component.displayName || Component.name
+  })`;
+
   return WrappedComponent;
 }
 
 // Hook for manual error reporting within components
 export function useErrorHandler() {
-  const reportError = React.useCallback((error: Error, context?: Record<string, unknown>) => {
-    errorHandler.handleError(error, {
-      component: 'useErrorHandler',
-      additionalData: context
-    });
-  }, []);
+  const reportError = React.useCallback(
+    (error: Error, context?: Record<string, unknown>) => {
+      errorHandler.handleError(error, {
+        component: 'useErrorHandler',
+        additionalData: context,
+      });
+    },
+    []
+  );
 
   return { reportError };
 }
