@@ -28,7 +28,7 @@ export interface APISuccessResponse<T = unknown> {
 
 /**
  * Helper to create a standardized error response
- * 
+ *
  * @param message - Human readable error message
  * @param code - Machine readable error code (e.g., 'UNAUTHORIZED', 'INVALID_INPUT')
  * @param status - HTTP status code (default: 400)
@@ -39,7 +39,7 @@ export function sendError(
   code: string = 'BAD_REQUEST',
   status: number = 400,
   details?: unknown
-) {
+): NextResponse {
   const errorResponse: APIErrorResponse = {
     success: false,
     error: {
@@ -54,7 +54,7 @@ export function sendError(
 
 /**
  * Helper to create a standardized success response
- * 
+ *
  * @param data - The response data
  * @param status - HTTP status code (default: 200)
  * @param message - Optional success message
@@ -63,7 +63,7 @@ export function sendSuccess<T>(
   data: T,
   status: number = 200,
   message?: string
-) {
+): NextResponse {
   const successResponse: APISuccessResponse<T> = {
     success: true,
     data,
