@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
-import { TransactionRequest } from '@/types/transaction-signing';
+import { TransactionRequest, GasEstimate } from '@/types/transaction-signing';
 
 interface BadgeContractCallProps {
   onSuccess?: (hash: string) => void;
@@ -18,10 +18,7 @@ export function BadgeContractCall({
   const [functionName, setFunctionName] = useState('mint-badge');
   const [badgeId, setBadgeId] = useState('');
   const [recipient, setRecipient] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<{
-    breakdown: { base: number; priority: number };
-    total: number;
-  } | null>(null);
+  const [gasEstimate, setGasEstimate] = useState<GasEstimate | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {

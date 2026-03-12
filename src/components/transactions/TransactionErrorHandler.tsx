@@ -6,7 +6,7 @@ export interface TransactionError {
   id: string;
   type: 'validation' | 'signing' | 'broadcasting' | 'network' | 'unknown';
   message: string;
-  details?: unknown;
+  details?: Record<string, unknown>;
   timestamp: number;
   retryable: boolean;
   transactionId?: string;

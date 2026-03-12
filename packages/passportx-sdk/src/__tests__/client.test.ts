@@ -7,7 +7,19 @@ import { PassportX, PassportXError } from '../client';
 // Mock axios
 jest.mock('axios');
 import axios from 'axios';
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+const mockInterceptors = {
+  request: { use: jest.fn(), eject: jest.fn() },
+  response: { use: jest.fn(), eject: jest.fn() },
+};
+const mockAxiosInstance = {
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn(),
+  interceptors: mockInterceptors,
+};
+(axios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
 
 describe('PassportX SDK', () => {
   let client: PassportX;
@@ -38,6 +50,10 @@ describe('PassportX SDK', () => {
     });
 
     it('should create axios instance with correct config', () => {
+      new PassportX({
+        apiUrl: 'https://test.api.passportx.app',
+        network: 'testnet',
+      });
       expect(axios.create).toHaveBeenCalledWith(
         expect.objectContaining({
           baseURL: 'https://test.api.passportx.app',

@@ -63,7 +63,7 @@ export default function PassportPage() {
 }
 
 function PassportPageInner() {
-  const [badges] = useState(mockBadges);
+  const [badges, _setBadges] = useState(mockBadges);
   const [isPublic, setIsPublic] = useState(true);
   const [shareUrl, setShareUrl] = useState('');
 

@@ -1,8 +1,8 @@
-# @passportx/sdk
+# passportx-sdk
 
 Official JavaScript/TypeScript SDK for PassportX - Achievement badges on the Stacks blockchain.
 
-[![npm version](https://img.shields.io/npm/v/@passportx/sdk.svg)](https://www.npmjs.com/package/@passportx/sdk)
+[![npm version](https://img.shields.io/npm/v/passportx-sdk.svg)](https://www.npmjs.com/package/passportx-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
@@ -18,21 +18,21 @@ Official JavaScript/TypeScript SDK for PassportX - Achievement badges on the Sta
 ## Installation
 
 ```bash
-npm install @passportx/sdk
+npm install passportx-sdk
 ```
 
 ```bash
-yarn add @passportx/sdk
+yarn add passportx-sdk
 ```
 
 ```bash
-pnpm add @passportx/sdk
+pnpm add passportx-sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { PassportX } from '@passportx/sdk';
+import { PassportX } from 'passportx-sdk';
 
 // Initialize the SDK
 const client = new PassportX({
@@ -56,7 +56,7 @@ badges.forEach((badge) => {
 ### Initialize the Client
 
 ```typescript
-import { PassportX } from '@passportx/sdk';
+import { PassportX } from 'passportx-sdk';
 
 // With default configuration (mainnet)
 const client = new PassportX();
@@ -194,7 +194,7 @@ if (results.pagination.hasMore) {
 ### Error Handling
 
 ```typescript
-import { PassportX, PassportXError } from '@passportx/sdk';
+import { PassportX, PassportXError } from 'passportx-sdk';
 
 const client = new PassportX();
 
@@ -324,7 +324,7 @@ import {
   BadgeCategory,
   PassportXError,
   // ... and more
-} from '@passportx/sdk';
+} from 'passportx-sdk';
 ```
 
 ## Contributing
@@ -339,7 +339,7 @@ MIT © PassportX Team
 
 - [Documentation](https://docs.passportx.app)
 - [GitHub](https://github.com/DeborahOlaboye/PassportX)
-- [npm Package](https://www.npmjs.com/package/@passportx/sdk)
+- [npm Package](https://www.npmjs.com/package/passportx-sdk)
 - [Issues](https://github.com/DeborahOlaboye/PassportX/issues)
 
 ## Support

@@ -4,9 +4,9 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
+export { PassportXError } from './types';
 import {
   PassportXConfig,
-  Badge,
   BadgeWithTemplate,
   BadgeTemplate,
   Community,

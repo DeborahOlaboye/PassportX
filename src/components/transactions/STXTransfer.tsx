@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
-import { TransactionRequest } from '@/types/transaction-signing';
+import { TransactionRequest, GasEstimate } from '@/types/transaction-signing';
 
 interface STXTransferProps {
   onSuccess?: (hash: string) => void;
@@ -15,10 +15,7 @@ export function STXTransfer({ onSuccess, onError }: STXTransferProps) {
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<{
-    breakdown: { base: number; priority: number };
-    total: number;
-  } | null>(null);
+  const [gasEstimate, setGasEstimate] = useState<GasEstimate | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {

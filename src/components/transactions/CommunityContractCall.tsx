@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
-import { TransactionRequest } from '@/types/transaction-signing';
+import { TransactionRequest, GasEstimate } from '@/types/transaction-signing';
 
 interface CommunityContractCallProps {
   onSuccess?: (hash: string) => void;
@@ -18,10 +18,7 @@ export function CommunityContractCall({
   const [functionName, setFunctionName] = useState('join-community');
   const [communityId, setCommunityId] = useState('');
   const [userAddress, setUserAddress] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<{
-    breakdown: { base: number; priority: number };
-    total: number;
-  } | null>(null);
+  const [gasEstimate, setGasEstimate] = useState<GasEstimate | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {

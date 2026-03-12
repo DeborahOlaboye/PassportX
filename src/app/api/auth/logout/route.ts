@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     // Forward set-cookie header from backend
     const backendResponse = NextResponse.json(data, {

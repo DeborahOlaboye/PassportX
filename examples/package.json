@@ -1,0 +1,8 @@
+{
+  "name": "passportx-sdk-examples",
+  "version": "1.0.0",
+  "description": "Examples for the PassportX SDK",
+  "dependencies": {
+    "passportx-sdk": "^1.0.0"
+  }
+}

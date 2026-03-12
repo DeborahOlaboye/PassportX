@@ -284,7 +284,7 @@ router.get('/audit/logs', async (req: Request, res: Response) => {
     console.error('Error fetching audit logs:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-);
+});
 
 /**
  * GET /access-control/audit/statistics
@@ -329,18 +329,31 @@ router.get(
  * GET /access-control/audit/user/:principal
  * Get user's access control history
  */
-router.get('/audit/user/:principal', async (req: Request, res: Response) => {
-  try {
-    const { principal } = req.params;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-    const history = await AccessControlAuditService.getUserHistory(
-      principal,
-      limit
-    );
-    res.json(history);
-  } catch (error) {
-    console.error('Error fetching user history:', error);
-    res.status(500).json({ error: 'Internal server error' });
+router.get(
+  '/audit/user/:principal',
+  auditReadLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const { principal } = req.params;
+      if (
+        !principal ||
+        typeof principal !== 'string' ||
+        principal.trim() === ''
+      ) {
+        return res.status(400).json({ error: 'principal is required' });
+      }
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
+      const history = await AccessControlAuditService.getUserHistory(
+        principal.trim(),
+        limit
+      );
+      res.json(history);
+    } catch (error) {
+      logger.error('Access control route error', { error });
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 );
 
@@ -353,7 +366,16 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { communityId } = req.params;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      if (
+        !communityId ||
+        typeof communityId !== 'string' ||
+        communityId.trim() === ''
+      ) {
+        return res.status(400).json({ error: 'communityId is required' });
+      }
+      const rawLimit = parseInt(req.query.limit as string, 10);
+      const limit =
+        isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(rawLimit, 500);
       const history = await AccessControlAuditService.getCommunityHistory(
         communityId,
         limit
@@ -390,7 +412,7 @@ router.get('/audit/export', async (req: Request, res: Response) => {
     console.error('Error exporting audit logs:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-);
+});
 
 /**
  * GET /access-control/security/alerts
@@ -411,7 +433,7 @@ router.get('/security/alerts', (req: Request, res: Response) => {
     console.error('Error fetching security alerts:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-);
+});
 
 /**
  * POST /access-control/security/alerts/:alertId/acknowledge

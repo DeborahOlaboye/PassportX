@@ -38,7 +38,7 @@ router.post('/queue/process', async (req, res) => {
     console.error('Error processing retry queue:', error);
     res.status(500).json({ error: 'Failed to process retry queue' });
   }
-);
+});
 
 /**
  * POST /retry/queue/:itemId/retry
@@ -96,7 +96,7 @@ router.post('/queue/cleanup', async (req, res) => {
     console.error('Error cleaning up retry queue:', error);
     res.status(500).json({ error: 'Failed to clean up retry queue' });
   }
-);
+});
 
 /**
  * GET /retry/dead-letter/stats
@@ -130,7 +130,7 @@ router.post('/dead-letter/recover', async (req, res) => {
     console.error('Error recovering items:', error);
     res.status(500).json({ error: 'Failed to recover items' });
   }
-);
+});
 
 /**
  * POST /retry/dead-letter/archive
@@ -150,7 +150,7 @@ router.post('/dead-letter/archive', async (req, res) => {
     console.error('Error archiving items:', error);
     res.status(500).json({ error: 'Failed to archive items' });
   }
-);
+});
 
 /**
  * GET /retry/dead-letter/analysis
@@ -237,7 +237,7 @@ router.get('/metrics/error-distribution', async (req, res) => {
     console.error('Error fetching error distribution:', error);
     res.status(500).json({ error: 'Failed to fetch error distribution' });
   }
-);
+});
 
 /**
  * GET /retry/metrics/top-failing
@@ -260,20 +260,25 @@ router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
  * GET /retry/metrics/export
  * Export metrics as JSON
  */
-router.get('/metrics/export', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const exportData = await RetryMetricsService.exportMetrics();
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="retry-metrics-${Date.now()}.json"`
-    );
-    res.send(exportData);
-  } catch (error) {
-    logger.error('Error exporting metrics:', error);
-    res.status(500).json({ error: 'Failed to export metrics' });
+router.get(
+  '/metrics/export',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const exportData = await RetryMetricsService.exportMetrics();
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="retry-metrics-${Date.now()}.json"`
+      );
+      res.send(exportData);
+    } catch (error) {
+      logger.error('Error exporting metrics:', error);
+      res.status(500).json({ error: 'Failed to export metrics' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/monitoring/health

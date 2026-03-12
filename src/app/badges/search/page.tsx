@@ -49,7 +49,7 @@ export default function BadgeSearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [_fetchError, setFetchError] = useState<string | null>(null);
 
   // Fetch badges when search parameters change
   useEffect(() => {

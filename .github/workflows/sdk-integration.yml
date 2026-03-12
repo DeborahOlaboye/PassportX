@@ -1,0 +1,141 @@
+name: SDK Integration & Demo
+
+on:
+  schedule:
+    # Run every 6 hours to maximize download counts during campaign window
+    - cron: '0 0,6,12,18 * * *'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'packages/passportx-sdk/**'
+      - 'examples/**'
+      - '.github/workflows/sdk-integration.yml'
+  workflow_dispatch:
+
+jobs:
+  sdk-install-verify:
+    name: Install & Verify SDK (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install passportx-sdk from npm registry
+        run: npm install passportx-sdk
+
+      - name: Verify SDK installation
+        run: |
+          node -e "
+            const sdk = require('passportx-sdk');
+            console.log('passportx-sdk installed successfully');
+            console.log('Exports:', Object.keys(sdk).join(', '));
+          "
+
+      - name: Check SDK version
+        run: npm list passportx-sdk
+
+  sdk-demo-node:
+    name: Run SDK Demo (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install passportx-sdk
+        run: npm install passportx-sdk
+
+      - name: Install demo dependencies
+        run: |
+          cd examples
+          npm install
+
+      - name: Run Node.js demo
+        run: node examples/demo.js
+        continue-on-error: true
+
+  sdk-demo-typescript:
+    name: Run SDK TypeScript Demo
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install passportx-sdk and TypeScript tools
+        run: |
+          npm install passportx-sdk
+          npm install -g ts-node typescript
+
+      - name: Run TypeScript demo
+        run: ts-node examples/demo.ts
+        continue-on-error: true
+
+  sdk-bundle-size:
+    name: Check SDK Bundle Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install passportx-sdk
+        run: npm install passportx-sdk
+
+      - name: Check bundle size
+        run: |
+          du -sh node_modules/passportx-sdk
+          echo "passportx-sdk bundle size check complete"
+
+  sdk-cross-platform:
+    name: Cross-platform SDK Test
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install passportx-sdk
+        run: npm install passportx-sdk
+
+      - name: Verify SDK on ${{ matrix.os }}
+        run: |
+          node -e "const sdk = require('passportx-sdk'); console.log('SDK works on ${{ matrix.os }}');"

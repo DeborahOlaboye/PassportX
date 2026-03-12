@@ -129,7 +129,9 @@ export default function MobileWalletConnectionHistory({
     if (stored) {
       try {
         const parsed = JSON.parse(stored).map(
-          (record: ConnectionRecord & { timestamp: string }) => ({
+          (
+            record: Omit<ConnectionRecord, 'timestamp'> & { timestamp: string }
+          ) => ({
             ...record,
             timestamp: new Date(record.timestamp),
           })
