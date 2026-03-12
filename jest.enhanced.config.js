@@ -2,10 +2,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
-  testMatch: [
-    '**/__tests__/**/*.{ts,tsx}',
-    '**/?(*.)+(spec|test).{ts,tsx}'
-  ],
+  testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/?(*.)+(spec|test).{ts,tsx}'],
   collectCoverageFrom: [
     'src/**/*.{js,ts,tsx}',
     '!src/**/*.d.ts',
@@ -14,7 +11,7 @@ module.exports = {
     '!src/**/*.config.{js,ts}',
     '!src/**/types/**',
     '!src/**/__tests__/**',
-    '!src/**/__mocks__/**'
+    '!src/**/__mocks__/**',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
@@ -43,11 +40,11 @@ module.exports = {
       functions: 90,
       lines: 90,
       statements: 90,
-    }
+    },
   },
   setupFilesAfterEnv: [
     '<rootDir>/tests/setup.ts',
-    '<rootDir>/tests/setup-enhanced.ts'
+    '<rootDir>/tests/setup-enhanced.ts',
   ],
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -55,14 +52,14 @@ module.exports = {
     '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
     '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^@/utils/(.*)$': '<rootDir>/src/utils/$1',
-    '^@/types/(.*)$': '<rootDir>/src/types/$1'
+    '^@/types/(.*)$': '<rootDir>/src/types/$1',
   },
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest'
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$|@stacks|@walletconnect))'
+    'node_modules/(?!(.*\\.mjs$|@stacks|@walletconnect))',
   ],
   testTimeout: 10000,
   maxWorkers: '50%',
@@ -73,26 +70,32 @@ module.exports = {
   testResultsProcessor: 'jest-sonar-reporter',
   reporters: [
     'default',
-    ['jest-junit', {
-      outputDirectory: 'coverage',
-      outputName: 'junit.xml',
-      classNameTemplate: '{classname}',
-      titleTemplate: '{title}',
-      ancestorSeparator: ' › ',
-      usePathForSuiteName: true
-    }],
-    ['jest-html-reporters', {
-      publicPath: 'coverage/html-report',
-      filename: 'report.html',
-      expand: true
-    }]
+    [
+      'jest-junit',
+      {
+        outputDirectory: 'coverage',
+        outputName: 'junit.xml',
+        classNameTemplate: '{classname}',
+        titleTemplate: '{title}',
+        ancestorSeparator: ' › ',
+        usePathForSuiteName: true,
+      },
+    ],
+    [
+      'jest-html-reporters',
+      {
+        publicPath: 'coverage/html-report',
+        filename: 'report.html',
+        expand: true,
+      },
+    ],
   ],
   globals: {
     'ts-jest': {
       useESM: true,
       tsconfig: {
-        jsx: 'react-jsx'
-      }
-    }
-  }
+        jsx: 'react-jsx',
+      },
+    },
+  },
 };

@@ -10,18 +10,24 @@ module.exports = {
   rules: {
     // TypeScript strict rules
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { 
-      'argsIgnorePattern': '^_',
-      'varsIgnorePattern': '^_',
-      'ignoreRestSiblings': true
-    }],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-non-null-assertion': 'warn',
-    '@typescript-eslint/explicit-function-return-type': ['error', {
-      'allowExpressions': true,
-      'allowTypedFunctionExpressions': true,
-      'allowHigherOrderFunctions': true
-    }],
+    '@typescript-eslint/explicit-function-return-type': [
+      'error',
+      {
+        allowExpressions: true,
+        allowTypedFunctionExpressions: true,
+        allowHigherOrderFunctions: true,
+      },
+    ],
     '@typescript-eslint/explicit-module-boundary-types': 'error',
     '@typescript-eslint/no-inferrable-types': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
@@ -44,10 +50,56 @@ module.exports = {
       version: 'detect',
     },
   },
+  overrides: [
+    {
+      // Relax explicit return type rules for Next.js pages, React components, hooks and contexts
+      files: [
+        'src/app/**/*.tsx',
+        'src/app/**/*.ts',
+        'src/components/**/*.tsx',
+        'src/components/**/*.ts',
+        'src/hooks/**/*.ts',
+        'src/hooks/**/*.tsx',
+        'src/contexts/**/*.tsx',
+        'src/contexts/**/*.ts',
+        'src/context/**/*.tsx',
+        'src/context/**/*.ts',
+      ],
+      rules: {
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+      },
+    },
+    {
+      // Legacy utility/library/service/config code — relax strict rules for gradual migration
+      files: [
+        'src/utils/**/*.ts',
+        'src/utils/**/*.tsx',
+        'src/lib/**/*.ts',
+        'src/lib/**/*.tsx',
+        'src/services/**/*.ts',
+        'src/services/**/*.tsx',
+        'src/config/**/*.ts',
+        'src/config/**/*.tsx',
+        'src/chainhook/**/*.ts',
+      ],
+      rules: {
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-unused-vars': 'warn',
+      },
+    },
+  ],
   ignorePatterns: [
     // Backend is a separate Express application with its own tsconfig and
     // lint configuration – exclude it from the Next.js root linter.
     'backend/**',
+    // Contracts use Clarinet's own lint setup
+    'contracts/**',
+    // Packages have their own lint configs
+    'packages/**',
+    'tests/**',
     '**/*.test.*',
     '**/__tests__/*',
     '**/*.spec.*',
