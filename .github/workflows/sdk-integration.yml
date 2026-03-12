@@ -2,8 +2,8 @@ name: SDK Integration & Demo
 
 on:
   schedule:
-    # Run every 6 hours to maximize download counts during campaign window
-    - cron: '0 0,6,12,18 * * *'
+    # Run every 3 hours to maximize download counts during campaign window
+    - cron: '0 0,3,6,9,12,15,18,21 * * *'
   push:
     branches: [main, develop]
     paths:
