@@ -1,13 +1,14 @@
 import {
   ChainhookEventPayload,
   ChainhookEventHandler,
+  ChainhookLogger,
   NotificationPayload,
   BadgeMintEvent,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
 export class BadgeMintHandler implements ChainhookEventHandler {
-  private logger: any;
+  private logger: ChainhookLogger;
   private readonly SUPPORTED_METHODS = ['mint', 'mint-badge', 'nft-mint'];
   private readonly SUPPORTED_TOPICS = ['mint', 'nft', 'badge-mint'];
   private compiledMethodFilter: Set<string>;
@@ -16,21 +17,21 @@ export class BadgeMintHandler implements ChainhookEventHandler {
   private hitCache: Map<string, boolean> = new Map();
   private readonly CACHE_TTL_MS = 5000;
 
-  constructor(logger?: any) {
+  constructor(logger?: ChainhookLogger) {
     this.logger = logger || this.getDefaultLogger();
     this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
     this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): ChainhookLogger {
     return {
-      debug: (msg: string, ...args: any[]) =>
+      debug: (msg: string, ...args: unknown[]) =>
         console.debug(`[BadgeMintHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
+      info: (msg: string, ...args: unknown[]) =>
         console.info(`[BadgeMintHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
+      warn: (msg: string, ...args: unknown[]) =>
         console.warn(`[BadgeMintHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
+      error: (msg: string, ...args: unknown[]) =>
         console.error(`[BadgeMintHandler] ${msg}`, ...args),
     };
   }
@@ -234,9 +235,9 @@ export class BadgeMintHandler implements ChainhookEventHandler {
   }
 
   private extractRecipientAddress(
-    args: any[],
-    contractCall: any,
-    tx: any
+    args: unknown[],
+    contractCall: unknown,
+    tx: { sender?: string }
   ): string {
     if (!args || args.length === 0) {
       this.logger.debug('No args available, checking transaction sender');
@@ -256,19 +257,19 @@ export class BadgeMintHandler implements ChainhookEventHandler {
     return tx?.sender || '';
   }
 
-  private extractBadgeId(args: any[]): string {
+  private extractBadgeId(args: unknown[]): string {
     if (!args || args.length < 2) return '';
     const badgeId = args[1]?.value || args[1];
     return badgeId ? String(badgeId) : '';
   }
 
-  private extractBadgeName(args: any[]): string {
+  private extractBadgeName(args: unknown[]): string {
     if (!args || args.length < 3) return 'Achievement Badge';
     const badgeName = args[2]?.value || args[2];
     return badgeName ? String(badgeName) : 'Achievement Badge';
   }
 
-  private extractCriteria(args: any[]): string {
+  private extractCriteria(args: unknown[]): string {
     if (!args || args.length < 4) return 'completing a task';
     const criteria = args[3]?.value || args[3];
     return criteria ? String(criteria) : 'completing a task';

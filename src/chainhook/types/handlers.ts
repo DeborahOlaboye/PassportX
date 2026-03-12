@@ -1,3 +1,10 @@
+export interface ChainhookLogger {
+  debug(msg: string, ...args: unknown[]): void;
+  info(msg: string, ...args: unknown[]): void;
+  warn(msg: string, ...args: unknown[]): void;
+  error(msg: string, ...args: unknown[]): void;
+}
+
 export type NotificationType =
   | 'badge_received'
   | 'badge_issued'
@@ -43,7 +50,7 @@ export interface ChainhookOperation {
   contract_call?: {
     contract: string;
     method: string;
-    args?: any[];
+    args?: unknown[];
   };
   events?: ChainhookContractEvent[];
 }
@@ -52,7 +59,7 @@ export interface ChainhookContractEvent {
   type: string;
   contract_address: string;
   topic: string;
-  value?: any;
+  value?: unknown;
 }
 
 export interface BadgeMintEvent {
@@ -70,7 +77,7 @@ export interface BadgeVerificationEvent {
   userId: string;
   badgeId: string;
   badgeName: string;
-  verificationData: any;
+  verificationData: unknown;
   contractAddress: string;
   transactionHash: string;
   blockHeight: number;
@@ -82,7 +89,7 @@ export interface CommunityUpdateEvent {
   communityName: string;
   updateType: 'member_joined' | 'member_left' | 'announcement' | 'event';
   affectedUsers: string[];
-  data: any;
+  data: unknown;
   contractAddress: string;
   transactionHash: string;
   blockHeight: number;
@@ -140,7 +147,7 @@ export interface NotificationPayload {
     transactionHash: string;
     blockHeight: number;
     timestamp: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

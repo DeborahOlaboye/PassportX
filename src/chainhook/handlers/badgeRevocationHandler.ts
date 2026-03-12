@@ -3,11 +3,23 @@ import {
   ChainhookEventHandler,
   NotificationPayload,
   BadgeRevocationEvent,
+  ChainhookLogger,
 } from '../types/handlers';
-import { EventMapper } from '../utils/eventMapper';
+
+interface ContractCall {
+  contract?: string;
+  method?: string;
+  args?: unknown[];
+}
+
+interface ContractEvent {
+  topic?: string;
+  contract_address?: string;
+  value?: unknown;
+}
 
 export class BadgeRevocationHandler implements ChainhookEventHandler {
-  private logger: any;
+  private logger: ChainhookLogger;
   private readonly REVOCATION_METHODS = [
     'revoke-badge',
     'burn-badge',
@@ -23,21 +35,21 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
   private readonly CACHE_TTL_MS = 5000;
   private resultCache: Map<string, NotificationPayload[]> = new Map();
 
-  constructor(logger?: any) {
+  constructor(logger?: ChainhookLogger) {
     this.logger = logger || this.getDefaultLogger();
     this.compiledMethodFilter = new Set(this.REVOCATION_METHODS);
     this.compiledTopicFilter = new Set(this.REVOCATION_TOPICS);
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): ChainhookLogger {
     return {
-      debug: (msg: string, ...args: any[]) =>
+      debug: (msg: string, ...args: unknown[]) =>
         console.debug(`[BadgeRevocationHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
+      info: (msg: string, ...args: unknown[]) =>
         console.info(`[BadgeRevocationHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
+      warn: (msg: string, ...args: unknown[]) =>
         console.warn(`[BadgeRevocationHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
+      error: (msg: string, ...args: unknown[]) =>
         console.error(`[BadgeRevocationHandler] ${msg}`, ...args),
     };
   }
@@ -141,7 +153,7 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
 
           if (op.type === 'contract_call' && op.contract_call) {
             const revocationEvents = this.extractRevocationFromContractCall(
-              op.contract_call,
+              op.contract_call as ContractCall,
               tx.transaction_hash,
               event.block_identifier?.index || 0,
               event.timestamp || Date.now()
@@ -157,9 +169,9 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
 
           if (op.events && Array.isArray(op.events)) {
             for (const evt of op.events) {
-              if (evt && this.isRevocationEvent(evt)) {
+              if (evt && this.isRevocationEvent(evt as ContractEvent)) {
                 const revocationEvent = this.extractRevocationFromEvent(
-                  evt,
+                  evt as ContractEvent,
                   tx.transaction_hash,
                   event.block_identifier?.index || 0,
                   event.timestamp || Date.now()
@@ -186,7 +198,7 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
   }
 
   private extractRevocationFromContractCall(
-    contractCall: any,
+    contractCall: ContractCall,
     transactionHash: string,
     blockHeight: number,
     timestamp: number
@@ -197,7 +209,6 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
       if (!contractCall.method) return events;
 
       const isHardRevoke = this.HARD_REVOKE_PATTERN.test(contractCall.method);
-      const isSoftRevoke = !isHardRevoke;
 
       const args = contractCall.args || [];
       if (args.length > 0) {
@@ -228,7 +239,7 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
     return events;
   }
 
-  private isRevocationEvent(evt: any): boolean {
+  private isRevocationEvent(evt: ContractEvent): boolean {
     if (!evt || !evt.topic) return false;
 
     for (const topic of this.compiledTopicFilter) {
@@ -248,13 +259,14 @@ export class BadgeRevocationHandler implements ChainhookEventHandler {
   }
 
   private extractRevocationFromEvent(
-    evt: any,
+    evt: ContractEvent,
     transactionHash: string,
     blockHeight: number,
     timestamp: number
   ): BadgeRevocationEvent | null {
     try {
-      const isHardRevoke = this.HARD_REVOKE_PATTERN.test(evt.topic);
+      const topic = evt.topic || '';
+      const isHardRevoke = this.HARD_REVOKE_PATTERN.test(topic);
 
       let badgeId = '';
       let userId = '';

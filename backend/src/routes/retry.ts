@@ -27,23 +27,18 @@ router.get('/queue/stats', authenticateToken, async (req, res) => {
  * POST /retry/queue/process
  * Manually trigger retry queue processing
  */
-router.post(
-  '/queue/process',
-  authenticateToken,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const result = await RetryQueueService.processQueue();
-      res.json({
-        message: 'Retry queue processing completed',
-        ...result,
-      });
-    } catch (error) {
-      logger.error('Error processing retry queue:', error);
-      res.status(500).json({ error: 'Failed to process retry queue' });
-    }
+router.post('/queue/process', async (req, res) => {
+  try {
+    const result = await RetryQueueService.processQueue();
+    res.json({
+      message: 'Retry queue processing completed',
+      ...result,
+    });
+  } catch (error) {
+    console.error('Error processing retry queue:', error);
+    res.status(500).json({ error: 'Failed to process retry queue' });
   }
-);
+});
 
 /**
  * POST /retry/queue/:itemId/retry
@@ -89,31 +84,19 @@ router.delete(
  * POST /retry/queue/cleanup
  * Clean up old completed items
  */
-router.post(
-  '/queue/cleanup',
-  authenticateToken,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const { olderThanDays } = req.body;
-      const rawDays = parseInt(olderThanDays, 10);
-      if (isNaN(rawDays) || rawDays < 1) {
-        return res.status(400).json({
-          error: 'olderThanDays must be a positive integer (minimum 1)',
-        });
-      }
-      const safeDays = Math.min(rawDays, 365);
-      const deletedCount = await RetryQueueService.cleanupOldItems(safeDays);
-      res.json({
-        message: 'Cleanup completed',
-        deletedCount,
-      });
-    } catch (error) {
-      logger.error('Error cleaning up retry queue:', error);
-      res.status(500).json({ error: 'Failed to clean up retry queue' });
-    }
+router.post('/queue/cleanup', async (req, res) => {
+  try {
+    const { olderThanDays = 7 } = req.body;
+    const deletedCount = await RetryQueueService.cleanupOldItems(olderThanDays);
+    res.json({
+      message: 'Cleanup completed',
+      deletedCount,
+    });
+  } catch (error) {
+    console.error('Error cleaning up retry queue:', error);
+    res.status(500).json({ error: 'Failed to clean up retry queue' });
   }
-);
+});
 
 /**
  * GET /retry/dead-letter/stats
@@ -124,7 +107,7 @@ router.get('/dead-letter/stats', authenticateToken, async (req, res) => {
     const stats = await DeadLetterQueueService.getStatistics();
     res.json(stats);
   } catch (error) {
-    logger.error('Error fetching dead letter queue stats:', error);
+    console.error('Error fetching dead letter queue stats:', error);
     res
       .status(500)
       .json({ error: 'Failed to fetch dead letter queue statistics' });
@@ -135,56 +118,39 @@ router.get('/dead-letter/stats', authenticateToken, async (req, res) => {
  * POST /retry/dead-letter/recover
  * Attempt to recover items from dead letter queue
  */
-router.post(
-  '/dead-letter/recover',
-  authenticateToken,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const filter = req.body;
-      const result = await DeadLetterQueueService.recoverItems(filter);
-      res.json({
-        message: 'Recovery attempt completed',
-        ...result,
-      });
-    } catch (error) {
-      logger.error('Error recovering items:', error);
-      res.status(500).json({ error: 'Failed to recover items' });
-    }
+router.post('/dead-letter/recover', async (req, res) => {
+  try {
+    const filter = req.body;
+    const result = await DeadLetterQueueService.recoverItems(filter);
+    res.json({
+      message: 'Recovery attempt completed',
+      ...result,
+    });
+  } catch (error) {
+    console.error('Error recovering items:', error);
+    res.status(500).json({ error: 'Failed to recover items' });
   }
-);
+});
 
 /**
  * POST /retry/dead-letter/archive
  * Archive old dead letter items
  */
-router.post(
-  '/dead-letter/archive',
-  authenticateToken,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const { olderThanDays } = req.body;
-      const rawDays = parseInt(olderThanDays, 10);
-      if (isNaN(rawDays) || rawDays < 1) {
-        return res.status(400).json({
-          error: 'olderThanDays must be a positive integer (minimum 1)',
-        });
-      }
-      const safeDays = Math.min(rawDays, 365);
-      const archivedCount = await DeadLetterQueueService.archiveOldItems(
-        safeDays
-      );
-      res.json({
-        message: 'Archival completed',
-        archivedCount,
-      });
-    } catch (error) {
-      logger.error('Error archiving items:', error);
-      res.status(500).json({ error: 'Failed to archive items' });
-    }
+router.post('/dead-letter/archive', async (req, res) => {
+  try {
+    const { olderThanDays = 7 } = req.body;
+    const archivedCount = await DeadLetterQueueService.archiveOldItems(
+      olderThanDays
+    );
+    res.json({
+      message: 'Archival completed',
+      archivedCount,
+    });
+  } catch (error) {
+    console.error('Error archiving items:', error);
+    res.status(500).json({ error: 'Failed to archive items' });
   }
-);
+});
 
 /**
  * GET /retry/dead-letter/analysis
@@ -242,11 +208,9 @@ router.get('/metrics', authenticateToken, async (req, res) => {
  */
 router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
   try {
-    const rawHours = parseInt(req.query.hours as string, 10);
-    const hoursBack =
-      !req.query.hours || isNaN(rawHours) || rawHours < 1
-        ? 24
-        : Math.min(rawHours, 168);
+    const hoursBack = req.query.hours
+      ? parseInt(req.query.hours as string)
+      : 24;
     const timeSeries = await RetryMetricsService.getSuccessRateTimeSeries(
       hoursBack
     );
@@ -261,25 +225,19 @@ router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
  * GET /retry/metrics/error-distribution
  * Get error distribution time series
  */
-router.get(
-  '/metrics/error-distribution',
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const rawHours2 = parseInt(req.query.hours as string, 10);
-      const hoursBack =
-        !req.query.hours || isNaN(rawHours2) || rawHours2 < 1
-          ? 24
-          : Math.min(rawHours2, 168);
-      const distribution =
-        await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
-      res.json(distribution);
-    } catch (error) {
-      logger.error('Error fetching error distribution:', error);
-      res.status(500).json({ error: 'Failed to fetch error distribution' });
-    }
+router.get('/metrics/error-distribution', async (req, res) => {
+  try {
+    const hoursBack = req.query.hours
+      ? parseInt(req.query.hours as string)
+      : 24;
+    const distribution =
+      await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
+    res.json(distribution);
+  } catch (error) {
+    console.error('Error fetching error distribution:', error);
+    res.status(500).json({ error: 'Failed to fetch error distribution' });
   }
-);
+});
 
 /**
  * GET /retry/metrics/top-failing
@@ -342,11 +300,7 @@ router.get('/monitoring/health', authenticateToken, async (req, res) => {
  */
 router.get('/monitoring/alerts', authenticateToken, async (req, res) => {
   try {
-    const rawAlertLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      isNaN(rawAlertLimit) || rawAlertLimit < 1
-        ? 50
-        : Math.min(rawAlertLimit, 200);
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
     const severity = req.query.severity as
       | 'low'
       | 'medium'
@@ -384,7 +338,7 @@ router.get('/circuit-breakers', authenticateToken, (req, res) => {
     const stats = CircuitBreakerRegistry.getAllStats();
     res.json(stats);
   } catch (error) {
-    logger.error('Error fetching circuit breaker stats:', error);
+    console.error('Error fetching circuit breaker stats:', error);
     res
       .status(500)
       .json({ error: 'Failed to fetch circuit breaker statistics' });

@@ -14,7 +14,7 @@ export interface ChainhookError {
   message: string;
   originalError?: Error;
   timestamp: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export class ChainhookErrorHandler {
@@ -25,7 +25,7 @@ export class ChainhookErrorHandler {
     type: ChainhookErrorType,
     message: string,
     originalError?: Error,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): ChainhookError {
     const error: ChainhookError = {
       type,
@@ -53,7 +53,7 @@ export class ChainhookErrorHandler {
 
   static handleValidationError(
     message: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): ChainhookError {
     return this.createError(
       ChainhookErrorType.VALIDATION_ERROR,
@@ -129,7 +129,7 @@ export class ChainhookErrorHandler {
   static handleUnknownError(
     message: string,
     originalError?: Error,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): ChainhookError {
     return this.createError(
       ChainhookErrorType.UNKNOWN_ERROR,

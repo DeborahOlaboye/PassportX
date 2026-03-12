@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
 import { WalletSessionProvider } from '../context/WalletSessionContext';
 import { useWalletSession } from '../hooks/useWalletSession';
-import type { WalletSession as WalletSessionData } from '../utils/walletSession';
-import { generateKeyFromPassword, encrypt } from '../utils/crypto';
 import ErrorToast from './ErrorToast';
 import ErrorBoundary from './ErrorBoundary';
 import { WalletErrorFallback } from './FallbackUI';
 
 const DemoInner: React.FC = () => {
-  const { session, save, disconnect, isConnected } = useWalletSession();
-  const [useSession, setUseSession] = useState(false);
-  const { error, retryOperation: _retryOperation } = useWalletSession() as {
-    error: Error | null;
-    retryOperation: unknown;
-  };
+  const { session, save, disconnect, isConnected, error } =
+    useWalletSession() as ReturnType<typeof useWalletSession> & {
+      error: { message?: string } | null;
+    };
   const [showError, setShowError] = useState(false);
-
-  const _createEncryptor = async (password: string) => {
-    const { key } = await generateKeyFromPassword(password);
-    return async (payload: string) => encrypt(key, payload);
-  };
 
   const connect = async () => {
     const s = {
@@ -29,7 +20,7 @@ const DemoInner: React.FC = () => {
       expiresAt: Date.now() + 1000 * 60 * 60, // 1h
     };
     try {
-      await save(s as unknown as WalletSessionData);
+      await save(s as Parameters<typeof save>[0]);
     } catch (e) {
       setShowError(true);
     }
@@ -41,14 +32,6 @@ const DemoInner: React.FC = () => {
         {isConnected ? 'connected' : 'disconnected'}
       </div>
       <div data-testid="session-id">{session?.id ?? 'none'}</div>
-      <label>
-        <input
-          type="checkbox"
-          checked={useSession}
-          onChange={(e) => setUseSession(e.target.checked)}
-        />{' '}
-        Use sessionStorage
-      </label>
       <button data-testid="connect-wallet" onClick={connect}>
         Connect (demo)
       </button>

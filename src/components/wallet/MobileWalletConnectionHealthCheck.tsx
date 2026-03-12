@@ -158,7 +158,7 @@ export default function MobileWalletConnectionHealthCheck() {
       if (!response.ok) {
         throw new Error('Network request failed');
       }
-    } catch (error) {
+    } catch {
       clearTimeout(timeoutId);
       throw new Error('No internet connectivity');
     }
@@ -195,7 +195,7 @@ export default function MobileWalletConnectionHealthCheck() {
       if (!testData.includes('wc:')) {
         throw new Error('Invalid WalletConnect URI format');
       }
-    } catch (error) {
+    } catch {
       throw new Error('QR code generation failed');
     }
   };

@@ -66,7 +66,7 @@ export class ChainhookNotificationIntegration {
 
   static async processChainhookEvent(
     chainhookEvent: ChainhookEventPayload,
-    eventPayload: any
+    eventPayload: Record<string, unknown>
   ): Promise<void> {
     try {
       console.log('Processing Chainhook event for notifications');
@@ -148,7 +148,7 @@ export class ChainhookNotificationIntegration {
 
   static async broadcastChainhookEvent(
     chainhookEvent: ChainhookEventPayload,
-    eventData: any
+    eventData: Record<string, unknown>
   ): Promise<void> {
     try {
       await WebSocketEventEmitter.broadcastChainhookEvent(

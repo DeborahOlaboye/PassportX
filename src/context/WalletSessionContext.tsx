@@ -41,7 +41,10 @@ export const WalletSessionProvider: React.FC<
   const save = useCallback(
     async (s: WalletSession) => {
       try {
-        const ok = await saveSession(s, { area: storageArea, encrypt });
+        const ok = await saveSession(s, {
+          area: storageArea,
+          encrypt,
+        });
         if (ok) setSession(s);
         return ok;
       } catch (e) {

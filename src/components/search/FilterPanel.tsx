@@ -61,7 +61,7 @@ function FilterPanelInner({
 
   useEffect(() => {
     onFilterChange(activeFilters);
-  }, [activeFilters]);
+  }, [activeFilters, onFilterChange]);
 
   const fetchFilterOptions = async () => {
     try {

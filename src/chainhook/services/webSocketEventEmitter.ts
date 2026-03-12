@@ -3,7 +3,7 @@ import { ChainhookEventPayload, NotificationPayload } from '../types/handlers';
 export interface WebSocketConnection {
   userId: string;
   socketId: string;
-  send: (event: string, data: any) => void;
+  send: (event: string, data: unknown) => void;
   disconnect: () => void;
 }
 
@@ -47,7 +47,7 @@ export class WebSocketEventEmitter {
 
   static async emitChainhookEvent(
     chainhookEvent: ChainhookEventPayload,
-    eventData: any
+    eventData: unknown
   ): Promise<void> {
     try {
       for (const [, connection] of this.connections) {
@@ -107,7 +107,7 @@ export class WebSocketEventEmitter {
 
   static async broadcastChainhookEvent(
     chainhookEvent: ChainhookEventPayload,
-    eventData: any
+    eventData: unknown
   ): Promise<void> {
     try {
       for (const [, connection] of this.connections) {

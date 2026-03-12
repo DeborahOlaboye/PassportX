@@ -19,7 +19,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(_error: Error, _info: React.ErrorInfo) {
+  componentDidCatch(_error: Error, _info: React.ErrorInfo): void {
     // Send to remote logging if desired
     // console.error('ErrorBoundary caught', _error, _info);
   }

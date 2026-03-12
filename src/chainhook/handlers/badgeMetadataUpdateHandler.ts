@@ -3,12 +3,13 @@ import {
   ChainhookEventHandler,
   NotificationPayload,
   BadgeMetadataUpdateEvent,
+  ChainhookLogger,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 import BadgeMetadataChangeDetector from '../utils/badgeMetadataChangeDetector';
 
 export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
-  private logger: any;
+  private logger: ChainhookLogger;
   private changeDetector: BadgeMetadataChangeDetector;
   private readonly SUPPORTED_METHODS = [
     'update-metadata',
@@ -25,22 +26,22 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
   private hitCache: Map<string, boolean> = new Map();
   private readonly CACHE_TTL_MS = 5000;
 
-  constructor(logger?: any) {
+  constructor(logger?: ChainhookLogger) {
     this.logger = logger || this.getDefaultLogger();
     this.changeDetector = new BadgeMetadataChangeDetector(this.logger);
     this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
     this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): ChainhookLogger {
     return {
-      debug: (msg: string, ...args: any[]) =>
+      debug: (msg: string, ...args: unknown[]) =>
         console.debug(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
+      info: (msg: string, ...args: unknown[]) =>
         console.info(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
+      warn: (msg: string, ...args: unknown[]) =>
         console.warn(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
+      error: (msg: string, ...args: unknown[]) =>
         console.error(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
     };
   }
@@ -147,7 +148,7 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
               const method = op.contract_call.method;
 
               if (this.compiledMethodFilter.has(method)) {
-                const args = op.contract_call.args || [];
+                const args = (op.contract_call.args || []) as unknown[];
                 const badgeId = this.extractBadgeId(args);
 
                 if (!badgeId) {
@@ -190,9 +191,10 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
                 for (const topic of this.compiledTopicFilter) {
                   if (evt.topic && evt.topic.includes(topic)) {
                     try {
+                      const evtValue = evt.value as Record<string, unknown>;
                       const metadataEvent =
                         EventMapper.mapBadgeMetadataUpdateEvent({
-                          ...evt.value,
+                          ...evtValue,
                           contractAddress: evt.contract_address,
                           transactionHash: tx.transaction_hash,
                           blockHeight: event.block_identifier?.index || 0,
@@ -243,51 +245,59 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
     return 'badge-metadata-update';
   }
 
-  private extractBadgeId(args: any[]): string {
+  private extractBadgeId(args: unknown[]): string {
     if (!args || args.length === 0) return '';
-    const badgeId = args[0]?.value || args[0];
+    const arg = args[0] as { value?: unknown } | unknown;
+    const badgeId = (arg as { value?: unknown })?.value ?? arg;
     return badgeId ? String(badgeId) : '';
   }
 
-  private extractBadgeName(args: any[]): string {
+  private extractBadgeName(args: unknown[]): string {
     if (!args || args.length < 2) return '';
-    const badgeName = args[1]?.value || args[1];
+    const arg = args[1] as { value?: unknown } | unknown;
+    const badgeName = (arg as { value?: unknown })?.value ?? arg;
     return badgeName ? String(badgeName) : '';
   }
 
-  private extractLevel(args: any[]): number | undefined {
+  private extractLevel(args: unknown[]): number | undefined {
     if (!args || args.length < 3) return undefined;
-    const level = args[2]?.value || args[2];
+    const arg = args[2] as { value?: unknown } | unknown;
+    const level = (arg as { value?: unknown })?.value ?? arg;
     return level !== undefined ? Number(level) : undefined;
   }
 
-  private extractCategory(args: any[]): string | undefined {
+  private extractCategory(args: unknown[]): string | undefined {
     if (!args || args.length < 4) return undefined;
-    const category = args[3]?.value || args[3];
+    const arg = args[3] as { value?: unknown } | unknown;
+    const category = (arg as { value?: unknown })?.value ?? arg;
     return category ? String(category) : undefined;
   }
 
-  private extractDescription(args: any[]): string | undefined {
+  private extractDescription(args: unknown[]): string | undefined {
     if (!args || args.length < 5) return undefined;
-    const description = args[4]?.value || args[4];
+    const arg = args[4] as { value?: unknown } | unknown;
+    const description = (arg as { value?: unknown })?.value ?? arg;
     return description ? String(description) : undefined;
   }
 
-  private extractPreviousLevel(args: any[]): number | undefined {
+  private extractPreviousLevel(args: unknown[]): number | undefined {
     if (!args || args.length < 6) return undefined;
-    const prevLevel = args[5]?.value || args[5];
+    const arg = args[5] as { value?: unknown } | unknown;
+    const prevLevel = (arg as { value?: unknown })?.value ?? arg;
     return prevLevel !== undefined ? Number(prevLevel) : undefined;
   }
 
-  private extractPreviousCategory(args: any[]): string | undefined {
+  private extractPreviousCategory(args: unknown[]): string | undefined {
     if (!args || args.length < 7) return undefined;
-    const prevCategory = args[6]?.value || args[6];
+    const arg = args[6] as { value?: unknown } | unknown;
+    const prevCategory = (arg as { value?: unknown })?.value ?? arg;
     return prevCategory ? String(prevCategory) : undefined;
   }
 
-  private extractPreviousDescription(args: any[]): string | undefined {
+  private extractPreviousDescription(args: unknown[]): string | undefined {
     if (!args || args.length < 8) return undefined;
-    const prevDescription = args[7]?.value || args[7];
+    const arg = args[7] as { value?: unknown } | unknown;
+    const prevDescription = (arg as { value?: unknown })?.value ?? arg;
     return prevDescription ? String(prevDescription) : undefined;
   }
 

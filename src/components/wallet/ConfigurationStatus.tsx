@@ -3,7 +3,6 @@
 import React from 'react';
 import { useWalletConnectConfig } from '@/hooks/useWalletConnectConfig';
 import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { getConfigurationStatus } from '@/utils/walletconnect-config';
 
 interface ConfigurationStatusProps {
   showDetails?: boolean;
@@ -45,8 +44,6 @@ export default function ConfigurationStatus({
       </div>
     );
   }
-
-  const _status = getConfigurationStatus(config);
 
   return (
     <div className={className}>

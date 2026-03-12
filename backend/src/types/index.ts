@@ -168,7 +168,6 @@ export interface AuthRequest extends Request {
     stacksAddress: string;
     userId: string;
   };
-  file?: Express.Multer.File;
 }
 
 export interface IBadgeVerification {

@@ -11,7 +11,6 @@ import React, {
 import {
   Account,
   AccountPreferences,
-  AccountSettings,
   AccountSwitchEvent,
   MultiAccountState,
   AccountFilter,
@@ -24,7 +23,7 @@ interface MultiAccountContextType {
   switchAccount: (address: string, reason?: 'user' | 'auto') => Promise<void>;
   updateAccountSettings: (
     address: string,
-    settings: Partial<AccountSettings>
+    settings: Partial<AccountPreferences>
   ) => Promise<void>;
   refreshAccounts: () => Promise<void>;
   filterAccounts: (filter: AccountFilter) => Account[];
@@ -163,7 +162,7 @@ export function MultiAccountProvider({
   );
 
   const updateAccountSettings = useCallback(
-    async (address: string, settings: Partial<AccountSettings>) => {
+    async (address: string, settings: Partial<AccountPreferences>) => {
       try {
         setState((prev) => ({
           ...prev,

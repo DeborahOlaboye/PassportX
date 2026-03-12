@@ -39,6 +39,17 @@ module.exports = {
     'prefer-const': 'error',
     'no-var': 'error',
   },
+  env: {
+    node: true,
+    jest: true,
+    es6: true,
+    browser: true,
+  },
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   overrides: [
     {
       // Relax explicit return type rules for Next.js pages, React components, hooks and contexts
@@ -80,22 +91,13 @@ module.exports = {
       },
     },
   ],
-  env: {
-    node: true,
-    jest: true,
-    es6: true,
-    browser: true,
-  },
-  settings: {
-    react: {
-      version: 'detect',
-    },
-  },
   ignorePatterns: [
     // Backend is a separate Express application with its own tsconfig and
     // lint configuration – exclude it from the Next.js root linter.
     'backend/**',
+    // Contracts use Clarinet's own lint setup
     'contracts/**',
+    // Packages have their own lint configs
     'packages/**',
     'tests/**',
     '**/*.test.*',

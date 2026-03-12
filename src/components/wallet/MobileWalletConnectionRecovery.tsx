@@ -199,7 +199,7 @@ export default function MobileWalletConnectionRecovery() {
           // Test network connectivity
           const testResponse = await fetch('https://httpbin.org/status/200', {
             method: 'HEAD',
-          } as RequestInit);
+          });
           return testResponse.ok;
 
         case 'update-wallet':

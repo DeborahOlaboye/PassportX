@@ -3,32 +3,12 @@ import badgeSearchService from '../services/badgeSearchService';
 import { IBadgeSearchQuery } from '../types';
 import { validatePagination } from '../middleware/validation';
 import { createRateLimiter } from '../middleware/rateLimiter';
-import {
-  API_READ_RATE_LIMIT,
-  BADGE_SUGGESTIONS_RATE_LIMIT,
-  BADGE_PUBLIC_READ_RATE_LIMIT,
-} from '../config/rateLimits';
-import logger from '../utils/logger';
+import { API_READ_RATE_LIMIT } from '../config/rateLimits';
 
 const router = express.Router();
 
-const VALID_SORT_BY = new Set([
-  'newest',
-  'oldest',
-  'level-high',
-  'level-low',
-  'name-asc',
-  'name-desc',
-]);
-
 // Rate limiter for search operations (200 requests per 15 minutes)
 const searchLimiter = createRateLimiter(API_READ_RATE_LIMIT);
-
-// Rate limiter for filters and trending (120 requests per 15 minutes)
-const publicReadLimiter = createRateLimiter(BADGE_PUBLIC_READ_RATE_LIMIT);
-
-// Rate limiter for autocomplete suggestions (60 requests per 15 minutes)
-const suggestionsLimiter = createRateLimiter(BADGE_SUGGESTIONS_RATE_LIMIT);
 
 /**
  * POST /api/badges/search
@@ -45,7 +25,7 @@ router.post('/search', searchLimiter, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    logger.error('Error searching badges:', error);
+    console.error('Error searching badges:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to search badges',
@@ -74,19 +54,11 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
 
     const query: IBadgeSearchQuery = {
       search: search as string,
-      level: (() => {
-        if (!level) return undefined;
-        const raw = level.toString();
-        if (raw.includes(',')) {
-          const parsed = raw
-            .split(',')
-            .map((v) => parseInt(v.trim(), 10))
-            .filter((v) => !isNaN(v) && v >= 1);
-          return parsed.length > 0 ? parsed : undefined;
-        }
-        const single = parseInt(raw, 10);
-        return !isNaN(single) && single >= 1 ? single : undefined;
-      })(),
+      level: level
+        ? level.toString().includes(',')
+          ? level.toString().split(',').map(Number)
+          : Number(level)
+        : undefined,
       category: category
         ? category.toString().includes(',')
           ? category.toString().split(',')
@@ -94,27 +66,11 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
         : undefined,
       issuer: issuer as string,
       community: community as string,
-      startDate: (() => {
-        if (!startDate) return undefined;
-        const d = new Date(startDate as string);
-        return isNaN(d.getTime()) ? undefined : d;
-      })(),
-      endDate: (() => {
-        if (!endDate) return undefined;
-        const d = new Date(endDate as string);
-        return isNaN(d.getTime()) ? undefined : d;
-      })(),
-      page: (() => {
-        const p = parseInt(page as string, 10);
-        return isNaN(p) || p < 1 ? 1 : p;
-      })(),
-      limit: (() => {
-        const l = parseInt(limit as string, 10);
-        return isNaN(l) || l < 1 ? 20 : Math.min(l, 100);
-      })(),
-      sortBy: VALID_SORT_BY.has(sortBy as string)
-        ? (sortBy as IBadgeSearchQuery['sortBy'])
-        : 'newest',
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined,
+      page: Number(page),
+      limit: Number(limit),
+      sortBy: sortBy as any,
     };
 
     const result = await badgeSearchService.searchBadges(query);
@@ -124,7 +80,7 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    logger.error('Error searching badges:', error);
+    console.error('Error searching badges:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to search badges',
@@ -145,7 +101,7 @@ router.get('/filters', publicReadLimiter, async (req, res) => {
       data: filters,
     });
   } catch (error) {
-    logger.error('Error getting filter options:', error);
+    console.error('Error getting filter options:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get filter options',
@@ -159,17 +115,8 @@ router.get('/filters', publicReadLimiter, async (req, res) => {
  */
 router.get('/trending', publicReadLimiter, async (req, res) => {
   try {
-    const rawDays = parseInt(req.query.days as string, 10);
-    const days =
-      !req.query.days || isNaN(rawDays) || rawDays < 1
-        ? 7
-        : Math.min(rawDays, 365);
-
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      !req.query.limit || isNaN(rawLimit) || rawLimit < 1
-        ? 10
-        : Math.min(rawLimit, 50);
+    const days = req.query.days ? Number(req.query.days) : 7;
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
 
     const trending = await badgeSearchService.getTrendingBadges(days, limit);
 
@@ -178,7 +125,7 @@ router.get('/trending', publicReadLimiter, async (req, res) => {
       data: trending,
     });
   } catch (error) {
-    logger.error('Error getting trending badges:', error);
+    console.error('Error getting trending badges:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get trending badges',
@@ -193,11 +140,7 @@ router.get('/trending', publicReadLimiter, async (req, res) => {
 router.get('/suggestions', suggestionsLimiter, async (req, res) => {
   try {
     const query = req.query.q as string;
-    const rawLimit = parseInt(req.query.limit as string, 10);
-    const limit =
-      !req.query.limit || isNaN(rawLimit) || rawLimit < 1
-        ? 10
-        : Math.min(rawLimit, 20);
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
 
     if (!query) {
       return res.json({
@@ -216,7 +159,7 @@ router.get('/suggestions', suggestionsLimiter, async (req, res) => {
       data: suggestions,
     });
   } catch (error) {
-    logger.error('Error getting search suggestions:', error);
+    console.error('Error getting search suggestions:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get search suggestions',
@@ -228,37 +171,29 @@ router.get('/suggestions', suggestionsLimiter, async (req, res) => {
  * GET /api/badges/issuer/:address
  * Search badges by issuer
  */
-router.get(
-  '/issuer/:address',
-  searchLimiter,
-  validatePagination,
-  async (req, res) => {
-    try {
-      const { address } = req.params;
-      const rawPage = parseInt(req.query.page as string, 10);
-      const rawLimit = parseInt(req.query.limit as string, 10);
-      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-      const limit =
-        isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100);
+router.get('/issuer/:address', validatePagination, async (req, res) => {
+  try {
+    const { address } = req.params;
+    const page = Number(req.query.page);
+    const limit = Number(req.query.limit);
 
-      const result = await badgeSearchService.searchByIssuer(
-        address,
-        page,
-        limit
-      );
+    const result = await badgeSearchService.searchByIssuer(
+      address,
+      page,
+      limit
+    );
 
-      res.json({
-        success: true,
-        data: result,
-      });
-    } catch (error) {
-      logger.error('Error searching badges by issuer:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to search badges by issuer',
-      });
-    }
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('Error searching badges by issuer:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search badges by issuer',
+    });
   }
-);
+});
 
 export default router;

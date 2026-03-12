@@ -1,9 +1,10 @@
 import { BadgeMetadataUpdateEvent } from '../types/handlers';
+import { ChainhookLogger } from '../types/handlers';
 
 export interface MetadataChange {
   field: string;
-  previousValue: any;
-  newValue: any;
+  previousValue: unknown;
+  newValue: unknown;
   changeType: 'added' | 'modified' | 'removed';
 }
 
@@ -15,21 +16,21 @@ export interface ChangeDetectionResult {
 }
 
 export class BadgeMetadataChangeDetector {
-  private logger: any;
+  private logger: ChainhookLogger;
 
-  constructor(logger?: any) {
+  constructor(logger?: ChainhookLogger) {
     this.logger = logger || this.getDefaultLogger();
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): ChainhookLogger {
     return {
-      debug: (msg: string, ...args: any[]) =>
+      debug: (msg: string, ...args: unknown[]) =>
         console.debug(`[ChangeDetector] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
+      info: (msg: string, ...args: unknown[]) =>
         console.info(`[ChangeDetector] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
+      warn: (msg: string, ...args: unknown[]) =>
         console.warn(`[ChangeDetector] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
+      error: (msg: string, ...args: unknown[]) =>
         console.error(`[ChangeDetector] ${msg}`, ...args),
     };
   }

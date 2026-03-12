@@ -24,7 +24,7 @@ export class NotificationService {
 
   static async processEvent(
     chainhookEvent: ChainhookEventPayload,
-    eventPayload: any
+    _eventPayload: Record<string, unknown>
   ): Promise<NotificationPayload[]> {
     try {
       const eventType = EventMapper.extractEventType(chainhookEvent);
