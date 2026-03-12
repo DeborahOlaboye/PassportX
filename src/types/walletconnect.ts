@@ -8,8 +8,8 @@ export interface WalletMetadata {
 export interface SessionProposal {
   id: number;
   params: {
-    requiredNamespaces: Record<string, any>;
-    optionalNamespaces?: Record<string, any>;
+    requiredNamespaces: Record<string, unknown>;
+    optionalNamespaces?: Record<string, unknown>;
   };
 }
 
@@ -20,7 +20,7 @@ export interface SessionSettled {
     data?: string;
   };
   expiry: number;
-  namespaces: Record<string, any>;
+  namespaces: Record<string, unknown>;
   accounts: string[];
 }
 
@@ -42,7 +42,7 @@ export interface SignatureRequest {
 
 export interface WalletConnectError extends Error {
   code: number;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export enum ChainNamespace {
@@ -78,6 +78,6 @@ export interface WalletConnectSession {
     protocol: string;
     data?: string;
   };
-  namespaces: Record<string, any>;
+  namespaces: Record<string, unknown>;
   pairingTopic?: string;
 }

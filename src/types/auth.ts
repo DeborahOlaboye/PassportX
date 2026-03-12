@@ -12,7 +12,7 @@ export interface StacksUserData extends UserData {
       mainnet: string;
       testnet: string;
     };
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -40,8 +40,11 @@ export const isTokenExpired = (token: AuthToken): boolean => {
 /**
  * Generate expiry time (default 1 hour from now).
  */
-export const getTokenExpiryTime = (durationMs: number = 1000 * 60 * 60): number => {
+export const getTokenExpiryTime = (
+  durationMs: number = 1000 * 60 * 60
+): number => {
   return Date.now() + durationMs;
 };
 
-export default { AuthToken, AuthSession, isTokenExpired, getTokenExpiryTime };
+const authUtils = { AuthToken, AuthSession, isTokenExpired, getTokenExpiryTime };
+export default authUtils;
