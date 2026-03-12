@@ -3,11 +3,26 @@ import {
   ChainhookEventHandler,
   NotificationPayload,
   CommunityCreationEvent,
+  ChainhookLogger,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 
+interface ContractCall {
+  contract?: string;
+  method?: string;
+  args?: unknown[];
+}
+
+interface Transaction {
+  transaction_hash: string;
+  operations: unknown[];
+  transaction_sender?: string;
+  sender?: string;
+  tx_sender?: string;
+}
+
 export class CommunityCreationHandler implements ChainhookEventHandler {
-  private logger: any;
+  private logger: ChainhookLogger;
   private readonly SUPPORTED_METHODS = ['create-community', 'create-comm'];
   private readonly SUPPORTED_TOPICS = [
     'community-created',
@@ -19,21 +34,21 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
   private hitCache: Map<string, boolean> = new Map();
   private readonly CACHE_TTL_MS = 5000;
 
-  constructor(logger?: any) {
+  constructor(logger?: ChainhookLogger) {
     this.logger = logger || this.getDefaultLogger();
     this.compiledMethodFilter = new Set(this.SUPPORTED_METHODS);
     this.compiledTopicFilter = new Set(this.SUPPORTED_TOPICS);
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): ChainhookLogger {
     return {
-      debug: (msg: string, ...args: any[]) =>
+      debug: (msg: string, ...args: unknown[]) =>
         console.debug(`[CommunityCreationHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
+      info: (msg: string, ...args: unknown[]) =>
         console.info(`[CommunityCreationHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
+      warn: (msg: string, ...args: unknown[]) =>
         console.warn(`[CommunityCreationHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
+      error: (msg: string, ...args: unknown[]) =>
         console.error(`[CommunityCreationHandler] ${msg}`, ...args),
     };
   }
@@ -140,10 +155,10 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
               const method = op.contract_call.method;
 
               if (method === 'create-community') {
-                const args = op.contract_call.args || [];
+                const args = (op.contract_call.args || []) as unknown[];
                 const ownerAddress = this.extractOwnerAddress(
-                  op.contract_call,
-                  tx
+                  op.contract_call as ContractCall,
+                  tx as unknown as Transaction
                 );
 
                 if (!ownerAddress) {
@@ -190,8 +205,9 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
                   evt.topic.includes('community') &&
                   evt.topic.includes('created')
                 ) {
+                  const evtValue = evt.value as Record<string, unknown>;
                   const communityEvent = EventMapper.mapCommunityCreationEvent({
-                    ...evt.value,
+                    ...evtValue,
                     contractAddress: evt.contract_address,
                     transactionHash: tx.transaction_hash,
                     blockHeight: event.block_identifier?.index || 0,
@@ -234,13 +250,14 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
     return 'community-creation';
   }
 
-  private extractCommunityId(args: any[]): string {
+  private extractCommunityId(args: unknown[]): string {
     try {
       if (!args || !Array.isArray(args) || args.length === 0) {
         this.logger.debug('No community ID found in args');
         return '';
       }
-      const id = args[0]?.value || args[0] || '';
+      const arg = args[0] as { value?: unknown } | unknown;
+      const id = (arg as { value?: unknown })?.value ?? arg ?? '';
       if (id && typeof id === 'string') {
         this.logger.debug('Extracted community ID', { id });
         return id;
@@ -252,13 +269,14 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
     }
   }
 
-  private extractCommunityName(args: any[]): string {
+  private extractCommunityName(args: unknown[]): string {
     try {
       if (!args || !Array.isArray(args) || args.length < 2) {
         this.logger.debug('No community name found in args');
         return '';
       }
-      const name = args[1]?.value || args[1] || '';
+      const arg = args[1] as { value?: unknown } | unknown;
+      const name = (arg as { value?: unknown })?.value ?? arg ?? '';
       if (name && typeof name === 'string') {
         this.logger.debug('Extracted community name', { name });
         return name;
@@ -270,13 +288,14 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
     }
   }
 
-  private extractDescription(args: any[]): string {
+  private extractDescription(args: unknown[]): string {
     try {
       if (!args || !Array.isArray(args) || args.length < 3) {
         this.logger.debug('No description found in args');
         return '';
       }
-      const description = args[2]?.value || args[2] || '';
+      const arg = args[2] as { value?: unknown } | unknown;
+      const description = (arg as { value?: unknown })?.value ?? arg ?? '';
       if (description && typeof description === 'string') {
         this.logger.debug('Extracted description');
         return description;
@@ -288,15 +307,18 @@ export class CommunityCreationHandler implements ChainhookEventHandler {
     }
   }
 
-  private extractOwnerAddress(contractCall: any, tx: any): string {
+  private extractOwnerAddress(
+    contractCall: ContractCall,
+    tx: Transaction
+  ): string {
     try {
       if (
         contractCall?.args &&
         Array.isArray(contractCall.args) &&
         contractCall.args.length > 3
       ) {
-        const arg = contractCall.args[3];
-        const ownerFromArgs = arg?.value || arg;
+        const arg = contractCall.args[3] as { value?: unknown } | unknown;
+        const ownerFromArgs = (arg as { value?: unknown })?.value ?? arg;
         if (
           typeof ownerFromArgs === 'string' &&
           ownerFromArgs.trim().length > 0

@@ -105,7 +105,7 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
             const method = op.contract_call.method;
 
             if (method === 'verify' || method === 'verify-badge') {
-              const args = op.contract_call.args || [];
+              const args = (op.contract_call.args || []) as unknown[];
 
               const verificationEvent: BadgeVerificationEvent = {
                 userId: this.extractUserId(args),
@@ -128,9 +128,10 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
           if (op.events) {
             for (const evt of op.events) {
               if (evt.topic && evt.topic.includes('verify')) {
+                const evtValue = evt.value as Record<string, unknown>;
                 const verificationEvent = EventMapper.mapBadgeVerificationEvent(
                   {
-                    ...evt.value,
+                    ...evtValue,
                     contractAddress: evt.contract_address,
                     transactionHash: tx.transaction_hash,
                     blockHeight: event.block_identifier.index,
@@ -160,27 +161,30 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
     return 'badge-verify';
   }
 
-  private extractUserId(args: any[]): string {
+  private extractUserId(args: unknown[]): string {
     if (!args || args.length === 0) return '';
-    return args[0]?.value || args[0] || '';
+    const arg = args[0] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractBadgeId(args: any[]): string {
+  private extractBadgeId(args: unknown[]): string {
     if (!args || args.length < 2) return '';
-    return args[1]?.value || args[1] || '';
+    const arg = args[1] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractBadgeName(args: any[]): string {
+  private extractBadgeName(args: unknown[]): string {
     if (!args || args.length < 3) return '';
-    return args[2]?.value || args[2] || '';
+    const arg = args[2] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractVerificationData(args: any[]): Record<string, any> {
+  private extractVerificationData(args: unknown[]): Record<string, unknown> {
     if (!args || args.length < 4) return {};
     const data = args[3];
 
-    if (typeof data === 'object') {
-      return data;
+    if (typeof data === 'object' && data !== null) {
+      return data as Record<string, unknown>;
     }
 
     return { raw: data };
@@ -212,9 +216,13 @@ export class BadgeVerificationHandler implements ChainhookEventHandler {
     };
   }
 
-  private getVerificationStatus(verificationData: any): string {
-    if (typeof verificationData === 'object' && verificationData.status) {
-      return verificationData.status;
+  private getVerificationStatus(verificationData: unknown): string {
+    if (
+      typeof verificationData === 'object' &&
+      verificationData !== null &&
+      'status' in verificationData
+    ) {
+      return String((verificationData as { status: unknown }).status);
     }
     return 'verified';
   }

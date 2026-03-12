@@ -7,8 +7,7 @@ import {
 import { EventMapper } from '../utils/eventMapper';
 
 export class CommunityUpdateHandler implements ChainhookEventHandler {
-  canHandle(event: ChainhookEventPayload): boolean {
-    const eventType = EventMapper.extractEventType(event);
+  canHandle(_event: ChainhookEventPayload): boolean {
     return false;
   }
 
@@ -28,7 +27,7 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
             const method = op.contract_call.method;
 
             if (this.isCommunityMethod(method)) {
-              const args = op.contract_call.args || [];
+              const args = (op.contract_call.args || []) as unknown[];
               const updateType = this.extractUpdateType(method, args);
 
               const communityEvent: CommunityUpdateEvent = {
@@ -52,8 +51,9 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
           if (op.events) {
             for (const evt of op.events) {
               if (evt.topic && evt.topic.includes('community')) {
+                const evtValue = evt.value as Record<string, unknown>;
                 const communityEvent = EventMapper.mapCommunityUpdateEvent({
-                  ...evt.value,
+                  ...evtValue,
                   contractAddress: evt.contract_address,
                   transactionHash: tx.transaction_hash,
                   blockHeight: event.block_identifier.index,
@@ -95,7 +95,7 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
 
   private extractUpdateType(
     method: string,
-    args: any[]
+    _args: unknown[]
   ): 'member_joined' | 'member_left' | 'announcement' | 'event' {
     const typeMap: Record<
       string,
@@ -113,39 +113,49 @@ export class CommunityUpdateHandler implements ChainhookEventHandler {
     return typeMap[method] || 'announcement';
   }
 
-  private extractCommunityId(args: any[]): string {
+  private extractCommunityId(args: unknown[]): string {
     if (!args || args.length === 0) return '';
-    return args[0]?.value || args[0] || '';
+    const arg = args[0] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractCommunityName(args: any[]): string {
+  private extractCommunityName(args: unknown[]): string {
     if (!args || args.length < 2) return '';
-    return args[1]?.value || args[1] || '';
+    const arg = args[1] as { value?: unknown } | unknown;
+    return String((arg as { value?: unknown })?.value ?? arg ?? '');
   }
 
-  private extractAffectedUsers(args: any[]): string[] {
+  private extractAffectedUsers(args: unknown[]): string[] {
     if (!args || args.length < 3) return [];
 
     const usersArg = args[2];
 
     if (Array.isArray(usersArg)) {
-      return usersArg.map((u) => u?.value || u || '').filter(Boolean);
+      return usersArg
+        .map((u) => {
+          const item = u as { value?: unknown } | unknown;
+          return String((item as { value?: unknown })?.value ?? item ?? '');
+        })
+        .filter(Boolean);
     }
 
-    if (usersArg?.value) {
-      return Array.isArray(usersArg.value) ? usersArg.value : [usersArg.value];
+    const typed = usersArg as { value?: unknown } | null;
+    if (typed?.value) {
+      return Array.isArray(typed.value)
+        ? (typed.value as unknown[]).map(String)
+        : [String(typed.value)];
     }
 
-    return [usersArg] ? [usersArg] : [];
+    return usersArg ? [String(usersArg)] : [];
   }
 
-  private extractEventData(args: any[]): Record<string, any> {
+  private extractEventData(args: unknown[]): Record<string, unknown> {
     if (!args || args.length < 4) return {};
 
     const data = args[3];
 
-    if (typeof data === 'object') {
-      return data;
+    if (typeof data === 'object' && data !== null) {
+      return data as Record<string, unknown>;
     }
 
     return { raw: data };
