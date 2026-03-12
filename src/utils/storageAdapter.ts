@@ -4,7 +4,7 @@
  */
 export type StorageArea = 'local' | 'session';
 
-const available = (kind: StorageArea) => {
+const available = (kind: StorageArea): boolean => {
   try {
     if (kind === 'local') return typeof localStorage !== 'undefined';
     return typeof sessionStorage !== 'undefined';
@@ -13,26 +13,34 @@ const available = (kind: StorageArea) => {
   }
 };
 
-export const setItem = (key: string, value: string, area: StorageArea = 'local') => {
+export const setItem = (
+  key: string,
+  value: string,
+  area: StorageArea = 'local'
+): void => {
   try {
-    if (area === 'session' && available('session')) return sessionStorage.setItem(key, value);
-    if (area === 'local' && available('local')) return localStorage.setItem(key, value);
+    if (area === 'session' && available('session'))
+      return sessionStorage.setItem(key, value);
+    if (area === 'local' && available('local'))
+      return localStorage.setItem(key, value);
   } catch (e) {
     // ignore
   }
 };
 
-export const getItem = (key: string, area: StorageArea = 'local') => {
+export const getItem = (key: string, area: StorageArea = 'local'): string | null => {
   try {
-    if (area === 'session' && available('session')) return sessionStorage.getItem(key);
-    if (area === 'local' && available('local')) return localStorage.getItem(key);
+    if (area === 'session' && available('session'))
+      return sessionStorage.getItem(key);
+    if (area === 'local' && available('local'))
+      return localStorage.getItem(key);
   } catch (e) {
     return null;
   }
   return null;
 };
 
-export const removeItem = (key: string) => {
+export const removeItem = (key: string): void => {
   try {
     if (available('local')) localStorage.removeItem(key);
     if (available('session')) sessionStorage.removeItem(key);
@@ -41,4 +49,5 @@ export const removeItem = (key: string) => {
   }
 };
 
-export default { setItem, getItem, removeItem };
+const storageAdapter = { setItem, getItem, removeItem };
+export default storageAdapter;
