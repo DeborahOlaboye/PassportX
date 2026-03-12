@@ -46,6 +46,44 @@ Users get a portable identity layer showing their growth, contribution, learning
 
 ---
 
+## 📦 JavaScript / TypeScript SDK
+
+The official PassportX SDK is available on npm:
+
+```bash
+npm install passportx-sdk
+```
+
+```bash
+yarn add passportx-sdk
+```
+
+```bash
+pnpm add passportx-sdk
+```
+
+### Quick Example
+
+```typescript
+import { PassportX } from 'passportx-sdk';
+
+const client = new PassportX({
+  apiUrl: 'https://api.passportx.app',
+  network: 'mainnet',
+});
+
+// Get all badges for a user
+const badges = await client.getUserBadges('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+console.log(`User has ${badges.length} badges`);
+
+// Get community leaderboard
+const leaderboard = await client.getCommunityLeaderboard('community_id', 10);
+```
+
+Full SDK documentation: [packages/passportx-sdk](./packages/passportx-sdk/README.md)
+
+---
+
 ## 🏗️ Architecture Overview
 
 ### **Smart Contracts (Clarity 4)**
