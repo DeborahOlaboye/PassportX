@@ -22,7 +22,10 @@ export default function AccountDisplay() {
     }
   };
 
-  const displayAddress = `${connectedWallet.address.slice(0, 6)}...${connectedWallet.address.slice(-4)}`;
+  const displayAddress = `${connectedWallet.address.slice(
+    0,
+    6
+  )}...${connectedWallet.address.slice(-4)}`;
 
   return (
     <div className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
@@ -32,7 +35,9 @@ export default function AccountDisplay() {
 
       <div className="flex-1 min-w-0">
         <p className="text-xs text-gray-600 font-medium">Connected Account</p>
-        <p className="text-sm font-semibold text-gray-900 truncate">{connectedWallet.name}</p>
+        <p className="text-sm font-semibold text-gray-900 truncate">
+          {connectedWallet.name}
+        </p>
         <p className="text-xs text-gray-500">{displayAddress}</p>
       </div>
 

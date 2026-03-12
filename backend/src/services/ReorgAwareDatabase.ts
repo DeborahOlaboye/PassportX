@@ -1,5 +1,8 @@
-import mongoose from 'mongoose'
-import ReorgHandlerService, { ReorgEvent, RollbackOperation } from './ReorgHandlerService'
+import mongoose from 'mongoose';
+import ReorgHandlerService, {
+  ReorgEvent,
+  RollbackOperation,
+} from './ReorgHandlerService';
 
 export interface ReorgAwareDocument {
   _id: any;
@@ -39,12 +42,18 @@ export class ReorgAwareDatabase {
     const savedDoc = await model.create(document);
 
     // Log the operation for potential rollback
-    this.logOperation('create', model.modelName, savedDoc._id, blockHeight, transactionHash);
+    this.logOperation(
+      'create',
+      model.modelName,
+      savedDoc._id,
+      blockHeight,
+      transactionHash
+    );
 
     this.logger.debug(`Saved ${model.modelName} with reorg awareness`, {
       id: savedDoc._id,
       blockHeight,
-      transactionHash
+      transactionHash,
     });
 
     return savedDoc;
@@ -70,20 +79,29 @@ export class ReorgAwareDatabase {
       update.transactionHash = transactionHash;
     }
 
-    const updatedDoc = await model.findOneAndUpdate(filter, update, { new: true });
+    const updatedDoc = await model.findOneAndUpdate(filter, update, {
+      new: true,
+    });
 
     if (updatedDoc && originalDoc) {
       // Log the operation for potential rollback
-      this.logOperation('update', model.modelName, updatedDoc._id, blockHeight, transactionHash, {
-        original: originalDoc,
-        updated: updatedDoc
-      });
+      this.logOperation(
+        'update',
+        model.modelName,
+        updatedDoc._id,
+        blockHeight,
+        transactionHash,
+        {
+          original: originalDoc,
+          updated: updatedDoc,
+        }
+      );
     }
 
     this.logger.debug(`Updated ${model.modelName} with reorg awareness`, {
       filter,
       blockHeight,
-      transactionHash
+      transactionHash,
     });
 
     return updatedDoc;
@@ -108,14 +126,21 @@ export class ReorgAwareDatabase {
     const deletedDoc = await model.findOneAndDelete(filter);
 
     // Log the operation for potential rollback
-    this.logOperation('delete', model.modelName, document._id, blockHeight, transactionHash, {
-      deleted: document
-    });
+    this.logOperation(
+      'delete',
+      model.modelName,
+      document._id,
+      blockHeight,
+      transactionHash,
+      {
+        deleted: document,
+      }
+    );
 
     this.logger.debug(`Deleted ${model.modelName} with reorg awareness`, {
       filter,
       blockHeight,
-      transactionHash
+      transactionHash,
     });
 
     return deletedDoc;
@@ -127,13 +152,14 @@ export class ReorgAwareDatabase {
   async handleReorg(reorgEvent: ReorgEvent): Promise<void> {
     this.logger.warn('Handling reorg in database', {
       rollbackToBlock: reorgEvent.rollbackToBlock,
-      affectedTransactions: reorgEvent.affectedTransactions.length
+      affectedTransactions: reorgEvent.affectedTransactions.length,
     });
 
     // Find all operations that need to be rolled back
-    const operationsToRollback = this.rollbackLog.filter(op =>
-      op.blockHeight > reorgEvent.rollbackToBlock ||
-      reorgEvent.affectedTransactions.includes(op.transactionHash!)
+    const operationsToRollback = this.rollbackLog.filter(
+      (op) =>
+        op.blockHeight > reorgEvent.rollbackToBlock ||
+        reorgEvent.affectedTransactions.includes(op.transactionHash!)
     );
 
     // Sort operations by reverse chronological order for rollback
@@ -146,7 +172,9 @@ export class ReorgAwareDatabase {
     // Clean up the rollback log
     this.cleanupRollbackLog(reorgEvent.rollbackToBlock);
 
-    this.logger.info(`Database reorg handling complete. Rolled back ${operationsToRollback.length} operations`);
+    this.logger.info(
+      `Database reorg handling complete. Rolled back ${operationsToRollback.length} operations`
+    );
   }
 
   /**
@@ -160,7 +188,9 @@ export class ReorgAwareDatabase {
         case 'create':
           // Delete the created document
           await model.findByIdAndDelete(operation.operation.documentId);
-          this.logger.debug(`Rolled back create operation for ${operation.operation.modelName}`);
+          this.logger.debug(
+            `Rolled back create operation for ${operation.operation.modelName}`
+          );
           break;
 
         case 'update':
@@ -171,7 +201,9 @@ export class ReorgAwareDatabase {
               operation.operation.rollbackData.original
             );
           }
-          this.logger.debug(`Rolled back update operation for ${operation.operation.modelName}`);
+          this.logger.debug(
+            `Rolled back update operation for ${operation.operation.modelName}`
+          );
           break;
 
         case 'delete':
@@ -179,7 +211,9 @@ export class ReorgAwareDatabase {
           if (operation.operation.rollbackData?.deleted) {
             await model.create(operation.operation.rollbackData.deleted);
           }
-          this.logger.debug(`Rolled back delete operation for ${operation.operation.modelName}`);
+          this.logger.debug(
+            `Rolled back delete operation for ${operation.operation.modelName}`
+          );
           break;
       }
     } catch (error) {
@@ -205,9 +239,9 @@ export class ReorgAwareDatabase {
         type,
         modelName,
         documentId,
-        rollbackData
+        rollbackData,
       },
-      reason: 'reorg'
+      reason: 'reorg',
     };
 
     this.rollbackLog.push(operation);
@@ -222,7 +256,9 @@ export class ReorgAwareDatabase {
    * Clean up old rollback log entries
    */
   private cleanupRollbackLog(rollbackToBlock: number): void {
-    this.rollbackLog = this.rollbackLog.filter(op => op.blockHeight <= rollbackToBlock);
+    this.rollbackLog = this.rollbackLog.filter(
+      (op) => op.blockHeight <= rollbackToBlock
+    );
   }
 
   /**
@@ -254,21 +290,26 @@ export class ReorgAwareDatabase {
     const operationsByBlock: Record<number, number> = {};
 
     for (const op of this.rollbackLog) {
-      operationsByBlock[op.blockHeight] = (operationsByBlock[op.blockHeight] || 0) + 1;
+      operationsByBlock[op.blockHeight] =
+        (operationsByBlock[op.blockHeight] || 0) + 1;
     }
 
     return {
       totalOperations: this.rollbackLog.length,
-      operationsByBlock
+      operationsByBlock,
     };
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[ReorgAwareDatabase] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[ReorgAwareDatabase] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[ReorgAwareDatabase] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ReorgAwareDatabase] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[ReorgAwareDatabase] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[ReorgAwareDatabase] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[ReorgAwareDatabase] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ReorgAwareDatabase] ${msg}`, ...args),
     };
   }
 }

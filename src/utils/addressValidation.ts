@@ -33,42 +33,42 @@ export function validateContractAddress(
   if (!address) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} is not configured`
+      error: `Contract address for ${contractName} is not configured`,
     };
   }
 
   if (typeof address !== 'string') {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must be a string`
+      error: `Contract address for ${contractName} must be a string`,
     };
   }
 
   if (!address.startsWith('S')) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must start with 'S'`
+      error: `Contract address for ${contractName} must start with 'S'`,
     };
   }
 
   if (!address.startsWith('SP') && !address.startsWith('ST')) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must start with 'SP' (mainnet) or 'ST' (testnet)`
+      error: `Contract address for ${contractName} must start with 'SP' (mainnet) or 'ST' (testnet)`,
     };
   }
 
   if (address.length !== 41) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} must be 41 characters long`
+      error: `Contract address for ${contractName} must be 41 characters long`,
     };
   }
 
   if (!isValidStacksAddress(address)) {
     return {
       valid: false,
-      error: `Contract address for ${contractName} has invalid format`
+      error: `Contract address for ${contractName} has invalid format`,
     };
   }
 
@@ -78,9 +78,10 @@ export function validateContractAddress(
 /**
  * Validate all contract addresses
  */
-export function validateContractAddresses(
-  addresses: Record<string, string>
-): { valid: boolean; errors: string[] } {
+export function validateContractAddresses(addresses: Record<string, string>): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   for (const [name, address] of Object.entries(addresses)) {
@@ -94,6 +95,6 @@ export function validateContractAddresses(
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }

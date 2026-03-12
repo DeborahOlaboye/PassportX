@@ -14,26 +14,31 @@ tests/
 ## Running Tests
 
 ### All Tests
+
 ```bash
 npm test
 ```
 
 ### Unit Tests
+
 ```bash
 npm run test:coverage
 ```
 
 ### Smart Contract Tests
+
 ```bash
 npm run test:contracts
 ```
 
 ### E2E Tests
+
 ```bash
 npm run test:e2e
 ```
 
 ### Performance Tests
+
 ```bash
 k6 run tests/performance/load-test.js
 ```
@@ -48,30 +53,35 @@ k6 run tests/performance/load-test.js
 ## Test Categories
 
 ### Smart Contract Tests
+
 - NFT minting and transfer restrictions
 - Badge issuance and revocation
 - Access control and permissions
 - Community management
 
 ### API Tests
+
 - Badge CRUD operations
 - User passport management
 - Community operations
 - Authentication and authorization
 
 ### Frontend Tests
+
 - Component rendering
 - User interactions
 - State management
 - Error handling
 
 ### Integration Tests
+
 - Complete badge issuance flow
 - Community setup and management
 - Permission enforcement
 - Cross-contract interactions
 
 ### E2E Tests
+
 - User registration and passport creation
 - Badge discovery and viewing
 - Community participation
@@ -80,6 +90,7 @@ k6 run tests/performance/load-test.js
 ## Quality Gates
 
 Tests must pass these criteria:
+
 - ✅ 80%+ code coverage
 - ✅ All unit tests pass
 - ✅ All integration tests pass

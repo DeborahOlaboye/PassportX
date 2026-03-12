@@ -24,12 +24,14 @@ describe('DeadLetterQueueService', () => {
         nextRetryAt: new Date(),
         lastError: 'Max retries exceeded',
         errorType: 'max_retries_exceeded',
-        status: 'failed'
+        status: 'failed',
       });
 
       await retryItem.save();
 
-      const deadLetterItem = await DeadLetterQueueService.moveToDeadLetter(retryItem);
+      const deadLetterItem = await DeadLetterQueueService.moveToDeadLetter(
+        retryItem
+      );
 
       expect(deadLetterItem).toBeDefined();
       expect(deadLetterItem.itemType).toBe('event');
@@ -46,7 +48,7 @@ describe('DeadLetterQueueService', () => {
         attemptCount: 5,
         maxAttempts: 5,
         nextRetryAt: new Date(),
-        status: 'retrying'
+        status: 'retrying',
       });
 
       await retryItem.save();
@@ -66,7 +68,7 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Network error',
         errorType: 'network',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       await DeadLetterQueue.create({
@@ -76,7 +78,7 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Timeout',
         errorType: 'timeout',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       const stats = await DeadLetterQueueService.getStatistics();
@@ -99,11 +101,11 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Temporary error',
         errorType: 'network',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       const result = await DeadLetterQueueService.recoverItems({
-        limit: 10
+        limit: 10,
       });
 
       expect(result.success).toBe(true);
@@ -125,7 +127,7 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Error',
         errorType: 'network',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       await DeadLetterQueue.create({
@@ -135,11 +137,11 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Error',
         errorType: 'network',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       const result = await DeadLetterQueueService.recoverItems({
-        itemType: 'event'
+        itemType: 'event',
       });
 
       expect(result.recoveredItems).toBe(1);
@@ -159,7 +161,7 @@ describe('DeadLetterQueueService', () => {
         errorType: 'network',
         errorHistory: [],
         status: 'dead',
-        createdAt: oldDate
+        createdAt: oldDate,
       });
 
       const archivedCount = await DeadLetterQueueService.archiveOldItems(7);
@@ -180,7 +182,7 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Network error',
         errorType: 'network',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       await DeadLetterQueue.create({
@@ -190,7 +192,7 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Network error',
         errorType: 'network',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       await DeadLetterQueue.create({
@@ -200,7 +202,7 @@ describe('DeadLetterQueueService', () => {
         failureReason: 'Timeout error',
         errorType: 'timeout',
         errorHistory: [],
-        status: 'dead'
+        status: 'dead',
       });
 
       const analysis = await DeadLetterQueueService.getErrorAnalysis();

@@ -24,20 +24,32 @@ export function GrowthMetrics({ metrics }: { metrics: GrowthData }) {
       <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
         <p className="text-sm text-gray-600">Weekly Growth</p>
         <div className="mt-1 flex items-center gap-2">
-          <span className={`text-3xl font-bold ${getGrowthColor(metrics.weeklyGrowth)}`}>
+          <span
+            className={`text-3xl font-bold ${getGrowthColor(
+              metrics.weeklyGrowth
+            )}`}
+          >
             {Math.abs(metrics.weeklyGrowth)}%
           </span>
-          <span className="text-2xl">{getGrowthIcon(metrics.weeklyGrowth)}</span>
+          <span className="text-2xl">
+            {getGrowthIcon(metrics.weeklyGrowth)}
+          </span>
         </div>
       </div>
 
       <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
         <p className="text-sm text-gray-600">Monthly Growth</p>
         <div className="mt-1 flex items-center gap-2">
-          <span className={`text-3xl font-bold ${getGrowthColor(metrics.monthlyGrowth)}`}>
+          <span
+            className={`text-3xl font-bold ${getGrowthColor(
+              metrics.monthlyGrowth
+            )}`}
+          >
             {Math.abs(metrics.monthlyGrowth)}%
           </span>
-          <span className="text-2xl">{getGrowthIcon(metrics.monthlyGrowth)}</span>
+          <span className="text-2xl">
+            {getGrowthIcon(metrics.monthlyGrowth)}
+          </span>
         </div>
       </div>
 
@@ -50,7 +62,7 @@ export function GrowthMetrics({ metrics }: { metrics: GrowthData }) {
           <div
             className="h-2 rounded-full bg-teal-500 transition-all"
             style={{
-              width: `${metrics.retentionRate}%`
+              width: `${metrics.retentionRate}%`,
             }}
           />
         </div>

@@ -1,5 +1,11 @@
-import { AccessControlAuditLog, IAccessControlAuditLog } from '../models/AccessControlAuditLog';
-import { AccessControlEventType, AnyAccessControlEvent } from '../types/accessControl';
+import {
+  AccessControlAuditLog,
+  IAccessControlAuditLog,
+} from '../models/AccessControlAuditLog';
+import {
+  AccessControlEventType,
+  AnyAccessControlEvent,
+} from '../types/accessControl';
 
 /**
  * Access Control Audit Service
@@ -45,25 +51,33 @@ export class AccessControlAuditService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
   /**
    * Create audit log entry from access control event
    */
-  async logEvent(event: AnyAccessControlEvent): Promise<IAccessControlAuditLog> {
+  async logEvent(
+    event: AnyAccessControlEvent
+  ): Promise<IAccessControlAuditLog> {
     try {
       // Check for duplicate (idempotency)
       const existing = await AccessControlAuditLog.findOne({
-        transactionHash: event.transactionHash
+        transactionHash: event.transactionHash,
       });
 
       if (existing) {
-        this.logger.debug(`Audit log already exists for transaction ${event.transactionHash}`);
+        this.logger.debug(
+          `Audit log already exists for transaction ${event.transactionHash}`
+        );
         return existing;
       }
 
@@ -91,7 +105,7 @@ export class AccessControlAuditService {
         suspicious,
         suspiciousReasons: reasons,
         severity,
-        rawEventData: event.data
+        rawEventData: event.data,
       });
 
       await auditLog.save();
@@ -100,7 +114,7 @@ export class AccessControlAuditService {
         transactionHash: event.transactionHash,
         principal: event.principal,
         severity,
-        suspicious
+        suspicious,
       });
 
       return auditLog;
@@ -113,7 +127,9 @@ export class AccessControlAuditService {
   /**
    * Query audit logs with filters
    */
-  async queryLogs(filters: AuditQueryFilters = {}): Promise<IAccessControlAuditLog[]> {
+  async queryLogs(
+    filters: AuditQueryFilters = {}
+  ): Promise<IAccessControlAuditLog[]> {
     const query: any = {};
 
     if (filters.principal) {
@@ -173,7 +189,9 @@ export class AccessControlAuditService {
   /**
    * Get audit statistics
    */
-  async getStatistics(filters: Omit<AuditQueryFilters, 'limit' | 'skip'> = {}): Promise<AuditStatistics> {
+  async getStatistics(
+    filters: Omit<AuditQueryFilters, 'limit' | 'skip'> = {}
+  ): Promise<AuditStatistics> {
     const logs = await this.queryLogs({ ...filters, limit: 10000 });
 
     const stats: AuditStatistics = {
@@ -184,7 +202,7 @@ export class AccessControlAuditService {
       uniquePrincipals: 0,
       uniqueTargets: 0,
       affectedCommunities: 0,
-      recentActivity: []
+      recentActivity: [],
     };
 
     const principals = new Set<string>();
@@ -192,12 +210,14 @@ export class AccessControlAuditService {
     const communities = new Set<string>();
     const activityByDate: Record<string, number> = {};
 
-    logs.forEach(log => {
+    logs.forEach((log) => {
       // Count by type
-      stats.eventsByType[log.eventType] = (stats.eventsByType[log.eventType] || 0) + 1;
+      stats.eventsByType[log.eventType] =
+        (stats.eventsByType[log.eventType] || 0) + 1;
 
       // Count by severity
-      stats.eventsBySeverity[log.severity] = (stats.eventsBySeverity[log.severity] || 0) + 1;
+      stats.eventsBySeverity[log.severity] =
+        (stats.eventsBySeverity[log.severity] || 0) + 1;
 
       // Count suspicious
       if (log.suspicious) {
@@ -234,7 +254,9 @@ export class AccessControlAuditService {
   /**
    * Get suspicious activity logs
    */
-  async getSuspiciousActivity(limit: number = 50): Promise<IAccessControlAuditLog[]> {
+  async getSuspiciousActivity(
+    limit: number = 50
+  ): Promise<IAccessControlAuditLog[]> {
     return await AccessControlAuditLog.find({ suspicious: true })
       .sort({ timestamp: -1, severity: -1 })
       .limit(limit);
@@ -243,12 +265,12 @@ export class AccessControlAuditService {
   /**
    * Get user's access control history
    */
-  async getUserHistory(principal: string, limit: number = 100): Promise<IAccessControlAuditLog[]> {
+  async getUserHistory(
+    principal: string,
+    limit: number = 100
+  ): Promise<IAccessControlAuditLog[]> {
     return await AccessControlAuditLog.find({
-      $or: [
-        { principal },
-        { targetPrincipal: principal }
-      ]
+      $or: [{ principal }, { targetPrincipal: principal }],
     })
       .sort({ timestamp: -1 })
       .limit(limit);
@@ -257,7 +279,10 @@ export class AccessControlAuditService {
   /**
    * Get community access control history
    */
-  async getCommunityHistory(communityId: string, limit: number = 100): Promise<IAccessControlAuditLog[]> {
+  async getCommunityHistory(
+    communityId: string,
+    limit: number = 100
+  ): Promise<IAccessControlAuditLog[]> {
     return await AccessControlAuditLog.find({ communityId })
       .sort({ timestamp: -1 })
       .limit(limit);
@@ -266,7 +291,9 @@ export class AccessControlAuditService {
   /**
    * Calculate severity for event
    */
-  private calculateSeverity(event: AnyAccessControlEvent): 'info' | 'low' | 'medium' | 'high' | 'critical' {
+  private calculateSeverity(
+    event: AnyAccessControlEvent
+  ): 'info' | 'low' | 'medium' | 'high' | 'critical' {
     switch (event.eventType) {
       case AccessControlEventType.USER_SUSPENDED:
         return 'high';
@@ -311,7 +338,7 @@ export class AccessControlAuditService {
     if (event.principal) {
       const recentEvents = await AccessControlAuditLog.find({
         principal: event.principal,
-        timestamp: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // Last 5 minutes
+        timestamp: { $gte: new Date(Date.now() - 5 * 60 * 1000) }, // Last 5 minutes
       });
 
       if (recentEvents.length > 10) {
@@ -331,7 +358,7 @@ export class AccessControlAuditService {
     if (event.eventType === AccessControlEventType.USER_SUSPENDED) {
       const recentSuspensions = await AccessControlAuditLog.countDocuments({
         eventType: AccessControlEventType.USER_SUSPENDED,
-        timestamp: { $gte: new Date(Date.now() - 60 * 60 * 1000) } // Last hour
+        timestamp: { $gte: new Date(Date.now() - 60 * 60 * 1000) }, // Last hour
       });
 
       if (recentSuspensions > 5) {
@@ -344,7 +371,7 @@ export class AccessControlAuditService {
       const previousElevations = await AccessControlAuditLog.countDocuments({
         principal: event.principal,
         eventType: AccessControlEventType.GLOBAL_PERMISSION_SET,
-        timestamp: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
+        timestamp: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // Last 24 hours
       });
 
       if (previousElevations > 3) {
@@ -354,7 +381,7 @@ export class AccessControlAuditService {
 
     return {
       suspicious: reasons.length > 0,
-      reasons
+      reasons,
     };
   }
 
@@ -369,7 +396,7 @@ export class AccessControlAuditService {
       timestamp: new Date().toISOString(),
       filters,
       statistics: stats,
-      logs: logs.map(log => log.toObject())
+      logs: logs.map((log) => log.toObject()),
     };
 
     return JSON.stringify(exportData, null, 2);

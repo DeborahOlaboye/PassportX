@@ -4,9 +4,9 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
+export { PassportXError } from './types';
 import {
   PassportXConfig,
-  Badge,
   BadgeWithTemplate,
   BadgeTemplate,
   Community,
@@ -249,9 +249,9 @@ export class PassportX {
     if (options.search) params.append('search', options.search);
     if (options.tags) params.append('tags', options.tags.join(','));
 
-    const response = await this.client.get<ApiResponse<PaginatedResponse<Community>>>(
-      `/api/communities?${params.toString()}`
-    );
+    const response = await this.client.get<
+      ApiResponse<PaginatedResponse<Community>>
+    >(`/api/communities?${params.toString()}`);
 
     return response.data.data!;
   }

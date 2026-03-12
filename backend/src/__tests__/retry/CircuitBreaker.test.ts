@@ -11,7 +11,7 @@ describe('CircuitBreaker', () => {
       timeout: 1000,
       volumeThreshold: 3,
       errorThresholdPercentage: 50,
-      monitoringPeriod: 60000
+      monitoringPeriod: 60000,
     });
   });
 
@@ -55,7 +55,7 @@ describe('CircuitBreaker', () => {
       expect(breaker.getState()).toBe('OPEN');
 
       // Wait for timeout
-      await new Promise(resolve => setTimeout(resolve, 1100));
+      await new Promise((resolve) => setTimeout(resolve, 1100));
 
       // Next call should transition to HALF_OPEN
       const successFn = jest.fn().mockResolvedValue('success');

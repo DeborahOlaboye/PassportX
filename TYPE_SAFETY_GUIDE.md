@@ -1,14 +1,17 @@
 # Type Safety Guide
 
 ## Overview
+
 This guide documents the type safety improvements made to eliminate `any` types from the codebase.
 
 ## Progress
+
 - **Initial**: ~196 instances of `any` type
 - **Current**: ~164 instances remaining
 - **Fixed**: 32+ instances across 10+ files
 
 ## Fixed Files
+
 1. `src/types/transaction-signing.ts` - ClarityValue[] for function args
 2. `src/types/chainhook.ts` - Specific types for metadata
 3. `src/contexts/NotificationContext.tsx` - NotificationData interface
@@ -23,9 +26,10 @@ This guide documents the type safety improvements made to eliminate `any` types 
 ## Type Patterns
 
 ### Use `unknown` instead of `any`
+
 ```typescript
 // ❌ Bad
-function process(data: any) { }
+function process(data: any) {}
 
 // ✅ Good
 function process(data: unknown) {
@@ -36,15 +40,17 @@ function process(data: unknown) {
 ```
 
 ### Use Generic Types
+
 ```typescript
 // ❌ Bad
-async function get(url: string): Promise<any> { }
+async function get(url: string): Promise<any> {}
 
 // ✅ Good
-async function get<T>(url: string): Promise<T> { }
+async function get<T>(url: string): Promise<T> {}
 ```
 
 ### Create Specific Interfaces
+
 ```typescript
 // ❌ Bad
 interface Response {
@@ -58,16 +64,20 @@ interface Response<T> {
 ```
 
 ## ESLint Configuration
+
 - `@typescript-eslint/no-explicit-any`: `error`
 - Prevents new `any` types from being added
 
 ## TypeScript Configuration
+
 - `noImplicitAny`: true
 - `strictNullChecks`: true
 - `strictFunctionTypes`: true
 
 ## Next Steps
+
 Continue replacing remaining `any` types in:
+
 - Test files
 - Component props
 - Event handlers

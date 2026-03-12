@@ -15,8 +15,16 @@ describe('Event-Driven Cache Invalidation System', () => {
 
   beforeEach(() => {
     // Initialize cache services
-    badgeCache = new BadgeCacheService({ enabled: true, ttl: 300, provider: 'memory' });
-    communityCache = new CommunityCacheService({ enabled: true, ttl: 300, provider: 'memory' });
+    badgeCache = new BadgeCacheService({
+      enabled: true,
+      ttl: 300,
+      provider: 'memory',
+    });
+    communityCache = new CommunityCacheService({
+      enabled: true,
+      ttl: 300,
+      provider: 'memory',
+    });
     eventCache = new ChainhookEventCache({ maxSize: 1000, ttlMs: 300000 });
     metadataInvalidator = new BadgeMetadataCacheInvalidator();
     revocationInvalidator = new BadgeRevocationCacheInvalidator();
@@ -45,7 +53,9 @@ describe('Event-Driven Cache Invalidation System', () => {
 
     test('badge-mint rule should have high priority and cache warming', () => {
       const rules = invalidator.getInvalidationRules();
-      const badgeMintRule = rules.find((rule: any) => rule.eventType === 'badge-mint');
+      const badgeMintRule = rules.find(
+        (rule: any) => rule.eventType === 'badge-mint'
+      );
 
       expect(badgeMintRule?.priority).toBe('high');
       expect(badgeMintRule?.warmCache).toBe(true);
@@ -62,7 +72,7 @@ describe('Event-Driven Cache Invalidation System', () => {
       // Invalidate for badge mint
       await invalidator.invalidateCacheForEvent('badge-mint', {
         userId: '123',
-        badgeId: 'badge4'
+        badgeId: 'badge4',
       });
 
       // Check that relevant caches were invalidated
@@ -73,7 +83,7 @@ describe('Event-Driven Cache Invalidation System', () => {
     test('should track invalidation metrics', async () => {
       await invalidator.invalidateCacheForEvent('badge-mint', {
         userId: 'test',
-        badgeId: 'test-badge'
+        badgeId: 'test-badge',
       });
 
       const metrics = invalidator.getMetrics();
@@ -85,11 +95,13 @@ describe('Event-Driven Cache Invalidation System', () => {
   describe('Error Handling', () => {
     test('should handle invalid events gracefully', async () => {
       const invalidEvent = {
-        invalidField: 'test'
+        invalidField: 'test',
       };
 
       // Should not throw
-      await expect(invalidator.invalidateCacheForEvent('invalid-event', invalidEvent)).resolves.not.toThrow();
+      await expect(
+        invalidator.invalidateCacheForEvent('invalid-event', invalidEvent)
+      ).resolves.not.toThrow();
     });
   });
 });

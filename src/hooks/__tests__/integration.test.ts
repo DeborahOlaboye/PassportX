@@ -3,15 +3,15 @@
  * Tests blockchain interactions, transaction flows, and post-conditions
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react'
-import { useIssueBadge } from '../useIssueBadge'
-import { useCreateCommunity } from '../useCreateCommunity'
-import { useAuth } from '@/contexts/AuthContext'
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { useIssueBadge } from '../useIssueBadge';
+import { useCreateCommunity } from '../useCreateCommunity';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Mock dependencies
-jest.mock('@/contexts/AuthContext')
-jest.mock('@/lib/contracts/badgeContractUtils')
-jest.mock('@/lib/contracts/communityContractUtils')
+jest.mock('@/contexts/AuthContext');
+jest.mock('@/lib/contracts/badgeContractUtils');
+jest.mock('@/lib/contracts/communityContractUtils');
 
 describe('Contract Hooks Integration Tests', () => {
   const mockUserSession = {
@@ -20,234 +20,244 @@ describe('Contract Hooks Integration Tests', () => {
       profile: {
         stxAddress: {
           testnet: 'ST123456789TESTNETADDRESS',
-          mainnet: 'SP123456789MAINNETADDRESS'
-        }
-      }
-    }))
-  }
+          mainnet: 'SP123456789MAINNETADDRESS',
+        },
+      },
+    })),
+  };
 
   const mockUser = {
     stacksAddress: 'ST123456789TESTNETADDRESS',
-    username: 'testuser'
-  }
+    username: 'testuser',
+  };
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    ;(useAuth as jest.Mock).mockReturnValue({
+    jest.clearAllMocks();
+    (useAuth as jest.Mock).mockReturnValue({
       user: mockUser,
-      userSession: mockUserSession
-    })
-  })
+      userSession: mockUserSession,
+    });
+  });
 
   describe('useIssueBadge Hook - Integration Tests', () => {
     it('should initialize with empty state', () => {
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
-      expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBeNull()
-      expect(result.current.success).toBe(false)
-      expect(result.current.txId).toBeNull()
-      expect(result.current.badgeId).toBeNull()
-    })
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeNull();
+      expect(result.current.success).toBe(false);
+      expect(result.current.txId).toBeNull();
+      expect(result.current.badgeId).toBeNull();
+    });
 
     it('should handle successful badge issuance with transaction flow', async () => {
-      const mockTxId = 'tx_successful_badge_issuance_001'
-      const mockBadgeId = 42
+      const mockTxId = 'tx_successful_badge_issuance_001';
+      const mockBadgeId = 42;
 
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
       BadgeIssuerManager.prototype.issueBadge = jest.fn().mockResolvedValue({
         txId: mockTxId,
-        badgeId: mockBadgeId
-      })
+        badgeId: mockBadgeId,
+      });
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       const issuanceOptions = {
         recipientAddress: 'ST2CY5V5NWVNTZ5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5ZYZZ',
         templateId: 1,
         communityId: 1,
         recipientName: 'John Doe',
-        recipientEmail: 'john@example.com'
-      }
+        recipientEmail: 'john@example.com',
+      };
 
       await act(async () => {
-        await result.current.issueBadge(issuanceOptions)
-      })
+        await result.current.issueBadge(issuanceOptions);
+      });
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
+        expect(result.current.isLoading).toBe(false);
+      });
 
-      expect(result.current.success).toBe(true)
-      expect(result.current.txId).toBe(mockTxId)
-      expect(result.current.badgeId).toBe(mockBadgeId)
-      expect(result.current.error).toBeNull()
-    })
+      expect(result.current.success).toBe(true);
+      expect(result.current.txId).toBe(mockTxId);
+      expect(result.current.badgeId).toBe(mockBadgeId);
+      expect(result.current.error).toBeNull();
+    });
 
     it('should handle transaction failure with proper error state', async () => {
-      const errorMessage = 'Insufficient funds for transaction'
+      const errorMessage = 'Insufficient funds for transaction';
 
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
       BadgeIssuerManager.prototype.issueBadge = jest
         .fn()
-        .mockRejectedValue(new Error(errorMessage))
+        .mockRejectedValue(new Error(errorMessage));
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       const issuanceOptions = {
         recipientAddress: 'ST2CY5V5NWVNTZ5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5ZYZZ',
         templateId: 1,
-        communityId: 1
-      }
+        communityId: 1,
+      };
 
       await act(async () => {
         try {
-          await result.current.issueBadge(issuanceOptions)
+          await result.current.issueBadge(issuanceOptions);
         } catch (error) {
           // Expected error
         }
-      })
+      });
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
+        expect(result.current.isLoading).toBe(false);
+      });
 
-      expect(result.current.success).toBe(false)
-      expect(result.current.error).toBe(errorMessage)
-      expect(result.current.txId).toBeNull()
-    })
+      expect(result.current.success).toBe(false);
+      expect(result.current.error).toBe(errorMessage);
+      expect(result.current.txId).toBeNull();
+    });
 
     it('should throw error when user not authenticated', async () => {
-      ;(useAuth as jest.Mock).mockReturnValue({
+      (useAuth as jest.Mock).mockReturnValue({
         user: null,
         userSession: {
-          isUserSignedIn: jest.fn(() => false)
-        }
-      })
+          isUserSignedIn: jest.fn(() => false),
+        },
+      });
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       const issuanceOptions = {
         recipientAddress: 'ST2CY5V5NWVNTZ5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5ZYZZ',
         templateId: 1,
-        communityId: 1
-      }
+        communityId: 1,
+      };
 
       await expect(
         act(async () => {
-          await result.current.issueBadge(issuanceOptions)
+          await result.current.issueBadge(issuanceOptions);
         })
-      ).rejects.toThrow('User not authenticated')
+      ).rejects.toThrow('User not authenticated');
 
-      expect(result.current.error).toBe('You must be signed in to issue badges')
-    })
+      expect(result.current.error).toBe(
+        'You must be signed in to issue badges'
+      );
+    });
 
     it('should handle badge revocation with transaction validation', async () => {
-      const mockTxId = 'tx_revoke_badge_001'
+      const mockTxId = 'tx_revoke_badge_001';
 
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
       BadgeIssuerManager.prototype.revokeBadge = jest.fn().mockResolvedValue({
         txId: mockTxId,
-        badgeId: 42
-      })
+        badgeId: 42,
+      });
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       await act(async () => {
-        await result.current.revokeBadge(42)
-      })
+        await result.current.revokeBadge(42);
+      });
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
+        expect(result.current.isLoading).toBe(false);
+      });
 
-      expect(result.current.success).toBe(true)
-      expect(result.current.txId).toBe(mockTxId)
-    })
+      expect(result.current.success).toBe(true);
+      expect(result.current.txId).toBe(mockTxId);
+    });
 
     it('should reset state when resetState is called', async () => {
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
       BadgeIssuerManager.prototype.issueBadge = jest.fn().mockResolvedValue({
         txId: 'tx_123',
-        badgeId: 42
-      })
+        badgeId: 42,
+      });
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       await act(async () => {
         await result.current.issueBadge({
           recipientAddress: 'ST123',
           templateId: 1,
-          communityId: 1
-        })
-      })
+          communityId: 1,
+        });
+      });
 
-      expect(result.current.success).toBe(true)
+      expect(result.current.success).toBe(true);
 
       act(() => {
-        result.current.resetState()
-      })
+        result.current.resetState();
+      });
 
-      expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBeNull()
-      expect(result.current.success).toBe(false)
-      expect(result.current.txId).toBeNull()
-      expect(result.current.badgeId).toBeNull()
-    })
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeNull();
+      expect(result.current.success).toBe(false);
+      expect(result.current.txId).toBeNull();
+      expect(result.current.badgeId).toBeNull();
+    });
 
     it('should validate post-conditions for badge issuance', async () => {
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
       const mockIssueBadge = jest.fn().mockResolvedValue({
         txId: 'tx_postcondition_test',
-        badgeId: 99
-      })
-      BadgeIssuerManager.prototype.issueBadge = mockIssueBadge
+        badgeId: 99,
+      });
+      BadgeIssuerManager.prototype.issueBadge = mockIssueBadge;
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       await act(async () => {
         await result.current.issueBadge({
           recipientAddress: 'ST456',
           templateId: 2,
-          communityId: 3
-        })
-      })
+          communityId: 3,
+        });
+      });
 
       // Verify post-condition validation was called
       expect(mockIssueBadge).toHaveBeenCalledWith(
         expect.objectContaining({
           recipientAddress: 'ST456',
           templateId: 2,
-          communityId: 3
+          communityId: 3,
         })
-      )
+      );
 
-      expect(result.current.badgeId).toBe(99)
-    })
-  })
+      expect(result.current.badgeId).toBe(99);
+    });
+  });
 
   describe('useCreateCommunity Hook - Integration Tests', () => {
     it('should initialize with empty state', () => {
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
-      expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBeNull()
-      expect(result.current.success).toBe(false)
-      expect(result.current.txId).toBeNull()
-      expect(result.current.communityId).toBeNull()
-    })
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeNull();
+      expect(result.current.success).toBe(false);
+      expect(result.current.txId).toBeNull();
+      expect(result.current.communityId).toBeNull();
+    });
 
     it('should handle successful community creation', async () => {
-      const mockTxId = 'tx_create_community_001'
-      const mockCommunityId = 5
+      const mockTxId = 'tx_create_community_001';
+      const mockCommunityId = 5;
 
-      const CommunityContractManager = require('@/lib/contracts/communityContractUtils').CommunityContractManager
-      CommunityContractManager.prototype.createCommunity = jest.fn().mockResolvedValue({
-        txId: mockTxId,
-        communityId: mockCommunityId
-      })
+      const CommunityContractManager =
+        require('@/lib/contracts/communityContractUtils').CommunityContractManager;
+      CommunityContractManager.prototype.createCommunity = jest
+        .fn()
+        .mockResolvedValue({
+          txId: mockTxId,
+          communityId: mockCommunityId,
+        });
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
       const communityOptions = {
         name: 'Developer Community',
@@ -257,33 +267,34 @@ describe('Contract Hooks Integration Tests', () => {
           allowMemberInvites: true,
           requireApproval: false,
           allowBadgeIssuance: true,
-          allowCustomBadges: true
-        }
-      }
+          allowCustomBadges: true,
+        },
+      };
 
       await act(async () => {
-        await result.current.createCommunity(communityOptions)
-      })
+        await result.current.createCommunity(communityOptions);
+      });
 
       await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
+        expect(result.current.isLoading).toBe(false);
+      });
 
-      expect(result.current.success).toBe(true)
-      expect(result.current.txId).toBe(mockTxId)
-      expect(result.current.communityId).toBe(mockCommunityId)
-      expect(result.current.error).toBeNull()
-    })
+      expect(result.current.success).toBe(true);
+      expect(result.current.txId).toBe(mockTxId);
+      expect(result.current.communityId).toBe(mockCommunityId);
+      expect(result.current.error).toBeNull();
+    });
 
     it('should handle community creation failure', async () => {
-      const errorMessage = 'Community name already exists'
+      const errorMessage = 'Community name already exists';
 
-      const CommunityContractManager = require('@/lib/contracts/communityContractUtils').CommunityContractManager
+      const CommunityContractManager =
+        require('@/lib/contracts/communityContractUtils').CommunityContractManager;
       CommunityContractManager.prototype.createCommunity = jest
         .fn()
-        .mockRejectedValue(new Error(errorMessage))
+        .mockRejectedValue(new Error(errorMessage));
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
       const communityOptions = {
         name: 'Duplicate Community',
@@ -293,72 +304,76 @@ describe('Contract Hooks Integration Tests', () => {
           allowMemberInvites: true,
           requireApproval: false,
           allowBadgeIssuance: true,
-          allowCustomBadges: true
-        }
-      }
+          allowCustomBadges: true,
+        },
+      };
 
       await act(async () => {
         try {
-          await result.current.createCommunity(communityOptions)
+          await result.current.createCommunity(communityOptions);
         } catch (error) {
           // Expected error
         }
-      })
+      });
 
-      expect(result.current.error).toBe(errorMessage)
-      expect(result.current.success).toBe(false)
-    })
+      expect(result.current.error).toBe(errorMessage);
+      expect(result.current.success).toBe(false);
+    });
 
     it('should check transaction status after creation', async () => {
-      const mockTxId = 'tx_check_status_001'
+      const mockTxId = 'tx_check_status_001';
       const mockTxStatus = {
         status: 'success',
         blockHeight: 12345,
-        confirmed: true
-      }
+        confirmed: true,
+      };
 
-      const CommunityContractManager = require('@/lib/contracts/communityContractUtils').CommunityContractManager
+      const CommunityContractManager =
+        require('@/lib/contracts/communityContractUtils').CommunityContractManager;
       CommunityContractManager.prototype.validateTransactionStatus = jest
         .fn()
-        .mockResolvedValue(mockTxStatus)
+        .mockResolvedValue(mockTxStatus);
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
-      let transactionStatus
+      let transactionStatus;
       await act(async () => {
-        transactionStatus = await result.current.checkTransactionStatus(mockTxId)
-      })
+        transactionStatus = await result.current.checkTransactionStatus(
+          mockTxId
+        );
+      });
 
-      expect(transactionStatus.status).toBe('success')
-      expect(transactionStatus.confirmed).toBe(true)
-    })
+      expect(transactionStatus.status).toBe('success');
+      expect(transactionStatus.confirmed).toBe(true);
+    });
 
     it('should handle transaction status check failure', async () => {
-      const errorMessage = 'Transaction not found'
+      const errorMessage = 'Transaction not found';
 
-      const CommunityContractManager = require('@/lib/contracts/communityContractUtils').CommunityContractManager
+      const CommunityContractManager =
+        require('@/lib/contracts/communityContractUtils').CommunityContractManager;
       CommunityContractManager.prototype.validateTransactionStatus = jest
         .fn()
-        .mockRejectedValue(new Error(errorMessage))
+        .mockRejectedValue(new Error(errorMessage));
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
       await expect(
         act(async () => {
-          await result.current.checkTransactionStatus('invalid_tx_id')
+          await result.current.checkTransactionStatus('invalid_tx_id');
         })
-      ).rejects.toThrow(errorMessage)
-    })
+      ).rejects.toThrow(errorMessage);
+    });
 
     it('should throw error when user not authenticated for community creation', async () => {
-      ;(useAuth as jest.Mock).mockReturnValue({
+      (useAuth as jest.Mock).mockReturnValue({
         user: null,
         userSession: {
-          isUserSignedIn: jest.fn(() => false)
-        }
-      })
+          isUserSignedIn: jest.fn(() => false),
+        },
+      });
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
       const communityOptions = {
         name: 'Test Community',
@@ -368,26 +383,27 @@ describe('Contract Hooks Integration Tests', () => {
           allowMemberInvites: true,
           requireApproval: false,
           allowBadgeIssuance: true,
-          allowCustomBadges: true
-        }
-      }
+          allowCustomBadges: true,
+        },
+      };
 
       await expect(
         act(async () => {
-          await result.current.createCommunity(communityOptions)
+          await result.current.createCommunity(communityOptions);
         })
-      ).rejects.toThrow('User not authenticated')
-    })
+      ).rejects.toThrow('User not authenticated');
+    });
 
     it('should validate post-conditions for community creation', async () => {
-      const CommunityContractManager = require('@/lib/contracts/communityContractUtils').CommunityContractManager
+      const CommunityContractManager =
+        require('@/lib/contracts/communityContractUtils').CommunityContractManager;
       const mockCreateCommunity = jest.fn().mockResolvedValue({
         txId: 'tx_validate_postcond',
-        communityId: 10
-      })
-      CommunityContractManager.prototype.createCommunity = mockCreateCommunity
+        communityId: 10,
+      });
+      CommunityContractManager.prototype.createCommunity = mockCreateCommunity;
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
       const communityOptions = {
         name: 'Post Condition Test',
@@ -397,33 +413,36 @@ describe('Contract Hooks Integration Tests', () => {
           allowMemberInvites: true,
           requireApproval: true,
           allowBadgeIssuance: true,
-          allowCustomBadges: false
-        }
-      }
+          allowCustomBadges: false,
+        },
+      };
 
       await act(async () => {
-        await result.current.createCommunity(communityOptions)
-      })
+        await result.current.createCommunity(communityOptions);
+      });
 
       expect(mockCreateCommunity).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Post Condition Test',
           description: 'Testing post-conditions',
-          stxPayment: 500
+          stxPayment: 500,
         })
-      )
+      );
 
-      expect(result.current.communityId).toBe(10)
-    })
+      expect(result.current.communityId).toBe(10);
+    });
 
     it('should reset state when resetState is called', async () => {
-      const CommunityContractManager = require('@/lib/contracts/communityContractUtils').CommunityContractManager
-      CommunityContractManager.prototype.createCommunity = jest.fn().mockResolvedValue({
-        txId: 'tx_reset_test',
-        communityId: 7
-      })
+      const CommunityContractManager =
+        require('@/lib/contracts/communityContractUtils').CommunityContractManager;
+      CommunityContractManager.prototype.createCommunity = jest
+        .fn()
+        .mockResolvedValue({
+          txId: 'tx_reset_test',
+          communityId: 7,
+        });
 
-      const { result } = renderHook(() => useCreateCommunity())
+      const { result } = renderHook(() => useCreateCommunity());
 
       const communityOptions = {
         name: 'Reset Test Community',
@@ -433,90 +452,96 @@ describe('Contract Hooks Integration Tests', () => {
           allowMemberInvites: true,
           requireApproval: false,
           allowBadgeIssuance: true,
-          allowCustomBadges: true
-        }
-      }
+          allowCustomBadges: true,
+        },
+      };
 
       await act(async () => {
-        await result.current.createCommunity(communityOptions)
-      })
+        await result.current.createCommunity(communityOptions);
+      });
 
-      expect(result.current.success).toBe(true)
+      expect(result.current.success).toBe(true);
 
       act(() => {
-        result.current.resetState()
-      })
+        result.current.resetState();
+      });
 
-      expect(result.current.isLoading).toBe(false)
-      expect(result.current.error).toBeNull()
-      expect(result.current.success).toBe(false)
-      expect(result.current.txId).toBeNull()
-      expect(result.current.communityId).toBeNull()
-    })
-  })
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeNull();
+      expect(result.current.success).toBe(false);
+      expect(result.current.txId).toBeNull();
+      expect(result.current.communityId).toBeNull();
+    });
+  });
 
   describe('Transaction Flow Validation', () => {
     it('should properly handle concurrent badge issuance requests', async () => {
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
-      let callCount = 0
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
+      let callCount = 0;
 
-      BadgeIssuerManager.prototype.issueBadge = jest.fn().mockImplementation(() => {
-        callCount++
-        return Promise.resolve({
-          txId: `tx_concurrent_${callCount}`,
-          badgeId: 100 + callCount
-        })
-      })
+      BadgeIssuerManager.prototype.issueBadge = jest
+        .fn()
+        .mockImplementation(() => {
+          callCount++;
+          return Promise.resolve({
+            txId: `tx_concurrent_${callCount}`,
+            badgeId: 100 + callCount,
+          });
+        });
 
-      const { result: result1 } = renderHook(() => useIssueBadge())
-      const { result: result2 } = renderHook(() => useIssueBadge())
+      const { result: result1 } = renderHook(() => useIssueBadge());
+      const { result: result2 } = renderHook(() => useIssueBadge());
 
       await act(async () => {
         await Promise.all([
           result1.current.issueBadge({
             recipientAddress: 'ST111',
             templateId: 1,
-            communityId: 1
+            communityId: 1,
           }),
           result2.current.issueBadge({
             recipientAddress: 'ST222',
             templateId: 2,
-            communityId: 1
-          })
-        ])
-      })
+            communityId: 1,
+          }),
+        ]);
+      });
 
-      expect(result1.current.success).toBe(true)
-      expect(result2.current.success).toBe(true)
-      expect(result1.current.badgeId).toBe(101)
-      expect(result2.current.badgeId).toBe(102)
-    })
+      expect(result1.current.success).toBe(true);
+      expect(result2.current.success).toBe(true);
+      expect(result1.current.badgeId).toBe(101);
+      expect(result2.current.badgeId).toBe(102);
+    });
 
     it('should verify transaction IDs are properly tracked', async () => {
-      const BadgeIssuerManager = require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager
-      const txIds = new Set()
+      const BadgeIssuerManager =
+        require('@/lib/contracts/badgeContractUtils').BadgeIssuerManager;
+      const txIds = new Set();
 
-      BadgeIssuerManager.prototype.issueBadge = jest.fn().mockImplementation((params) => {
-        const txId = `tx_${Date.now()}_${Math.random()}`
-        txIds.add(txId)
-        return Promise.resolve({
-          txId,
-          badgeId: 42
-        })
-      })
+      BadgeIssuerManager.prototype.issueBadge = jest
+        .fn()
+        .mockImplementation((params) => {
+          const txId = `tx_${Date.now()}_${Math.random()}`;
+          txIds.add(txId);
+          return Promise.resolve({
+            txId,
+            badgeId: 42,
+          });
+        });
 
-      const { result } = renderHook(() => useIssueBadge())
+      const { result } = renderHook(() => useIssueBadge());
 
       await act(async () => {
         await result.current.issueBadge({
           recipientAddress: 'ST123',
           templateId: 1,
-          communityId: 1
-        })
-      })
+          communityId: 1,
+        });
+      });
 
-      expect(txIds.size).toBe(1)
-      expect(result.current.txId).toBeDefined()
-    })
-  })
-})
+      expect(txIds.size).toBe(1);
+      expect(result.current.txId).toBeDefined();
+    });
+  });
+});

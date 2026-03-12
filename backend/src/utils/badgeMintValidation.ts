@@ -19,7 +19,7 @@ const DEFAULT_OPTIONS: BadgeEventValidationOptions = {
   requireBadgeName: false,
   maxBadgeNameLength: 255,
   maxCriteriaLength: 512,
-  allowEmptyBlockHeight: false
+  allowEmptyBlockHeight: false,
 };
 
 function isValidStacksAddress(address: string): boolean {
@@ -61,41 +61,67 @@ export function validateBadgeMintEvent(
   if (!event.userId || typeof event.userId !== 'string') {
     errors.push('userId is required and must be a string');
   } else if (!isValidStacksAddress(event.userId)) {
-    warnings.push(`userId "${event.userId}" does not appear to be a valid Stacks address`);
+    warnings.push(
+      `userId "${event.userId}" does not appear to be a valid Stacks address`
+    );
   }
 
-  if (opts.requireBadgeId && (!event.badgeId || typeof event.badgeId !== 'string')) {
+  if (
+    opts.requireBadgeId &&
+    (!event.badgeId || typeof event.badgeId !== 'string')
+  ) {
     errors.push('badgeId is required and must be a string');
   } else if (event.badgeId && typeof event.badgeId !== 'string') {
     errors.push('badgeId must be a string if provided');
   }
 
-  if (opts.requireBadgeName && (!event.badgeName || typeof event.badgeName !== 'string')) {
+  if (
+    opts.requireBadgeName &&
+    (!event.badgeName || typeof event.badgeName !== 'string')
+  ) {
     errors.push('badgeName is required and must be a string');
   } else if (event.badgeName && typeof event.badgeName !== 'string') {
     errors.push('badgeName must be a string if provided');
   }
 
-  if (event.badgeName && event.badgeName.length > (opts.maxBadgeNameLength || 255)) {
-    errors.push(`badgeName exceeds maximum length of ${opts.maxBadgeNameLength || 255} characters`);
+  if (
+    event.badgeName &&
+    event.badgeName.length > (opts.maxBadgeNameLength || 255)
+  ) {
+    errors.push(
+      `badgeName exceeds maximum length of ${
+        opts.maxBadgeNameLength || 255
+      } characters`
+    );
   }
 
   if (event.criteria && typeof event.criteria !== 'string') {
     errors.push('criteria must be a string if provided');
-  } else if (event.criteria && event.criteria.length > (opts.maxCriteriaLength || 512)) {
-    errors.push(`criteria exceeds maximum length of ${opts.maxCriteriaLength || 512} characters`);
+  } else if (
+    event.criteria &&
+    event.criteria.length > (opts.maxCriteriaLength || 512)
+  ) {
+    errors.push(
+      `criteria exceeds maximum length of ${
+        opts.maxCriteriaLength || 512
+      } characters`
+    );
   }
 
   if (!event.contractAddress || typeof event.contractAddress !== 'string') {
     errors.push('contractAddress is required and must be a string');
   } else if (!isValidContractAddress(event.contractAddress)) {
-    warnings.push(`contractAddress "${event.contractAddress}" does not appear to be a valid contract address`);
+    warnings.push(
+      `contractAddress "${event.contractAddress}" does not appear to be a valid contract address`
+    );
   }
 
   if (!event.transactionHash || typeof event.transactionHash !== 'string') {
     errors.push('transactionHash is required and must be a string');
   } else if (!isValidTransactionHash(event.transactionHash)) {
-    warnings.push(`transactionHash "${event.transactionHash}" does not appear to be a valid format`);
+    warnings.push(
+      `transactionHash "${event.transactionHash}" does not appear to be a valid format`
+    );
   }
 
   if (typeof event.blockHeight !== 'number') {
@@ -115,7 +141,7 @@ export function validateBadgeMintEvent(
   return {
     valid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -129,15 +155,15 @@ export function validateBadgeMintEventBatch(
         {
           valid: false,
           errors: ['events must be an array'],
-          warnings: []
-        }
+          warnings: [],
+        },
       ],
-      allValid: false
+      allValid: false,
     };
   }
 
-  const results = events.map(event => validateBadgeMintEvent(event, options));
-  const allValid = results.every(result => result.valid);
+  const results = events.map((event) => validateBadgeMintEvent(event, options));
+  const allValid = results.every((result) => result.valid);
 
   return { results, allValid };
 }
@@ -152,12 +178,16 @@ export function sanitizeBadgeMintEvent(event: any): BadgeMintEvent | null {
   return {
     userId: String(event.userId).trim(),
     badgeId: event.badgeId ? String(event.badgeId).trim() : '',
-    badgeName: event.badgeName ? String(event.badgeName).trim() : 'Achievement Badge',
-    criteria: event.criteria ? String(event.criteria).trim() : 'completing a task',
+    badgeName: event.badgeName
+      ? String(event.badgeName).trim()
+      : 'Achievement Badge',
+    criteria: event.criteria
+      ? String(event.criteria).trim()
+      : 'completing a task',
     contractAddress: String(event.contractAddress).trim(),
     transactionHash: String(event.transactionHash).trim(),
     blockHeight: Number(event.blockHeight) || 0,
-    timestamp: Number(event.timestamp) || Date.now()
+    timestamp: Number(event.timestamp) || Date.now(),
   };
 }
 
@@ -166,11 +196,14 @@ export function getValidationErrorMessage(result: ValidationResult): string {
     return 'Validation passed';
   }
 
-  const errorMessages = result.errors.map(error => `- ${error}`).join('\n');
-  let message = 'Validation failed with the following errors:\n' + errorMessages;
+  const errorMessages = result.errors.map((error) => `- ${error}`).join('\n');
+  let message =
+    'Validation failed with the following errors:\n' + errorMessages;
 
   if (result.warnings.length > 0) {
-    const warningMessages = result.warnings.map(warning => `- ${warning}`).join('\n');
+    const warningMessages = result.warnings
+      .map((warning) => `- ${warning}`)
+      .join('\n');
     message += '\n\nWarnings:\n' + warningMessages;
   }
 
@@ -178,10 +211,17 @@ export function getValidationErrorMessage(result: ValidationResult): string {
 }
 
 export function getEventSummary(event: BadgeMintEvent): string {
-  return `Badge Mint Event: ${event.badgeName} (${event.badgeId}) -> ${event.userId.substring(0, 10)}... [Block: ${event.blockHeight}, TX: ${event.transactionHash.substring(0, 8)}...]`;
+  return `Badge Mint Event: ${event.badgeName} (${
+    event.badgeId
+  }) -> ${event.userId.substring(0, 10)}... [Block: ${
+    event.blockHeight
+  }, TX: ${event.transactionHash.substring(0, 8)}...]`;
 }
 
-export function compareEvents(event1: BadgeMintEvent, event2: BadgeMintEvent): boolean {
+export function compareEvents(
+  event1: BadgeMintEvent,
+  event2: BadgeMintEvent
+): boolean {
   return (
     event1.userId === event2.userId &&
     event1.badgeId === event2.badgeId &&
@@ -190,11 +230,17 @@ export function compareEvents(event1: BadgeMintEvent, event2: BadgeMintEvent): b
   );
 }
 
-export function isEventRecent(event: BadgeMintEvent, withinMs: number = 3600000): boolean {
+export function isEventRecent(
+  event: BadgeMintEvent,
+  withinMs: number = 3600000
+): boolean {
   const now = Date.now();
   return Math.abs(now - event.timestamp) <= withinMs;
 }
 
-export function isEventFromPastBlock(event: BadgeMintEvent, currentBlockHeight: number): boolean {
+export function isEventFromPastBlock(
+  event: BadgeMintEvent,
+  currentBlockHeight: number
+): boolean {
   return event.blockHeight < currentBlockHeight;
 }

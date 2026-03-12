@@ -10,7 +10,8 @@ type TransactionType = 'stx-transfer' | 'badge-call' | 'community-call';
 
 export function TransactionSigningInterface() {
   const [activeTab, setActiveTab] = useState<TransactionType>('stx-transfer');
-  const { currentRequest, isSigning, signedTransactions } = useTransactionSigning();
+  const { currentRequest, isSigning, signedTransactions } =
+    useTransactionSigning();
 
   const handleSuccess = (hash: string) => {
     console.log('Transaction successful:', hash);
@@ -23,12 +24,25 @@ export function TransactionSigningInterface() {
   };
 
   const tabs = [
-    { id: 'stx-transfer' as const, label: 'STX Transfer', component: STXTransfer },
-    { id: 'badge-call' as const, label: 'Badge Contract', component: BadgeContractCall },
-    { id: 'community-call' as const, label: 'Community Contract', component: CommunityContractCall },
+    {
+      id: 'stx-transfer' as const,
+      label: 'STX Transfer',
+      component: STXTransfer,
+    },
+    {
+      id: 'badge-call' as const,
+      label: 'Badge Contract',
+      component: BadgeContractCall,
+    },
+    {
+      id: 'community-call' as const,
+      label: 'Community Contract',
+      component: CommunityContractCall,
+    },
   ];
 
-  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || STXTransfer;
+  const ActiveComponent =
+    tabs.find((tab) => tab.id === activeTab)?.component || STXTransfer;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -59,12 +73,20 @@ export function TransactionSigningInterface() {
       {/* Current Transaction Status */}
       {currentRequest && (
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">Current Transaction</h4>
+          <h4 className="font-medium text-blue-900 mb-2">
+            Current Transaction
+          </h4>
           <div className="text-sm text-blue-800">
             <div>Type: {currentRequest.type}</div>
-            {currentRequest.recipient && <div>Recipient: {currentRequest.recipient}</div>}
-            {currentRequest.amount && <div>Amount: {currentRequest.amount} STX</div>}
-            {currentRequest.functionName && <div>Function: {currentRequest.functionName}</div>}
+            {currentRequest.recipient && (
+              <div>Recipient: {currentRequest.recipient}</div>
+            )}
+            {currentRequest.amount && (
+              <div>Amount: {currentRequest.amount} STX</div>
+            )}
+            {currentRequest.functionName && (
+              <div>Function: {currentRequest.functionName}</div>
+            )}
             <div className="mt-2">
               Status: {isSigning ? 'Signing...' : 'Processing'}
             </div>
@@ -78,7 +100,10 @@ export function TransactionSigningInterface() {
           <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
           <div className="space-y-3">
             {signedTransactions.slice(0, 5).map((tx) => (
-              <div key={tx.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+              <div
+                key={tx.id}
+                className="flex justify-between items-center p-3 bg-gray-50 rounded-md"
+              >
                 <div>
                   <div className="font-medium">{tx.request.type}</div>
                   <div className="text-sm text-gray-600">
@@ -86,11 +111,15 @@ export function TransactionSigningInterface() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`text-sm font-medium ${
-                    tx.status === 'confirmed' ? 'text-green-600' :
-                    tx.status === 'failed' ? 'text-red-600' :
-                    'text-yellow-600'
-                  }`}>
+                  <div
+                    className={`text-sm font-medium ${
+                      tx.status === 'confirmed'
+                        ? 'text-green-600'
+                        : tx.status === 'failed'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                    }`}
+                  >
                     {tx.status}
                   </div>
                   {tx.hash && (

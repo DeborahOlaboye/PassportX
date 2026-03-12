@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export interface TransactionError {
   id: string;
   type: 'validation' | 'signing' | 'broadcasting' | 'network' | 'unknown';
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: number;
   retryable: boolean;
   transactionId?: string;
@@ -18,7 +18,11 @@ interface ErrorHandlerProps {
   onDismiss?: () => void;
 }
 
-export function TransactionErrorHandler({ error, onRetry, onDismiss }: ErrorHandlerProps) {
+export function TransactionErrorHandler({
+  error,
+  onRetry,
+  onDismiss,
+}: ErrorHandlerProps) {
   const [isRetrying, setIsRetrying] = useState(false);
 
   const handleRetry = async () => {
@@ -92,7 +96,9 @@ export function TransactionErrorHandler({ error, onRetry, onDismiss }: ErrorHand
             <p className="mt-1">{getErrorSuggestion(error.type)}</p>
             {error.details && (
               <details className="mt-2">
-                <summary className="cursor-pointer font-medium">Technical Details</summary>
+                <summary className="cursor-pointer font-medium">
+                  Technical Details
+                </summary>
                 <pre className="mt-2 text-xs bg-red-100 p-2 rounded overflow-auto">
                   {JSON.stringify(error.details, null, 2)}
                 </pre>
@@ -143,7 +149,11 @@ export class TransactionErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Transaction error boundary caught an error:', error, errorInfo);
+    console.error(
+      'Transaction error boundary caught an error:',
+      error,
+      errorInfo
+    );
   }
 
   resetError = () => {
@@ -154,7 +164,12 @@ export class TransactionErrorBoundary extends React.Component<
     if (this.state.hasError && this.state.error) {
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback;
-        return <FallbackComponent error={this.state.error} resetError={this.resetError} />;
+        return (
+          <FallbackComponent
+            error={this.state.error}
+            resetError={this.resetError}
+          />
+        );
       }
 
       return (
@@ -168,7 +183,10 @@ export class TransactionErrorBoundary extends React.Component<
                 Something went wrong
               </h3>
               <div className="mt-2 text-sm text-red-700">
-                <p>An unexpected error occurred while processing your transaction.</p>
+                <p>
+                  An unexpected error occurred while processing your
+                  transaction.
+                </p>
               </div>
               <div className="mt-4">
                 <button
@@ -197,11 +215,11 @@ export function useTransactionErrorHandler() {
       id: `error-${Date.now()}-${Math.random()}`,
       timestamp: Date.now(),
     };
-    setErrors(prev => [newError, ...prev]);
+    setErrors((prev) => [newError, ...prev]);
   };
 
   const removeError = (id: string) => {
-    setErrors(prev => prev.filter(error => error.id !== id));
+    setErrors((prev) => prev.filter((error) => error.id !== id));
   };
 
   const clearErrors = () => {

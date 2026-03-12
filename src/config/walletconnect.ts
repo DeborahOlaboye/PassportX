@@ -85,7 +85,10 @@ export function validateConfig(config: WalletConnectProviderConfig): {
   };
 }
 
-export function getChainRpcUrl(chainId: number, config?: WalletConnectProviderConfig): string {
+export function getChainRpcUrl(
+  chainId: number,
+  config?: WalletConnectProviderConfig
+): string {
   const chain = CHAIN_ID_TO_CONFIG[chainId];
   if (chain) return chain.rpcUrl;
 
@@ -103,7 +106,10 @@ export function printConfigDebug(config: WalletConnectProviderConfig): void {
   console.log('Project ID:', config.projectId);
   console.log('Relay URL:', config.relayUrl);
   console.log('Metadata:', config.metadata);
-  console.log('Chains:', config.chains.map((c) => `${c.name} (${c.id})`));
+  console.log(
+    'Chains:',
+    config.chains.map((c) => `${c.name} (${c.id})`)
+  );
   console.log('Methods:', config.methods);
   console.log('Events:', config.events);
   console.groupEnd();

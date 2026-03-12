@@ -7,7 +7,7 @@ describe('WalletConnect state management', () => {
     const initialState = {
       session: null,
       isConnected: false,
-      error: null
+      error: null,
     };
     expect(initialState.session).toBeNull();
     expect(initialState.isConnected).toBe(false);
@@ -15,7 +15,11 @@ describe('WalletConnect state management', () => {
 
   it('should update session state', () => {
     let state = { session: null, isConnected: false };
-    const newSession = { id: 'sess-1', accounts: ['ST123'], connectedAt: Date.now() };
+    const newSession = {
+      id: 'sess-1',
+      accounts: ['ST123'],
+      connectedAt: Date.now(),
+    };
     state = { ...state, session: newSession, isConnected: true };
     expect(state.session?.id).toBe('sess-1');
     expect(state.isConnected).toBe(true);
@@ -24,7 +28,7 @@ describe('WalletConnect state management', () => {
   it('should clear session state on disconnect', () => {
     let state = {
       session: { id: 'sess-1', accounts: ['ST123'], connectedAt: Date.now() },
-      isConnected: true
+      isConnected: true,
     };
     state = { ...state, session: null, isConnected: false };
     expect(state.session).toBeNull();
@@ -43,7 +47,7 @@ describe('WalletConnect state management', () => {
     let state = { session: null, error: null };
     const updates = [
       { session: { id: '1', accounts: [], connectedAt: 0 } },
-      { error: new Error('test') }
+      { error: new Error('test') },
     ];
     state = { ...state, ...updates[0], ...updates[1] };
     expect(state.session?.id).toBe('1');
@@ -61,7 +65,7 @@ describe('WalletConnect state management', () => {
     const lazyInit = () => ({
       session: null,
       isConnected: false,
-      error: null
+      error: null,
     });
     const state1 = lazyInit();
     const state2 = lazyInit();

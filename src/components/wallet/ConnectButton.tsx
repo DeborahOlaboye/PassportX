@@ -6,7 +6,8 @@ import { useWalletConnect } from '@/contexts/WalletConnectContext';
 import WalletSelector from './WalletSelector';
 
 export default function ConnectButton() {
-  const { isConnected, isConnecting, connectedWallet, disconnectWallet } = useWalletConnect();
+  const { isConnected, isConnecting, connectedWallet, disconnectWallet } =
+    useWalletConnect();
   const [showSelector, setShowSelector] = useState(false);
 
   const handleDisconnect = async () => {
@@ -23,7 +24,8 @@ export default function ConnectButton() {
         <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
           <span className="text-sm font-medium text-gray-700">
-            {connectedWallet.address.slice(0, 6)}...{connectedWallet.address.slice(-4)}
+            {connectedWallet.address.slice(0, 6)}...
+            {connectedWallet.address.slice(-4)}
           </span>
         </div>
         <button
@@ -50,7 +52,9 @@ export default function ConnectButton() {
         <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>
       </button>
 
-      {showSelector && <WalletSelector onClose={() => setShowSelector(false)} />}
+      {showSelector && (
+        <WalletSelector onClose={() => setShowSelector(false)} />
+      )}
     </>
   );
 }

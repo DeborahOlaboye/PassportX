@@ -2,19 +2,23 @@
 
 import { useState } from 'react';
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
-import { TransactionRequest } from '@/types/transaction-signing';
+import { TransactionRequest, GasEstimate } from '@/types/transaction-signing';
 
 interface CommunityContractCallProps {
   onSuccess?: (hash: string) => void;
   onError?: (error: Error) => void;
 }
 
-export function CommunityContractCall({ onSuccess, onError }: CommunityContractCallProps) {
-  const { signTransaction, broadcastTransaction, estimateGas, isSigning } = useTransactionSigning();
+export function CommunityContractCall({
+  onSuccess,
+  onError,
+}: CommunityContractCallProps) {
+  const { signTransaction, broadcastTransaction, estimateGas, isSigning } =
+    useTransactionSigning();
   const [functionName, setFunctionName] = useState('join-community');
   const [communityId, setCommunityId] = useState('');
   const [userAddress, setUserAddress] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<any>(null);
+  const [gasEstimate, setGasEstimate] = useState<GasEstimate | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {
@@ -119,7 +123,8 @@ export function CommunityContractCall({ onSuccess, onError }: CommunityContractC
           />
         </div>
 
-        {(functionName === 'join-community' || functionName === 'leave-community') && (
+        {(functionName === 'join-community' ||
+          functionName === 'leave-community') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               User Address
@@ -145,7 +150,13 @@ export function CommunityContractCall({ onSuccess, onError }: CommunityContractC
 
           <button
             onClick={handleContractCall}
-            disabled={!communityId || ((functionName === 'join-community' || functionName === 'leave-community') && !userAddress) || isSigning}
+            disabled={
+              !communityId ||
+              ((functionName === 'join-community' ||
+                functionName === 'leave-community') &&
+                !userAddress) ||
+              isSigning
+            }
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             {isSigning ? 'Signing...' : 'Execute Call'}
@@ -158,7 +169,9 @@ export function CommunityContractCall({ onSuccess, onError }: CommunityContractC
             <div className="text-sm space-y-1">
               <div>Base Fee: {gasEstimate.breakdown.base} microSTX</div>
               <div>Priority Fee: {gasEstimate.breakdown.priority} microSTX</div>
-              <div className="font-semibold">Total: {gasEstimate.total} microSTX</div>
+              <div className="font-semibold">
+                Total: {gasEstimate.total} microSTX
+              </div>
             </div>
           </div>
         )}

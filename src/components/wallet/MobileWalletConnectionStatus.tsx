@@ -9,7 +9,7 @@ import {
   Wifi,
   WifiOff,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 export type ConnectionStatus =
@@ -136,8 +136,10 @@ export default function MobileWalletConnectionStatus({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const showRetryButton = status === 'failed' || status === 'timeout' || status === 'network_error';
-  const showCancelButton = status === 'waiting_for_scan' || status === 'connecting';
+  const showRetryButton =
+    status === 'failed' || status === 'timeout' || status === 'network_error';
+  const showCancelButton =
+    status === 'waiting_for_scan' || status === 'connecting';
 
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto">
@@ -155,25 +157,22 @@ export default function MobileWalletConnectionStatus({
         <h3 className="text-lg font-semibold text-gray-900 mb-1">
           {config.message}
         </h3>
-        <p className="text-sm text-gray-600">
-          {config.description}
-        </p>
+        <p className="text-sm text-gray-600">{config.description}</p>
         {walletName && (
-          <p className="text-xs text-gray-500 mt-1">
-            Wallet: {walletName}
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Wallet: {walletName}</p>
         )}
       </div>
 
       {/* Timeout Timer */}
-      {(status === 'waiting_for_scan' || status === 'connecting') && timeRemaining > 0 && (
-        <div className="mb-4 text-center">
-          <div className="text-sm text-gray-500 mb-1">Time remaining</div>
-          <div className="text-2xl font-mono font-bold text-gray-700">
-            {formatTime(timeRemaining)}
+      {(status === 'waiting_for_scan' || status === 'connecting') &&
+        timeRemaining > 0 && (
+          <div className="mb-4 text-center">
+            <div className="text-sm text-gray-500 mb-1">Time remaining</div>
+            <div className="text-2xl font-mono font-bold text-gray-700">
+              {formatTime(timeRemaining)}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Progress Indicator for Active States */}
       {(status === 'generating_qr' || status === 'connecting') && (

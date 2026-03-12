@@ -1,6 +1,12 @@
 export interface MobileWalletEvent {
   timestamp: number;
-  eventType: 'connection_attempt' | 'connection_success' | 'connection_failure' | 'qr_scan' | 'deep_link_open' | 'response_received';
+  eventType:
+    | 'connection_attempt'
+    | 'connection_success'
+    | 'connection_failure'
+    | 'qr_scan'
+    | 'deep_link_open'
+    | 'response_received';
   walletType?: 'xverse' | 'hiro' | 'leather';
   platform: 'ios' | 'android' | 'desktop';
   sessionId: string;
@@ -36,7 +42,10 @@ export class MobileWalletAnalytics {
     return MobileWalletAnalytics.instance;
   }
 
-  public trackConnectionAttempt(walletType: 'xverse' | 'hiro' | 'leather', sessionId: string): void {
+  public trackConnectionAttempt(
+    walletType: 'xverse' | 'hiro' | 'leather',
+    sessionId: string
+  ): void {
     const platform = this.detectPlatform();
     const event: MobileWalletEvent = {
       timestamp: Date.now(),
@@ -50,7 +59,10 @@ export class MobileWalletAnalytics {
     this.addEvent(event);
   }
 
-  public trackConnectionSuccess(walletType: 'xverse' | 'hiro' | 'leather', sessionId: string): void {
+  public trackConnectionSuccess(
+    walletType: 'xverse' | 'hiro' | 'leather',
+    sessionId: string
+  ): void {
     const startTime = this.sessionStartTimes.get(sessionId);
     const duration = startTime ? Date.now() - startTime : undefined;
     const platform = this.detectPlatform();
@@ -103,7 +115,10 @@ export class MobileWalletAnalytics {
     this.addEvent(event);
   }
 
-  public trackDeepLinkOpen(walletType: 'xverse' | 'hiro' | 'leather', sessionId: string): void {
+  public trackDeepLinkOpen(
+    walletType: 'xverse' | 'hiro' | 'leather',
+    sessionId: string
+  ): void {
     const platform = this.detectPlatform();
     const event: MobileWalletEvent = {
       timestamp: Date.now(),
@@ -116,7 +131,10 @@ export class MobileWalletAnalytics {
     this.addEvent(event);
   }
 
-  public trackResponseReceived(sessionId: string, metadata?: Record<string, any>): void {
+  public trackResponseReceived(
+    sessionId: string,
+    metadata?: Record<string, any>
+  ): void {
     const platform = this.detectPlatform();
     const event: MobileWalletEvent = {
       timestamp: Date.now(),
@@ -159,7 +177,10 @@ export class MobileWalletAnalytics {
   private persistEvents(): void {
     try {
       const eventsToPersist = this.events.slice(-500); // Persist last 500 events
-      localStorage.setItem('mobile-wallet-analytics', JSON.stringify(eventsToPersist));
+      localStorage.setItem(
+        'mobile-wallet-analytics',
+        JSON.stringify(eventsToPersist)
+      );
     } catch (error) {
       console.warn('Failed to persist mobile wallet analytics:', error);
     }
@@ -177,35 +198,51 @@ export class MobileWalletAnalytics {
     }
   }
 
-  public getMetrics(timeRange?: { start: number; end: number }): MobileWalletMetrics {
+  public getMetrics(timeRange?: {
+    start: number;
+    end: number;
+  }): MobileWalletMetrics {
     let filteredEvents = this.events;
 
     if (timeRange) {
       filteredEvents = this.events.filter(
-        event => event.timestamp >= timeRange.start && event.timestamp <= timeRange.end
+        (event) =>
+          event.timestamp >= timeRange.start && event.timestamp <= timeRange.end
       );
     }
 
-    const connectionAttempts = filteredEvents.filter(e => e.eventType === 'connection_attempt');
-    const successfulConnections = filteredEvents.filter(e => e.eventType === 'connection_success');
-    const failedConnections = filteredEvents.filter(e => e.eventType === 'connection_failure');
+    const connectionAttempts = filteredEvents.filter(
+      (e) => e.eventType === 'connection_attempt'
+    );
+    const successfulConnections = filteredEvents.filter(
+      (e) => e.eventType === 'connection_success'
+    );
+    const failedConnections = filteredEvents.filter(
+      (e) => e.eventType === 'connection_failure'
+    );
 
-    const totalDuration = successfulConnections.reduce((sum, event) => sum + (event.duration || 0), 0);
-    const averageConnectionTime = successfulConnections.length > 0
-      ? totalDuration / successfulConnections.length
-      : 0;
+    const totalDuration = successfulConnections.reduce(
+      (sum, event) => sum + (event.duration || 0),
+      0
+    );
+    const averageConnectionTime =
+      successfulConnections.length > 0
+        ? totalDuration / successfulConnections.length
+        : 0;
 
     const platformBreakdown: Record<string, number> = {};
     const walletBreakdown: Record<string, number> = {};
     const errorBreakdown: Record<string, number> = {};
 
-    filteredEvents.forEach(event => {
+    filteredEvents.forEach((event) => {
       // Platform breakdown
-      platformBreakdown[event.platform] = (platformBreakdown[event.platform] || 0) + 1;
+      platformBreakdown[event.platform] =
+        (platformBreakdown[event.platform] || 0) + 1;
 
       // Wallet breakdown
       if (event.walletType) {
-        walletBreakdown[event.walletType] = (walletBreakdown[event.walletType] || 0) + 1;
+        walletBreakdown[event.walletType] =
+          (walletBreakdown[event.walletType] || 0) + 1;
       }
 
       // Error breakdown
@@ -264,10 +301,14 @@ export class MobileWalletAnalytics {
     error?: string;
   } {
     const startTime = this.sessionStartTimes.get(sessionId);
-    const sessionEvents = this.events.filter(e => e.sessionId === sessionId);
+    const sessionEvents = this.events.filter((e) => e.sessionId === sessionId);
 
-    const successEvent = sessionEvents.find(e => e.eventType === 'connection_success');
-    const failureEvent = sessionEvents.find(e => e.eventType === 'connection_failure');
+    const successEvent = sessionEvents.find(
+      (e) => e.eventType === 'connection_success'
+    );
+    const failureEvent = sessionEvents.find(
+      (e) => e.eventType === 'connection_failure'
+    );
 
     if (successEvent) {
       return {
@@ -300,14 +341,20 @@ export const trackMobileWalletConnectionAttempt = (
   walletType: 'xverse' | 'hiro' | 'leather',
   sessionId: string
 ): void => {
-  MobileWalletAnalytics.getInstance().trackConnectionAttempt(walletType, sessionId);
+  MobileWalletAnalytics.getInstance().trackConnectionAttempt(
+    walletType,
+    sessionId
+  );
 };
 
 export const trackMobileWalletConnectionSuccess = (
   walletType: 'xverse' | 'hiro' | 'leather',
   sessionId: string
 ): void => {
-  MobileWalletAnalytics.getInstance().trackConnectionSuccess(walletType, sessionId);
+  MobileWalletAnalytics.getInstance().trackConnectionSuccess(
+    walletType,
+    sessionId
+  );
 };
 
 export const trackMobileWalletConnectionFailure = (
@@ -315,7 +362,11 @@ export const trackMobileWalletConnectionFailure = (
   sessionId: string,
   error: string
 ): void => {
-  MobileWalletAnalytics.getInstance().trackConnectionFailure(walletType, sessionId, error);
+  MobileWalletAnalytics.getInstance().trackConnectionFailure(
+    walletType,
+    sessionId,
+    error
+  );
 };
 
 export const trackMobileWalletQRScan = (sessionId: string): void => {
@@ -333,5 +384,8 @@ export const trackMobileWalletResponseReceived = (
   sessionId: string,
   metadata?: Record<string, any>
 ): void => {
-  MobileWalletAnalytics.getInstance().trackResponseReceived(sessionId, metadata);
+  MobileWalletAnalytics.getInstance().trackResponseReceived(
+    sessionId,
+    metadata
+  );
 };

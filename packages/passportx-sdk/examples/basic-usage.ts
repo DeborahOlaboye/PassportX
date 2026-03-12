@@ -10,7 +10,7 @@ async function main() {
   // Initialize the client
   const client = new PassportX({
     apiUrl: 'https://api.passportx.app',
-    network: 'mainnet'
+    network: 'mainnet',
   });
 
   // Example Stacks address
@@ -34,7 +34,7 @@ async function main() {
   console.log('\n2. Fetching achievement badges only...');
   const achievements = await client.getUserBadges(userAddress, {
     category: 'achievement',
-    limit: 5
+    limit: 5,
   });
   console.log(`   Found ${achievements.length} achievement badges`);
 
@@ -44,7 +44,9 @@ async function main() {
   console.log(`   Total communities: ${communities.pagination.total}`);
 
   communities.data.forEach((community, index) => {
-    console.log(`   ${index + 1}. ${community.name} (${community.memberCount} members)`);
+    console.log(
+      `   ${index + 1}. ${community.name} (${community.memberCount} members)`
+    );
   });
 
   // 4. Get community information
@@ -61,7 +63,11 @@ async function main() {
     console.log(`   Badge templates: ${templates.length}`);
 
     templates.slice(0, 3).forEach((template, index) => {
-      console.log(`     ${index + 1}. ${template.icon} ${template.name} (Level ${template.level})`);
+      console.log(
+        `     ${index + 1}. ${template.icon} ${template.name} (Level ${
+          template.level
+        })`
+      );
     });
   }
 
@@ -69,7 +75,7 @@ async function main() {
 }
 
 // Run the example
-main().catch(error => {
+main().catch((error) => {
   console.error('Error:', error.message);
   process.exit(1);
 });

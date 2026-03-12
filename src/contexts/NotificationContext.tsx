@@ -1,7 +1,14 @@
-'use client'
+'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
-import { io, Socket } from 'socket.io-client'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+} from 'react';
+import { io, Socket } from 'socket.io-client';
 
 interface NotificationData {
   badgeId?: string;
@@ -13,238 +20,256 @@ interface NotificationData {
 }
 
 interface Notification {
-  _id: string
-  userId: string
-  type: 'badge_received' | 'community_update' | 'system_announcement' | 'badge_issued' | 'community_invite' | 'badge_verified'
-  title: string
-  message: string
-  data?: NotificationData
-  read: boolean
-  createdAt: string
+  _id: string;
+  userId: string;
+  type:
+    | 'badge_received'
+    | 'community_update'
+    | 'system_announcement'
+    | 'badge_issued'
+    | 'community_invite'
+    | 'badge_verified';
+  title: string;
+  message: string;
+  data?: NotificationData;
+  read: boolean;
+  createdAt: string;
 }
 
 interface NotificationContextType {
-  notifications: Notification[]
-  unreadCount: number
-  isConnected: boolean
-  fetchNotifications: () => Promise<void>
-  markAsRead: (notificationId: string) => Promise<void>
-  markAllAsRead: () => Promise<void>
-  deleteNotification: (notificationId: string) => Promise<void>
-  refreshUnreadCount: () => Promise<void>
+  notifications: Notification[];
+  unreadCount: number;
+  isConnected: boolean;
+  fetchNotifications: () => Promise<void>;
+  markAsRead: (notificationId: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (notificationId: string) => Promise<void>;
+  refreshUnreadCount: () => Promise<void>;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
-const BACKEND_WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001'
+const BACKEND_WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001';
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [socket, setSocket] = useState<Socket | null>(null)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [isConnected, setIsConnected] = useState(false)
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isConnected, setIsConnected] = useState(false);
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
 
     if (!token) {
-      return
+      return;
     }
 
     const socketInstance = io(BACKEND_WS_URL, {
       auth: {
-        token
+        token,
       },
-      transports: ['websocket', 'polling']
-    })
+      transports: ['websocket', 'polling'],
+    });
 
     socketInstance.on('connect', () => {
-      console.log('WebSocket connected')
-      setIsConnected(true)
-    })
+      console.log('WebSocket connected');
+      setIsConnected(true);
+    });
 
     socketInstance.on('disconnect', () => {
-      console.log('WebSocket disconnected')
-      setIsConnected(false)
-    })
+      console.log('WebSocket disconnected');
+      setIsConnected(false);
+    });
 
     socketInstance.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error)
-      setIsConnected(false)
-    })
+      console.error('WebSocket connection error:', error);
+      setIsConnected(false);
+    });
 
     // Listen for new notifications
     socketInstance.on('notification:new', (notification: Notification) => {
-      console.log('New notification received:', notification)
-      setNotifications(prev => [notification, ...prev])
-      setUnreadCount(prev => prev + 1)
+      console.log('New notification received:', notification);
+      setNotifications((prev) => [notification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
 
       // Show browser notification if supported
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(notification.title, {
           body: notification.message,
-          icon: '/icon.png'
-        })
+          icon: '/icon.png',
+        });
       }
-    })
+    });
 
     // Listen for system announcements
     socketInstance.on('notification:system', (notification: Notification) => {
-      console.log('System announcement received:', notification)
+      console.log('System announcement received:', notification);
       // Handle system-wide announcements
-    })
+    });
 
-    setSocket(socketInstance)
+    setSocket(socketInstance);
 
     return () => {
-      socketInstance.disconnect()
-    }
-  }, [])
+      socketInstance.disconnect();
+    };
+  }, []);
 
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) return
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-      const response = await fetch('/api/notifications?limit=50&sortBy=newest', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        '/api/notifications?limit=50&sortBy=newest',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      })
+      );
 
       if (response.ok) {
-        const data = await response.json()
-        setNotifications(data.notifications || [])
-        setUnreadCount(data.unreadCount || 0)
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
       }
     } catch (error: unknown) {
-      console.error('Error fetching notifications:', error)
+      console.error('Error fetching notifications:', error);
     }
-  }, [])
+  }, []);
 
   // Refresh unread count
   const refreshUnreadCount = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) return
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
       const response = await fetch('/api/notifications/unread-count', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setUnreadCount(data.count || 0)
+        const data = await response.json();
+        setUnreadCount(data.count || 0);
       }
     } catch (error: unknown) {
-      console.error('Error fetching unread count:', error)
+      console.error('Error fetching unread count:', error);
     }
-  }, [])
+  }, []);
 
   // Mark notification as read
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) return
+  const markAsRead = useCallback(
+    async (notificationId: string) => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
+        const response = await fetch(
+          `/api/notifications/${notificationId}/read`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          setNotifications((prev) =>
+            prev.map((n) =>
+              n._id === notificationId ? { ...n, read: true } : n
+            )
+          );
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+
+          // Emit to socket
+          if (socket) {
+            socket.emit('notification:read', notificationId);
+          }
         }
-      })
-
-      if (response.ok) {
-        setNotifications(prev =>
-          prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
-        )
-        setUnreadCount(prev => Math.max(0, prev - 1))
-
-        // Emit to socket
-        if (socket) {
-          socket.emit('notification:read', notificationId)
-        }
+      } catch (error: unknown) {
+        console.error('Error marking notification as read:', error);
       }
-    } catch (error: unknown) {
-      console.error('Error marking notification as read:', error)
-    }
-  }, [socket])
+    },
+    [socket]
+  );
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) return
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
       const response = await fetch('/api/notifications/read-all', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
-        setNotifications(prev =>
-          prev.map(n => ({ ...n, read: true }))
-        )
-        setUnreadCount(0)
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        setUnreadCount(0);
 
         // Emit to socket
         if (socket) {
-          socket.emit('notifications:readAll')
+          socket.emit('notifications:readAll');
         }
       }
     } catch (error: unknown) {
-      console.error('Error marking all notifications as read:', error)
+      console.error('Error marking all notifications as read:', error);
     }
-  }, [socket])
+  }, [socket]);
 
   // Delete notification
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) return
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
-        setNotifications(prev => {
-          const notification = prev.find(n => n._id === notificationId)
+        setNotifications((prev) => {
+          const notification = prev.find((n) => n._id === notificationId);
           if (notification && !notification.read) {
-            setUnreadCount(count => Math.max(0, count - 1))
+            setUnreadCount((count) => Math.max(0, count - 1));
           }
-          return prev.filter(n => n._id !== notificationId)
-        })
+          return prev.filter((n) => n._id !== notificationId);
+        });
       }
     } catch (error: unknown) {
-      console.error('Error deleting notification:', error)
+      console.error('Error deleting notification:', error);
     }
-  }, [])
+  }, []);
 
   // Fetch notifications on mount
   useEffect(() => {
     fetchNotifications().catch((err: unknown) => {
-      console.error('Failed to fetch notifications on mount:', err)
-    })
-  }, [fetchNotifications])
+      console.error('Failed to fetch notifications on mount:', err);
+    });
+  }, [fetchNotifications]);
 
   // Request browser notification permission
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch((err: unknown) => {
-        console.warn('Failed to request notification permission:', err)
-      })
+        console.warn('Failed to request notification permission:', err);
+      });
     }
-  }, [])
+  }, []);
 
   return (
     <NotificationContext.Provider
@@ -256,18 +281,20 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         markAsRead,
         markAllAsRead,
         deleteNotification,
-        refreshUnreadCount
+        refreshUnreadCount,
       }}
     >
       {children}
     </NotificationContext.Provider>
-  )
+  );
 }
 
 export function useNotifications() {
-  const context = useContext(NotificationContext)
+  const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error('useNotifications must be used within a NotificationProvider')
+    throw new Error(
+      'useNotifications must be used within a NotificationProvider'
+    );
   }
-  return context
+  return context;
 }

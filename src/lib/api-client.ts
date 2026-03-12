@@ -63,7 +63,11 @@ export const apiClient = {
   get: <T>(url: string, options?: RequestInit): Promise<T> =>
     request<T>(url, { ...options, method: 'GET' }),
 
-  post: <T>(url: string, body: RequestBody, options?: RequestInit): Promise<T> =>
+  post: <T>(
+    url: string,
+    body: RequestBody,
+    options?: RequestInit
+  ): Promise<T> =>
     request<T>(url, {
       ...options,
       method: 'POST',

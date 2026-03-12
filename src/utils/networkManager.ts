@@ -39,7 +39,9 @@ export class NetworkManager {
     return this.config.explorerUrl;
   }
 
-  getContractAddress(contract: keyof NetworkConfig['contractAddresses']): string {
+  getContractAddress(
+    contract: keyof NetworkConfig['contractAddresses']
+  ): string {
     return this.config.contractAddresses[contract];
   }
 
@@ -113,7 +115,11 @@ export class NetworkAwareHttpClient {
     return response.json();
   }
 
-  async post<T = unknown>(endpoint: string, data: unknown, options?: RequestInit): Promise<T> {
+  async post<T = unknown>(
+    endpoint: string,
+    data: unknown,
+    options?: RequestInit
+  ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const response = await fetch(url, {
       method: 'POST',

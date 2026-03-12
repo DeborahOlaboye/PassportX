@@ -1,22 +1,25 @@
-import { NotificationPayload } from '../types/handlers'
+import { NotificationPayload } from '../types/handlers';
 
 export interface StoredNotification {
-  _id: string
-  userId: string
-  type: string
-  title: string
-  message: string
-  data: any
-  read: boolean
-  createdAt: string
-  updatedAt: string
+  _id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  data: any;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export class NotificationDeliveryService {
-  private static notificationStore: Map<string, StoredNotification[]> = new Map()
-  private static notificationIdCounter = 0
+  private static notificationStore: Map<string, StoredNotification[]> =
+    new Map();
+  private static notificationIdCounter = 0;
 
-  static async deliverNotification(notification: NotificationPayload): Promise<StoredNotification> {
+  static async deliverNotification(
+    notification: NotificationPayload
+  ): Promise<StoredNotification> {
     try {
       const storedNotification: StoredNotification = {
         _id: this.generateNotificationId(),
@@ -27,35 +30,43 @@ export class NotificationDeliveryService {
         data: notification.data,
         read: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
+        updatedAt: new Date().toISOString(),
+      };
 
-      const userNotifications = this.notificationStore.get(notification.userId) || []
-      userNotifications.unshift(storedNotification)
-      this.notificationStore.set(notification.userId, userNotifications)
+      const userNotifications =
+        this.notificationStore.get(notification.userId) || [];
+      userNotifications.unshift(storedNotification);
+      this.notificationStore.set(notification.userId, userNotifications);
 
-      console.log(`Notification delivered to user ${notification.userId}: ${storedNotification._id}`)
+      console.log(
+        `Notification delivered to user ${notification.userId}: ${storedNotification._id}`
+      );
 
-      return storedNotification
+      return storedNotification;
     } catch (error) {
-      console.error('Error delivering notification:', error)
-      throw error
+      console.error('Error delivering notification:', error);
+      throw error;
     }
   }
 
-  static async deliverNotifications(notifications: NotificationPayload[]): Promise<StoredNotification[]> {
-    const deliveredNotifications: StoredNotification[] = []
+  static async deliverNotifications(
+    notifications: NotificationPayload[]
+  ): Promise<StoredNotification[]> {
+    const deliveredNotifications: StoredNotification[] = [];
 
     for (const notification of notifications) {
       try {
-        const delivered = await this.deliverNotification(notification)
-        deliveredNotifications.push(delivered)
+        const delivered = await this.deliverNotification(notification);
+        deliveredNotifications.push(delivered);
       } catch (error) {
-        console.error(`Error delivering notification to user ${notification.userId}:`, error)
+        console.error(
+          `Error delivering notification to user ${notification.userId}:`,
+          error
+        );
       }
     }
 
-    return deliveredNotifications
+    return deliveredNotifications;
   }
 
   static async getUserNotifications(
@@ -64,11 +75,11 @@ export class NotificationDeliveryService {
     offset: number = 0
   ): Promise<StoredNotification[]> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      return userNotifications.slice(offset, offset + limit)
+      const userNotifications = this.notificationStore.get(userId) || [];
+      return userNotifications.slice(offset, offset + limit);
     } catch (error) {
-      console.error('Error retrieving user notifications:', error)
-      return []
+      console.error('Error retrieving user notifications:', error);
+      return [];
     }
   }
 
@@ -77,38 +88,40 @@ export class NotificationDeliveryService {
     notificationId: string
   ): Promise<StoredNotification | null> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      const notification = userNotifications.find(n => n._id === notificationId)
+      const userNotifications = this.notificationStore.get(userId) || [];
+      const notification = userNotifications.find(
+        (n) => n._id === notificationId
+      );
 
       if (notification) {
-        notification.read = true
-        notification.updatedAt = new Date().toISOString()
+        notification.read = true;
+        notification.updatedAt = new Date().toISOString();
       }
 
-      return notification || null
+      return notification || null;
     } catch (error) {
-      console.error('Error marking notification as read:', error)
-      return null
+      console.error('Error marking notification as read:', error);
+      return null;
     }
   }
 
   static async markAllNotificationsAsRead(userId: string): Promise<number> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      let count = 0
+      const userNotifications = this.notificationStore.get(userId) || [];
+      let count = 0;
 
       for (const notification of userNotifications) {
         if (!notification.read) {
-          notification.read = true
-          notification.updatedAt = new Date().toISOString()
-          count++
+          notification.read = true;
+          notification.updatedAt = new Date().toISOString();
+          count++;
         }
       }
 
-      return count
+      return count;
     } catch (error) {
-      console.error('Error marking all notifications as read:', error)
-      return 0
+      console.error('Error marking all notifications as read:', error);
+      return 0;
     }
   }
 
@@ -117,26 +130,28 @@ export class NotificationDeliveryService {
     notificationId: string
   ): Promise<boolean> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      const initialLength = userNotifications.length
-      
-      const filtered = userNotifications.filter(n => n._id !== notificationId)
-      this.notificationStore.set(userId, filtered)
+      const userNotifications = this.notificationStore.get(userId) || [];
+      const initialLength = userNotifications.length;
 
-      return filtered.length < initialLength
+      const filtered = userNotifications.filter(
+        (n) => n._id !== notificationId
+      );
+      this.notificationStore.set(userId, filtered);
+
+      return filtered.length < initialLength;
     } catch (error) {
-      console.error('Error deleting notification:', error)
-      return false
+      console.error('Error deleting notification:', error);
+      return false;
     }
   }
 
   static async getUnreadCount(userId: string): Promise<number> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      return userNotifications.filter(n => !n.read).length
+      const userNotifications = this.notificationStore.get(userId) || [];
+      return userNotifications.filter((n) => !n.read).length;
     } catch (error) {
-      console.error('Error getting unread count:', error)
-      return 0
+      console.error('Error getting unread count:', error);
+      return 0;
     }
   }
 
@@ -146,13 +161,13 @@ export class NotificationDeliveryService {
     limit: number = 20
   ): Promise<StoredNotification[]> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
+      const userNotifications = this.notificationStore.get(userId) || [];
       return userNotifications
-        .filter(n => n.type === notificationType)
-        .slice(0, limit)
+        .filter((n) => n.type === notificationType)
+        .slice(0, limit);
     } catch (error) {
-      console.error('Error filtering notifications by type:', error)
-      return []
+      console.error('Error filtering notifications by type:', error);
+      return [];
     }
   }
 
@@ -161,61 +176,62 @@ export class NotificationDeliveryService {
     limit: number = 20
   ): Promise<StoredNotification[]> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      return userNotifications
-        .filter(n => !n.read)
-        .slice(0, limit)
+      const userNotifications = this.notificationStore.get(userId) || [];
+      return userNotifications.filter((n) => !n.read).slice(0, limit);
     } catch (error) {
-      console.error('Error getting unread notifications:', error)
-      return []
+      console.error('Error getting unread notifications:', error);
+      return [];
     }
   }
 
   static async clearAllNotifications(userId: string): Promise<number> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      const count = userNotifications.length
-      this.notificationStore.delete(userId)
-      return count
+      const userNotifications = this.notificationStore.get(userId) || [];
+      const count = userNotifications.length;
+      this.notificationStore.delete(userId);
+      return count;
     } catch (error) {
-      console.error('Error clearing notifications:', error)
-      return 0
+      console.error('Error clearing notifications:', error);
+      return 0;
     }
   }
 
-  static async clearOldNotifications(userId: string, daysOld: number): Promise<number> {
+  static async clearOldNotifications(
+    userId: string,
+    daysOld: number
+  ): Promise<number> {
     try {
-      const userNotifications = this.notificationStore.get(userId) || []
-      const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000)
+      const userNotifications = this.notificationStore.get(userId) || [];
+      const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
 
-      const filtered = userNotifications.filter(n => {
-        const notificationDate = new Date(n.createdAt)
-        return notificationDate > cutoffDate
-      })
+      const filtered = userNotifications.filter((n) => {
+        const notificationDate = new Date(n.createdAt);
+        return notificationDate > cutoffDate;
+      });
 
-      const deletedCount = userNotifications.length - filtered.length
-      this.notificationStore.set(userId, filtered)
+      const deletedCount = userNotifications.length - filtered.length;
+      this.notificationStore.set(userId, filtered);
 
-      return deletedCount
+      return deletedCount;
     } catch (error) {
-      console.error('Error clearing old notifications:', error)
-      return 0
+      console.error('Error clearing old notifications:', error);
+      return 0;
     }
   }
 
   static getNotificationCount(): number {
-    let total = 0
+    let total = 0;
     for (const [, notifications] of this.notificationStore) {
-      total += notifications.length
+      total += notifications.length;
     }
-    return total
+    return total;
   }
 
   static getUserNotificationCount(userId: string): number {
-    return (this.notificationStore.get(userId) || []).length
+    return (this.notificationStore.get(userId) || []).length;
   }
 
   private static generateNotificationId(): string {
-    return `notif_${Date.now()}_${++this.notificationIdCounter}`
+    return `notif_${Date.now()}_${++this.notificationIdCounter}`;
   }
 }

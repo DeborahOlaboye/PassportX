@@ -10,7 +10,12 @@ import ErrorMonitoringService from './ErrorMonitoringService';
 
 export interface SecurityAlert {
   id: string;
-  type: 'privilege_escalation' | 'mass_suspension' | 'rapid_changes' | 'unauthorized_access' | 'anomalous_pattern';
+  type:
+    | 'privilege_escalation'
+    | 'mass_suspension'
+    | 'rapid_changes'
+    | 'unauthorized_access'
+    | 'anomalous_pattern';
   severity: 'low' | 'medium' | 'high' | 'critical';
   title: string;
   description: string;
@@ -52,10 +57,14 @@ export class AccessControlSecurityMonitor {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
@@ -94,7 +103,7 @@ export class AccessControlSecurityMonitor {
         this.checkPrivilegeEscalation(),
         this.checkMassSuspensions(),
         this.checkRapidChanges(),
-        this.checkAnomalousPatterns()
+        this.checkAnomalousPatterns(),
       ]);
     } catch (error) {
       this.logger.error('Error running security checks', error);
@@ -111,7 +120,7 @@ export class AccessControlSecurityMonitor {
     const selfGrantedAdmins = await AccessControlAuditLog.find({
       eventType: AccessControlEventType.ADMIN_ADDED,
       timestamp: { $gte: oneHourAgo },
-      $expr: { $eq: ['$principal', '$targetPrincipal'] }
+      $expr: { $eq: ['$principal', '$targetPrincipal'] },
     });
 
     for (const log of selfGrantedAdmins) {
@@ -122,31 +131,37 @@ export class AccessControlSecurityMonitor {
         description: `User ${log.principal} granted themselves admin privileges`,
         principal: log.principal,
         affectedCommunities: log.communityId ? [log.communityId] : [],
-        evidence: [{
-          transactionHash: log.transactionHash,
-          timestamp: log.timestamp,
-          eventType: log.eventType
-        }]
+        evidence: [
+          {
+            transactionHash: log.transactionHash,
+            timestamp: log.timestamp,
+            eventType: log.eventType,
+          },
+        ],
       });
     }
 
     // Find rapid permission escalations
     const principals = await AccessControlAuditLog.distinct('principal', {
-      eventType: { $in: [
-        AccessControlEventType.GLOBAL_PERMISSION_SET,
-        AccessControlEventType.ADMIN_ADDED
-      ]},
-      timestamp: { $gte: oneHourAgo }
+      eventType: {
+        $in: [
+          AccessControlEventType.GLOBAL_PERMISSION_SET,
+          AccessControlEventType.ADMIN_ADDED,
+        ],
+      },
+      timestamp: { $gte: oneHourAgo },
     });
 
     for (const principal of principals) {
       const escalations = await AccessControlAuditLog.find({
         principal,
-        eventType: { $in: [
-          AccessControlEventType.GLOBAL_PERMISSION_SET,
-          AccessControlEventType.ADMIN_ADDED
-        ]},
-        timestamp: { $gte: oneHourAgo }
+        eventType: {
+          $in: [
+            AccessControlEventType.GLOBAL_PERMISSION_SET,
+            AccessControlEventType.ADMIN_ADDED,
+          ],
+        },
+        timestamp: { $gte: oneHourAgo },
       });
 
       if (escalations.length >= 3) {
@@ -156,11 +171,11 @@ export class AccessControlSecurityMonitor {
           title: 'Rapid Privilege Escalation',
           description: `User ${principal} performed ${escalations.length} privilege escalations in the last hour`,
           principal,
-          evidence: escalations.map(e => ({
+          evidence: escalations.map((e) => ({
             transactionHash: e.transactionHash,
             timestamp: e.timestamp,
-            eventType: e.eventType
-          }))
+            eventType: e.eventType,
+          })),
         });
       }
     }
@@ -174,7 +189,7 @@ export class AccessControlSecurityMonitor {
 
     const suspensions = await AccessControlAuditLog.find({
       eventType: AccessControlEventType.USER_SUSPENDED,
-      timestamp: { $gte: oneHourAgo }
+      timestamp: { $gte: oneHourAgo },
     });
 
     if (suspensions.length >= 5) {
@@ -187,7 +202,9 @@ export class AccessControlSecurityMonitor {
         return acc;
       }, {} as Record<string, typeof suspensions>);
 
-      for (const [principal, userSuspensions] of Object.entries(suspensionsByPrincipal)) {
+      for (const [principal, userSuspensions] of Object.entries(
+        suspensionsByPrincipal
+      )) {
         if (userSuspensions.length >= 3) {
           this.createAlert({
             type: 'mass_suspension',
@@ -195,12 +212,14 @@ export class AccessControlSecurityMonitor {
             title: 'Mass User Suspensions',
             description: `User ${principal} suspended ${userSuspensions.length} accounts in the last hour`,
             principal,
-            affectedUsers: userSuspensions.map(s => s.targetPrincipal!).filter(Boolean),
-            evidence: userSuspensions.map(s => ({
+            affectedUsers: userSuspensions
+              .map((s) => s.targetPrincipal!)
+              .filter(Boolean),
+            evidence: userSuspensions.map((s) => ({
               transactionHash: s.transactionHash,
               timestamp: s.timestamp,
-              eventType: s.eventType
-            }))
+              eventType: s.eventType,
+            })),
           });
         }
       }
@@ -214,13 +233,13 @@ export class AccessControlSecurityMonitor {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     const principals = await AccessControlAuditLog.distinct('principal', {
-      timestamp: { $gte: fiveMinutesAgo }
+      timestamp: { $gte: fiveMinutesAgo },
     });
 
     for (const principal of principals) {
       const changes = await AccessControlAuditLog.find({
         principal,
-        timestamp: { $gte: fiveMinutesAgo }
+        timestamp: { $gte: fiveMinutesAgo },
       });
 
       if (changes.length > 15) {
@@ -230,11 +249,11 @@ export class AccessControlSecurityMonitor {
           title: 'Excessive Permission Changes',
           description: `User ${principal} made ${changes.length} permission changes in 5 minutes`,
           principal,
-          evidence: changes.slice(0, 10).map(c => ({
+          evidence: changes.slice(0, 10).map((c) => ({
             transactionHash: c.transactionHash,
             timestamp: c.timestamp,
-            eventType: c.eventType
-          }))
+            eventType: c.eventType,
+          })),
         });
       }
     }
@@ -249,11 +268,13 @@ export class AccessControlSecurityMonitor {
     // Check for off-hours activity (assuming business hours 9AM-5PM)
     const offHoursActivity = await AccessControlAuditLog.find({
       timestamp: { $gte: twentyFourHoursAgo },
-      eventType: { $in: [
-        AccessControlEventType.ADMIN_ADDED,
-        AccessControlEventType.USER_SUSPENDED,
-        AccessControlEventType.COMMUNITY_OWNERSHIP_TRANSFERRED
-      ]}
+      eventType: {
+        $in: [
+          AccessControlEventType.ADMIN_ADDED,
+          AccessControlEventType.USER_SUSPENDED,
+          AccessControlEventType.COMMUNITY_OWNERSHIP_TRANSFERRED,
+        ],
+      },
     });
 
     for (const log of offHoursActivity) {
@@ -265,11 +286,13 @@ export class AccessControlSecurityMonitor {
           title: 'Off-Hours Critical Activity',
           description: `Critical permission change detected outside business hours (${hour}:00)`,
           principal: log.principal,
-          evidence: [{
-            transactionHash: log.transactionHash,
-            timestamp: log.timestamp,
-            eventType: log.eventType
-          }]
+          evidence: [
+            {
+              transactionHash: log.transactionHash,
+              timestamp: log.timestamp,
+              eventType: log.eventType,
+            },
+          ],
         });
       }
     }
@@ -278,12 +301,15 @@ export class AccessControlSecurityMonitor {
   /**
    * Create security alert
    */
-  private createAlert(params: Omit<SecurityAlert, 'id' | 'timestamp' | 'acknowledged'>): void {
+  private createAlert(
+    params: Omit<SecurityAlert, 'id' | 'timestamp' | 'acknowledged'>
+  ): void {
     // Check for duplicate alerts
-    const isDuplicate = this.alerts.some(alert =>
-      alert.principal === params.principal &&
-      alert.type === params.type &&
-      alert.timestamp.getTime() > Date.now() - 60 * 60 * 1000 // Within last hour
+    const isDuplicate = this.alerts.some(
+      (alert) =>
+        alert.principal === params.principal &&
+        alert.type === params.type &&
+        alert.timestamp.getTime() > Date.now() - 60 * 60 * 1000 // Within last hour
     );
 
     if (isDuplicate) {
@@ -294,7 +320,7 @@ export class AccessControlSecurityMonitor {
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       ...params,
       timestamp: new Date(),
-      acknowledged: false
+      acknowledged: false,
     };
 
     this.alerts.push(alert);
@@ -312,19 +338,19 @@ export class AccessControlSecurityMonitor {
       {
         severity: alert.severity,
         principal: alert.principal,
-        evidence: alert.evidence.length
+        evidence: alert.evidence.length,
       }
     );
 
     this.logger.warn(`[SECURITY ALERT] ${alert.title}`, {
       type: alert.type,
       severity: alert.severity,
-      principal: alert.principal
+      principal: alert.principal,
     });
 
     // Send notifications for high and critical security alerts
     if (['high', 'critical'].includes(alert.severity)) {
-      this.sendSecurityAlertNotification(alert).catch(error => {
+      this.sendSecurityAlertNotification(alert).catch((error) => {
         this.logger.error('Failed to send security alert notification', error);
       });
     }
@@ -333,7 +359,9 @@ export class AccessControlSecurityMonitor {
   /**
    * Send security alert notifications via configured channels
    */
-  private async sendSecurityAlertNotification(alert: SecurityAlert): Promise<void> {
+  private async sendSecurityAlertNotification(
+    alert: SecurityAlert
+  ): Promise<void> {
     const notificationPayload = {
       title: `🚨 Security Alert: ${alert.title}`,
       message: alert.description,
@@ -341,17 +369,23 @@ export class AccessControlSecurityMonitor {
       severity: alert.severity,
       principal: alert.principal,
       evidence: alert.evidence,
-      timestamp: alert.timestamp
+      timestamp: alert.timestamp,
     };
 
     try {
       // Send to Slack if configured
-      if (process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL) {
+      if (
+        process.env.SLACK_SECURITY_WEBHOOK_URL ||
+        process.env.SLACK_WEBHOOK_URL
+      ) {
         await this.sendSlackSecurityNotification(notificationPayload);
       }
 
       // Send email if configured
-      if (process.env.SECURITY_EMAIL_ENABLED === 'true' && process.env.SECURITY_EMAIL_TO) {
+      if (
+        process.env.SECURITY_EMAIL_ENABLED === 'true' &&
+        process.env.SECURITY_EMAIL_TO
+      ) {
         await this.sendSecurityEmailNotification(notificationPayload);
       }
 
@@ -359,13 +393,13 @@ export class AccessControlSecurityMonitor {
         type: alert.type,
         severity: alert.severity,
         principal: alert.principal,
-        channels: this.getEnabledSecurityChannels()
+        channels: this.getEnabledSecurityChannels(),
       });
     } catch (error) {
       this.logger.error('Error sending security alert notification', {
         error,
         alertType: alert.type,
-        principal: alert.principal
+        principal: alert.principal,
       });
     }
   }
@@ -373,92 +407,104 @@ export class AccessControlSecurityMonitor {
   /**
    * Send security alert to Slack
    */
-  private async sendSlackSecurityNotification(notification: any): Promise<void> {
-    const webhookUrl = process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
+  private async sendSlackSecurityNotification(
+    notification: any
+  ): Promise<void> {
+    const webhookUrl =
+      process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
     if (!webhookUrl) return;
 
     const severityColor = {
       low: '#36a64f',
       medium: '#ffaa00',
       high: '#ff6600',
-      critical: '#ff0000'
+      critical: '#ff0000',
     };
 
     const payload = {
       text: notification.title,
       attachments: [
         {
-          color: severityColor[notification.severity as keyof typeof severityColor] || '#ff6600',
+          color:
+            severityColor[
+              notification.severity as keyof typeof severityColor
+            ] || '#ff6600',
           blocks: [
             {
               type: 'header',
               text: {
                 type: 'plain_text',
-                text: notification.title
-              }
+                text: notification.title,
+              },
             },
             {
               type: 'section',
               fields: [
                 {
                   type: 'mrkdwn',
-                  text: `*Type:*\n${notification.type}`
+                  text: `*Type:*\n${notification.type}`,
                 },
                 {
                   type: 'mrkdwn',
-                  text: `*Severity:*\n${notification.severity.toUpperCase()}`
+                  text: `*Severity:*\n${notification.severity.toUpperCase()}`,
                 },
                 {
                   type: 'mrkdwn',
-                  text: `*Principal:*\n\`${notification.principal}\``
+                  text: `*Principal:*\n\`${notification.principal}\``,
                 },
                 {
                   type: 'mrkdwn',
-                  text: `*Time:*\n${new Date(notification.timestamp).toISOString()}`
-                }
-              ]
+                  text: `*Time:*\n${new Date(
+                    notification.timestamp
+                  ).toISOString()}`,
+                },
+              ],
             },
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `*Description:*\n${notification.message}`
-              }
+                text: `*Description:*\n${notification.message}`,
+              },
             },
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `*Evidence Count:* ${notification.evidence.length}`
-              }
-            }
-          ]
-        }
-      ]
+                text: `*Evidence Count:* ${notification.evidence.length}`,
+              },
+            },
+          ],
+        },
+      ],
     };
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      throw new Error(`Slack security notification failed: ${response.statusText}`);
+      throw new Error(
+        `Slack security notification failed: ${response.statusText}`
+      );
     }
   }
 
   /**
    * Send security alert via email (placeholder)
    */
-  private async sendSecurityEmailNotification(notification: any): Promise<void> {
+  private async sendSecurityEmailNotification(
+    notification: any
+  ): Promise<void> {
     this.logger.info('Security email notification placeholder', {
       to: process.env.SECURITY_EMAIL_TO,
       subject: notification.title,
       type: notification.type,
-      severity: notification.severity
+      severity: notification.severity,
     });
-    
+
     // TODO: Integrate with actual email service
   }
 
@@ -467,15 +513,18 @@ export class AccessControlSecurityMonitor {
    */
   private getEnabledSecurityChannels(): string[] {
     const channels: string[] = [];
-    
-    if (process.env.SLACK_SECURITY_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL) {
+
+    if (
+      process.env.SLACK_SECURITY_WEBHOOK_URL ||
+      process.env.SLACK_WEBHOOK_URL
+    ) {
       channels.push('slack');
     }
-    
+
     if (process.env.SECURITY_EMAIL_ENABLED === 'true') {
       channels.push('email');
     }
-    
+
     return channels;
   }
 
@@ -492,13 +541,15 @@ export class AccessControlSecurityMonitor {
 
     if (filters) {
       if (filters.type) {
-        filtered = filtered.filter(a => a.type === filters.type);
+        filtered = filtered.filter((a) => a.type === filters.type);
       }
       if (filters.severity) {
-        filtered = filtered.filter(a => a.severity === filters.severity);
+        filtered = filtered.filter((a) => a.severity === filters.severity);
       }
       if (filters.acknowledged !== undefined) {
-        filtered = filtered.filter(a => a.acknowledged === filters.acknowledged);
+        filtered = filtered.filter(
+          (a) => a.acknowledged === filters.acknowledged
+        );
       }
       if (filters.limit) {
         filtered = filtered.slice(-filters.limit);
@@ -512,7 +563,7 @@ export class AccessControlSecurityMonitor {
    * Acknowledge alert
    */
   acknowledgeAlert(alertId: string): boolean {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
       return true;
@@ -529,18 +580,20 @@ export class AccessControlSecurityMonitor {
       alertsBySeverity: {},
       alertsByType: {},
       suspiciousActors: [],
-      recentPatterns: []
+      recentPatterns: [],
     };
 
     // Count by severity and type
-    this.alerts.forEach(alert => {
-      metrics.alertsBySeverity[alert.severity] = (metrics.alertsBySeverity[alert.severity] || 0) + 1;
-      metrics.alertsByType[alert.type] = (metrics.alertsByType[alert.type] || 0) + 1;
+    this.alerts.forEach((alert) => {
+      metrics.alertsBySeverity[alert.severity] =
+        (metrics.alertsBySeverity[alert.severity] || 0) + 1;
+      metrics.alertsByType[alert.type] =
+        (metrics.alertsByType[alert.type] || 0) + 1;
     });
 
     // Find suspicious actors
     const actorAlerts: Record<string, { count: number; lastAlert: Date }> = {};
-    this.alerts.forEach(alert => {
+    this.alerts.forEach((alert) => {
       if (!actorAlerts[alert.principal]) {
         actorAlerts[alert.principal] = { count: 0, lastAlert: alert.timestamp };
       }
@@ -554,14 +607,14 @@ export class AccessControlSecurityMonitor {
       .map(([principal, data]) => ({
         principal,
         alertCount: data.count,
-        lastAlert: data.lastAlert
+        lastAlert: data.lastAlert,
       }))
       .sort((a, b) => b.alertCount - a.alertCount)
       .slice(0, 10);
 
     // Recent patterns
     const patternCounts: Record<string, number> = {};
-    this.alerts.forEach(alert => {
+    this.alerts.forEach((alert) => {
       patternCounts[alert.type] = (patternCounts[alert.type] || 0) + 1;
     });
 

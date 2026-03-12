@@ -1,11 +1,21 @@
 import { MobileWalletResponseHandler } from './mobileWalletResponseHandler';
 import { MobileWalletAnalytics } from './mobileWalletAnalytics';
 import MobileWalletDeepLinkHandler from './mobileWalletDeepLinkHandler';
-import { createStacksWalletConfig, createWalletConnectUri, openMobileWallet } from './stacksWalletConnect';
+import {
+  createStacksWalletConfig,
+  createWalletConnectUri,
+  openMobileWallet,
+} from './stacksWalletConnect';
 import { MobileUXOptimizer } from './mobileUXOptimizer';
 
 export type WalletType = 'xverse' | 'hiro' | 'leather';
-export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'failed' | 'timeout' | 'cancelled';
+export type ConnectionStatus =
+  | 'idle'
+  | 'connecting'
+  | 'connected'
+  | 'failed'
+  | 'timeout'
+  | 'cancelled';
 
 export interface WalletConnectionData {
   address?: string;
@@ -49,7 +59,8 @@ class MobileWalletConnectionManager {
 
   static getInstance(): MobileWalletConnectionManager {
     if (!MobileWalletConnectionManager.instance) {
-      MobileWalletConnectionManager.instance = new MobileWalletConnectionManager();
+      MobileWalletConnectionManager.instance =
+        new MobileWalletConnectionManager();
     }
     return MobileWalletConnectionManager.instance;
   }
@@ -99,7 +110,11 @@ class MobileWalletConnectionManager {
         options.onSuccess?.(response.data);
 
         if (options.enableAnalytics !== false) {
-          this.analytics.trackConnectionSuccess(options.walletType, sessionId, duration);
+          this.analytics.trackConnectionSuccess(
+            options.walletType,
+            sessionId,
+            duration
+          );
         }
 
         if (options.enableHapticFeedback !== false) {
@@ -115,16 +130,23 @@ class MobileWalletConnectionManager {
       } else {
         throw new Error(response.error || 'Connection failed');
       }
-
     } catch (error) {
       const duration = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       options.onStatusChange?.('failed');
-      options.onError?.(error instanceof Error ? error : new Error(errorMessage));
+      options.onError?.(
+        error instanceof Error ? error : new Error(errorMessage)
+      );
 
       if (options.enableAnalytics !== false) {
-        this.analytics.trackConnectionFailure(options.walletType, sessionId, errorMessage, duration);
+        this.analytics.trackConnectionFailure(
+          options.walletType,
+          sessionId,
+          errorMessage,
+          duration
+        );
       }
 
       if (options.enableHapticFeedback !== false) {
@@ -142,7 +164,10 @@ class MobileWalletConnectionManager {
     }
   }
 
-  private setupDeepLinkHandler(sessionId: string, options: ConnectionOptions): Promise<void> {
+  private setupDeepLinkHandler(
+    sessionId: string,
+    options: ConnectionOptions
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const handler = {
         onDeepLink: (data: { result: string; error?: string }) => {
@@ -166,14 +191,25 @@ class MobileWalletConnectionManager {
     });
   }
 
-  private async waitForResponse(sessionId: string, timeout: number): Promise<{ success: boolean; data?: WalletConnectionData; error?: string }> {
+  private async waitForResponse(
+    sessionId: string,
+    timeout: number
+  ): Promise<{
+    success: boolean;
+    data?: WalletConnectionData;
+    error?: string;
+  }> {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.activeConnections.get(sessionId)?.onStatusChange?.('timeout');
         reject(new Error('Connection timeout'));
       }, timeout);
 
-      const responseCallback = (response: { success: boolean; data?: WalletConnectionData; error?: string }) => {
+      const responseCallback = (response: {
+        success: boolean;
+        data?: WalletConnectionData;
+        error?: string;
+      }) => {
         clearTimeout(timeoutId);
         resolve(response);
       };
@@ -184,7 +220,8 @@ class MobileWalletConnectionManager {
       };
 
       // Set up response listener
-      this.responseHandler.waitForResponse(sessionId, timeout / 1000)
+      this.responseHandler
+        .waitForResponse(sessionId, timeout / 1000)
         .then(responseCallback)
         .catch(errorCallback);
     });

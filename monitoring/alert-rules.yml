@@ -13,8 +13,8 @@ groups:
           severity: critical
           service: walletconnect
         annotations:
-          summary: "High error rate in WalletConnect"
-          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+          summary: 'High error rate in WalletConnect'
+          description: 'Error rate is {{ $value | humanizePercentage }} (threshold: 5%)'
 
       - alert: WalletConnectConnectionFailure
         expr: walletconnect_connection_failures_total > 10
@@ -23,8 +23,8 @@ groups:
           severity: critical
           service: walletconnect
         annotations:
-          summary: "WalletConnect connection failures"
-          description: "{{ $value }} connection failures detected"
+          summary: 'WalletConnect connection failures'
+          description: '{{ $value }} connection failures detected'
 
       - alert: WalletConnectHighLatency
         expr: histogram_quantile(0.95, walletconnect_request_duration_seconds) > 2
@@ -33,8 +33,8 @@ groups:
           severity: warning
           service: walletconnect
         annotations:
-          summary: "High latency in WalletConnect requests"
-          description: "P95 latency is {{ $value | humanizeDuration }}"
+          summary: 'High latency in WalletConnect requests'
+          description: 'P95 latency is {{ $value | humanizeDuration }}'
 
       - alert: PostgresDatabaseDown
         expr: pg_up == 0
@@ -43,8 +43,8 @@ groups:
           severity: critical
           service: database
         annotations:
-          summary: "PostgreSQL database is down"
-          description: "PostgreSQL service is unreachable"
+          summary: 'PostgreSQL database is down'
+          description: 'PostgreSQL service is unreachable'
 
       - alert: RedisCacheDown
         expr: redis_up == 0
@@ -53,8 +53,8 @@ groups:
           severity: critical
           service: cache
         annotations:
-          summary: "Redis cache is down"
-          description: "Redis service is unreachable"
+          summary: 'Redis cache is down'
+          description: 'Redis service is unreachable'
 
       - alert: DiskSpaceLow
         expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
@@ -63,8 +63,8 @@ groups:
           severity: warning
           service: infrastructure
         annotations:
-          summary: "Low disk space"
-          description: "Available disk space is {{ $value | humanizePercentage }}"
+          summary: 'Low disk space'
+          description: 'Available disk space is {{ $value | humanizePercentage }}'
 
       - alert: MemoryUsageHigh
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
@@ -73,8 +73,8 @@ groups:
           severity: warning
           service: infrastructure
         annotations:
-          summary: "High memory usage"
-          description: "Memory usage is {{ $value | humanizePercentage }}"
+          summary: 'High memory usage'
+          description: 'Memory usage is {{ $value | humanizePercentage }}'
 
       - alert: TransactionSigningFailure
         expr: increase(walletconnect_transaction_signing_failures[5m]) > 5
@@ -83,8 +83,8 @@ groups:
           severity: critical
           service: walletconnect
         annotations:
-          summary: "Transaction signing failures"
-          description: "{{ $value }} signing failures in the last 5 minutes"
+          summary: 'Transaction signing failures'
+          description: '{{ $value }} signing failures in the last 5 minutes'
 
       - alert: GasEstimationError
         expr: increase(walletconnect_gas_estimation_errors[5m]) > 10
@@ -93,8 +93,8 @@ groups:
           severity: warning
           service: walletconnect
         annotations:
-          summary: "Gas estimation errors"
-          description: "{{ $value }} gas estimation failures in the last 5 minutes"
+          summary: 'Gas estimation errors'
+          description: '{{ $value }} gas estimation failures in the last 5 minutes'
 
       - alert: SecurityAuditFailed
         expr: walletconnect_security_audit_status == 0
@@ -103,8 +103,8 @@ groups:
           severity: critical
           service: security
         annotations:
-          summary: "Security audit failed"
-          description: "Security audit validation failed"
+          summary: 'Security audit failed'
+          description: 'Security audit validation failed'
 
       - alert: DeploymentHealthCheckFailed
         expr: walletconnect_deployment_health_check == 0
@@ -113,8 +113,8 @@ groups:
           severity: critical
           service: deployment
         annotations:
-          summary: "Deployment health check failed"
-          description: "Application health check is failing"
+          summary: 'Deployment health check failed'
+          description: 'Application health check is failing'
 
       - alert: ConfigurationValidationFailed
         expr: walletconnect_config_validation_status == 0
@@ -123,5 +123,5 @@ groups:
           severity: critical
           service: configuration
         annotations:
-          summary: "Configuration validation failed"
-          description: "WalletConnect configuration validation failed"
+          summary: 'Configuration validation failed'
+          description: 'WalletConnect configuration validation failed'

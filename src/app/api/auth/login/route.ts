@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -15,10 +16,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     // If login successful, set cookie from backend response
-    const backendResponse = NextResponse.json(data, { status: response.status });
+    const backendResponse = NextResponse.json(data, {
+      status: response.status,
+    });
 
     // Forward cookies from backend
     const setCookieHeader = response.headers.get('set-cookie');

@@ -1,18 +1,18 @@
-import mongoose, { Schema, Document } from 'mongoose'
-import { BadgeCategory, BadgeLevel } from '../services/BadgeCategoryFilter'
+import mongoose, { Schema, Document } from 'mongoose';
+import { BadgeCategory, BadgeLevel } from '../services/BadgeCategoryFilter';
 
 // Interface for webhook document
 export interface IWebhook extends Document {
-  url: string
-  secret: string
-  events: string[]
-  categories?: BadgeCategory[]
-  levels?: BadgeLevel[]
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-  lastDeliveredAt?: Date
-  failureCount: number
+  url: string;
+  secret: string;
+  events: string[];
+  categories?: BadgeCategory[];
+  levels?: BadgeLevel[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  lastDeliveredAt?: Date;
+  failureCount: number;
 }
 
 const WebhookSchema: Schema = new Schema({
@@ -25,12 +25,12 @@ const WebhookSchema: Schema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   lastDeliveredAt: { type: Date },
-  failureCount: { type: Number, default: 0 }
-})
+  failureCount: { type: Number, default: 0 },
+});
 
-WebhookSchema.pre('save', function(next) {
-  this.updatedAt = new Date()
-  next()
-})
+WebhookSchema.pre('save', function (next) {
+  this.updatedAt = new Date();
+  next();
+});
 
-export default mongoose.model<IWebhook>('Webhook', WebhookSchema)
+export default mongoose.model<IWebhook>('Webhook', WebhookSchema);

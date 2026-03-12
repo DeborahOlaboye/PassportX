@@ -1,4 +1,10 @@
-import { saveSession, loadSession, clearSession, recoverSession, isExpired } from '../../src/utils/walletSession';
+import {
+  saveSession,
+  loadSession,
+  clearSession,
+  recoverSession,
+  isExpired,
+} from '../../src/utils/walletSession';
 
 const TEST_SESSION = {
   id: 's1',

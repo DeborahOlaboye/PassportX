@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { AppConfig, UserSession, showConnect } from '@stacks/connect';
 import { apiClient, APIClientError } from '@/lib/api-client';
 
@@ -50,17 +56,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         if (userSession.isUserSignedIn()) {
           const walletData = userSession.loadUserData();
-          const stacksAddress = walletData.profile.stxAddress.testnet || walletData.profile.stxAddress.mainnet;
+          const stacksAddress =
+            walletData.profile.stxAddress.testnet ||
+            walletData.profile.stxAddress.mainnet;
 
           // Fetch user data from backend
           try {
-            const userData = await apiClient.get<Record<string, unknown>>(`/api/users/${stacksAddress}`);
+            const userData = await apiClient.get<Record<string, unknown>>(
+              `/api/users/${stacksAddress}`
+            );
             setUser({
               stacksAddress,
               profile: userData.profile as User['profile'],
               isPublic: (userData.isPublic as boolean) ?? true,
               hasPassport: !!userData.passportId,
-              joinDate: userData.joinDate ? new Date(userData.joinDate as string) : undefined,
+              joinDate: userData.joinDate
+                ? new Date(userData.joinDate as string)
+                : undefined,
             });
             setIsAuthenticated(true);
           } catch (err: unknown) {
@@ -70,7 +82,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setIsAuthenticated(true);
             } else {
               console.error('Auth data fetch failed:', err);
-              setError('Failed to load your account data. Please refresh the page.');
+              setError(
+                'Failed to load your account data. Please refresh the page.'
+              );
             }
           }
         }
@@ -99,17 +113,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
         onFinish: async () => {
           try {
             const walletData = userSession.loadUserData();
-            const stacksAddress = walletData.profile.stxAddress.testnet || walletData.profile.stxAddress.mainnet;
+            const stacksAddress =
+              walletData.profile.stxAddress.testnet ||
+              walletData.profile.stxAddress.mainnet;
 
             // Check if user exists in backend
             try {
-              const userData = await apiClient.get<Record<string, unknown>>(`/api/users/${stacksAddress}`);
+              const userData = await apiClient.get<Record<string, unknown>>(
+                `/api/users/${stacksAddress}`
+              );
               setUser({
                 stacksAddress,
                 profile: userData.profile as User['profile'],
                 isPublic: (userData.isPublic as boolean) ?? true,
                 hasPassport: !!userData.passportId,
-                joinDate: userData.joinDate ? new Date(userData.joinDate as string) : undefined,
+                joinDate: userData.joinDate
+                  ? new Date(userData.joinDate as string)
+                  : undefined,
               });
             } catch (err: unknown) {
               if (err instanceof APIClientError && err.status === 404) {
@@ -117,7 +137,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 setUser({ stacksAddress, isPublic: true, hasPassport: false });
               } else {
                 console.error('Login backend check failed:', err);
-                setError('Connected to wallet but failed to load account. Please refresh.');
+                setError(
+                  'Connected to wallet but failed to load account. Please refresh.'
+                );
               }
             }
 
@@ -155,7 +177,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (!user) throw new Error('No user authenticated');
 
     try {
-      await apiClient.put(`/api/users/${user.stacksAddress}/profile`, profileData);
+      await apiClient.put(
+        `/api/users/${user.stacksAddress}/profile`,
+        profileData
+      );
       setUser({ ...user, profile: { ...user.profile, ...profileData } });
     } catch (err: unknown) {
       console.error('Profile update failed:', err);

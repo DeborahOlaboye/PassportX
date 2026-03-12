@@ -12,9 +12,15 @@ interface AccountManagementModalProps {
   title?: string;
 }
 
-export default function AccountManagementModal(props: AccountManagementModalProps) {
+export default function AccountManagementModal(
+  props: AccountManagementModalProps
+) {
   return (
-    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <WalletErrorFallback error={error} reset={reset} />
+      )}
+    >
       <AccountManagementModalInner {...props} />
     </ErrorBoundary>
   );
@@ -26,7 +32,9 @@ function AccountManagementModalInner({
   title = 'Manage Accounts',
 }: AccountManagementModalProps) {
   const { state } = useMultiAccount();
-  const [selectedTab, setSelectedTab] = useState<'accounts' | 'settings'>('accounts');
+  const [selectedTab, setSelectedTab] = useState<'accounts' | 'settings'>(
+    'accounts'
+  );
 
   if (!isOpen) return null;
 
@@ -85,7 +93,9 @@ function AccountManagementModalInner({
           ) : (
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Account Settings
+                </h3>
 
                 <div className="space-y-4">
                   <label className="flex items-center space-x-3">
@@ -95,7 +105,9 @@ function AccountManagementModalInner({
                       className="w-4 h-4 rounded border-gray-300"
                       disabled
                     />
-                    <span className="text-sm text-gray-700">Hide balance amounts</span>
+                    <span className="text-sm text-gray-700">
+                      Hide balance amounts
+                    </span>
                   </label>
 
                   <div>

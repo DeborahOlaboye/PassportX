@@ -6,14 +6,18 @@ import { TransactionErrorFallback } from '../FallbackUI';
 
 export function TransactionHistory() {
   return (
-    <ErrorBoundary fallback={(error, reset) => <TransactionErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <TransactionErrorFallback error={error} reset={reset} />
+      )}
+    >
       <TransactionHistoryInner />
     </ErrorBoundary>
   );
 }
 
 function TransactionHistoryInner() {
-  const [filter, setFilter] = useState('all');
+  const [filter, _setFilter] = useState('all');
 
   return (
     <div>

@@ -4,7 +4,7 @@
  * Convenient hooks for subscribing to contract events in React components
  */
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react';
 import {
   eventManager,
   EVENT_NAMES,
@@ -16,8 +16,8 @@ import {
   type CommunityCreatedEvent,
   type TemplateCreatedEvent,
   type BadgeRevokedEvent,
-  type CommunityMemberAddedEvent
-} from '@/lib/utils/contractEvents'
+  type CommunityMemberAddedEvent,
+} from '@/lib/utils/contractEvents';
 
 /**
  * Subscribe to a specific contract event
@@ -40,12 +40,12 @@ export function useContractEvent<T extends ContractEvent = ContractEvent>(
   deps: React.DependencyList = []
 ): void {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memoizedListener = useCallback(listener, deps)
+  const memoizedListener = useCallback(listener, deps);
 
   useEffect(() => {
-    const unsubscribe = eventManager.on(eventName, memoizedListener)
-    return unsubscribe
-  }, [eventName, memoizedListener])
+    const unsubscribe = eventManager.on(eventName, memoizedListener);
+    return unsubscribe;
+  }, [eventName, memoizedListener]);
 }
 
 /**
@@ -58,8 +58,11 @@ export function useContractEvent<T extends ContractEvent = ContractEvent>(
  * })
  * ```
  */
-export function useBadgeMinted(listener: EventListener<BadgeMintedEvent>, deps: React.DependencyList = []): void {
-  useContractEvent(EVENT_NAMES.BADGE_MINTED, listener, deps)
+export function useBadgeMinted(
+  listener: EventListener<BadgeMintedEvent>,
+  deps: React.DependencyList = []
+): void {
+  useContractEvent(EVENT_NAMES.BADGE_MINTED, listener, deps);
 }
 
 /**
@@ -76,7 +79,7 @@ export function useBatchBadgesMinted(
   listener: EventListener<BatchBadgesMintedEvent>,
   deps: React.DependencyList = []
 ): void {
-  useContractEvent(EVENT_NAMES.BATCH_BADGES_MINTED, listener, deps)
+  useContractEvent(EVENT_NAMES.BATCH_BADGES_MINTED, listener, deps);
 }
 
 /**
@@ -94,7 +97,7 @@ export function useCommunityCreated(
   listener: EventListener<CommunityCreatedEvent>,
   deps: React.DependencyList = []
 ): void {
-  useContractEvent(EVENT_NAMES.COMMUNITY_CREATED, listener, deps)
+  useContractEvent(EVENT_NAMES.COMMUNITY_CREATED, listener, deps);
 }
 
 /**
@@ -112,7 +115,7 @@ export function useTemplateCreated(
   listener: EventListener<TemplateCreatedEvent>,
   deps: React.DependencyList = []
 ): void {
-  useContractEvent(EVENT_NAMES.TEMPLATE_CREATED, listener, deps)
+  useContractEvent(EVENT_NAMES.TEMPLATE_CREATED, listener, deps);
 }
 
 /**
@@ -126,8 +129,11 @@ export function useTemplateCreated(
  * }, [refreshBadges])
  * ```
  */
-export function useBadgeRevoked(listener: EventListener<BadgeRevokedEvent>, deps: React.DependencyList = []): void {
-  useContractEvent(EVENT_NAMES.BADGE_REVOKED, listener, deps)
+export function useBadgeRevoked(
+  listener: EventListener<BadgeRevokedEvent>,
+  deps: React.DependencyList = []
+): void {
+  useContractEvent(EVENT_NAMES.BADGE_REVOKED, listener, deps);
 }
 
 /**
@@ -146,7 +152,7 @@ export function useCommunityMemberAdded(
   listener: EventListener<CommunityMemberAddedEvent>,
   deps: React.DependencyList = []
 ): void {
-  useContractEvent(EVENT_NAMES.COMMUNITY_MEMBER_ADDED, listener, deps)
+  useContractEvent(EVENT_NAMES.COMMUNITY_MEMBER_ADDED, listener, deps);
 }
 
 /**
@@ -160,8 +166,11 @@ export function useCommunityMemberAdded(
  * }, [logEvent])
  * ```
  */
-export function useAllContractEvents(listener: EventListener, deps: React.DependencyList = []): void {
-  useContractEvent('*', listener, deps)
+export function useAllContractEvents(
+  listener: EventListener,
+  deps: React.DependencyList = []
+): void {
+  useContractEvent('*', listener, deps);
 }
 
 /**
@@ -183,18 +192,20 @@ export function useAllContractEvents(listener: EventListener, deps: React.Depend
  * )
  * ```
  */
-export function useLatestEvent<T extends ContractEvent>(eventName: EventName): T | null {
-  const [latestEvent, setLatestEvent] = useState<T | null>(null)
+export function useLatestEvent<T extends ContractEvent>(
+  eventName: EventName
+): T | null {
+  const [latestEvent, setLatestEvent] = useState<T | null>(null);
 
   useContractEvent(
     eventName,
     (event) => {
-      setLatestEvent(event as T)
+      setLatestEvent(event as T);
     },
     []
-  )
+  );
 
-  return latestEvent
+  return latestEvent;
 }
 
 /**
@@ -217,21 +228,24 @@ export function useLatestEvent<T extends ContractEvent>(eventName: EventName): T
  * )
  * ```
  */
-export function useEventHistory<T extends ContractEvent>(eventName: EventName, maxEvents = 100): T[] {
-  const [events, setEvents] = useState<T[]>([])
+export function useEventHistory<T extends ContractEvent>(
+  eventName: EventName,
+  maxEvents = 100
+): T[] {
+  const [events, setEvents] = useState<T[]>([]);
 
   useContractEvent(
     eventName,
     (event) => {
       setEvents((prev) => {
-        const newEvents = [event as T, ...prev]
-        return newEvents.slice(0, maxEvents)
-      })
+        const newEvents = [event as T, ...prev];
+        return newEvents.slice(0, maxEvents);
+      });
     },
     [maxEvents]
-  )
+  );
 
-  return events
+  return events;
 }
 
 /**
@@ -248,17 +262,17 @@ export function useEventHistory<T extends ContractEvent>(eventName: EventName, m
  * ```
  */
 export function useEventCount(eventName: EventName): number {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   useContractEvent(
     eventName,
     () => {
-      setCount((prev) => prev + 1)
+      setCount((prev) => prev + 1);
     },
     []
-  )
+  );
 
-  return count
+  return count;
 }
 
 /**
@@ -284,22 +298,22 @@ export function useFilteredEvents<T extends ContractEvent>(
   predicate: (event: T) => boolean,
   maxEvents = 100
 ): T[] {
-  const [events, setEvents] = useState<T[]>([])
+  const [events, setEvents] = useState<T[]>([]);
 
   useContractEvent(
     eventName,
     (event) => {
       if (predicate(event as T)) {
         setEvents((prev) => {
-          const newEvents = [event as T, ...prev]
-          return newEvents.slice(0, maxEvents)
-        })
+          const newEvents = [event as T, ...prev];
+          return newEvents.slice(0, maxEvents);
+        });
       }
     },
     [predicate, maxEvents]
-  )
+  );
 
-  return events
+  return events;
 }
 
 /**
@@ -326,29 +340,29 @@ export function useEventHandler<T extends ContractEvent>(
   eventName: EventName,
   handler: (event: T) => Promise<void>
 ): {
-  loading: boolean
-  error: string | null
+  loading: boolean;
+  error: string | null;
 } {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useContractEvent(
     eventName,
     async (event) => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        await handler(event as T)
+        await handler(event as T);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     },
     [handler]
-  )
+  );
 
-  return { loading, error }
+  return { loading, error };
 }
 
 /**
@@ -378,14 +392,14 @@ export function useEventsForPrincipal<T extends ContractEvent>(
     (event) => {
       // Check common principal fields
       return (
-        (event as any).issuer === principal ||
-        (event as any).recipient === principal ||
-        (event as any).owner === principal ||
-        (event as any).member === principal ||
-        (event as any).user === principal ||
-        (event as any).creator === principal
-      )
+        event['issuer'] === principal ||
+        event['recipient'] === principal ||
+        event['owner'] === principal ||
+        event['member'] === principal ||
+        event['user'] === principal ||
+        event['creator'] === principal
+      );
     },
     maxEvents
-  )
+  );
 }

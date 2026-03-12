@@ -37,7 +37,10 @@ export class MobileUXOptimizer {
     if (typeof window === 'undefined') return;
 
     const userAgent = navigator.userAgent.toLowerCase();
-    this.isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    this.isMobile =
+      /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        userAgent
+      );
   }
 
   private initialize(): void {
@@ -53,18 +56,20 @@ export class MobileUXOptimizer {
     // Ensure proper viewport settings for mobile
     const viewport = document.querySelector('meta[name="viewport"]');
     if (viewport) {
-      viewport.setAttribute('content',
+      viewport.setAttribute(
+        'content',
         'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
       );
     }
 
     // Prevent zoom on input focus (iOS)
     const inputs = document.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
+    inputs.forEach((input) => {
       input.addEventListener('focus', () => {
         const viewportMeta = document.querySelector('meta[name="viewport"]');
         if (viewportMeta) {
-          viewportMeta.setAttribute('content',
+          viewportMeta.setAttribute(
+            'content',
             'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover'
           );
         }
@@ -73,7 +78,8 @@ export class MobileUXOptimizer {
       input.addEventListener('blur', () => {
         const viewportMeta = document.querySelector('meta[name="viewport"]');
         if (viewportMeta) {
-          viewportMeta.setAttribute('content',
+          viewportMeta.setAttribute(
+            'content',
             'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
           );
         }
@@ -160,10 +166,13 @@ export class MobileUXOptimizer {
     );
   }
 
-  private handleSwipeGesture(direction: 'left' | 'right', distance: number): void {
+  private handleSwipeGesture(
+    direction: 'left' | 'right',
+    distance: number
+  ): void {
     // Dispatch custom event for swipe gestures
     const event = new CustomEvent('mobileSwipe', {
-      detail: { direction, distance }
+      detail: { direction, distance },
     });
     document.dispatchEvent(event);
   }

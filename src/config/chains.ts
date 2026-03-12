@@ -67,7 +67,9 @@ export function getChainConfig(chainId: number): ChainConfig | undefined {
   return CHAIN_ID_TO_CONFIG[chainId];
 }
 
-export function getChainConfigByNamespace(namespace: string): ChainConfig | undefined {
+export function getChainConfigByNamespace(
+  namespace: string
+): ChainConfig | undefined {
   const chainId = NAMESPACE_TO_CHAIN_ID[namespace];
   return chainId ? CHAIN_ID_TO_CONFIG[chainId] : undefined;
 }

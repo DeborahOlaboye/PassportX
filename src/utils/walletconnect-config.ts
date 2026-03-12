@@ -1,4 +1,7 @@
-import { WalletConnectProviderConfig, ChainConfig } from '@/types/walletconnect-config';
+import {
+  WalletConnectProviderConfig,
+  ChainConfig,
+} from '@/types/walletconnect-config';
 
 export function getEnvironmentConfig(): {
   projectId: string;
@@ -7,16 +10,24 @@ export function getEnvironmentConfig(): {
 } {
   return {
     projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
-    relayUrl: process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL || 'wss://relay.walletconnect.org',
+    relayUrl:
+      process.env.NEXT_PUBLIC_WALLETCONNECT_RELAY_URL ||
+      'wss://relay.walletconnect.org',
     debug: process.env.NODE_ENV === 'development',
   };
 }
 
-export function createChainNamespace(chainId: number, namespace: string = 'stacks'): string {
+export function createChainNamespace(
+  chainId: number,
+  namespace: string = 'stacks'
+): string {
   return `${namespace}:${chainId}`;
 }
 
-export function parseNamespace(namespace: string): { namespace: string; chainId: number } {
+export function parseNamespace(namespace: string): {
+  namespace: string;
+  chainId: number;
+} {
   const [ns, chainIdStr] = namespace.split(':');
   return {
     namespace: ns,
@@ -24,11 +35,17 @@ export function parseNamespace(namespace: string): { namespace: string; chainId:
   };
 }
 
-export function isChainSupported(chainId: number, supportedChains: ChainConfig[]): boolean {
+export function isChainSupported(
+  chainId: number,
+  supportedChains: ChainConfig[]
+): boolean {
   return supportedChains.some((chain) => chain.id === chainId);
 }
 
-export function getChainNamespace(chainId: number, supportedChains: ChainConfig[]): string | null {
+export function getChainNamespace(
+  chainId: number,
+  supportedChains: ChainConfig[]
+): string | null {
   const chain = supportedChains.find((c) => c.id === chainId);
   return chain?.namespace || null;
 }
@@ -55,7 +72,10 @@ export function getRequiredNamespaces(
   return namespaces;
 }
 
-export function mergeRpcMaps(baseMap: Record<number, string>, customMap?: Record<number, string>): Record<number, string> {
+export function mergeRpcMaps(
+  baseMap: Record<number, string>,
+  customMap?: Record<number, string>
+): Record<number, string> {
   if (!customMap) return baseMap;
   return {
     ...baseMap,
@@ -63,7 +83,9 @@ export function mergeRpcMaps(baseMap: Record<number, string>, customMap?: Record
   };
 }
 
-export function isConfigurationValid(config: WalletConnectProviderConfig): boolean {
+export function isConfigurationValid(
+  config: WalletConnectProviderConfig
+): boolean {
   return !!(
     config.projectId &&
     config.relayUrl &&
@@ -107,7 +129,12 @@ export function getConfigurationStatus(config: WalletConnectProviderConfig): {
     messages.push('No events configured');
   }
 
-  const status = messages.length === 0 ? 'ready' : messages.length < 3 ? 'partial' : 'invalid';
+  const status =
+    messages.length === 0
+      ? 'ready'
+      : messages.length < 3
+      ? 'partial'
+      : 'invalid';
 
   return { status, messages };
 }

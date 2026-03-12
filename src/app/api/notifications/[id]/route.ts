@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createErrorResponse } from '@/lib/error-response'
+import { NextRequest, NextResponse } from 'next/server';
+import { createErrorResponse } from '@/lib/error-response';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001'
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 /**
  * PUT /api/notifications/:id/read
@@ -12,25 +12,31 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const authHeader = request.headers.get('authorization')
+    const { id } = await params;
+    const authHeader = request.headers.get('authorization');
 
     if (!authHeader) {
-      return createErrorResponse('Authorization required', null, { status: 401, logLevel: 'warn' })
+      return createErrorResponse('Authorization required', null, {
+        status: 401,
+        logLevel: 'warn',
+      });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/notifications/${id}/read`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader
+    const response = await fetch(
+      `${BACKEND_URL}/api/notifications/${id}/read`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
       }
-    })
+    );
 
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    return createErrorResponse('Failed to mark notification as read', error)
+    return createErrorResponse('Failed to mark notification as read', error);
   }
 }
 
@@ -43,24 +49,27 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const authHeader = request.headers.get('authorization')
+    const { id } = await params;
+    const authHeader = request.headers.get('authorization');
 
     if (!authHeader) {
-      return createErrorResponse('Authorization required', null, { status: 401, logLevel: 'warn' })
+      return createErrorResponse('Authorization required', null, {
+        status: 401,
+        logLevel: 'warn',
+      });
     }
 
     const response = await fetch(`${BACKEND_URL}/api/notifications/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader
-      }
-    })
+        Authorization: authHeader,
+      },
+    });
 
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    return createErrorResponse('Failed to delete notification', error)
+    return createErrorResponse('Failed to delete notification', error);
   }
 }

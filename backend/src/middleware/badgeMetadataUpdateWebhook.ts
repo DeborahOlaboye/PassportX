@@ -21,7 +21,7 @@ export class BadgeMetadataUpdateWebhookMiddleware {
     successfulWebhooks: 0,
     failedWebhooks: 0,
     validationErrors: 0,
-    lastProcessedTime: 0
+    lastProcessedTime: 0,
   };
 
   constructor(
@@ -34,23 +34,32 @@ export class BadgeMetadataUpdateWebhookMiddleware {
       enabled: config.enabled ?? true,
       validateSignature: config.validateSignature ?? true,
       validateContentType: config.validateContentType ?? true,
-      validatePayload: config.validatePayload ?? true
+      validatePayload: config.validatePayload ?? true,
     };
 
     this.logger = logger || this.getDefaultLogger();
     this.secret = process.env.BADGE_METADATA_WEBHOOK_SECRET || '';
 
-    if (this.config.validateSignature && (!this.secret || this.secret === 'default-secret')) {
-      throw new Error('BADGE_METADATA_WEBHOOK_SECRET must be configured when signature validation is enabled');
+    if (
+      this.config.validateSignature &&
+      (!this.secret || this.secret === 'default-secret')
+    ) {
+      throw new Error(
+        'BADGE_METADATA_WEBHOOK_SECRET must be configured when signature validation is enabled'
+      );
     }
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeMetadataWebhook] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeMetadataWebhook] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeMetadataWebhook] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeMetadataWebhook] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeMetadataWebhook] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeMetadataWebhook] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeMetadataWebhook] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeMetadataWebhook] ${msg}`, ...args),
     };
   }
 
@@ -64,25 +73,28 @@ export class BadgeMetadataUpdateWebhookMiddleware {
         this.processingStats.totalWebhooks++;
         const startTime = Date.now();
 
-        if (this.config.validateContentType && req.headers['content-type'] !== 'application/json') {
+        if (
+          this.config.validateContentType &&
+          req.headers['content-type'] !== 'application/json'
+        ) {
           this.processingStats.validationErrors++;
           this.logger.warn('Invalid content type for webhook', {
-            contentType: req.headers['content-type']
+            contentType: req.headers['content-type'],
           });
           return res.status(400).json({
             success: false,
-            error: 'Invalid content type. Expected application/json'
+            error: 'Invalid content type. Expected application/json',
           });
         }
 
         if (this.config.validatePayload && !this.isValidPayload(req.body)) {
           this.processingStats.validationErrors++;
           this.logger.warn('Invalid webhook payload structure', {
-            body: req.body
+            body: req.body,
           });
           return res.status(400).json({
             success: false,
-            error: 'Invalid payload structure'
+            error: 'Invalid payload structure',
           });
         }
 
@@ -91,7 +103,7 @@ export class BadgeMetadataUpdateWebhookMiddleware {
           this.logger.warn('Webhook signature validation failed');
           return res.status(401).json({
             success: false,
-            error: 'Signature validation failed'
+            error: 'Signature validation failed',
           });
         }
 
@@ -111,7 +123,7 @@ export class BadgeMetadataUpdateWebhookMiddleware {
           badgeId: event.badgeId,
           success: result.success,
           processingTime: this.processingStats.lastProcessedTime,
-          changes: result.changeCount
+          changes: result.changeCount,
         });
 
         return res.status(200).json({
@@ -119,19 +131,20 @@ export class BadgeMetadataUpdateWebhookMiddleware {
           badgeId: event.badgeId,
           invalidated: result.invalidated,
           uiNotified: result.uiNotified,
-          changeCount: result.changeCount
+          changeCount: result.changeCount,
         });
       } catch (error) {
         this.processingStats.failedWebhooks++;
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
 
         this.logger.error('Error processing webhook', {
-          error: errorMessage
+          error: errorMessage,
         });
 
         return res.status(500).json({
           success: false,
-          error: 'Failed to process webhook'
+          error: 'Failed to process webhook',
         });
       }
     };
@@ -143,7 +156,7 @@ export class BadgeMetadataUpdateWebhookMiddleware {
     }
 
     const requiredFields = ['badgeId', 'transactionHash', 'blockHeight'];
-    return requiredFields.every(field => field in payload);
+    return requiredFields.every((field) => field in payload);
   }
 
   private validateSignature(req: Request): boolean {
@@ -168,7 +181,10 @@ export class BadgeMetadataUpdateWebhookMiddleware {
   }
 
   private computeSignature(payload: string): string {
-    return crypto.createHmac('sha256', this.secret).update(payload).digest('hex');
+    return crypto
+      .createHmac('sha256', this.secret)
+      .update(payload)
+      .digest('hex');
   }
 
   getStats() {
@@ -176,10 +192,13 @@ export class BadgeMetadataUpdateWebhookMiddleware {
       ...this.processingStats,
       failureRate:
         this.processingStats.totalWebhooks > 0
-          ? ((this.processingStats.failedWebhooks + this.processingStats.validationErrors) /
-              this.processingStats.totalWebhooks *
-              100).toFixed(2) + '%'
-          : '0%'
+          ? (
+              ((this.processingStats.failedWebhooks +
+                this.processingStats.validationErrors) /
+                this.processingStats.totalWebhooks) *
+              100
+            ).toFixed(2) + '%'
+          : '0%',
     };
   }
 
@@ -189,7 +208,7 @@ export class BadgeMetadataUpdateWebhookMiddleware {
       successfulWebhooks: 0,
       failedWebhooks: 0,
       validationErrors: 0,
-      lastProcessedTime: 0
+      lastProcessedTime: 0,
     };
     this.logger.info('Webhook processing statistics reset');
   }

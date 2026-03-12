@@ -1,5 +1,8 @@
 import { BadgeMetadataUpdateHandler } from '../badgeMetadataUpdateHandler';
-import { ChainhookEventPayload, BadgeMetadataUpdateEvent } from '../../types/handlers';
+import {
+  ChainhookEventPayload,
+  BadgeMetadataUpdateEvent,
+} from '../../types/handlers';
 
 describe('BadgeMetadataUpdateHandler', () => {
   let handler: BadgeMetadataUpdateHandler;
@@ -10,7 +13,7 @@ describe('BadgeMetadataUpdateHandler', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
     };
     handler = new BadgeMetadataUpdateHandler(mockLogger);
   });
@@ -30,20 +33,21 @@ describe('BadgeMetadataUpdateHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
                   method: 'update-metadata',
-                  args: []
-                }
-              }
-            ]
-          }
+                  args: [],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(true);
@@ -60,8 +64,8 @@ describe('BadgeMetadataUpdateHandler', () => {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       expect(handler.canHandle(event)).toBe(false);
@@ -81,20 +85,21 @@ describe('BadgeMetadataUpdateHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
                   method: 'update-metadata',
-                  args: []
-                }
-              }
-            ]
-          }
+                  args: [],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       handler.canHandle(event);
@@ -122,7 +127,8 @@ describe('BadgeMetadataUpdateHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
                   method: 'update-metadata',
                   args: [
                     { value: 'badge-1' },
@@ -132,19 +138,19 @@ describe('BadgeMetadataUpdateHandler', () => {
                     { value: 'Completed a task' },
                     { value: 3 },
                     { value: 'task' },
-                    { value: 'Completed an old task' }
-                  ]
-                }
-              }
-            ]
-          }
+                    { value: 'Completed an old task' },
+                  ],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const result = await handler.handle(event);
@@ -172,8 +178,8 @@ describe('BadgeMetadataUpdateHandler', () => {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const result = await handler.handle(event);
@@ -194,20 +200,21 @@ describe('BadgeMetadataUpdateHandler', () => {
               {
                 type: 'contract_call',
                 contract_call: {
-                  contract: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
+                  contract:
+                    'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.badge-metadata',
                   method: 'update-metadata',
-                  args: []
-                }
-              }
-            ]
-          }
+                  args: [],
+                },
+              },
+            ],
+          },
         ],
         metadata: {
           bitcoin_anchor_block_identifier: { index: 0, hash: '0x' },
           pox_cycle_index: 0,
           pox_cycle_position: 0,
-          pox_cycle_length: 0
-        }
+          pox_cycle_length: 0,
+        },
       };
 
       const result = await handler.handle(event);

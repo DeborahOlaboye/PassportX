@@ -2,7 +2,7 @@ import {
   isPopulatedBadge,
   isPopulatedBadgeTemplate,
   isCommunity,
-  isBadgeTemplate
+  isBadgeTemplate,
 } from '../typeGuards';
 
 describe('Type Guards', () => {
@@ -14,19 +14,19 @@ describe('Type Guards', () => {
           name: 'Test Badge',
           description: 'Test Description',
           level: 1,
-          category: 'skill'
+          category: 'skill',
         },
         community: {
           name: 'Test Community',
-          admins: ['SP123']
+          admins: ['SP123'],
         },
         owner: 'SP456',
         issuer: 'SP123',
         metadata: {
           level: 1,
           category: 'skill',
-          timestamp: 123456
-        }
+          timestamp: 123456,
+        },
       };
 
       expect(isPopulatedBadge(badge)).toBe(true);
@@ -38,7 +38,7 @@ describe('Type Guards', () => {
         templateId: '456',
         community: '789',
         owner: 'SP456',
-        issuer: 'SP123'
+        issuer: 'SP123',
       };
 
       expect(isPopulatedBadge(badge)).toBe(false);
@@ -59,8 +59,8 @@ describe('Type Guards', () => {
         category: 'skill',
         community: {
           name: 'Test Community',
-          admins: ['SP123']
-        }
+          admins: ['SP123'],
+        },
       };
 
       expect(isPopulatedBadgeTemplate(template)).toBe(true);
@@ -70,7 +70,7 @@ describe('Type Guards', () => {
       const template = {
         _id: '123',
         name: 'Test Template',
-        community: '456'
+        community: '456',
       };
 
       expect(isPopulatedBadgeTemplate(template)).toBe(false);
@@ -83,7 +83,7 @@ describe('Type Guards', () => {
         _id: '123',
         name: 'Test Community',
         admins: ['SP123', 'SP456'],
-        slug: 'test-community'
+        slug: 'test-community',
       };
 
       expect(isCommunity(community)).toBe(true);
@@ -92,7 +92,7 @@ describe('Type Guards', () => {
     it('should return false for invalid community', () => {
       const notCommunity = {
         _id: '123',
-        name: 'Test'
+        name: 'Test',
       };
 
       expect(isCommunity(notCommunity)).toBe(false);
@@ -106,7 +106,7 @@ describe('Type Guards', () => {
         name: 'Test Badge',
         description: 'Test Description',
         level: 1,
-        category: 'skill'
+        category: 'skill',
       };
 
       expect(isBadgeTemplate(template)).toBe(true);
@@ -115,7 +115,7 @@ describe('Type Guards', () => {
     it('should return false for invalid badge template', () => {
       const notTemplate = {
         _id: '123',
-        name: 'Test'
+        name: 'Test',
       };
 
       expect(isBadgeTemplate(notTemplate)).toBe(false);

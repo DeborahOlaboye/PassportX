@@ -11,6 +11,7 @@ import React, {
 import {
   Account,
   AccountPreferences,
+  AccountSettings,
   AccountSwitchEvent,
   MultiAccountState,
   AccountFilter,
@@ -21,7 +22,10 @@ interface MultiAccountContextType {
   addAccount: (account: Account) => Promise<void>;
   removeAccount: (address: string) => Promise<void>;
   switchAccount: (address: string, reason?: 'user' | 'auto') => Promise<void>;
-  updateAccountSettings: (address: string, settings: Partial<any>) => Promise<void>;
+  updateAccountSettings: (
+    address: string,
+    settings: Partial<AccountSettings>
+  ) => Promise<void>;
   refreshAccounts: () => Promise<void>;
   filterAccounts: (filter: AccountFilter) => Account[];
   getAccountByAddress: (address: string) => Account | undefined;
@@ -32,7 +36,9 @@ interface MultiAccountContextType {
   onAccountSwitch?: (event: AccountSwitchEvent) => void;
 }
 
-const MultiAccountContext = createContext<MultiAccountContextType | undefined>(undefined);
+const MultiAccountContext = createContext<MultiAccountContextType | undefined>(
+  undefined
+);
 
 interface MultiAccountProviderProps {
   children: ReactNode;
@@ -62,11 +68,15 @@ export function MultiAccountProvider({
     try {
       setState((prev) => ({
         ...prev,
-        accounts: [...prev.accounts.filter((a) => a.address !== account.address), account],
+        accounts: [
+          ...prev.accounts.filter((a) => a.address !== account.address),
+          account,
+        ],
         error: null,
       }));
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add account';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to add account';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
     }
@@ -76,7 +86,10 @@ export function MultiAccountProvider({
     try {
       setState((prev) => {
         const filtered = prev.accounts.filter((a) => a.address !== address);
-        const newActive = prev.activeAccount?.address === address ? filtered[0] || null : prev.activeAccount;
+        const newActive =
+          prev.activeAccount?.address === address
+            ? filtered[0] || null
+            : prev.activeAccount;
 
         return {
           ...prev,
@@ -86,63 +99,71 @@ export function MultiAccountProvider({
         };
       });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove account';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to remove account';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
     }
   }, []);
 
-  const switchAccount = useCallback(async (address: string, reason: 'user' | 'auto' = 'user') => {
-    try {
-      setState((prev) => {
-        const newActive = prev.accounts.find((a) => a.address === address);
-        if (!newActive) {
-          throw new Error(`Account ${address} not found`);
-        }
+  const switchAccount = useCallback(
+    async (address: string, reason: 'user' | 'auto' = 'user') => {
+      try {
+        setState((prev) => {
+          const newActive = prev.accounts.find((a) => a.address === address);
+          if (!newActive) {
+            throw new Error(`Account ${address} not found`);
+          }
 
-        const oldActive = prev.activeAccount;
+          const oldActive = prev.activeAccount;
 
-        if (oldActive && onAccountSwitch) {
-          onAccountSwitch({
-            from: oldActive,
-            to: newActive,
-            timestamp: Date.now(),
-            reason,
-          });
-        }
+          if (oldActive && onAccountSwitch) {
+            onAccountSwitch({
+              from: oldActive,
+              to: newActive,
+              timestamp: Date.now(),
+              reason,
+            });
+          }
 
-        const updatedAccounts = prev.accounts.map((a) => ({
-          ...a,
-          isActive: a.address === address,
-          lastUsed: a.address === address ? Date.now() : a.lastUsed,
-        }));
+          const updatedAccounts = prev.accounts.map((a) => ({
+            ...a,
+            isActive: a.address === address,
+            lastUsed: a.address === address ? Date.now() : a.lastUsed,
+          }));
 
-        const updatedPreferences = {
-          ...prev.preferences,
-          selectedAccount: address,
-        };
+          const updatedPreferences = {
+            ...prev.preferences,
+            selectedAccount: address,
+          };
 
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('account_preferences', JSON.stringify(updatedPreferences));
-        }
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(
+              'account_preferences',
+              JSON.stringify(updatedPreferences)
+            );
+          }
 
-        return {
-          ...prev,
-          accounts: updatedAccounts,
-          activeAccount: newActive,
-          preferences: updatedPreferences,
-          error: null,
-        };
-      });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to switch account';
-      setState((prev) => ({ ...prev, error: errorMessage }));
-      throw error;
-    }
-  }, [onAccountSwitch]);
+          return {
+            ...prev,
+            accounts: updatedAccounts,
+            activeAccount: newActive,
+            preferences: updatedPreferences,
+            error: null,
+          };
+        });
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to switch account';
+        setState((prev) => ({ ...prev, error: errorMessage }));
+        throw error;
+      }
+    },
+    [onAccountSwitch]
+  );
 
   const updateAccountSettings = useCallback(
-    async (address: string, settings: Partial<any>) => {
+    async (address: string, settings: Partial<AccountSettings>) => {
       try {
         setState((prev) => ({
           ...prev,
@@ -160,7 +181,8 @@ export function MultiAccountProvider({
           error: null,
         }));
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to update settings';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to update settings';
         setState((prev) => ({ ...prev, error: errorMessage }));
         throw error;
       }
@@ -174,7 +196,8 @@ export function MultiAccountProvider({
       // Placeholder for actual account refresh logic
       // This would normally fetch accounts from wallet provider
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to refresh accounts';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to refresh accounts';
       setState((prev) => ({ ...prev, error: errorMessage, isLoading: false }));
       throw error;
     } finally {
@@ -182,48 +205,58 @@ export function MultiAccountProvider({
     }
   }, []);
 
-  const filterAccounts = useCallback((filter: AccountFilter): Account[] => {
-    let filtered = state.accounts;
+  const filterAccounts = useCallback(
+    (filter: AccountFilter): Account[] => {
+      let filtered = state.accounts;
 
-    if (filter.chainId !== undefined) {
-      filtered = filtered.filter((a) => a.chainId === filter.chainId);
-    }
+      if (filter.chainId !== undefined) {
+        filtered = filtered.filter((a) => a.chainId === filter.chainId);
+      }
 
-    if (filter.searchTerm) {
-      const term = filter.searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (a) =>
-          a.address.toLowerCase().includes(term) ||
-          a.name?.toLowerCase().includes(term) ||
-          a.metadata?.displayName?.toLowerCase().includes(term)
-      );
-    }
+      if (filter.searchTerm) {
+        const term = filter.searchTerm.toLowerCase();
+        filtered = filtered.filter(
+          (a) =>
+            a.address.toLowerCase().includes(term) ||
+            a.name?.toLowerCase().includes(term) ||
+            a.metadata?.displayName?.toLowerCase().includes(term)
+        );
+      }
 
-    if (!filter.includeInactive) {
-      filtered = filtered.filter((a) => a.isActive || a.address === state.activeAccount?.address);
-    }
+      if (!filter.includeInactive) {
+        filtered = filtered.filter(
+          (a) => a.isActive || a.address === state.activeAccount?.address
+        );
+      }
 
-    switch (filter.sortBy) {
-      case 'alphabetical':
-        return filtered.sort((a, b) => (a.name || a.address).localeCompare(b.name || b.address));
-      case 'balance':
-        return filtered.sort((a, b) => {
-          const balA = parseFloat(a.balance || '0');
-          const balB = parseFloat(b.balance || '0');
-          return balB - balA;
-        });
-      case 'recent':
-      default:
-        return filtered.sort((a, b) => (b.lastUsed || 0) - (a.lastUsed || 0));
-    }
-  }, [state.accounts, state.activeAccount]);
+      switch (filter.sortBy) {
+        case 'alphabetical':
+          return filtered.sort((a, b) =>
+            (a.name || a.address).localeCompare(b.name || b.address)
+          );
+        case 'balance':
+          return filtered.sort((a, b) => {
+            const balA = parseFloat(a.balance || '0');
+            const balB = parseFloat(b.balance || '0');
+            return balB - balA;
+          });
+        case 'recent':
+        default:
+          return filtered.sort((a, b) => (b.lastUsed || 0) - (a.lastUsed || 0));
+      }
+    },
+    [state.accounts, state.activeAccount]
+  );
 
   const getAccountByAddress = useCallback(
     (address: string) => state.accounts.find((a) => a.address === address),
     [state.accounts]
   );
 
-  const hasMultipleAccounts = useCallback(() => state.accounts.length > 1, [state.accounts]);
+  const hasMultipleAccounts = useCallback(
+    () => state.accounts.length > 1,
+    [state.accounts]
+  );
 
   const loadPreferences = useCallback(async () => {
     try {
@@ -246,9 +279,13 @@ export function MultiAccountProvider({
   const savePreferences = useCallback(async () => {
     try {
       if (typeof window === 'undefined') return;
-      localStorage.setItem('account_preferences', JSON.stringify(state.preferences));
+      localStorage.setItem(
+        'account_preferences',
+        JSON.stringify(state.preferences)
+      );
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save preferences';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to save preferences';
       setState((prev) => ({ ...prev, error: errorMessage }));
       throw error;
     }
@@ -281,14 +318,18 @@ export function MultiAccountProvider({
   };
 
   return (
-    <MultiAccountContext.Provider value={value}>{children}</MultiAccountContext.Provider>
+    <MultiAccountContext.Provider value={value}>
+      {children}
+    </MultiAccountContext.Provider>
   );
 }
 
 export function useMultiAccount() {
   const context = useContext(MultiAccountContext);
   if (context === undefined) {
-    throw new Error('useMultiAccount must be used within a MultiAccountProvider');
+    throw new Error(
+      'useMultiAccount must be used within a MultiAccountProvider'
+    );
   }
   return context;
 }

@@ -13,11 +13,27 @@ jest.mock('../../utils/logger', () => ({
   default: { error: jest.fn(), info: jest.fn(), debug: jest.fn() },
 }));
 
-const mockGetFilterOptions = jest.fn().mockResolvedValue({ levels: [], categories: [], communities: [] });
+const mockGetFilterOptions = jest
+  .fn()
+  .mockResolvedValue({ levels: [], categories: [], communities: [] });
 const mockGetTrendingBadges = jest.fn().mockResolvedValue([]);
 const mockGetSearchSuggestions = jest.fn().mockResolvedValue([]);
-const mockSearchBadges = jest.fn().mockResolvedValue({ badges: [], total: 0, page: 1, limit: 20, totalPages: 0, hasMore: false });
-const mockSearchByIssuer = jest.fn().mockResolvedValue({ badges: [], total: 0, page: 1, limit: 20, totalPages: 0, hasMore: false });
+const mockSearchBadges = jest.fn().mockResolvedValue({
+  badges: [],
+  total: 0,
+  page: 1,
+  limit: 20,
+  totalPages: 0,
+  hasMore: false,
+});
+const mockSearchByIssuer = jest.fn().mockResolvedValue({
+  badges: [],
+  total: 0,
+  page: 1,
+  limit: 20,
+  totalPages: 0,
+  hasMore: false,
+});
 
 jest.mock('../../services/badgeSearchService', () => ({
   default: {
@@ -187,7 +203,9 @@ describe('badgeSearch route — issue #222 fixes', () => {
 
   describe('GET /badges/issuer/:address', () => {
     it('defaults page to 1 and limit to 20 on NaN input', async () => {
-      await request(buildApp()).get('/badges/issuer/SP_TEST?page=nan&limit=nan');
+      await request(buildApp()).get(
+        '/badges/issuer/SP_TEST?page=nan&limit=nan'
+      );
       expect(mockSearchByIssuer).toHaveBeenCalledWith('SP_TEST', 1, 20);
     });
 

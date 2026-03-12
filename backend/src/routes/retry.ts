@@ -302,20 +302,25 @@ router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
  * GET /retry/metrics/export
  * Export metrics as JSON
  */
-router.get('/metrics/export', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const exportData = await RetryMetricsService.exportMetrics();
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="retry-metrics-${Date.now()}.json"`
-    );
-    res.send(exportData);
-  } catch (error) {
-    logger.error('Error exporting metrics:', error);
-    res.status(500).json({ error: 'Failed to export metrics' });
+router.get(
+  '/metrics/export',
+  authenticateToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const exportData = await RetryMetricsService.exportMetrics();
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="retry-metrics-${Date.now()}.json"`
+      );
+      res.send(exportData);
+    } catch (error) {
+      logger.error('Error exporting metrics:', error);
+      res.status(500).json({ error: 'Failed to export metrics' });
+    }
   }
-});
+);
 
 /**
  * GET /retry/monitoring/health

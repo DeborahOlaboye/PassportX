@@ -21,10 +21,14 @@ export class CacheInvalidationMapper {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CacheInvalidationMapper] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CacheInvalidationMapper] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CacheInvalidationMapper] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CacheInvalidationMapper] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CacheInvalidationMapper] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CacheInvalidationMapper] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CacheInvalidationMapper] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CacheInvalidationMapper] ${msg}`, ...args),
     };
   }
 
@@ -35,9 +39,9 @@ export class CacheInvalidationMapper {
       extractData: (event) => this.extractBadgeMintData(event),
       conditions: [
         (event) => this.isBadgeMintEvent(event),
-        (event) => this.hasValidTransaction(event)
+        (event) => this.hasValidTransaction(event),
       ],
-      priority: 'high'
+      priority: 'high',
     });
 
     // Badge metadata update mapping
@@ -46,9 +50,9 @@ export class CacheInvalidationMapper {
       extractData: (event) => this.extractBadgeMetadataData(event),
       conditions: [
         (event) => this.isBadgeMetadataUpdateEvent(event),
-        (event) => this.hasValidTransaction(event)
+        (event) => this.hasValidTransaction(event),
       ],
-      priority: 'medium'
+      priority: 'medium',
     });
 
     // Badge revocation mapping
@@ -57,9 +61,9 @@ export class CacheInvalidationMapper {
       extractData: (event) => this.extractBadgeRevocationData(event),
       conditions: [
         (event) => this.isBadgeRevocationEvent(event),
-        (event) => this.hasValidTransaction(event)
+        (event) => this.hasValidTransaction(event),
       ],
-      priority: 'high'
+      priority: 'high',
     });
 
     // Community creation mapping
@@ -68,12 +72,14 @@ export class CacheInvalidationMapper {
       extractData: (event) => this.extractCommunityCreationData(event),
       conditions: [
         (event) => this.isCommunityCreationEvent(event),
-        (event) => this.hasValidTransaction(event)
+        (event) => this.hasValidTransaction(event),
       ],
-      priority: 'medium'
+      priority: 'medium',
     });
 
-    this.logger.info(`Initialized ${this.mappings.size} cache invalidation mappings`);
+    this.logger.info(
+      `Initialized ${this.mappings.size} cache invalidation mappings`
+    );
   }
 
   async mapAndInvalidate(event: ChainhookEventPayload): Promise<void> {
@@ -86,10 +92,13 @@ export class CacheInvalidationMapper {
             mappingKey,
             eventType: mapping.eventType,
             priority: mapping.priority,
-            hasData: !!eventData
+            hasData: !!eventData,
           });
 
-          await this.invalidator.invalidateCacheForEvent(mapping.eventType, eventData);
+          await this.invalidator.invalidateCacheForEvent(
+            mapping.eventType,
+            eventData
+          );
           break; // Only apply the first matching mapping
         }
       }
@@ -98,90 +107,105 @@ export class CacheInvalidationMapper {
     }
   }
 
-  private shouldApplyMapping(event: ChainhookEventPayload, mapping: CacheInvalidationMapping): boolean {
-    return mapping.conditions.every(condition => condition(event));
+  private shouldApplyMapping(
+    event: ChainhookEventPayload,
+    mapping: CacheInvalidationMapping
+  ): boolean {
+    return mapping.conditions.every((condition) => condition(event));
   }
 
   private isBadgeMintEvent(event: ChainhookEventPayload): boolean {
     if (!event.transactions || event.transactions.length === 0) return false;
 
-    return event.transactions.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        op.contract_call?.method &&
-        ['mint', 'mint-badge', 'nft-mint'].includes(op.contract_call.method)
-      ) ||
-      tx.operations?.some(op =>
-        op.events?.some(evt =>
-          evt.topic && (
-            evt.topic.includes('mint') ||
-            evt.topic.includes('nft') ||
-            evt.topic.includes('badge-mint')
+    return event.transactions.some(
+      (tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            op.contract_call?.method &&
+            ['mint', 'mint-badge', 'nft-mint'].includes(op.contract_call.method)
+        ) ||
+        tx.operations?.some((op) =>
+          op.events?.some(
+            (evt) =>
+              evt.topic &&
+              (evt.topic.includes('mint') ||
+                evt.topic.includes('nft') ||
+                evt.topic.includes('badge-mint'))
           )
         )
-      )
     );
   }
 
   private isBadgeMetadataUpdateEvent(event: ChainhookEventPayload): boolean {
     if (!event.transactions || event.transactions.length === 0) return false;
 
-    return event.transactions.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        op.contract_call?.method &&
-        ['update-metadata', 'update-badge', 'set-metadata'].includes(op.contract_call.method)
-      ) ||
-      tx.operations?.some(op =>
-        op.events?.some(evt =>
-          evt.topic && (
-            evt.topic.includes('metadata') ||
-            evt.topic.includes('update') ||
-            evt.topic.includes('badge-update')
+    return event.transactions.some(
+      (tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            op.contract_call?.method &&
+            ['update-metadata', 'update-badge', 'set-metadata'].includes(
+              op.contract_call.method
+            )
+        ) ||
+        tx.operations?.some((op) =>
+          op.events?.some(
+            (evt) =>
+              evt.topic &&
+              (evt.topic.includes('metadata') ||
+                evt.topic.includes('update') ||
+                evt.topic.includes('badge-update'))
           )
         )
-      )
     );
   }
 
   private isBadgeRevocationEvent(event: ChainhookEventPayload): boolean {
     if (!event.transactions || event.transactions.length === 0) return false;
 
-    return event.transactions.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        op.contract_call?.method &&
-        ['revoke', 'revoke-badge', 'burn'].includes(op.contract_call.method)
-      ) ||
-      tx.operations?.some(op =>
-        op.events?.some(evt =>
-          evt.topic && (
-            evt.topic.includes('revoke') ||
-            evt.topic.includes('revocation') ||
-            evt.topic.includes('burn')
+    return event.transactions.some(
+      (tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            op.contract_call?.method &&
+            ['revoke', 'revoke-badge', 'burn'].includes(op.contract_call.method)
+        ) ||
+        tx.operations?.some((op) =>
+          op.events?.some(
+            (evt) =>
+              evt.topic &&
+              (evt.topic.includes('revoke') ||
+                evt.topic.includes('revocation') ||
+                evt.topic.includes('burn'))
           )
         )
-      )
     );
   }
 
   private isCommunityCreationEvent(event: ChainhookEventPayload): boolean {
     if (!event.transactions || event.transactions.length === 0) return false;
 
-    return event.transactions.some(tx =>
-      tx.operations?.some(op =>
-        op.type === 'contract_call' &&
-        op.contract_call?.method &&
-        ['create-community', 'new-community', 'deploy-community'].includes(op.contract_call.method)
-      ) ||
-      tx.operations?.some(op =>
-        op.events?.some(evt =>
-          evt.topic && (
-            evt.topic.includes('community') &&
-            (evt.topic.includes('create') || evt.topic.includes('new'))
+    return event.transactions.some(
+      (tx) =>
+        tx.operations?.some(
+          (op) =>
+            op.type === 'contract_call' &&
+            op.contract_call?.method &&
+            ['create-community', 'new-community', 'deploy-community'].includes(
+              op.contract_call.method
+            )
+        ) ||
+        tx.operations?.some((op) =>
+          op.events?.some(
+            (evt) =>
+              evt.topic &&
+              evt.topic.includes('community') &&
+              (evt.topic.includes('create') || evt.topic.includes('new'))
           )
         )
-      )
     );
   }
 
@@ -194,28 +218,34 @@ export class CacheInvalidationMapper {
     if (!tx) return null;
 
     // Find the contract call operation
-    const contractCallOp = tx.operations?.find(op =>
-      op.type === 'contract_call' && op.contract_call
+    const contractCallOp = tx.operations?.find(
+      (op) => op.type === 'contract_call' && op.contract_call
     );
 
     if (contractCallOp?.contract_call) {
       const args = contractCallOp.contract_call.args || [];
       return {
-        userId: this.extractRecipientAddress(args, contractCallOp.contract_call, tx),
+        userId: this.extractRecipientAddress(
+          args,
+          contractCallOp.contract_call,
+          tx
+        ),
         badgeId: this.extractBadgeId(args),
         badgeName: this.extractBadgeName(args),
         criteria: this.extractCriteria(args),
         contractAddress: contractCallOp.contract_call.contract,
         transactionHash: tx.transaction_hash,
         blockHeight: event.block_identifier?.index || 0,
-        timestamp: event.metadata?.pox_cycle_position || Date.now()
+        timestamp: event.metadata?.pox_cycle_position || Date.now(),
       };
     }
 
     // Try to extract from events
-    const mintEvent = tx.operations?.find(op =>
-      op.events?.some(evt => evt.topic && evt.topic.includes('mint'))
-    )?.events?.find(evt => evt.topic && evt.topic.includes('mint'));
+    const mintEvent = tx.operations
+      ?.find((op) =>
+        op.events?.some((evt) => evt.topic && evt.topic.includes('mint'))
+      )
+      ?.events?.find((evt) => evt.topic && evt.topic.includes('mint'));
 
     if (mintEvent) {
       return {
@@ -226,7 +256,7 @@ export class CacheInvalidationMapper {
         contractAddress: mintEvent.contract_address,
         transactionHash: tx.transaction_hash,
         blockHeight: event.block_identifier?.index || 0,
-        timestamp: event.metadata?.pox_cycle_position || Date.now()
+        timestamp: event.metadata?.pox_cycle_position || Date.now(),
       };
     }
 
@@ -237,8 +267,8 @@ export class CacheInvalidationMapper {
     const tx = event.transactions[0];
     if (!tx) return null;
 
-    const contractCallOp = tx.operations?.find(op =>
-      op.type === 'contract_call' && op.contract_call
+    const contractCallOp = tx.operations?.find(
+      (op) => op.type === 'contract_call' && op.contract_call
     );
 
     if (contractCallOp?.contract_call) {
@@ -249,7 +279,7 @@ export class CacheInvalidationMapper {
         contractAddress: contractCallOp.contract_call.contract,
         transactionHash: tx.transaction_hash,
         blockHeight: event.block_identifier?.index || 0,
-        timestamp: event.metadata?.pox_cycle_position || Date.now()
+        timestamp: event.metadata?.pox_cycle_position || Date.now(),
       };
     }
 
@@ -260,20 +290,24 @@ export class CacheInvalidationMapper {
     const tx = event.transactions[0];
     if (!tx) return null;
 
-    const contractCallOp = tx.operations?.find(op =>
-      op.type === 'contract_call' && op.contract_call
+    const contractCallOp = tx.operations?.find(
+      (op) => op.type === 'contract_call' && op.contract_call
     );
 
     if (contractCallOp?.contract_call) {
       const args = contractCallOp.contract_call.args || [];
       return {
         badgeId: this.extractBadgeId(args),
-        userId: this.extractRecipientAddress(args, contractCallOp.contract_call, tx),
+        userId: this.extractRecipientAddress(
+          args,
+          contractCallOp.contract_call,
+          tx
+        ),
         revocationType: this.extractRevocationType(args),
         contractAddress: contractCallOp.contract_call.contract,
         transactionHash: tx.transaction_hash,
         blockHeight: event.block_identifier?.index || 0,
-        timestamp: event.metadata?.pox_cycle_position || Date.now()
+        timestamp: event.metadata?.pox_cycle_position || Date.now(),
       };
     }
 
@@ -284,8 +318,8 @@ export class CacheInvalidationMapper {
     const tx = event.transactions[0];
     if (!tx) return null;
 
-    const contractCallOp = tx.operations?.find(op =>
-      op.type === 'contract_call' && op.contract_call
+    const contractCallOp = tx.operations?.find(
+      (op) => op.type === 'contract_call' && op.contract_call
     );
 
     if (contractCallOp?.contract_call) {
@@ -297,14 +331,18 @@ export class CacheInvalidationMapper {
         contractAddress: contractCallOp.contract_call.contract,
         transactionHash: tx.transaction_hash,
         blockHeight: event.block_identifier?.index || 0,
-        timestamp: event.metadata?.pox_cycle_position || Date.now()
+        timestamp: event.metadata?.pox_cycle_position || Date.now(),
       };
     }
 
     return null;
   }
 
-  private extractRecipientAddress(args: any[], contractCall: any, tx: any): string {
+  private extractRecipientAddress(
+    args: any[],
+    contractCall: any,
+    tx: any
+  ): string {
     if (!args || args.length === 0) return tx?.sender || '';
     const firstArg = args[0]?.value || args[0];
     return typeof firstArg === 'string' ? firstArg : tx?.sender || '';
@@ -353,7 +391,9 @@ export class CacheInvalidationMapper {
 
   addMapping(mapping: CacheInvalidationMapping): void {
     this.mappings.set(mapping.eventType, mapping);
-    this.logger.info(`Added cache invalidation mapping for ${mapping.eventType}`);
+    this.logger.info(
+      `Added cache invalidation mapping for ${mapping.eventType}`
+    );
   }
 
   removeMapping(eventType: string): boolean {

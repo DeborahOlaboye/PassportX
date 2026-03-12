@@ -1,4 +1,7 @@
-import { ServerOptions as ChainhookServerOptions, ChainhookNodeOptions } from '@hirosystems/chainhook-client';
+import {
+  ServerOptions as ChainhookServerOptions,
+  ChainhookNodeOptions,
+} from '@hirosystems/chainhook-client';
 
 export interface IChainhookConfig {
   nodeUrl: string;

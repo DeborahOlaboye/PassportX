@@ -1,5 +1,8 @@
 import { Server as SocketIOServer } from 'socket.io';
-import { AnyAccessControlEvent, AccessControlEventType } from '../types/accessControl';
+import {
+  AnyAccessControlEvent,
+  AccessControlEventType,
+} from '../types/accessControl';
 
 /**
  * Access Control Notification Service
@@ -8,7 +11,14 @@ import { AnyAccessControlEvent, AccessControlEventType } from '../types/accessCo
  */
 
 export interface PermissionNotification {
-  type: 'permission_changed' | 'role_assigned' | 'role_revoked' | 'admin_added' | 'admin_removed' | 'user_suspended' | 'security_alert';
+  type:
+    | 'permission_changed'
+    | 'role_assigned'
+    | 'role_revoked'
+    | 'admin_added'
+    | 'admin_removed'
+    | 'user_suspended'
+    | 'security_alert';
   eventType: AccessControlEventType;
   principal: string;
   targetPrincipal?: string;
@@ -28,10 +38,14 @@ export class AccessControlNotificationService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[ERROR] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[DEBUG] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[INFO] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[WARN] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[ERROR] ${msg}`, ...args),
     };
   }
 
@@ -95,16 +109,19 @@ export class AccessControlNotificationService {
       communityId: event.metadata?.communityId,
       data: event.metadata || {},
       timestamp: new Date(event.timestamp),
-      severity: this.getSeverity(event.eventType)
+      severity: this.getSeverity(event.eventType),
     };
 
     // Broadcast to relevant rooms
     this.broadcastNotification(notification);
 
-    this.logger.debug(`Access control notification sent: ${notification.type}`, {
-      eventType: notification.eventType,
-      principal: notification.principal
-    });
+    this.logger.debug(
+      `Access control notification sent: ${notification.type}`,
+      {
+        eventType: notification.eventType,
+        principal: notification.principal,
+      }
+    );
   }
 
   /**
@@ -126,12 +143,14 @@ export class AccessControlNotificationService {
     this.io.to('security').emit('security:alert', alert);
 
     // Send to affected user
-    this.io.to(`user:${alert.principal}`).emit('permission:security_alert', alert);
+    this.io
+      .to(`user:${alert.principal}`)
+      .emit('permission:security_alert', alert);
 
     this.logger.debug('Security alert notification sent', {
       type: alert.type,
       severity: alert.severity,
-      principal: alert.principal
+      principal: alert.principal,
     });
   }
 
@@ -145,20 +164,29 @@ export class AccessControlNotificationService {
     this.io.emit('permission:updated', notification);
 
     // Broadcast to specific user (principal)
-    this.io.to(`user:${notification.principal}`).emit('permission:user_updated', notification);
+    this.io
+      .to(`user:${notification.principal}`)
+      .emit('permission:user_updated', notification);
 
     // Broadcast to affected target user
     if (notification.targetPrincipal) {
-      this.io.to(`user:${notification.targetPrincipal}`).emit('permission:user_updated', notification);
+      this.io
+        .to(`user:${notification.targetPrincipal}`)
+        .emit('permission:user_updated', notification);
     }
 
     // Broadcast to community
     if (notification.communityId) {
-      this.io.to(`community:${notification.communityId}`).emit('permission:community_updated', notification);
+      this.io
+        .to(`community:${notification.communityId}`)
+        .emit('permission:community_updated', notification);
     }
 
     // Broadcast critical events to security channel
-    if (notification.severity === 'critical' || notification.severity === 'high') {
+    if (
+      notification.severity === 'critical' ||
+      notification.severity === 'high'
+    ) {
       this.io.to('security').emit('permission:critical_change', notification);
     }
   }
@@ -166,7 +194,9 @@ export class AccessControlNotificationService {
   /**
    * Get notification type from event type
    */
-  private getNotificationType(eventType: AccessControlEventType): PermissionNotification['type'] {
+  private getNotificationType(
+    eventType: AccessControlEventType
+  ): PermissionNotification['type'] {
     switch (eventType) {
       case AccessControlEventType.ADMIN_ADDED:
         return 'admin_added';
@@ -189,7 +219,9 @@ export class AccessControlNotificationService {
   /**
    * Get severity level for event type
    */
-  private getSeverity(eventType: AccessControlEventType): PermissionNotification['severity'] {
+  private getSeverity(
+    eventType: AccessControlEventType
+  ): PermissionNotification['severity'] {
     switch (eventType) {
       case AccessControlEventType.ADMIN_ADDED:
       case AccessControlEventType.ADMIN_REMOVED:
@@ -231,7 +263,11 @@ export class AccessControlNotificationService {
 
     this.io.sockets.adapter.rooms.forEach((sockets, room) => {
       // Skip socket IDs (they are also in rooms map)
-      if (!room.startsWith('user:') && !room.startsWith('community:') && room !== 'security') {
+      if (
+        !room.startsWith('user:') &&
+        !room.startsWith('community:') &&
+        room !== 'security'
+      ) {
         return;
       }
       counts[room] = sockets.size;

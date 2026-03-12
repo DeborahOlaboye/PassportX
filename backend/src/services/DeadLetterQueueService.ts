@@ -1,4 +1,7 @@
-import { DeadLetterQueue, IDeadLetterQueueItem } from '../models/DeadLetterQueue';
+import {
+  DeadLetterQueue,
+  IDeadLetterQueueItem,
+} from '../models/DeadLetterQueue';
 import { RetryQueue, IRetryQueueItem } from '../models/RetryQueue';
 import { ExponentialBackoffService } from './ExponentialBackoffService';
 
@@ -42,14 +45,18 @@ export class DeadLetterQueueService {
   /**
    * Move a failed retry queue item to dead letter queue
    */
-  async moveToDeadLetter(retryItem: IRetryQueueItem): Promise<IDeadLetterQueueItem> {
+  async moveToDeadLetter(
+    retryItem: IRetryQueueItem
+  ): Promise<IDeadLetterQueueItem> {
     // Collect error history from retry item
-    const errorHistory = [{
-      attemptNumber: retryItem.attemptCount,
-      error: retryItem.lastError || 'Unknown error',
-      timestamp: retryItem.lastAttemptAt || new Date(),
-      errorType: retryItem.errorType
-    }];
+    const errorHistory = [
+      {
+        attemptNumber: retryItem.attemptCount,
+        error: retryItem.lastError || 'Unknown error',
+        timestamp: retryItem.lastAttemptAt || new Date(),
+        errorType: retryItem.errorType,
+      },
+    ];
 
     const deadLetterItem = new DeadLetterQueue({
       itemType: retryItem.itemType,
@@ -68,8 +75,8 @@ export class DeadLetterQueueService {
         ...retryItem.metadata,
         retryQueueId: retryItem._id.toString(),
         alertSent: false,
-        manualReviewRequired: true
-      }
+        manualReviewRequired: true,
+      },
     });
 
     await deadLetterItem.save();
@@ -91,22 +98,23 @@ export class DeadLetterQueueService {
       totalItems: items.length,
       byItemType: {
         event: 0,
-        webhook: 0
+        webhook: 0,
       },
       byErrorType: {},
       byStatus: {
         dead: 0,
         recovered: 0,
-        archived: 0
-      }
+        archived: 0,
+      },
     };
 
-    items.forEach(item => {
+    items.forEach((item) => {
       // Count by item type
       stats.byItemType[item.itemType]++;
 
       // Count by error type
-      stats.byErrorType[item.errorType] = (stats.byErrorType[item.errorType] || 0) + 1;
+      stats.byErrorType[item.errorType] =
+        (stats.byErrorType[item.errorType] || 0) + 1;
 
       // Count by status
       stats.byStatus[item.status]++;
@@ -138,7 +146,7 @@ export class DeadLetterQueueService {
       success: true,
       recoveredItems: 0,
       failedItems: 0,
-      errors: []
+      errors: [],
     };
 
     const query: any = { status: 'dead' };
@@ -177,8 +185,8 @@ export class DeadLetterQueueService {
           metadata: {
             ...item.metadata,
             deadLetterRecovery: true,
-            originalDeadLetterId: item._id.toString()
-          }
+            originalDeadLetterId: item._id.toString(),
+          },
         });
 
         await retryItem.save();
@@ -209,13 +217,13 @@ export class DeadLetterQueueService {
     const result = await DeadLetterQueue.updateMany(
       {
         status: 'dead',
-        createdAt: { $lt: cutoffDate }
+        createdAt: { $lt: cutoffDate },
       },
       {
         $set: {
           status: 'archived',
-          archivedAt: new Date()
-        }
+          archivedAt: new Date(),
+        },
       }
     );
 
@@ -225,11 +233,13 @@ export class DeadLetterQueueService {
   /**
    * Get items requiring manual review
    */
-  async getItemsForManualReview(limit: number = 50): Promise<IDeadLetterQueueItem[]> {
+  async getItemsForManualReview(
+    limit: number = 50
+  ): Promise<IDeadLetterQueueItem[]> {
     return await DeadLetterQueue.find({
       status: 'dead',
       'metadata.manualReviewRequired': true,
-      'metadata.alertSent': { $ne: true }
+      'metadata.alertSent': { $ne: true },
     })
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -240,7 +250,7 @@ export class DeadLetterQueueService {
    */
   async markAlertSent(itemId: string): Promise<void> {
     await DeadLetterQueue.findByIdAndUpdate(itemId, {
-      $set: { 'metadata.alertSent': true }
+      $set: { 'metadata.alertSent': true },
     });
   }
 
@@ -253,7 +263,7 @@ export class DeadLetterQueueService {
 
     const result = await DeadLetterQueue.deleteMany({
       status: 'archived',
-      archivedAt: { $lt: cutoffDate }
+      archivedAt: { $lt: cutoffDate },
     });
 
     return result.deletedCount;
@@ -263,11 +273,14 @@ export class DeadLetterQueueService {
    * Get detailed error analysis
    */
   async getErrorAnalysis(): Promise<{
-    errorTypes: Record<string, {
-      count: number;
-      percentage: number;
-      examples: string[];
-    }>;
+    errorTypes: Record<
+      string,
+      {
+        count: number;
+        percentage: number;
+        examples: string[];
+      }
+    >;
     mostCommonErrors: Array<{
       error: string;
       count: number;
@@ -276,21 +289,24 @@ export class DeadLetterQueueService {
     const items = await DeadLetterQueue.find({ status: 'dead' });
     const totalItems = items.length;
 
-    const errorTypes: Record<string, {
-      count: number;
-      percentage: number;
-      examples: string[];
-    }> = {};
+    const errorTypes: Record<
+      string,
+      {
+        count: number;
+        percentage: number;
+        examples: string[];
+      }
+    > = {};
 
     const errorCounts: Record<string, number> = {};
 
-    items.forEach(item => {
+    items.forEach((item) => {
       // Count by error type
       if (!errorTypes[item.errorType]) {
         errorTypes[item.errorType] = {
           count: 0,
           percentage: 0,
-          examples: []
+          examples: [],
         };
       }
 
@@ -300,11 +316,12 @@ export class DeadLetterQueueService {
       }
 
       // Count individual errors
-      errorCounts[item.failureReason] = (errorCounts[item.failureReason] || 0) + 1;
+      errorCounts[item.failureReason] =
+        (errorCounts[item.failureReason] || 0) + 1;
     });
 
     // Calculate percentages
-    Object.keys(errorTypes).forEach(type => {
+    Object.keys(errorTypes).forEach((type) => {
       errorTypes[type].percentage = (errorTypes[type].count / totalItems) * 100;
     });
 
@@ -316,7 +333,7 @@ export class DeadLetterQueueService {
 
     return {
       errorTypes,
-      mostCommonErrors
+      mostCommonErrors,
     };
   }
 }

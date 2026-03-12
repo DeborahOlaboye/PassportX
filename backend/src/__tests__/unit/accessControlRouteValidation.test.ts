@@ -25,14 +25,20 @@ jest.mock('../../services/AccessControlSecurityMonitor', () => ({
   default: { getAlerts: jest.fn().mockReturnValue([]) },
 }));
 jest.mock('../../middleware/rateLimiter', () => ({
-  createRateLimiter: () => (_req: unknown, _res: unknown, next: () => void) => next(),
+  createRateLimiter: () => (_req: unknown, _res: unknown, next: () => void) =>
+    next(),
 }));
 jest.mock('../../config/rateLimits', () => ({
   API_READ_RATE_LIMIT: { windowMs: 60_000, max: 100 },
 }));
 jest.mock('../../utils/logger', () => ({
   __esModule: true,
-  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
+  default: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 import express from 'express';
@@ -51,10 +57,14 @@ app.use('/access-control', accessControlRouter);
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function auditSpy() {
-  return AccessControlAuditService as jest.Mocked<typeof AccessControlAuditService>;
+  return AccessControlAuditService as jest.Mocked<
+    typeof AccessControlAuditService
+  >;
 }
 function securitySpy() {
-  return AccessControlSecurityMonitor as jest.Mocked<typeof AccessControlSecurityMonitor>;
+  return AccessControlSecurityMonitor as jest.Mocked<
+    typeof AccessControlSecurityMonitor
+  >;
 }
 
 beforeEach(() => jest.clearAllMocks());
@@ -79,36 +89,28 @@ describe('GET /access-control/audit/logs', () => {
   });
 
   it('falls back to default when limit is NaN', async () => {
-    await request(app)
-      .get('/access-control/audit/logs?limit=abc')
-      .expect(200);
+    await request(app).get('/access-control/audit/logs?limit=abc').expect(200);
     expect(auditSpy().queryLogs).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 100 })
     );
   });
 
   it('falls back to default when skip is NaN', async () => {
-    await request(app)
-      .get('/access-control/audit/logs?skip=xyz')
-      .expect(200);
+    await request(app).get('/access-control/audit/logs?skip=xyz').expect(200);
     expect(auditSpy().queryLogs).toHaveBeenCalledWith(
       expect.objectContaining({ skip: 0 })
     );
   });
 
   it('caps limit at 500', async () => {
-    await request(app)
-      .get('/access-control/audit/logs?limit=9999')
-      .expect(200);
+    await request(app).get('/access-control/audit/logs?limit=9999').expect(200);
     expect(auditSpy().queryLogs).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 500 })
     );
   });
 
   it('rejects negative limit (falls back to default)', async () => {
-    await request(app)
-      .get('/access-control/audit/logs?limit=-5')
-      .expect(200);
+    await request(app).get('/access-control/audit/logs?limit=-5').expect(200);
     expect(auditSpy().queryLogs).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 100 })
     );

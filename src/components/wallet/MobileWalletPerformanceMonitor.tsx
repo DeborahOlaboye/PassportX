@@ -10,7 +10,7 @@ import {
   XCircle,
   AlertTriangle,
   BarChart3,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 interface PerformanceMetric {
@@ -45,7 +45,7 @@ export default function MobileWalletPerformanceMonitor() {
     setIsLoading(true);
 
     // Simulate loading performance data
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Mock performance metrics
     const mockMetrics: PerformanceMetric[] = [
@@ -55,7 +55,7 @@ export default function MobileWalletPerformanceMonitor() {
         unit: '%',
         trend: 'up',
         status: 'good',
-        description: 'Percentage of successful mobile wallet connections'
+        description: 'Percentage of successful mobile wallet connections',
       },
       {
         name: 'Average Connection Time',
@@ -63,7 +63,7 @@ export default function MobileWalletPerformanceMonitor() {
         unit: 's',
         trend: 'down',
         status: 'good',
-        description: 'Average time to establish connection'
+        description: 'Average time to establish connection',
       },
       {
         name: 'QR Code Scan Rate',
@@ -71,7 +71,7 @@ export default function MobileWalletPerformanceMonitor() {
         unit: '%',
         trend: 'stable',
         status: 'good',
-        description: 'Percentage of QR codes successfully scanned'
+        description: 'Percentage of QR codes successfully scanned',
       },
       {
         name: 'Timeout Rate',
@@ -79,7 +79,7 @@ export default function MobileWalletPerformanceMonitor() {
         unit: '%',
         trend: 'down',
         status: 'warning',
-        description: 'Percentage of connections that timeout'
+        description: 'Percentage of connections that timeout',
       },
       {
         name: 'Error Rate',
@@ -87,7 +87,7 @@ export default function MobileWalletPerformanceMonitor() {
         unit: '%',
         trend: 'stable',
         status: 'good',
-        description: 'Percentage of connections with errors'
+        description: 'Percentage of connections with errors',
       },
       {
         name: 'User Satisfaction',
@@ -95,8 +95,8 @@ export default function MobileWalletPerformanceMonitor() {
         unit: '/5',
         trend: 'up',
         status: 'good',
-        description: 'Average user satisfaction rating'
-      }
+        description: 'Average user satisfaction rating',
+      },
     ];
 
     // Mock recent connection attempts
@@ -106,7 +106,7 @@ export default function MobileWalletPerformanceMonitor() {
         timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
         duration: 8.5,
         success: true,
-        walletType: 'Xverse'
+        walletType: 'Xverse',
       },
       {
         id: '2',
@@ -114,14 +114,14 @@ export default function MobileWalletPerformanceMonitor() {
         duration: 15.2,
         success: false,
         walletType: 'Hiro',
-        error: 'Connection timeout'
+        error: 'Connection timeout',
       },
       {
         id: '3',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
         duration: 6.8,
         success: true,
-        walletType: 'Leather'
+        walletType: 'Leather',
       },
       {
         id: '4',
@@ -129,15 +129,15 @@ export default function MobileWalletPerformanceMonitor() {
         duration: 22.1,
         success: false,
         walletType: 'Xverse',
-        error: 'Network error'
+        error: 'Network error',
       },
       {
         id: '5',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8 hours ago
         duration: 9.3,
         success: true,
-        walletType: 'Hiro'
-      }
+        walletType: 'Hiro',
+      },
     ];
 
     setMetrics(mockMetrics);
@@ -145,30 +145,42 @@ export default function MobileWalletPerformanceMonitor() {
     setIsLoading(false);
   };
 
-  const getStatusColor = (status: PerformanceMetric['status']) => {
+  const _getStatusColor = (status: PerformanceMetric['status']) => {
     switch (status) {
-      case 'good': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'critical': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'good':
+        return 'text-green-600';
+      case 'warning':
+        return 'text-yellow-600';
+      case 'critical':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
   const getStatusBgColor = (status: PerformanceMetric['status']) => {
     switch (status) {
-      case 'good': return 'bg-green-50 border-green-200';
-      case 'warning': return 'bg-yellow-50 border-yellow-200';
-      case 'critical': return 'bg-red-50 border-red-200';
-      default: return 'bg-gray-50 border-gray-200';
+      case 'good':
+        return 'bg-green-50 border-green-200';
+      case 'warning':
+        return 'bg-yellow-50 border-yellow-200';
+      case 'critical':
+        return 'bg-red-50 border-red-200';
+      default:
+        return 'bg-gray-50 border-gray-200';
     }
   };
 
   const getTrendIcon = (trend: PerformanceMetric['trend']) => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-600" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-600" />;
-      case 'stable': return <Activity className="w-4 h-4 text-gray-600" />;
-      default: return null;
+      case 'up':
+        return <TrendingUp className="w-4 h-4 text-green-600" />;
+      case 'down':
+        return <TrendingDown className="w-4 h-4 text-red-600" />;
+      case 'stable':
+        return <Activity className="w-4 h-4 text-gray-600" />;
+      default:
+        return null;
     }
   };
 
@@ -195,7 +207,9 @@ export default function MobileWalletPerformanceMonitor() {
       <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg">
         <div className="flex items-center justify-center py-12">
           <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Loading performance data...</span>
+          <span className="ml-2 text-gray-600">
+            Loading performance data...
+          </span>
         </div>
       </div>
     );
@@ -232,7 +246,9 @@ export default function MobileWalletPerformanceMonitor() {
         {metrics.map((metric) => (
           <div
             key={metric.name}
-            className={`p-4 rounded-lg border ${getStatusBgColor(metric.status)}`}
+            className={`p-4 rounded-lg border ${getStatusBgColor(
+              metric.status
+            )}`}
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-medium text-gray-900">{metric.name}</h3>
@@ -253,7 +269,9 @@ export default function MobileWalletPerformanceMonitor() {
 
       {/* Recent Connection Attempts */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Connection Attempts</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Recent Connection Attempts
+        </h3>
 
         <div className="space-y-3">
           {recentAttempts.map((attempt) => (
@@ -270,7 +288,9 @@ export default function MobileWalletPerformanceMonitor() {
 
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">{attempt.walletType}</span>
+                    <span className="font-medium text-gray-900">
+                      {attempt.walletType}
+                    </span>
                     <span className="text-sm text-gray-500">
                       {formatTimestamp(attempt.timestamp)}
                     </span>
@@ -292,11 +312,13 @@ export default function MobileWalletPerformanceMonitor() {
                 </div>
               </div>
 
-              <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                attempt.success
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-800'
-              }`}>
+              <div
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  attempt.success
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }`}
+              >
                 {attempt.success ? 'Success' : 'Failed'}
               </div>
             </div>

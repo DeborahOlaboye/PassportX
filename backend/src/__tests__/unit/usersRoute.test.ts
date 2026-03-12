@@ -29,22 +29,30 @@ jest.mock('../../models/Badge', () => ({
 
 jest.mock('../../middleware/auth', () => ({
   authenticateToken: (req: Request, res: Response, next: NextFunction) => {
-    (req as any).user = { stacksAddress: 'SP1VALID0001VALIDADDRESS0001VALID0001234', userId: 'u1' };
+    (req as any).user = {
+      stacksAddress: 'SP1VALID0001VALIDADDRESS0001VALID0001234',
+      userId: 'u1',
+    };
     next();
   },
   optionalAuth: (_req: Request, _res: Response, next: NextFunction) => next(),
 }));
 
 jest.mock('../../middleware/rateLimiter', () => ({
-  createRateLimiter: () => (_req: Request, _res: Response, next: NextFunction) => next(),
+  createRateLimiter:
+    () => (_req: Request, _res: Response, next: NextFunction) =>
+      next(),
 }));
 
 jest.mock('../../middleware/validation', () => ({
-  validatePagination: (_req: Request, _res: Response, next: NextFunction) => next(),
+  validatePagination: (_req: Request, _res: Response, next: NextFunction) =>
+    next(),
 }));
 
 jest.mock('../../middleware/upload', () => ({
-  uploadAvatar: { single: () => (_req: Request, _res: Response, next: NextFunction) => next() },
+  uploadAvatar: {
+    single: () => (_req: Request, _res: Response, next: NextFunction) => next(),
+  },
   deleteOldAvatar: jest.fn(),
 }));
 
@@ -104,7 +112,10 @@ describe('Stacks address format validation', () => {
 
 describe('NaN guards in /badges/:address', () => {
   beforeEach(() => {
-    (User.findOne as jest.Mock).mockResolvedValue({ stacksAddress: VALID_ADDRESS, isPublic: true });
+    (User.findOne as jest.Mock).mockResolvedValue({
+      stacksAddress: VALID_ADDRESS,
+      isPublic: true,
+    });
     (Badge.find as jest.Mock).mockReturnValue({
       populate: jest.fn().mockReturnThis(),
       sort: jest.fn().mockReturnThis(),
@@ -115,7 +126,9 @@ describe('NaN guards in /badges/:address', () => {
   });
 
   it('defaults page to 1 when page is not a number', async () => {
-    const res = await request(app).get(`/users/badges/${VALID_ADDRESS}?page=abc&limit=10`);
+    const res = await request(app).get(
+      `/users/badges/${VALID_ADDRESS}?page=abc&limit=10`
+    );
     expect(res.status).toBe(200);
     expect(res.body.pagination.page).toBe(1);
   });
@@ -127,7 +140,9 @@ describe('NaN guards in /badges/:address', () => {
   });
 
   it('caps limit at 100', async () => {
-    const res = await request(app).get(`/users/badges/${VALID_ADDRESS}?page=1&limit=999`);
+    const res = await request(app).get(
+      `/users/badges/${VALID_ADDRESS}?page=1&limit=999`
+    );
     expect(res.status).toBe(200);
     expect(res.body.pagination.limit).toBe(100);
   });
@@ -137,17 +152,31 @@ describe('NaN guards in /badges/:address', () => {
 
 describe('GET /stats/:address — aggregation pipeline', () => {
   it('returns zero stats when no badges exist', async () => {
-    (User.findOne as jest.Mock).mockResolvedValue({ stacksAddress: VALID_ADDRESS, isPublic: true, joinDate: new Date() });
+    (User.findOne as jest.Mock).mockResolvedValue({
+      stacksAddress: VALID_ADDRESS,
+      isPublic: true,
+      joinDate: new Date(),
+    });
     (Badge.aggregate as jest.Mock).mockResolvedValue([]);
 
     const res = await request(app).get(`/users/stats/${VALID_ADDRESS}`);
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ totalBadges: 0, communities: 0, highestLevel: 0 });
+    expect(res.body).toMatchObject({
+      totalBadges: 0,
+      communities: 0,
+      highestLevel: 0,
+    });
   });
 
   it('returns aggregated stats from pipeline result', async () => {
-    (User.findOne as jest.Mock).mockResolvedValue({ stacksAddress: VALID_ADDRESS, isPublic: true, joinDate: new Date('2024-01-01') });
-    (Badge.aggregate as jest.Mock).mockResolvedValue([{ totalBadges: 5, communities: 2, highestLevel: 3 }]);
+    (User.findOne as jest.Mock).mockResolvedValue({
+      stacksAddress: VALID_ADDRESS,
+      isPublic: true,
+      joinDate: new Date('2024-01-01'),
+    });
+    (Badge.aggregate as jest.Mock).mockResolvedValue([
+      { totalBadges: 5, communities: 2, highestLevel: 3 },
+    ]);
 
     const res = await request(app).get(`/users/stats/${VALID_ADDRESS}`);
     expect(res.status).toBe(200);
@@ -236,14 +265,20 @@ describe('PUT /settings/:address boolean validation', () => {
 
 describe('POST /passport/initialize', () => {
   it('creates a new user atomically using findOneAndUpdate upsert', async () => {
-    const mockUser = { stacksAddress: VALID_ADDRESS, passportId: 'passport_SP_123' };
+    const mockUser = {
+      stacksAddress: VALID_ADDRESS,
+      passportId: 'passport_SP_123',
+    };
     (User.findOneAndUpdate as jest.Mock).mockResolvedValue(mockUser);
 
     const res = await request(app).post('/users/passport/initialize');
     expect(res.status).toBe(200);
     expect(User.findOneAndUpdate).toHaveBeenCalledWith(
       { stacksAddress: VALID_ADDRESS },
-      expect.objectContaining({ $set: expect.any(Object), $setOnInsert: expect.any(Object) }),
+      expect.objectContaining({
+        $set: expect.any(Object),
+        $setOnInsert: expect.any(Object),
+      }),
       expect.objectContaining({ upsert: true, new: true })
     );
     expect(res.body.success).toBe(true);

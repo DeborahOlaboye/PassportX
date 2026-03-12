@@ -12,13 +12,17 @@ export class GasEstimator {
     high: 50000,
   };
 
-  static async estimateGas(request: TransactionRequest, priority: 'low' | 'medium' | 'high' = 'medium'): Promise<GasEstimate> {
-    const baseFee = this.BASE_FEES[request.type] || this.BASE_FEES['contract-call'];
+  static async estimateGas(
+    request: TransactionRequest,
+    priority: 'low' | 'medium' | 'high' = 'medium'
+  ): Promise<GasEstimate> {
+    const baseFee =
+      this.BASE_FEES[request.type] || this.BASE_FEES['contract-call'];
     const priorityFee = this.PRIORITY_FEES[priority];
     const total = baseFee + priorityFee;
 
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return {
       fee: total.toString(),
@@ -30,9 +34,13 @@ export class GasEstimator {
     };
   }
 
-  static async getCurrentGasPrice(): Promise<{ slow: string; standard: string; fast: string }> {
+  static async getCurrentGasPrice(): Promise<{
+    slow: string;
+    standard: string;
+    fast: string;
+  }> {
     // Mock gas price data - in real implementation, this would fetch from blockchain
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     return {
       slow: '10000',

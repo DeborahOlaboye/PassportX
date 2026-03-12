@@ -1,18 +1,20 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
-import { Share2, Download, Eye, EyeOff } from 'lucide-react'
-import ErrorBoundary from '@/components/ErrorBoundary'
-import { BadgeErrorFallback } from '@/components/FallbackUI'
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { Share2, Download, Eye, EyeOff } from 'lucide-react';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { BadgeErrorFallback } from '@/components/FallbackUI';
 
 const BadgeGrid = dynamic(() => import('@/components/BadgeGrid'), {
-  loading: () => <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {[1, 2, 3].map(i => (
-      <div key={i} className="h-48 animate-pulse bg-gray-100 rounded-xl" />
-    ))}
-  </div>
-})
+  loading: () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-48 animate-pulse bg-gray-100 rounded-xl" />
+      ))}
+    </div>
+  ),
+});
 
 // Mock data - in real app, this would come from blockchain
 const mockBadges = [
@@ -24,7 +26,7 @@ const mockBadges = [
     level: 1,
     category: 'skill',
     timestamp: 1703980800,
-    icon: '🐍'
+    icon: '🐍',
   },
   {
     id: 2,
@@ -34,7 +36,7 @@ const mockBadges = [
     level: 2,
     category: 'participation',
     timestamp: 1703894400,
-    icon: '🎉'
+    icon: '🎉',
   },
   {
     id: 3,
@@ -44,26 +46,30 @@ const mockBadges = [
     level: 3,
     category: 'contribution',
     timestamp: 1703808000,
-    icon: '🛠️'
-  }
-]
+    icon: '🛠️',
+  },
+];
 
 export default function PassportPage() {
   return (
-    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <BadgeErrorFallback error={error} reset={reset} />
+      )}
+    >
       <PassportPageInner />
     </ErrorBoundary>
-  )
+  );
 }
 
 function PassportPageInner() {
-  const [badges, setBadges] = useState(mockBadges)
-  const [isPublic, setIsPublic] = useState(true)
-  const [shareUrl, setShareUrl] = useState('')
+  const [badges, _setBadges] = useState(mockBadges);
+  const [isPublic, setIsPublic] = useState(true);
+  const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
-    setShareUrl(`${window.location.origin}/public/passport/user123`)
-  }, [])
+    setShareUrl(`${window.location.origin}/public/passport/user123`);
+  }, []);
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -71,37 +77,44 @@ function PassportPageInner() {
         title: 'My PassportX Achievement Passport',
         text: 'Check out my achievements on PassportX!',
         url: shareUrl,
-      })
+      });
     } else {
-      navigator.clipboard.writeText(shareUrl)
-      alert('Share URL copied to clipboard!')
+      navigator.clipboard.writeText(shareUrl);
+      alert('Share URL copied to clipboard!');
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Passport</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              My Passport
+            </h1>
             <p className="text-gray-600">
-              {badges.length} achievement{badges.length !== 1 ? 's' : ''} earned across {new Set(badges.map(b => b.community)).size} communities
+              {badges.length} achievement{badges.length !== 1 ? 's' : ''} earned
+              across {new Set(badges.map((b) => b.community)).size} communities
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setIsPublic(!isPublic)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                isPublic 
-                  ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                isPublic
+                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              {isPublic ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              {isPublic ? (
+                <Eye className="w-4 h-4" />
+              ) : (
+                <EyeOff className="w-4 h-4" />
+              )}
               <span>{isPublic ? 'Public' : 'Private'}</span>
             </button>
-            
+
             <button
               onClick={handleShare}
               className="flex items-center space-x-2 btn-primary"
@@ -110,7 +123,7 @@ function PassportPageInner() {
               <Share2 className="w-4 h-4" />
               <span>Share</span>
             </button>
-            
+
             <button className="flex items-center space-x-2 btn-secondary">
               <Download className="w-4 h-4" />
               <span>Export</span>
@@ -129,5 +142,5 @@ function PassportPageInner() {
 
       <BadgeGrid badges={badges} />
     </div>
-  )
+  );
 }

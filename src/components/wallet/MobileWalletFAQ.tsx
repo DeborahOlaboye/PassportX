@@ -10,7 +10,7 @@ import {
   Wifi,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
 } from 'lucide-react';
 
 interface FAQItem {
@@ -27,12 +27,14 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>
-          Mobile wallet connection allows you to link your mobile cryptocurrency wallet
-          (like Xverse, Hiro, or Leather) to PassportX using WalletConnect protocol.
-          This enables secure blockchain interactions without exposing your private keys.
+          Mobile wallet connection allows you to link your mobile cryptocurrency
+          wallet (like Xverse, Hiro, or Leather) to PassportX using
+          WalletConnect protocol. This enables secure blockchain interactions
+          without exposing your private keys.
         </p>
         <p>
-          The connection is temporary and can be revoked at any time from your wallet app.
+          The connection is temporary and can be revoked at any time from your
+          wallet app.
         </p>
       </div>
     ),
@@ -78,10 +80,12 @@ const FAQ_ITEMS: FAQItem[] = [
       <div className="space-y-2">
         <p>
           QR codes are valid for <strong>5 minutes</strong> after generation.
-          After this time, you'll need to generate a new QR code for security reasons.
+          After this time, you'll need to generate a new QR code for security
+          reasons.
         </p>
         <p>
-          If the connection times out, simply click "Try Again" to generate a fresh QR code.
+          If the connection times out, simply click "Try Again" to generate a
+          fresh QR code.
         </p>
       </div>
     ),
@@ -94,7 +98,9 @@ const FAQ_ITEMS: FAQItem[] = [
       <div className="space-y-3">
         <p>Try these troubleshooting steps:</p>
         <ol className="list-decimal list-inside space-y-2 ml-4">
-          <li>Ensure your mobile wallet app is updated to the latest version</li>
+          <li>
+            Ensure your mobile wallet app is updated to the latest version
+          </li>
           <li>Check that you have a stable internet connection</li>
           <li>Make sure camera permissions are enabled for QR scanning</li>
           <li>Try closing and reopening both the wallet app and browser</li>
@@ -105,7 +111,8 @@ const FAQ_ITEMS: FAQItem[] = [
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5" />
             <p className="text-sm text-yellow-800">
-              If problems persist, contact our support team with details about your device and wallet.
+              If problems persist, contact our support team with details about
+              your device and wallet.
             </p>
           </div>
         </div>
@@ -121,10 +128,13 @@ const FAQ_ITEMS: FAQItem[] = [
         <div className="flex items-start gap-3">
           <Shield className="w-5 h-5 text-green-600 mt-0.5" />
           <div>
-            <h4 className="font-medium text-green-900">Yes, it's very secure!</h4>
+            <h4 className="font-medium text-green-900">
+              Yes, it's very secure!
+            </h4>
             <p className="text-sm text-gray-600">
-              Mobile wallet connections use industry-standard encryption and the WalletConnect protocol.
-              Your private keys never leave your mobile wallet.
+              Mobile wallet connections use industry-standard encryption and the
+              WalletConnect protocol. Your private keys never leave your mobile
+              wallet.
             </p>
           </div>
         </div>
@@ -136,7 +146,9 @@ const FAQ_ITEMS: FAQItem[] = [
             <li>Temporary connections that expire automatically</li>
             <li>No storage of sensitive data on our servers</li>
             <li>You can revoke connections anytime from your wallet</li>
-            <li>All transactions require explicit approval on your mobile device</li>
+            <li>
+              All transactions require explicit approval on your mobile device
+            </li>
           </ul>
         </div>
       </div>
@@ -149,12 +161,14 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>
-          <strong>Yes, internet connection is required</strong> for the initial connection process.
-          Both your computer/browser and mobile device need to be online.
+          <strong>Yes, internet connection is required</strong> for the initial
+          connection process. Both your computer/browser and mobile device need
+          to be online.
         </p>
         <p>
-          Once connected, some features may work offline depending on your wallet's capabilities,
-          but most blockchain interactions require internet connectivity.
+          Once connected, some features may work offline depending on your
+          wallet's capabilities, but most blockchain interactions require
+          internet connectivity.
         </p>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Wifi className="w-4 h-4" />
@@ -170,11 +184,13 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>
-          You can connect the same wallet to multiple devices or browsers simultaneously.
-          Each connection is independent and can be managed separately from your wallet app.
+          You can connect the same wallet to multiple devices or browsers
+          simultaneously. Each connection is independent and can be managed
+          separately from your wallet app.
         </p>
         <p>
-          However, for security reasons, we recommend limiting connections to devices you actively use.
+          However, for security reasons, we recommend limiting connections to
+          devices you actively use.
         </p>
       </div>
     ),
@@ -194,8 +210,8 @@ const FAQ_ITEMS: FAQItem[] = [
               <span className="font-medium">From Wallet App</span>
             </div>
             <p className="text-sm text-gray-600">
-              Open your mobile wallet app, go to settings or connected apps,
-              and disconnect PassportX.
+              Open your mobile wallet app, go to settings or connected apps, and
+              disconnect PassportX.
             </p>
           </div>
 
@@ -205,7 +221,8 @@ const FAQ_ITEMS: FAQItem[] = [
               <span className="font-medium">From PassportX</span>
             </div>
             <p className="text-sm text-gray-600">
-              Use the wallet disconnect option in your PassportX account settings.
+              Use the wallet disconnect option in your PassportX account
+              settings.
             </p>
           </div>
         </div>
@@ -219,12 +236,14 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>
-          If the connection process takes longer than 5 minutes, it will timeout for security reasons.
-          This is normal and helps protect against potential security issues.
+          If the connection process takes longer than 5 minutes, it will timeout
+          for security reasons. This is normal and helps protect against
+          potential security issues.
         </p>
         <p>
-          Simply click "Try Again" to generate a new QR code and restart the connection process.
-          Your previous connection attempts are automatically cleaned up.
+          Simply click "Try Again" to generate a new QR code and restart the
+          connection process. Your previous connection attempts are
+          automatically cleaned up.
         </p>
       </div>
     ),
@@ -235,14 +254,14 @@ const FAQ_ITEMS: FAQItem[] = [
     question: 'What data is collected during connection?',
     answer: (
       <div className="space-y-3">
-        <p>
-          We collect minimal data necessary for the connection to function:
-        </p>
+        <p>We collect minimal data necessary for the connection to function:</p>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="text-sm">Wallet address (public information only)</span>
+            <span className="text-sm">
+              Wallet address (public information only)
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />
@@ -254,13 +273,15 @@ const FAQ_ITEMS: FAQItem[] = [
           </div>
           <div className="flex items-center gap-2">
             <XCircle className="w-4 h-4 text-red-600" />
-            <span className="text-sm">Private keys or sensitive wallet data</span>
+            <span className="text-sm">
+              Private keys or sensitive wallet data
+            </span>
           </div>
         </div>
 
         <p className="text-sm text-gray-600">
-          All data is encrypted and used only to provide the service.
-          You can opt out of analytics in your settings.
+          All data is encrypted and used only to provide the service. You can
+          opt out of analytics in your settings.
         </p>
       </div>
     ),
@@ -270,14 +291,22 @@ const FAQ_ITEMS: FAQItem[] = [
 
 const CATEGORIES = {
   general: { label: 'General', color: 'bg-blue-100 text-blue-800' },
-  troubleshooting: { label: 'Troubleshooting', color: 'bg-orange-100 text-orange-800' },
+  troubleshooting: {
+    label: 'Troubleshooting',
+    color: 'bg-orange-100 text-orange-800',
+  },
   security: { label: 'Security', color: 'bg-green-100 text-green-800' },
-  compatibility: { label: 'Compatibility', color: 'bg-purple-100 text-purple-800' },
+  compatibility: {
+    label: 'Compatibility',
+    color: 'bg-purple-100 text-purple-800',
+  },
 };
 
 export default function MobileWalletFAQ() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [selectedCategory, setSelectedCategory] = useState<'all' | FAQItem['category']>('all');
+  const [selectedCategory, setSelectedCategory] = useState<
+    'all' | FAQItem['category']
+  >('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const toggleItem = (itemId: string) => {
@@ -290,11 +319,14 @@ export default function MobileWalletFAQ() {
     setExpandedItems(newExpanded);
   };
 
-  const filteredItems = FAQ_ITEMS.filter(item => {
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    const matchesSearch = searchQuery === '' ||
+  const filteredItems = FAQ_ITEMS.filter((item) => {
+    const matchesCategory =
+      selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesSearch =
+      searchQuery === '' ||
       item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (typeof item.answer === 'string' && item.answer.toLowerCase().includes(searchQuery.toLowerCase()));
+      (typeof item.answer === 'string' &&
+        item.answer.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return matchesCategory && matchesSearch;
   });
@@ -359,16 +391,23 @@ export default function MobileWalletFAQ() {
             const categoryConfig = CATEGORIES[item.category];
 
             return (
-              <div key={item.id} className="border border-gray-200 rounded-lg overflow-hidden">
+              <div
+                key={item.id}
+                className="border border-gray-200 rounded-lg overflow-hidden"
+              >
                 <button
                   onClick={() => toggleItem(item.id)}
                   className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryConfig.color}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${categoryConfig.color}`}
+                    >
                       {categoryConfig.label}
                     </span>
-                    <span className="font-medium text-gray-900">{item.question}</span>
+                    <span className="font-medium text-gray-900">
+                      {item.question}
+                    </span>
                   </div>
                   {isExpanded ? (
                     <ChevronUp className="w-5 h-5 text-gray-500" />
@@ -378,9 +417,7 @@ export default function MobileWalletFAQ() {
                 </button>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 text-gray-700">
-                    {item.answer}
-                  </div>
+                  <div className="px-4 pb-4 text-gray-700">{item.answer}</div>
                 )}
               </div>
             );
@@ -395,7 +432,8 @@ export default function MobileWalletFAQ() {
           <div>
             <h4 className="font-medium text-blue-900">Still have questions?</h4>
             <p className="text-sm text-blue-700 mb-2">
-              Can't find the answer you're looking for? Our support team is here to help.
+              Can't find the answer you're looking for? Our support team is here
+              to help.
             </p>
             <div className="flex gap-3">
               <a

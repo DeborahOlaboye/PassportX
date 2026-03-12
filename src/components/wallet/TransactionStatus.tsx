@@ -7,7 +7,7 @@ import {
   Clock,
   AlertTriangle,
   Loader2,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 
 export type TransactionStatusType =
@@ -49,7 +49,7 @@ const DEFAULT_STATUS_LABELS: Record<TransactionStatusType, string> = {
   broadcasting: 'Broadcasting',
   confirmed: 'Confirmed',
   failed: 'Failed',
-  cancelled: 'Cancelled'
+  cancelled: 'Cancelled',
 };
 
 const STATUS_CONFIG = {
@@ -58,43 +58,43 @@ const STATUS_CONFIG = {
     color: 'text-gray-500',
     bgColor: 'bg-gray-50',
     borderColor: 'border-gray-200',
-    description: 'Transaction is ready to be submitted'
+    description: 'Transaction is ready to be submitted',
   },
   pending: {
     icon: Loader2,
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-200',
-    description: 'Transaction is being prepared'
+    description: 'Transaction is being prepared',
   },
   broadcasting: {
     icon: Loader2,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
-    description: 'Transaction is being broadcast to the network'
+    description: 'Transaction is being broadcast to the network',
   },
   confirmed: {
     icon: CheckCircle,
     color: 'text-green-600',
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
-    description: 'Transaction has been confirmed on the blockchain'
+    description: 'Transaction has been confirmed on the blockchain',
   },
   failed: {
     icon: XCircle,
     color: 'text-red-600',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-200',
-    description: 'Transaction failed to process'
+    description: 'Transaction failed to process',
   },
   cancelled: {
     icon: XCircle,
     color: 'text-gray-600',
     bgColor: 'bg-gray-50',
     borderColor: 'border-gray-200',
-    description: 'Transaction was cancelled'
-  }
+    description: 'Transaction was cancelled',
+  },
 };
 
 export default function TransactionStatus({
@@ -108,7 +108,7 @@ export default function TransactionStatus({
   className = '',
   size = 'md',
   showDetails = true,
-  statusLabels = {}
+  statusLabels = {},
 }: TransactionStatusProps) {
   const config = STATUS_CONFIG[status];
   const Icon = config.icon;
@@ -117,13 +117,13 @@ export default function TransactionStatus({
   const sizeClasses = {
     sm: 'p-2 text-sm',
     md: 'p-3 text-base',
-    lg: 'p-4 text-lg'
+    lg: 'p-4 text-lg',
   };
 
   const iconSizes = {
     sm: 'w-4 h-4',
     md: 'w-5 h-5',
-    lg: 'w-6 h-6'
+    lg: 'w-6 h-6',
   };
 
   const isLoading = status === 'pending' || status === 'broadcasting';
@@ -141,25 +141,33 @@ export default function TransactionStatus({
 
   return (
     <div
-      className={`rounded-lg border ${config.bgColor} ${config.borderColor} ${sizeClasses[size]} ${
+      className={`rounded-lg border ${config.bgColor} ${config.borderColor} ${
+        sizeClasses[size]
+      } ${
         onStatusClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
       } ${className}`}
       onClick={handleClick}
       role={onStatusClick ? 'button' : undefined}
       tabIndex={onStatusClick ? 0 : undefined}
-      onKeyDown={onStatusClick ? (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      } : undefined}
+      onKeyDown={
+        onStatusClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
+            }
+          : undefined
+      }
       aria-label={`Transaction status: ${displayLabel}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`flex-shrink-0 ${config.color}`}>
             <Icon
-              className={`${iconSizes[size]} ${isLoading ? 'animate-spin' : ''}`}
+              className={`${iconSizes[size]} ${
+                isLoading ? 'animate-spin' : ''
+              }`}
               aria-hidden="true"
             />
           </div>
@@ -171,16 +179,12 @@ export default function TransactionStatus({
               </span>
 
               {txId && (
-                <span className="text-xs text-gray-500 font-mono">
-                  #{txId}
-                </span>
+                <span className="text-xs text-gray-500 font-mono">#{txId}</span>
               )}
             </div>
 
             {showDetails && (
-              <p className="text-sm text-gray-600 mt-1">
-                {config.description}
-              </p>
+              <p className="text-sm text-gray-600 mt-1">{config.description}</p>
             )}
           </div>
         </div>
@@ -204,13 +208,18 @@ export default function TransactionStatus({
         <div className="mt-3">
           <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
             <span>Confirmations</span>
-            <span>{confirmations} / {estimatedConfirmations}</span>
+            <span>
+              {confirmations} / {estimatedConfirmations}
+            </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-green-600 h-2 rounded-full transition-all duration-300"
               style={{
-                width: `${Math.min((confirmations / estimatedConfirmations) * 100, 100)}%`
+                width: `${Math.min(
+                  (confirmations / estimatedConfirmations) * 100,
+                  100
+                )}%`,
               }}
             />
           </div>
@@ -223,7 +232,9 @@ export default function TransactionStatus({
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">Transaction Failed</p>
+              <p className="text-sm font-medium text-red-800">
+                Transaction Failed
+              </p>
               <p className="text-sm text-red-700 mt-1">{error}</p>
             </div>
           </div>

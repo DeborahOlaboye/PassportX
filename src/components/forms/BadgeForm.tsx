@@ -1,43 +1,60 @@
-'use client'
-import ErrorBoundary from '../ErrorBoundary'
-import { BadgeErrorFallback } from '../FallbackUI'
-import { useState } from 'react'
-import { Award, Upload, Palette } from 'lucide-react'
+'use client';
+import ErrorBoundary from '../ErrorBoundary';
+import { BadgeErrorFallback } from '../FallbackUI';
+import { useState } from 'react';
 import {
   validateBadgeMetadata,
   ValidationError,
   getValidBadgeCategories,
-  VALIDATION_CONSTANTS
-} from '@/lib/validation/badgeValidation'
+  VALIDATION_CONSTANTS,
+} from '@/lib/validation/badgeValidation';
 
 interface BadgeFormData {
-  name: string
-  description: string
-  category: string
-  level: number
-  icon: string
-  community: string
-  requirements: string
+  name: string;
+  description: string;
+  category: string;
+  level: number;
+  icon: string;
+  community: string;
+  requirements: string;
 }
 
 interface BadgeFormProps {
-  onSubmit: (data: BadgeFormData) => void
-  communities: Array<{ id: string; name: string }>
+  onSubmit: (data: BadgeFormData) => void;
+  communities: Array<{ id: string; name: string }>;
 }
 
-const categories = Array.from(getValidBadgeCategories())
+const categories = Array.from(getValidBadgeCategories());
 
 const iconOptions = [
-  '🏆', '🎯', '⭐', '🚀', '💎', '🔥', '⚡', '🌟',
-  '🎨', '💻', '📚', '🎓', '🛠️', '🎪', '🎭', '🎨'
-]
+  '🏆',
+  '🎯',
+  '⭐',
+  '🚀',
+  '💎',
+  '🔥',
+  '⚡',
+  '🌟',
+  '🎨',
+  '💻',
+  '📚',
+  '🎓',
+  '🛠️',
+  '🎪',
+  '🎭',
+  '🎨',
+];
 
 export default function BadgeForm(props: BadgeFormProps) {
   return (
-    <ErrorBoundary fallback={(error, reset) => <BadgeErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <BadgeErrorFallback error={error} reset={reset} />
+      )}
+    >
       <BadgeFormInner {...props} />
     </ErrorBoundary>
-  )
+  );
 }
 
 function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
@@ -48,55 +65,57 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
     level: 1,
     icon: '🏆',
     community: communities[0]?.id || '',
-    requirements: ''
-  })
+    requirements: '',
+  });
 
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-  const [preview, setPreview] = useState(true)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+  const [preview, setPreview] = useState(true);
 
   const validateForm = (): boolean => {
     const validationResult = validateBadgeMetadata({
       name: formData.name,
       description: formData.description,
       category: formData.category,
-      level: formData.level
-    })
+      level: formData.level,
+    });
 
     if (!validationResult.valid) {
-      const errors: Record<string, string> = {}
+      const errors: Record<string, string> = {};
       validationResult.errors.forEach((error: ValidationError) => {
-        errors[error.field] = error.message
-      })
-      setValidationErrors(errors)
-      return false
+        errors[error.field] = error.message;
+      });
+      setValidationErrors(errors);
+      return false;
     }
 
-    setValidationErrors({})
-    return true
-  }
+    setValidationErrors({});
+    return true;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    onSubmit(formData)
-  }
+    onSubmit(formData);
+  };
 
   const handleChange = (field: keyof BadgeFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear validation error for this field when user starts typing
     if (validationErrors[field]) {
-      setValidationErrors(prev => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-  }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -117,12 +136,24 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
               maxLength={64}
             />
             {validationErrors.name && (
-              <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {validationErrors.name}
+              </p>
             )}
             <div className="flex justify-between items-center mt-1">
-              <p className="text-gray-500 text-xs">Alphanumeric and spaces only</p>
-              <p className={`text-xs ${formData.name.length > VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
-                {formData.name.length}/{VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH}
+              <p className="text-gray-500 text-xs">
+                Alphanumeric and spaces only
+              </p>
+              <p
+                className={`text-xs ${
+                  formData.name.length >
+                  VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH
+                    ? 'text-red-500'
+                    : 'text-gray-500'
+                }`}
+              >
+                {formData.name.length}/
+                {VALIDATION_CONSTANTS.MAX_BADGE_NAME_LENGTH}
               </p>
             </div>
           </div>
@@ -136,25 +167,36 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
               onChange={(e) => handleChange('description', e.target.value)}
               rows={3}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                validationErrors.description ? 'border-red-500' : 'border-gray-300'
+                validationErrors.description
+                  ? 'border-red-500'
+                  : 'border-gray-300'
               }`}
               placeholder="Describe what this badge represents..."
               maxLength={256}
             />
             {validationErrors.description && (
-              <p className="text-red-500 text-sm mt-1">{validationErrors.description}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {validationErrors.description}
+              </p>
             )}
             <div className="flex justify-between items-center mt-1">
               <p className="text-gray-500 text-xs">
-                {VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH}-{VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH} characters required
+                {VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH}-
+                {VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH} characters
+                required
               </p>
-              <p className={`text-xs ${
-                formData.description.length < VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH ||
-                formData.description.length > VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH
-                  ? 'text-orange-500'
-                  : 'text-green-600'
-              }`}>
-                {formData.description.length}/{VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH}
+              <p
+                className={`text-xs ${
+                  formData.description.length <
+                    VALIDATION_CONSTANTS.MIN_BADGE_DESCRIPTION_LENGTH ||
+                  formData.description.length >
+                    VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH
+                    ? 'text-orange-500'
+                    : 'text-green-600'
+                }`}
+              >
+                {formData.description.length}/
+                {VALIDATION_CONSTANTS.MAX_BADGE_DESCRIPTION_LENGTH}
               </p>
             </div>
           </div>
@@ -169,7 +211,7 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
                 onChange={(e) => handleChange('category', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                {categories.map(category => (
+                {categories.map((category) => (
                   <option key={category} value={category}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </option>
@@ -183,10 +225,12 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
               </label>
               <select
                 value={formData.level}
-                onChange={(e) => handleChange('level', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleChange('level', parseInt(e.target.value))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                {[1, 2, 3, 4, 5].map(level => (
+                {[1, 2, 3, 4, 5].map((level) => (
                   <option key={level} value={level}>
                     Level {level}
                   </option>
@@ -204,7 +248,7 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
               onChange={(e) => handleChange('community', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              {communities.map(community => (
+              {communities.map((community) => (
                 <option key={community.id} value={community.id}>
                   {community.name}
                 </option>
@@ -217,7 +261,7 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
               Badge Icon
             </label>
             <div className="grid grid-cols-8 gap-2">
-              {iconOptions.map(icon => (
+              {iconOptions.map((icon) => (
                 <button
                   key={icon}
                   type="button"
@@ -264,7 +308,9 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
 
       {preview && (
         <div className="lg:sticky lg:top-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Badge Preview</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Badge Preview
+          </h3>
           <div className="card">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
@@ -276,7 +322,8 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
                     {formData.name || 'Badge Name'}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    {communities.find(c => c.id === formData.community)?.name || 'Community'}
+                    {communities.find((c) => c.id === formData.community)
+                      ?.name || 'Community'}
                   </p>
                 </div>
               </div>
@@ -284,11 +331,11 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
                 Level {formData.level}
               </span>
             </div>
-            
+
             <p className="text-gray-700 mb-4">
               {formData.description || 'Badge description will appear here...'}
             </p>
-            
+
             <div className="text-sm text-gray-500">
               <span className="capitalize">{formData.category}</span> • Just now
             </div>
@@ -296,5 +343,5 @@ function BadgeFormInner({ onSubmit, communities }: BadgeFormProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

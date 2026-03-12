@@ -1,10 +1,10 @@
-import { Metadata } from 'next'
-import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
+import { Metadata } from 'next';
+import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 
 export const metadata: Metadata = {
   title: 'Analytics Dashboard | PassportX',
   description: 'Track badge distribution and user engagement metrics',
-}
+};
 
 export default function AnalyticsPage() {
   return (
@@ -12,7 +12,9 @@ export default function AnalyticsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-gray-900">Analytics Dashboard</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Analytics Dashboard
+            </h1>
             <p className="mt-2 text-sm text-gray-700">
               Track and analyze badge distribution and user engagement metrics
             </p>
@@ -31,5 +33,5 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

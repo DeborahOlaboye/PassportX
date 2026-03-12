@@ -44,10 +44,14 @@ export class CommunityCreationService {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[CommunityCreationService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[CommunityCreationService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[CommunityCreationService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[CommunityCreationService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[CommunityCreationService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[CommunityCreationService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[CommunityCreationService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[CommunityCreationService] ${msg}`, ...args),
     };
   }
 
@@ -55,22 +59,24 @@ export class CommunityCreationService {
     try {
       this.auditLogs.push(log);
 
-      const logMessage = `[AUDIT] Community ${log.status === 'success' ? 'created' : 'creation failed'}: ${log.communityName} (${log.communityId}) by ${log.ownerAddress}`;
-      
+      const logMessage = `[AUDIT] Community ${
+        log.status === 'success' ? 'created' : 'creation failed'
+      }: ${log.communityName} (${log.communityId}) by ${log.ownerAddress}`;
+
       if (log.status === 'success') {
         this.logger.info(logMessage, {
           communityId: log.communityId,
           communityName: log.communityName,
           ownerAddress: log.ownerAddress,
           transactionHash: log.transactionHash,
-          blockHeight: log.blockHeight
+          blockHeight: log.blockHeight,
         });
       } else {
         this.logger.error(logMessage, {
           communityId: log.communityId,
           communityName: log.communityName,
           ownerAddress: log.ownerAddress,
-          error: log.errorMessage
+          error: log.errorMessage,
         });
       }
 
@@ -87,26 +93,30 @@ export class CommunityCreationService {
   }
 
   getAuditLogsByOwner(ownerAddress: string): AuditLog[] {
-    return this.auditLogs.filter(log => log.ownerAddress === ownerAddress);
+    return this.auditLogs.filter((log) => log.ownerAddress === ownerAddress);
   }
 
   getAuditLogsByCommunity(communityId: string): AuditLog[] {
-    return this.auditLogs.filter(log => log.communityId === communityId);
+    return this.auditLogs.filter((log) => log.communityId === communityId);
   }
 
-  async processCommunityCreationEvent(event: CommunityCreationEvent): Promise<CommunityCreationResult> {
+  async processCommunityCreationEvent(
+    event: CommunityCreationEvent
+  ): Promise<CommunityCreationResult> {
     try {
       this.logger.debug('Processing community creation event', {
         communityId: event.communityId,
         communityName: event.communityName,
         ownerAddress: event.ownerAddress,
-        transactionHash: event.transactionHash
+        transactionHash: event.transactionHash,
       });
 
       // Validate event data
       const validation = this.validateCommunityEvent(event);
       if (!validation.valid) {
-        this.logger.warn('Invalid community creation event', { errors: validation.errors });
+        this.logger.warn('Invalid community creation event', {
+          errors: validation.errors,
+        });
 
         this.logAudit({
           timestamp: new Date(),
@@ -118,31 +128,32 @@ export class CommunityCreationService {
           transactionHash: event?.transactionHash || 'unknown',
           blockHeight: event?.blockHeight || 0,
           status: 'failure',
-          errorMessage: 'Validation failed: ' + validation.errors.join(', ')
+          errorMessage: 'Validation failed: ' + validation.errors.join(', '),
         });
 
         return {
           success: false,
-          message: 'Invalid community creation event: ' + validation.errors.join(', '),
-          error: 'Validation failed'
+          message:
+            'Invalid community creation event: ' + validation.errors.join(', '),
+          error: 'Validation failed',
         };
       }
 
       // Check if community already exists by blockchain ID
       const existingByBlockchain = await Community.findOne({
         'metadata.blockchainId': event.communityId,
-        'metadata.contractAddress': event.contractAddress
+        'metadata.contractAddress': event.contractAddress,
       });
 
       if (existingByBlockchain) {
         this.logger.warn('Community already exists in database', {
           communityId: event.communityId,
-          dbId: existingByBlockchain._id
+          dbId: existingByBlockchain._id,
         });
         return {
           success: true,
           communityId: existingByBlockchain._id?.toString(),
-          message: 'Community already exists'
+          message: 'Community already exists',
         };
       }
 
@@ -153,12 +164,12 @@ export class CommunityCreationService {
       if (existingBySlug) {
         this.logger.warn('Community with this name already exists', {
           name: event.communityName,
-          slug
+          slug,
         });
         return {
           success: false,
           message: 'A community with this name already exists',
-          error: 'Duplicate community name'
+          error: 'Duplicate community name',
         };
       }
 
@@ -176,19 +187,25 @@ export class CommunityCreationService {
               adminCommunities: [],
               notifications: [],
               createdAt: new Date(),
-              updatedAt: new Date()
+              updatedAt: new Date(),
             });
 
             this.logger.info('Created new user from community creation event', {
               stacksAddress: event.ownerAddress,
-              userId: ownerUser._id
+              userId: ownerUser._id,
             });
           } catch (userError) {
-            this.logger.error('Failed to create user for community creator', userError);
+            this.logger.error(
+              'Failed to create user for community creator',
+              userError
+            );
             return {
               success: false,
               message: 'Failed to create user record for community creator',
-              error: userError instanceof Error ? userError.message : 'Unknown error'
+              error:
+                userError instanceof Error
+                  ? userError.message
+                  : 'Unknown error',
             };
           }
         }
@@ -197,7 +214,10 @@ export class CommunityCreationService {
         return {
           success: false,
           message: 'Failed to look up owner user',
-          error: userLookupError instanceof Error ? userLookupError.message : 'Unknown error'
+          error:
+            userLookupError instanceof Error
+              ? userLookupError.message
+              : 'Unknown error',
         };
       }
 
@@ -212,13 +232,13 @@ export class CommunityCreationService {
           secondaryColor: '#10b981',
           backgroundColor: '#ffffff',
           textColor: '#1f2937',
-          borderRadius: '0.5rem'
+          borderRadius: '0.5rem',
         },
         settings: {
           allowMemberInvites: true,
           requireApproval: false,
           allowBadgeIssuance: true,
-          allowCustomBadges: false
+          allowCustomBadges: false,
         },
         socialLinks: {},
         tags: [],
@@ -230,8 +250,8 @@ export class CommunityCreationService {
           contractAddress: event.contractAddress,
           createdAtBlockHeight: event.createdAtBlockHeight,
           createdAtTransactionHash: event.transactionHash,
-          createdAtTimestamp: new Date(event.timestamp)
-        }
+          createdAtTimestamp: new Date(event.timestamp),
+        },
       };
 
       let community: any;
@@ -242,14 +262,20 @@ export class CommunityCreationService {
           communityId: community._id,
           blockchainId: event.communityId,
           name: event.communityName,
-          owner: event.ownerAddress
+          owner: event.ownerAddress,
         });
       } catch (communityError) {
-        this.logger.error('Failed to create community in database', communityError);
+        this.logger.error(
+          'Failed to create community in database',
+          communityError
+        );
         return {
           success: false,
           message: 'Failed to create community in database',
-          error: communityError instanceof Error ? communityError.message : 'Unknown error'
+          error:
+            communityError instanceof Error
+              ? communityError.message
+              : 'Unknown error',
         };
       }
 
@@ -260,23 +286,26 @@ export class CommunityCreationService {
           {
             $addToSet: {
               communities: community._id,
-              adminCommunities: community._id
-            }
+              adminCommunities: community._id,
+            },
           },
           { new: true }
         );
 
         this.logger.info('User updated with new community', {
           userId: ownerUser._id,
-          communityId: community._id
+          communityId: community._id,
         });
       } catch (updateError) {
         this.logger.error('Failed to update user with community', updateError);
         return {
           success: false,
           message: 'Community created but failed to link to user',
-          error: updateError instanceof Error ? updateError.message : 'Unknown error',
-          communityId: community._id?.toString()
+          error:
+            updateError instanceof Error
+              ? updateError.message
+              : 'Unknown error',
+          communityId: community._id?.toString(),
         };
       }
 
@@ -289,16 +318,17 @@ export class CommunityCreationService {
         contractAddress: event.contractAddress,
         transactionHash: event.transactionHash,
         blockHeight: event.blockHeight,
-        status: 'success'
+        status: 'success',
       });
 
       return {
         success: true,
         communityId: community._id?.toString(),
-        message: `Community "${event.communityName}" created successfully`
+        message: `Community "${event.communityName}" created successfully`,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Failed to process community creation event', error);
 
       this.logAudit({
@@ -311,13 +341,13 @@ export class CommunityCreationService {
         transactionHash: event.transactionHash,
         blockHeight: event.blockHeight,
         status: 'failure',
-        errorMessage
+        errorMessage,
       });
 
       return {
         success: false,
         message: 'Failed to process community creation event',
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -339,18 +369,19 @@ export class CommunityCreationService {
         contractAddress,
         transactionHash: '',
         blockHeight: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       return await this.processCommunityCreationEvent(event);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Failed to sync community from blockchain', error);
 
       return {
         success: false,
         message: 'Failed to sync community from blockchain',
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -362,7 +393,7 @@ export class CommunityCreationService {
     try {
       return await Community.findOne({
         'metadata.blockchainId': blockchainId,
-        'metadata.contractAddress': contractAddress
+        'metadata.contractAddress': contractAddress,
       });
     } catch (error) {
       this.logger.error('Failed to get community by blockchain ID', error);
@@ -384,7 +415,7 @@ export class CommunityCreationService {
       if (result) {
         this.logger.info('Community metadata updated', {
           communityId,
-          metadata
+          metadata,
         });
         return true;
       }
@@ -405,7 +436,10 @@ export class CommunityCreationService {
       .replace(/-+/g, '-');
   }
 
-  private validateCommunityEvent(event: CommunityCreationEvent): { valid: boolean; errors: string[] } {
+  private validateCommunityEvent(event: CommunityCreationEvent): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!event) {
@@ -413,20 +447,40 @@ export class CommunityCreationService {
       return { valid: false, errors };
     }
 
-    if (!event.communityName || typeof event.communityName !== 'string' || event.communityName.trim().length === 0) {
+    if (
+      !event.communityName ||
+      typeof event.communityName !== 'string' ||
+      event.communityName.trim().length === 0
+    ) {
       errors.push('Community name is required and must be a non-empty string');
     }
 
-    if (!event.ownerAddress || typeof event.ownerAddress !== 'string' || event.ownerAddress.trim().length === 0) {
+    if (
+      !event.ownerAddress ||
+      typeof event.ownerAddress !== 'string' ||
+      event.ownerAddress.trim().length === 0
+    ) {
       errors.push('Owner address is required and must be a non-empty string');
     }
 
-    if (!event.contractAddress || typeof event.contractAddress !== 'string' || event.contractAddress.trim().length === 0) {
-      errors.push('Contract address is required and must be a non-empty string');
+    if (
+      !event.contractAddress ||
+      typeof event.contractAddress !== 'string' ||
+      event.contractAddress.trim().length === 0
+    ) {
+      errors.push(
+        'Contract address is required and must be a non-empty string'
+      );
     }
 
-    if (!event.transactionHash || typeof event.transactionHash !== 'string' || event.transactionHash.trim().length === 0) {
-      errors.push('Transaction hash is required and must be a non-empty string');
+    if (
+      !event.transactionHash ||
+      typeof event.transactionHash !== 'string' ||
+      event.transactionHash.trim().length === 0
+    ) {
+      errors.push(
+        'Transaction hash is required and must be a non-empty string'
+      );
     }
 
     if (event.communityName && event.communityName.length > 64) {
@@ -448,27 +502,42 @@ export class CommunityCreationService {
     return { valid: errors.length === 0, errors };
   }
 
-  private validateCommunityName(name: string): { valid: boolean; error?: string } {
+  private validateCommunityName(name: string): {
+    valid: boolean;
+    error?: string;
+  } {
     if (!name || name.trim().length === 0) {
       return { valid: false, error: 'Community name cannot be empty' };
     }
 
     if (name.length < 3) {
-      return { valid: false, error: 'Community name must be at least 3 characters' };
+      return {
+        valid: false,
+        error: 'Community name must be at least 3 characters',
+      };
     }
 
     if (name.length > 64) {
-      return { valid: false, error: 'Community name cannot exceed 64 characters' };
+      return {
+        valid: false,
+        error: 'Community name cannot exceed 64 characters',
+      };
     }
 
     if (!/^[a-zA-Z0-9\s\-_&.]{3,64}$/.test(name)) {
-      return { valid: false, error: 'Community name contains invalid characters' };
+      return {
+        valid: false,
+        error: 'Community name contains invalid characters',
+      };
     }
 
     return { valid: true };
   }
 
-  private validateStacksAddress(address: string): { valid: boolean; error?: string } {
+  private validateStacksAddress(address: string): {
+    valid: boolean;
+    error?: string;
+  } {
     if (!address || typeof address !== 'string') {
       return { valid: false, error: 'Address must be a non-empty string' };
     }

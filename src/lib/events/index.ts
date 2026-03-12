@@ -20,8 +20,8 @@ export {
   onBatchBadgesMinted,
   onTemplateCreated,
   onAnyEvent,
-  EventSubscriptionManager
-} from '../utils/contractEvents'
+  EventSubscriptionManager,
+} from '../utils/contractEvents';
 
 // Event types
 export type {
@@ -36,8 +36,8 @@ export type {
   CommunityCreatedEvent,
   CommunityMemberAddedEvent,
   PassportBadgeMintedEvent,
-  TypedContractEvent
-} from '../utils/contractEvents'
+  TypedContractEvent,
+} from '../utils/contractEvents';
 
 // Type definitions
 export type {
@@ -63,10 +63,14 @@ export type {
   EventFilterPredicate,
   EventSubscriptionOptions,
   EventTypeMap,
-  EventDataForName
-} from '../../types/contractEvents'
+  EventDataForName,
+} from '../../types/contractEvents';
 
 // Enums and constants
-export { EventCategory, BadgeCategory, CommunityRole } from '../../types/contractEvents'
+export {
+  EventCategory,
+  BadgeCategory,
+  CommunityRole,
+} from '../../types/contractEvents';
 
-export type { BadgeLevel } from '../../types/contractEvents'
+export type { BadgeLevel } from '../../types/contractEvents';

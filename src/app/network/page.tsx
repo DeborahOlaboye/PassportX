@@ -9,7 +9,9 @@ export default function NetworkPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Network Settings</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Network Settings
+            </h1>
             <p className="text-gray-600 mt-2">
               Switch between Stacks mainnet and testnet networks
             </p>
@@ -20,13 +22,16 @@ export default function NetworkPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Switch Network</h2>
               <p className="text-gray-600 mb-6">
-                Select the network you want to use. Switching networks will reset your transaction history and cached data.
+                Select the network you want to use. Switching networks will
+                reset your transaction history and cached data.
               </p>
 
               <NetworkSelector variant="buttons" className="mb-6" />
 
               <div className="text-sm text-gray-500">
-                <p className="mb-2"><strong>Note:</strong> Network switching will:</p>
+                <p className="mb-2">
+                  <strong>Note:</strong> Network switching will:
+                </p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Clear transaction history</li>
                   <li>Reset wallet connections</li>
@@ -67,9 +72,12 @@ export default function NetworkPage() {
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">Getting Test STX</h4>
+              <h4 className="font-medium text-blue-900 mb-2">
+                Getting Test STX
+              </h4>
               <p className="text-sm text-blue-800 mb-3">
-                When using testnet, you can get free STX tokens from the faucet to test transactions.
+                When using testnet, you can get free STX tokens from the faucet
+                to test transactions.
               </p>
               <a
                 href="https://explorer.stacks.co/sandbox/faucet"

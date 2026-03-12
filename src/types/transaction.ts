@@ -16,6 +16,10 @@ export interface Transaction {
 export interface TransactionHistoryState {
   transactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id' | 'timestamp'>) => void;
-  updateTransactionStatus: (hash: string, status: Transaction['status'], details?: Partial<Transaction>) => void;
+  updateTransactionStatus: (
+    hash: string,
+    status: Transaction['status'],
+    details?: Partial<Transaction>
+  ) => void;
   clearHistory: () => void;
 }

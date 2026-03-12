@@ -1,8 +1,5 @@
 // Blockchain reorganization (reorg) handling logic
-import {
-  ReorgEvent,
-  ChainhookEvent
-} from '../types/chainhook';
+import { ReorgEvent, ChainhookEvent } from '../types/chainhook';
 
 /**
  * Reorg State
@@ -40,7 +37,7 @@ export class ReorgHandler {
       affectedTransactions: new Set(event.affectedTransactions),
       removedBlocks: new Set(event.removedBlockHashes),
       addedBlocks: new Set(event.addedBlockHashes),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.reorgHistory.push(state);
@@ -107,7 +104,9 @@ export class ReorgHandler {
   /**
    * Register callback for affected transactions
    */
-  onAffectedTransactions(callback: (txHashes: string[]) => Promise<void>): void {
+  onAffectedTransactions(
+    callback: (txHashes: string[]) => Promise<void>
+  ): void {
     this.affectedDataCallbacks.push(callback);
   }
 
@@ -166,7 +165,8 @@ export class ReorgHandler {
     return {
       reprocessBlocks: Array.from(reprocessBlocks),
       reprocessTransactions: Array.from(reprocessTransactions),
-      verifyDataIntegrity: reprocessBlocks.size > 0 || reprocessTransactions.size > 0
+      verifyDataIntegrity:
+        reprocessBlocks.size > 0 || reprocessTransactions.size > 0,
     };
   }
 
@@ -180,7 +180,7 @@ export class ReorgHandler {
 
     const earliestReorg = this.reorgHistory[0];
 
-    return events.every(event => {
+    return events.every((event) => {
       if ('txHash' in event) {
         const txHash = (event as any).txHash;
         return !this.isTransactionAffected(txHash);
@@ -204,17 +204,20 @@ export class ReorgAwareEventProcessor {
     event: ChainhookEvent,
     processor: (event: ChainhookEvent) => Promise<void>
   ): Promise<{ processed: boolean; reason?: string }> {
-    if ('txHash' in event && this.reorgHandler.isTransactionAffected((event as any).txHash)) {
+    if (
+      'txHash' in event &&
+      this.reorgHandler.isTransactionAffected((event as any).txHash)
+    ) {
       return {
         processed: false,
-        reason: 'Transaction affected by reorganization'
+        reason: 'Transaction affected by reorganization',
       };
     }
 
     if (this.reorgHandler.isBlockRemoved(event.blockHash)) {
       return {
         processed: false,
-        reason: 'Block removed due to reorganization'
+        reason: 'Block removed due to reorganization',
       };
     }
 
@@ -224,7 +227,7 @@ export class ReorgAwareEventProcessor {
     } catch (error) {
       return {
         processed: false,
-        reason: (error as Error).message
+        reason: (error as Error).message,
       };
     }
   }

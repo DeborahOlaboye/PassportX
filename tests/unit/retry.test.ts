@@ -17,6 +17,8 @@ describe('retry util', () => {
     const fn = async () => {
       throw new Error('always fail');
     };
-    await expect(retry(fn, { retries: 2, delayMs: 1 })).rejects.toThrow('always fail');
+    await expect(retry(fn, { retries: 2, delayMs: 1 })).rejects.toThrow(
+      'always fail'
+    );
   });
 });

@@ -113,9 +113,7 @@ describe('Auth Routes', () => {
         token: 'mock_token',
         user: { stacksAddress: VALID_ADDRESS, id: 'user123' },
       };
-      (authService.authenticateUser as jest.Mock).mockResolvedValue(
-        mockResult
-      );
+      (authService.authenticateUser as jest.Mock).mockResolvedValue(mockResult);
 
       const response = await request(app).post('/auth/login').send({
         stacksAddress: VALID_ADDRESS,
@@ -171,13 +169,11 @@ describe('Auth Routes', () => {
     it('returns verified: true for a valid signature', async () => {
       (authService.verifySignature as jest.Mock).mockResolvedValue(true);
 
-      const response = await request(app)
-        .post('/auth/verify-signature')
-        .send({
-          stacksAddress: VALID_ADDRESS,
-          message: VALID_MESSAGE,
-          signature: VALID_SIGNATURE,
-        });
+      const response = await request(app).post('/auth/verify-signature').send({
+        stacksAddress: VALID_ADDRESS,
+        message: VALID_MESSAGE,
+        signature: VALID_SIGNATURE,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -187,13 +183,11 @@ describe('Auth Routes', () => {
     it('returns 401 for an invalid signature', async () => {
       (authService.verifySignature as jest.Mock).mockResolvedValue(false);
 
-      const response = await request(app)
-        .post('/auth/verify-signature')
-        .send({
-          stacksAddress: VALID_ADDRESS,
-          message: VALID_MESSAGE,
-          signature: VALID_SIGNATURE,
-        });
+      const response = await request(app).post('/auth/verify-signature').send({
+        stacksAddress: VALID_ADDRESS,
+        message: VALID_MESSAGE,
+        signature: VALID_SIGNATURE,
+      });
 
       expect(response.status).toBe(401);
       expect(response.body.code).toBe('INVALID_SIGNATURE');

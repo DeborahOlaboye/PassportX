@@ -14,13 +14,16 @@ export default function ConfigurationStatus({
   showDetails = false,
   className = '',
 }: ConfigurationStatusProps) {
-  const { config, isInitialized, isInitializing, error } = useWalletConnectConfig();
+  const { config, isInitialized, isInitializing, error } =
+    useWalletConnectConfig();
 
   if (isInitializing) {
     return (
       <div className={`flex items-center space-x-2 ${className}`}>
         <Loader className="w-4 h-4 animate-spin text-blue-600" />
-        <span className="text-sm text-blue-600">Initializing configuration...</span>
+        <span className="text-sm text-blue-600">
+          Initializing configuration...
+        </span>
       </div>
     );
   }
@@ -43,13 +46,15 @@ export default function ConfigurationStatus({
     );
   }
 
-  const status = getConfigurationStatus(config);
+  const _status = getConfigurationStatus(config);
 
   return (
     <div className={className}>
       <div className="flex items-center space-x-2">
         <CheckCircle className="w-4 h-4 text-green-600" />
-        <span className="text-sm text-green-600 font-medium">Configuration Ready</span>
+        <span className="text-sm text-green-600 font-medium">
+          Configuration Ready
+        </span>
       </div>
 
       {showDetails && (
@@ -76,12 +81,16 @@ export default function ConfigurationStatus({
           </div>
 
           <div>
-            <p className="font-semibold text-gray-900">Methods ({config.methods.length})</p>
+            <p className="font-semibold text-gray-900">
+              Methods ({config.methods.length})
+            </p>
             <p className="text-gray-600">{config.methods.join(', ')}</p>
           </div>
 
           <div>
-            <p className="font-semibold text-gray-900">Events ({config.events.length})</p>
+            <p className="font-semibold text-gray-900">
+              Events ({config.events.length})
+            </p>
             <p className="text-gray-600">{config.events.join(', ')}</p>
           </div>
 

@@ -17,11 +17,13 @@ export interface SignaturePayload extends SignatureRequest {
  * Create a message payload to be signed.
  * Includes domain and timestamp to prevent replay attacks.
  */
-export const createSignaturePayload = (req: SignatureRequest): SignaturePayload => {
+export const createSignaturePayload = (
+  req: SignatureRequest
+): SignaturePayload => {
   return {
     message: req.message,
     domain: req.domain ?? 'passportx.app',
-    timestamp: req.timestamp ?? Date.now()
+    timestamp: req.timestamp ?? Date.now(),
   };
 };
 

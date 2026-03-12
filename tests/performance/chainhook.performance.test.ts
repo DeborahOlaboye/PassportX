@@ -1,8 +1,17 @@
 // Performance tests for high event volume processing
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { PredicateEvaluator, PredicateBuilder } from '../src/utils/predicateEvaluator';
-import { EventHandlerRegistry, EventHandlerBuilder } from '../src/utils/eventHandlerRegistry';
-import { ReorgHandler, ReorgAwareEventProcessor } from '../src/utils/reorgHandler';
+import {
+  PredicateEvaluator,
+  PredicateBuilder,
+} from '../src/utils/predicateEvaluator';
+import {
+  EventHandlerRegistry,
+  EventHandlerBuilder,
+} from '../src/utils/eventHandlerRegistry';
+import {
+  ReorgHandler,
+  ReorgAwareEventProcessor,
+} from '../src/utils/reorgHandler';
 import { MockChainhookEventFactory } from '../src/utils/mockChainhookEvents';
 import { EventType } from '../src/types/chainhook';
 
@@ -70,7 +79,7 @@ describe('Chainhook Performance Tests', () => {
       for (let b = 0; b < batches; b++) {
         const events = MockChainhookEventFactory.createEventBatch(batchSize);
 
-        const batchPromises = events.map(event =>
+        const batchPromises = events.map((event) =>
           eventRegistry.dispatch('badge-mint', event).catch(() => {})
         );
 
@@ -102,7 +111,7 @@ describe('Chainhook Performance Tests', () => {
       const duration = Date.now() - startTime;
 
       expect(duration).toBeLessThan(500); // Should complete in less than 500ms
-      expect(results.some(r => r.matched)).toBe(true);
+      expect(results.some((r) => r.matched)).toBe(true);
     });
 
     it('should efficiently filter events by amount range', () => {
@@ -116,7 +125,7 @@ describe('Chainhook Performance Tests', () => {
 
       const events = Array.from({ length: 1000 }, () =>
         MockChainhookEventFactory.createSTXTransferEvent({
-          amount: BigInt(Math.random() * 10000000)
+          amount: BigInt(Math.random() * 10000000),
         })
       );
 
@@ -141,7 +150,9 @@ describe('Chainhook Performance Tests', () => {
 
       const events = MockChainhookEventFactory.createEventBatch(500);
 
-      const results = predicateEvaluator.evaluateEvents(events, [complexPredicate]);
+      const results = predicateEvaluator.evaluateEvents(events, [
+        complexPredicate,
+      ]);
 
       const duration = Date.now() - startTime;
 
@@ -155,7 +166,7 @@ describe('Chainhook Performance Tests', () => {
         jest.fn().mockResolvedValue(undefined)
       );
 
-      handlers.forEach(handler => {
+      handlers.forEach((handler) => {
         eventRegistry.registerHandler('test-event', handler);
       });
 
@@ -176,7 +187,10 @@ describe('Chainhook Performance Tests', () => {
     it('should handle cascading event dispatches', async () => {
       const handler1 = jest.fn().mockImplementation(async () => {
         // Trigger another dispatch
-        await eventRegistry.dispatch('event-2', MockChainhookEventFactory.createSTXTransferEvent());
+        await eventRegistry.dispatch(
+          'event-2',
+          MockChainhookEventFactory.createSTXTransferEvent()
+        );
       });
 
       const handler2 = jest.fn().mockResolvedValue(undefined);
@@ -217,7 +231,7 @@ describe('Chainhook Performance Tests', () => {
     it('should efficiently check affected transactions', async () => {
       // Setup reorg history
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: Array.from({ length: 100 }, (_, i) => `tx-${i}`)
+        affectedTransactions: Array.from({ length: 100 }, (_, i) => `tx-${i}`),
       });
       await reorgHandler.handleReorg(reorgEvent);
 
@@ -238,7 +252,10 @@ describe('Chainhook Performance Tests', () => {
       for (let i = 0; i < 50; i++) {
         const reorgEvent = MockChainhookEventFactory.createReorgEvent({
           blockHeight: 100000 + i * 100,
-          affectedTransactions: Array.from({ length: 10 }, (_, j) => `tx-${i}-${j}`)
+          affectedTransactions: Array.from(
+            { length: 10 },
+            (_, j) => `tx-${i}-${j}`
+          ),
         });
         await reorgHandler.handleReorg(reorgEvent);
       }
@@ -281,7 +298,10 @@ describe('Chainhook Performance Tests', () => {
       // Create large reorg history
       for (let i = 0; i < 1000; i++) {
         const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-          affectedTransactions: Array.from({ length: 100 }, (_, j) => `tx-${i}-${j}`)
+          affectedTransactions: Array.from(
+            { length: 100 },
+            (_, j) => `tx-${i}-${j}`
+          ),
         });
         await reorgHandler.handleReorg(reorgEvent);
       }
@@ -326,8 +346,10 @@ describe('Chainhook Performance Tests', () => {
 
       const startTime = Date.now();
 
-      const results = predicates.flatMap(predicate =>
-        events.map(event => predicateEvaluator.evaluateEvent(event, predicate))
+      const results = predicates.flatMap((predicate) =>
+        events.map((event) =>
+          predicateEvaluator.evaluateEvent(event, predicate)
+        )
       );
 
       const duration = Date.now() - startTime;

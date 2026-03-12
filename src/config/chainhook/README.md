@@ -16,20 +16,26 @@ Hiro Chainhooks is a reorg-aware transaction indexing engine that enables real-t
 ## Files
 
 ### `types/chainhook.ts`
+
 TypeScript type definitions for Chainhook configuration:
+
 - `ServerOptions` - Local event server configuration
 - `ChainhookNodeOptions` - Remote Chainhook node configuration
 - `ChainhookConfig` - Combined configuration
 - `PredicateType` - Supported predicate types
 
 ### `server.config.ts`
+
 Configuration for the local Chainhook event server:
+
 - Default, development, and production configurations
 - Environment-based configuration selection
 - Server configuration validation
 
 ### `node.config.ts`
+
 Configuration for connecting to Chainhook nodes:
+
 - Development (local node)
 - Testnet (Hiro hosted)
 - Mainnet (Hiro hosted)
@@ -37,13 +43,17 @@ Configuration for connecting to Chainhook nodes:
 - Node configuration validation
 
 ### `index.ts`
+
 Main configuration module that combines server and node configs:
+
 - `getChainhookConfig()` - Get complete configuration
 - `validateChainhookConfig()` - Validate configuration
 - `chainhookConfig` - Default configuration export
 
 ### `constants.ts`
+
 Constants and default values:
+
 - Default configuration values
 - Supported networks and event types
 - PassportX contract addresses
@@ -51,7 +61,9 @@ Constants and default values:
 - Error codes
 
 ### `utils.ts`
+
 Utility functions:
+
 - Configuration checking helpers
 - Network detection and validation
 - Error creation and logging
@@ -144,7 +156,10 @@ if (!valid) {
 ### Development (Local)
 
 ```typescript
-import { developmentServerConfig, developmentNodeConfig } from '@/config/chainhook';
+import {
+  developmentServerConfig,
+  developmentNodeConfig,
+} from '@/config/chainhook';
 
 const config = {
   server: developmentServerConfig,
@@ -181,7 +196,10 @@ const nftContract = PASSPORTX_CONTRACTS.MAINNET.PASSPORT_NFT;
 ## Error Handling
 
 ```typescript
-import { createChainhookError, logChainhookError } from '@/config/chainhook/utils';
+import {
+  createChainhookError,
+  logChainhookError,
+} from '@/config/chainhook/utils';
 
 try {
   // Chainhook operation

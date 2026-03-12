@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   RefreshCw,
   AlertTriangle,
@@ -9,9 +9,8 @@ import {
   Smartphone,
   Wifi,
   Clock,
-  ArrowRight,
   Home,
-  Settings
+  Settings,
 } from 'lucide-react';
 import { mobileWalletConnectionManager } from '../../utils/mobileWalletConnectionManager';
 
@@ -35,7 +34,9 @@ export default function MobileWalletConnectionRecovery() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isRecovering, setIsRecovering] = useState(false);
   const [recoveryComplete, setRecoveryComplete] = useState(false);
-  const [detectedIssue, setDetectedIssue] = useState<ConnectionIssue | null>(null);
+  const [detectedIssue, setDetectedIssue] = useState<ConnectionIssue | null>(
+    null
+  );
   const [connectionAttempts, setConnectionAttempts] = useState(0);
 
   const ISSUES: Record<string, ConnectionIssue> = {
@@ -46,8 +47,8 @@ export default function MobileWalletConnectionRecovery() {
         'Generate a new QR code',
         'Ensure both devices have stable internet',
         'Try connecting from a different network',
-        'Check if your wallet app is updated'
-      ]
+        'Check if your wallet app is updated',
+      ],
     },
     network: {
       type: 'network',
@@ -56,8 +57,8 @@ export default function MobileWalletConnectionRecovery() {
         'Check your internet connection',
         'Try switching between WiFi and mobile data',
         'Disable VPN if active',
-        'Restart your router if possible'
-      ]
+        'Restart your router if possible',
+      ],
     },
     wallet: {
       type: 'wallet',
@@ -66,8 +67,8 @@ export default function MobileWalletConnectionRecovery() {
         'Update your wallet app to the latest version',
         'Try a different wallet (Xverse, Hiro, or Leather)',
         'Clear wallet app cache',
-        'Reinstall the wallet app if issues persist'
-      ]
+        'Reinstall the wallet app if issues persist',
+      ],
     },
     permissions: {
       type: 'permissions',
@@ -76,8 +77,8 @@ export default function MobileWalletConnectionRecovery() {
         'Grant camera permissions to scan QR codes',
         'Enable notifications for connection updates',
         'Check app permissions in device settings',
-        'Restart the wallet app after granting permissions'
-      ]
+        'Restart the wallet app after granting permissions',
+      ],
     },
     unknown: {
       type: 'unknown',
@@ -86,19 +87,20 @@ export default function MobileWalletConnectionRecovery() {
         'Try the complete recovery process',
         'Contact support with error details',
         'Check our troubleshooting guide',
-        'Try connecting from a different device'
-      ]
-    }
+        'Try connecting from a different device',
+      ],
+    },
   };
 
   const RECOVERY_STEPS: RecoveryStep[] = [
     {
       id: 'diagnose',
       title: 'Diagnose Connection Issue',
-      description: 'Analyzing the connection problem to determine the best recovery approach.',
+      description:
+        'Analyzing the connection problem to determine the best recovery approach.',
       status: 'pending',
       icon: <AlertTriangle className="w-5 h-5" />,
-      estimatedTime: '30 seconds'
+      estimatedTime: '30 seconds',
     },
     {
       id: 'reset-connection',
@@ -106,7 +108,7 @@ export default function MobileWalletConnectionRecovery() {
       description: 'Clearing any existing connection attempts and cached data.',
       status: 'pending',
       icon: <RefreshCw className="w-5 h-5" />,
-      estimatedTime: '15 seconds'
+      estimatedTime: '15 seconds',
     },
     {
       id: 'check-network',
@@ -114,7 +116,7 @@ export default function MobileWalletConnectionRecovery() {
       description: 'Ensuring both devices have stable internet connection.',
       status: 'pending',
       icon: <Wifi className="w-5 h-5" />,
-      estimatedTime: '20 seconds'
+      estimatedTime: '20 seconds',
     },
     {
       id: 'update-wallet',
@@ -122,7 +124,7 @@ export default function MobileWalletConnectionRecovery() {
       description: 'Verifying wallet app is updated and compatible.',
       status: 'pending',
       icon: <Smartphone className="w-5 h-5" />,
-      estimatedTime: '1 minute'
+      estimatedTime: '1 minute',
     },
     {
       id: 'generate-qr',
@@ -130,7 +132,7 @@ export default function MobileWalletConnectionRecovery() {
       description: 'Creating a new QR code with updated connection parameters.',
       status: 'pending',
       icon: <RefreshCw className="w-5 h-5" />,
-      estimatedTime: '10 seconds'
+      estimatedTime: '10 seconds',
     },
     {
       id: 'test-connection',
@@ -138,19 +140,19 @@ export default function MobileWalletConnectionRecovery() {
       description: 'Attempting to establish connection with the new QR code.',
       status: 'pending',
       icon: <CheckCircle className="w-5 h-5" />,
-      estimatedTime: '2-3 minutes'
-    }
+      estimatedTime: '2-3 minutes',
+    },
   ];
 
   const diagnoseIssue = async (): Promise<ConnectionIssue> => {
     // Simulate diagnosis process
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Check network connectivity
     try {
-      const response = await fetch('https://www.google.com/favicon.ico', {
+      await fetch('https://www.google.com/favicon.ico', {
         method: 'HEAD',
-        mode: 'no-cors'
+        mode: 'no-cors',
       });
       // If we get here, network is working
     } catch {
@@ -158,7 +160,9 @@ export default function MobileWalletConnectionRecovery() {
     }
 
     // Check for common issues
-    const lastError = localStorage.getItem('passportx_mobile_wallet_last_error');
+    const lastError = localStorage.getItem(
+      'passportx_mobile_wallet_last_error'
+    );
     if (lastError) {
       if (lastError.includes('timeout')) return ISSUES.timeout;
       if (lastError.includes('permission')) return ISSUES.permissions;
@@ -166,7 +170,9 @@ export default function MobileWalletConnectionRecovery() {
     }
 
     // Check connection attempts
-    const attempts = parseInt(localStorage.getItem('passportx_mobile_wallet_attempts') || '0');
+    const attempts = parseInt(
+      localStorage.getItem('passportx_mobile_wallet_attempts') || '0'
+    );
     if (attempts > 3) {
       return ISSUES.unknown;
     }
@@ -193,29 +199,30 @@ export default function MobileWalletConnectionRecovery() {
           // Test network connectivity
           const testResponse = await fetch('https://httpbin.org/status/200', {
             method: 'HEAD',
-            timeout: 5000
-          } as any);
+          } as RequestInit);
           return testResponse.ok;
 
         case 'update-wallet':
           // This would typically check wallet version via API
           // For now, we'll assume it's up to date
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           return true;
 
         case 'generate-qr':
           // Generate new QR code (would integrate with QR display component)
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
           return true;
 
         case 'test-connection':
           // Attempt connection
-          setConnectionAttempts(prev => prev + 1);
-          localStorage.setItem('passportx_mobile_wallet_attempts',
-            (connectionAttempts + 1).toString());
+          setConnectionAttempts((prev) => prev + 1);
+          localStorage.setItem(
+            'passportx_mobile_wallet_attempts',
+            (connectionAttempts + 1).toString()
+          );
 
           // Simulate connection attempt
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
 
           // Random success for demo (would be actual connection logic)
           return Math.random() > 0.3;
@@ -249,7 +256,7 @@ export default function MobileWalletConnectionRecovery() {
       // Update step status based on result
       steps[i] = {
         ...step,
-        status: success ? 'completed' : 'failed'
+        status: success ? 'completed' : 'failed',
       };
 
       // If step failed, stop recovery
@@ -259,7 +266,7 @@ export default function MobileWalletConnectionRecovery() {
 
       // Add delay between steps for UX
       if (i < steps.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
@@ -276,19 +283,27 @@ export default function MobileWalletConnectionRecovery() {
 
   const getStepStatusColor = (status: RecoveryStep['status']) => {
     switch (status) {
-      case 'completed': return 'text-green-600';
-      case 'failed': return 'text-red-600';
-      case 'in-progress': return 'text-blue-600';
-      default: return 'text-gray-400';
+      case 'completed':
+        return 'text-green-600';
+      case 'failed':
+        return 'text-red-600';
+      case 'in-progress':
+        return 'text-blue-600';
+      default:
+        return 'text-gray-400';
     }
   };
 
   const getStepStatusIcon = (status: RecoveryStep['status']) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4" />;
-      case 'failed': return <XCircle className="w-4 h-4" />;
-      case 'in-progress': return <RefreshCw className="w-4 h-4 animate-spin" />;
-      default: return <Clock className="w-4 h-4" />;
+      case 'completed':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'failed':
+        return <XCircle className="w-4 h-4" />;
+      case 'in-progress':
+        return <RefreshCw className="w-4 h-4 animate-spin" />;
+      default:
+        return <Clock className="w-4 h-4" />;
     }
   };
 
@@ -305,10 +320,13 @@ export default function MobileWalletConnectionRecovery() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-yellow-900">Connection Issue Detected</h4>
+                <h4 className="font-medium text-yellow-900">
+                  Connection Issue Detected
+                </h4>
                 <p className="text-sm text-yellow-800 mb-3">
-                  Having trouble connecting your mobile wallet? This recovery tool will
-                  systematically diagnose and fix common connection problems.
+                  Having trouble connecting your mobile wallet? This recovery
+                  tool will systematically diagnose and fix common connection
+                  problems.
                 </p>
                 <button
                   onClick={startRecovery}
@@ -326,9 +344,13 @@ export default function MobileWalletConnectionRecovery() {
             <div className="flex items-start gap-3">
               <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-red-900">Issue Detected: {detectedIssue.message}</h4>
+                <h4 className="font-medium text-red-900">
+                  Issue Detected: {detectedIssue.message}
+                </h4>
                 <div className="mt-2">
-                  <h5 className="text-sm font-medium text-red-800">Recommended Solutions:</h5>
+                  <h5 className="text-sm font-medium text-red-800">
+                    Recommended Solutions:
+                  </h5>
                   <ul className="list-disc list-inside text-sm text-red-700 mt-1 space-y-1">
                     {detectedIssue.solutions.map((solution, index) => (
                       <li key={index}>{solution}</li>
@@ -355,13 +377,17 @@ export default function MobileWalletConnectionRecovery() {
                 isActive
                   ? 'border-blue-300 bg-blue-50'
                   : isCompleted
-                    ? 'border-green-300 bg-green-50'
-                    : isFailed
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-200 bg-gray-50'
+                  ? 'border-green-300 bg-green-50'
+                  : isFailed
+                  ? 'border-red-300 bg-red-50'
+                  : 'border-gray-200 bg-gray-50'
               }`}
             >
-              <div className={`flex-shrink-0 mt-1 ${getStepStatusColor(step.status)}`}>
+              <div
+                className={`flex-shrink-0 mt-1 ${getStepStatusColor(
+                  step.status
+                )}`}
+              >
                 {getStepStatusIcon(step.status)}
               </div>
 
@@ -369,7 +395,9 @@ export default function MobileWalletConnectionRecovery() {
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-medium text-gray-900">{step.title}</h3>
                   {step.estimatedTime && (
-                    <span className="text-xs text-gray-500">({step.estimatedTime})</span>
+                    <span className="text-xs text-gray-500">
+                      ({step.estimatedTime})
+                    </span>
                   )}
                 </div>
                 <p className="text-sm text-gray-600">{step.description}</p>
@@ -394,10 +422,12 @@ export default function MobileWalletConnectionRecovery() {
             <div className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-green-900">Recovery Complete!</h4>
+                <h4 className="font-medium text-green-900">
+                  Recovery Complete!
+                </h4>
                 <p className="text-sm text-green-800 mb-3">
-                  The recovery process has finished. Try connecting your mobile wallet again.
-                  If issues persist, contact our support team.
+                  The recovery process has finished. Try connecting your mobile
+                  wallet again. If issues persist, contact our support team.
                 </p>
                 <div className="flex gap-3">
                   <button
@@ -430,7 +460,9 @@ export default function MobileWalletConnectionRecovery() {
         </button>
 
         <button
-          onClick={() => {/* Navigate to settings */}}
+          onClick={() => {
+            /* Navigate to settings */
+          }}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <Settings className="w-4 h-4" />

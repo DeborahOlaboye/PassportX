@@ -26,10 +26,11 @@ describe('WalletConnect connection flow', () => {
   });
 
   it('should support multiple connection attempts', async () => {
-    const mockConnect = jest.fn()
+    const mockConnect = jest
+      .fn()
       .mockRejectedValueOnce(new Error('First attempt failed'))
       .mockResolvedValueOnce({ accounts: ['ST456'] });
-    
+
     await expect(mockConnect()).rejects.toThrow();
     const result = await mockConnect();
     expect(result.accounts).toHaveLength(1);

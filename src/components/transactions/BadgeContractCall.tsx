@@ -2,19 +2,23 @@
 
 import { useState } from 'react';
 import { useTransactionSigning } from '@/contexts/TransactionSigningContext';
-import { TransactionRequest } from '@/types/transaction-signing';
+import { TransactionRequest, GasEstimate } from '@/types/transaction-signing';
 
 interface BadgeContractCallProps {
   onSuccess?: (hash: string) => void;
   onError?: (error: Error) => void;
 }
 
-export function BadgeContractCall({ onSuccess, onError }: BadgeContractCallProps) {
-  const { signTransaction, broadcastTransaction, estimateGas, isSigning } = useTransactionSigning();
+export function BadgeContractCall({
+  onSuccess,
+  onError,
+}: BadgeContractCallProps) {
+  const { signTransaction, broadcastTransaction, estimateGas, isSigning } =
+    useTransactionSigning();
   const [functionName, setFunctionName] = useState('mint-badge');
   const [badgeId, setBadgeId] = useState('');
   const [recipient, setRecipient] = useState('');
-  const [gasEstimate, setGasEstimate] = useState<any>(null);
+  const [gasEstimate, setGasEstimate] = useState<GasEstimate | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
 
   const handleEstimateGas = async () => {
@@ -113,7 +117,8 @@ export function BadgeContractCall({ onSuccess, onError }: BadgeContractCallProps
           />
         </div>
 
-        {(functionName === 'mint-badge' || functionName === 'transfer-badge') && (
+        {(functionName === 'mint-badge' ||
+          functionName === 'transfer-badge') && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Recipient Address
@@ -139,7 +144,11 @@ export function BadgeContractCall({ onSuccess, onError }: BadgeContractCallProps
 
           <button
             onClick={handleContractCall}
-            disabled={!badgeId || (functionName !== 'revoke-badge' && !recipient) || isSigning}
+            disabled={
+              !badgeId ||
+              (functionName !== 'revoke-badge' && !recipient) ||
+              isSigning
+            }
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             {isSigning ? 'Signing...' : 'Execute Call'}
@@ -152,7 +161,9 @@ export function BadgeContractCall({ onSuccess, onError }: BadgeContractCallProps
             <div className="text-sm space-y-1">
               <div>Base Fee: {gasEstimate.breakdown.base} microSTX</div>
               <div>Priority Fee: {gasEstimate.breakdown.priority} microSTX</div>
-              <div className="font-semibold">Total: {gasEstimate.total} microSTX</div>
+              <div className="font-semibold">
+                Total: {gasEstimate.total} microSTX
+              </div>
             </div>
           </div>
         )}

@@ -5,8 +5,11 @@
 
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { AuthToken, isTokenExpired } from '../types/auth';
-import { retrieveAuthToken, storeAuthToken, clearAuthToken } from '../utils/tokenStorage';
-import { verifySignature, isSignatureExpired, SignedMessage } from '../utils/signatureVerification';
+import {
+  retrieveAuthToken,
+  storeAuthToken,
+  clearAuthToken,
+} from '../utils/tokenStorage';
 import { createAuthToken } from '../utils/sessionTokens';
 import { logInfo, logError } from '../utils/logger';
 
@@ -19,9 +22,13 @@ type AuthContextValue = {
   error: Error | null;
 };
 
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const AuthContext = createContext<AuthContextValue | undefined>(
+  undefined
+);
 
-export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const AuthProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const [token, setToken] = useState<AuthToken | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
@@ -68,7 +75,16 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
   }, [verifyToken]);
 
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated: !!token, signIn, signOut, verifyToken, error }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        isAuthenticated: !!token,
+        signIn,
+        signOut,
+        verifyToken,
+        error,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

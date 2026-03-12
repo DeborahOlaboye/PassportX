@@ -44,7 +44,10 @@ export class EngagementTracker {
       if (this.idleTimeout) {
         clearTimeout(this.idleTimeout);
       }
-      this.idleTimeout = setTimeout(() => this.trackIdleSession(), this.IDLE_TIMEOUT_MS);
+      this.idleTimeout = setTimeout(
+        () => this.trackIdleSession(),
+        this.IDLE_TIMEOUT_MS
+      );
     };
 
     events.forEach((event) => {
@@ -80,7 +83,11 @@ export class EngagementTracker {
     });
   }
 
-  public trackEngagement({ element, action, metadata = {} }: EngagementEvent): void {
+  public trackEngagement({
+    element,
+    action,
+    metadata = {},
+  }: EngagementEvent): void {
     const elementId = this.getElementId(element);
     const eventKey = `${elementId}:${action}`;
 
@@ -107,11 +114,11 @@ export class EngagementTracker {
 
   private getElementId(element: string): string {
     if (typeof document === 'undefined') return element;
-    
+
     try {
       const el = document.querySelector(element);
       if (!el) return element;
-      
+
       // Try to get a meaningful identifier
       return (
         el.id ||
@@ -129,7 +136,10 @@ export class EngagementTracker {
 export const engagementTracker = EngagementTracker.getInstance();
 
 // Helper functions for common tracking scenarios
-export function trackClick(element: string, metadata?: Record<string, any>): void {
+export function trackClick(
+  element: string,
+  metadata?: Record<string, any>
+): void {
   engagementTracker.trackEngagement({
     element,
     action: 'click',
@@ -137,7 +147,10 @@ export function trackClick(element: string, metadata?: Record<string, any>): voi
   });
 }
 
-export function trackInput(element: string, metadata?: Record<string, any>): void {
+export function trackInput(
+  element: string,
+  metadata?: Record<string, any>
+): void {
   engagementTracker.trackEngagement({
     element,
     action: 'input',
@@ -145,7 +158,10 @@ export function trackInput(element: string, metadata?: Record<string, any>): voi
   });
 }
 
-export function trackSubmit(element: string, metadata?: Record<string, any>): void {
+export function trackSubmit(
+  element: string,
+  metadata?: Record<string, any>
+): void {
   engagementTracker.trackEngagement({
     element,
     action: 'submit',
@@ -153,7 +169,10 @@ export function trackSubmit(element: string, metadata?: Record<string, any>): vo
   });
 }
 
-export function trackScroll(element: string, metadata?: Record<string, any>): void {
+export function trackScroll(
+  element: string,
+  metadata?: Record<string, any>
+): void {
   engagementTracker.trackEngagement({
     element,
     action: 'scroll',

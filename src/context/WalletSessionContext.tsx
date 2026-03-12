@@ -1,6 +1,11 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
-import { WalletSession, recoverSession, saveSession, clearSession, isExpired } from '../utils/walletSession';
-import { WalletError } from '../utils/errorTypes';
+import {
+  WalletSession,
+  recoverSession,
+  saveSession,
+  clearSession,
+  isExpired,
+} from '../utils/walletSession';
 import { logError, logInfo } from '../utils/logger';
 import retry from '../utils/retry';
 
@@ -11,10 +16,15 @@ type WalletSessionContextValue = {
   disconnect: () => void;
   recover: () => Promise<void>;
   error: Error | null;
-  retryOperation: <T>(fn: () => Promise<T>, opts?: { retries?: number; delayMs?: number }) => Promise<T>;
+  retryOperation: <T>(
+    fn: () => Promise<T>,
+    opts?: { retries?: number; delayMs?: number }
+  ) => Promise<T>;
 };
 
-export const WalletSessionContext = createContext<WalletSessionContextValue | undefined>(undefined);
+export const WalletSessionContext = createContext<
+  WalletSessionContextValue | undefined
+>(undefined);
 
 type ProviderProps = {
   storageArea?: 'local' | 'session';
@@ -22,21 +32,26 @@ type ProviderProps = {
   decrypt?: (payload: string) => Promise<string> | string;
 };
 
-export const WalletSessionProvider: React.FC<React.PropsWithChildren<ProviderProps>> = ({ children, storageArea, encrypt, decrypt }) => {
+export const WalletSessionProvider: React.FC<
+  React.PropsWithChildren<ProviderProps>
+> = ({ children, storageArea, encrypt, decrypt }) => {
   const [session, setSession] = useState<WalletSession | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  const save = useCallback(async (s: WalletSession) => {
-    try {
-      const ok = await saveSession(s as any, { area: storageArea as any, encrypt });
-      if (ok) setSession(s);
-      return ok;
-    } catch (e) {
-      logError('Failed to save session', e);
-      setError(e as Error);
-      return false;
-    }
-  }, [encrypt, storageArea]);
+  const save = useCallback(
+    async (s: WalletSession) => {
+      try {
+        const ok = await saveSession(s, { area: storageArea, encrypt });
+        if (ok) setSession(s);
+        return ok;
+      } catch (e) {
+        logError('Failed to save session', e);
+        setError(e as Error);
+        return false;
+      }
+    },
+    [encrypt, storageArea]
+  );
 
   const disconnect = useCallback(() => {
     clearSession();
@@ -46,7 +61,7 @@ export const WalletSessionProvider: React.FC<React.PropsWithChildren<ProviderPro
 
   const recover = useCallback(async () => {
     try {
-      const s = await recoverSession({ area: storageArea as any, decrypt });
+      const s = await recoverSession({ area: storageArea, decrypt });
       if (!s) return;
       if (isExpired(s)) {
         clearSession();
@@ -60,17 +75,23 @@ export const WalletSessionProvider: React.FC<React.PropsWithChildren<ProviderPro
     }
   }, []);
 
-  const retryOperation = useCallback(async <T,>(fn: () => Promise<T>, opts?: { retries?: number; delayMs?: number }) => {
-    try {
-      logInfo('Starting retry operation');
-      const res = await retry(fn, opts);
-      return res as T;
-    } catch (e) {
-      logError('Retry operation failed', e);
-      setError(e as Error);
-      throw e;
-    }
-  }, []);
+  const retryOperation = useCallback(
+    async <T,>(
+      fn: () => Promise<T>,
+      opts?: { retries?: number; delayMs?: number }
+    ) => {
+      try {
+        logInfo('Starting retry operation');
+        const res = await retry(fn, opts);
+        return res as T;
+      } catch (e) {
+        logError('Retry operation failed', e);
+        setError(e as Error);
+        throw e;
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     // attempt recovery on mount
@@ -78,7 +99,17 @@ export const WalletSessionProvider: React.FC<React.PropsWithChildren<ProviderPro
   }, [recover]);
 
   return (
-    <WalletSessionContext.Provider value={{ session, isConnected: !!session, save, disconnect, recover, error, retryOperation }}>
+    <WalletSessionContext.Provider
+      value={{
+        session,
+        isConnected: !!session,
+        save,
+        disconnect,
+        recover,
+        error,
+        retryOperation,
+      }}
+    >
       {children}
     </WalletSessionContext.Provider>
   );

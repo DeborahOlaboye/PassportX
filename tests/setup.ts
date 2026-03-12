@@ -24,7 +24,7 @@ export const mockStacksApi = {
   getAccountInfo: jest.fn(),
   getContractInfo: jest.fn(),
   callReadOnlyFunction: jest.fn(),
-  broadcastTransaction: jest.fn()
+  broadcastTransaction: jest.fn(),
 };
 
 // Mock WalletConnect responses
@@ -38,14 +38,14 @@ export const mockWalletConnect = {
   getSession: jest.fn(),
   on: jest.fn(),
   off: jest.fn(),
-  once: jest.fn()
+  once: jest.fn(),
 };
 
 // Test utilities
 export const createMockUser = (address: string) => ({
   address,
   badges: [],
-  communities: []
+  communities: [],
 });
 
 export const createMockBadge = (id: number, templateId: number) => ({
@@ -56,22 +56,29 @@ export const createMockBadge = (id: number, templateId: number) => ({
     level: 1,
     category: 1,
     timestamp: Date.now(),
-    active: true
-  }
+    active: true,
+  },
 });
 
 // WalletConnect test utilities
-export const createMockWalletConnectSession = (network: 'testnet' | 'mainnet') => {
+export const createMockWalletConnectSession = (
+  network: 'testnet' | 'mainnet'
+) => {
   const fixtures = loadFixture('walletconnect-session.json');
   return fixtures[network];
 };
 
-export const createMockWalletConnectTransaction = (network: 'testnet' | 'mainnet', type: string) => {
+export const createMockWalletConnectTransaction = (
+  network: 'testnet' | 'mainnet',
+  type: string
+) => {
   const fixtures = loadFixture('walletconnect-transactions.json');
   return fixtures[network][type];
 };
 
-export const mockWalletConnectProvider = (network: 'testnet' | 'mainnet' = 'testnet') => {
+export const mockWalletConnectProvider = (
+  network: 'testnet' | 'mainnet' = 'testnet'
+) => {
   const session = createMockWalletConnectSession(network);
   return {
     connect: jest.fn().mockResolvedValue([session.address]),
@@ -86,6 +93,6 @@ export const mockWalletConnectProvider = (network: 'testnet' | 'mainnet' = 'test
     once: jest.fn(),
     removeListener: jest.fn(),
     removeAllListeners: jest.fn(),
-    session: session.session
+    session: session.session,
   };
 };

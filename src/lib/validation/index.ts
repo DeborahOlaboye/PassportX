@@ -24,16 +24,11 @@ export {
   getValidationErrorMessage,
   getValidBadgeCategories,
   isCategoryValid,
-  isLevelInValidRange
-} from './badgeValidation'
+  isLevelInValidRange,
+} from './badgeValidation';
 
 // Export types
-export type {
-  ValidationError,
-  BadgeValidationResult
-} from './badgeValidation'
+export type { ValidationError, BadgeValidationResult } from './badgeValidation';
 
 // Export constants
-export {
-  VALIDATION_CONSTANTS
-} from './badgeValidation'
+export { VALIDATION_CONSTANTS } from './badgeValidation';

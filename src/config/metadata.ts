@@ -9,7 +9,8 @@ const getBaseUrl = (): string => {
 
 export const APP_METADATA: MetadataConfig = {
   name: 'PassportX',
-  description: 'Achievement Passport - Verify and manage your digital credentials on Stacks Blockchain',
+  description:
+    'Achievement Passport - Verify and manage your digital credentials on Stacks Blockchain',
   url: getBaseUrl(),
   icons: [
     `${getBaseUrl()}/logo.png`,

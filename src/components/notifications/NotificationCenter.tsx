@@ -1,17 +1,30 @@
-'use client'
-import ErrorBoundary from '../ErrorBoundary'
-import FallbackUI from '../FallbackUI'
-import { useNotifications } from '@/contexts/NotificationContext'
-import { Bell, Check, CheckCheck, Trash2, X, RefreshCw, Wifi, WifiOff, Gift, Users, Megaphone, Award } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { useState } from 'react'
+'use client';
+import ErrorBoundary from '../ErrorBoundary';
+import FallbackUI from '../FallbackUI';
+import { useNotifications } from '@/contexts/NotificationContext';
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+  Users,
+  Megaphone,
+  Award,
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { useState } from 'react';
 
 export default function NotificationCenter() {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Notification center error" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="Notification center error" />}
+    >
       <NotificationCenterInner />
     </ErrorBoundary>
-  )
+  );
 }
 
 function NotificationCenterInner() {
@@ -22,42 +35,41 @@ function NotificationCenterInner() {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification
-  } = useNotifications()
+    deleteNotification,
+  } = useNotifications();
 
-  const [filter, setFilter] = useState<'all' | 'unread'>('all')
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const filteredNotifications = filter === 'unread'
-    ? notifications.filter(n => !n.read)
-    : notifications
+  const filteredNotifications =
+    filter === 'unread' ? notifications.filter((n) => !n.read) : notifications;
 
   const handleRefresh = async () => {
-    setIsRefreshing(true)
+    setIsRefreshing(true);
     try {
-      await fetchNotifications()
+      await fetchNotifications();
     } catch (err: unknown) {
-      console.error('Failed to refresh notifications:', err)
+      console.error('Failed to refresh notifications:', err);
     } finally {
-      setTimeout(() => setIsRefreshing(false), 500)
+      setTimeout(() => setIsRefreshing(false), 500);
     }
-  }
+  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'badge_received':
       case 'badge_issued':
       case 'badge_verified':
-        return <Award className="w-5 h-5 text-blue-600" />
+        return <Award className="w-5 h-5 text-blue-600" />;
       case 'community_update':
       case 'community_invite':
-        return <Users className="w-5 h-5 text-purple-600" />
+        return <Users className="w-5 h-5 text-purple-600" />;
       case 'system_announcement':
-        return <Megaphone className="w-5 h-5 text-orange-600" />
+        return <Megaphone className="w-5 h-5 text-orange-600" />;
       default:
-        return <Bell className="w-5 h-5 text-gray-600" />
+        return <Bell className="w-5 h-5 text-gray-600" />;
     }
-  }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[600px] flex flex-col">
@@ -90,7 +102,11 @@ function NotificationCenterInner() {
             className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             title="Refresh"
           >
-            <RefreshCw className={`w-4 h-4 text-gray-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 text-gray-600 ${
+                isRefreshing ? 'animate-spin' : ''
+              }`}
+            />
           </button>
 
           {/* Mark all as read */}
@@ -136,7 +152,9 @@ function NotificationCenterInner() {
           <div className="flex flex-col items-center justify-center h-48 text-gray-500">
             <Bell className="w-12 h-12 mb-2 text-gray-300" />
             <p className="text-sm">
-              {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
+              {filter === 'unread'
+                ? 'No unread notifications'
+                : 'No notifications yet'}
             </p>
           </div>
         ) : (
@@ -158,14 +176,21 @@ function NotificationCenterInner() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <p className={`text-sm font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
+                        <p
+                          className={`text-sm font-medium text-gray-900 ${
+                            !notification.read ? 'font-semibold' : ''
+                          }`}
+                        >
                           {notification.title}
                         </p>
                         <p className="text-sm text-gray-600 mt-1">
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(
+                            new Date(notification.createdAt),
+                            { addSuffix: true }
+                          )}
                         </p>
                       </div>
 
@@ -202,5 +227,5 @@ function NotificationCenterInner() {
         )}
       </div>
     </div>
-  )
+  );
 }

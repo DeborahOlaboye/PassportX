@@ -2,7 +2,7 @@ import {
   ChainhookEventPayload,
   ChainhookEventHandler,
   NotificationPayload,
-  BadgeMetadataUpdateEvent
+  BadgeMetadataUpdateEvent,
 } from '../types/handlers';
 import { EventMapper } from '../utils/eventMapper';
 import BadgeMetadataChangeDetector from '../utils/badgeMetadataChangeDetector';
@@ -10,8 +10,15 @@ import BadgeMetadataChangeDetector from '../utils/badgeMetadataChangeDetector';
 export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
   private logger: any;
   private changeDetector: BadgeMetadataChangeDetector;
-  private readonly SUPPORTED_METHODS = ['update-metadata', 'set-metadata', 'metadata-update'];
-  private readonly SUPPORTED_TOPICS = ['metadata-updated', 'badge-metadata-updated'];
+  private readonly SUPPORTED_METHODS = [
+    'update-metadata',
+    'set-metadata',
+    'metadata-update',
+  ];
+  private readonly SUPPORTED_TOPICS = [
+    'metadata-updated',
+    'badge-metadata-updated',
+  ];
   private compiledMethodFilter: Set<string>;
   private compiledTopicFilter: Set<string>;
   private lastHitTime = 0;
@@ -27,15 +34,21 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[BadgeMetadataUpdateHandler] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[BadgeMetadataUpdateHandler] ${msg}`, ...args),
     };
   }
 
   private getCacheKey(event: ChainhookEventPayload): string {
-    return `${event.block_identifier?.index}:${event.transactions?.[0]?.transaction_hash || ''}`;
+    return `${event.block_identifier?.index}:${
+      event.transactions?.[0]?.transaction_hash || ''
+    }`;
   }
 
   private isCacheValid(cachedTime: number): boolean {
@@ -138,7 +151,9 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
                 const badgeId = this.extractBadgeId(args);
 
                 if (!badgeId) {
-                  this.logger.warn('Failed to extract badge ID from metadata update');
+                  this.logger.warn(
+                    'Failed to extract badge ID from metadata update'
+                  );
                   continue;
                 }
 
@@ -154,13 +169,13 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
                   contractAddress: op.contract_call.contract,
                   transactionHash: tx.transaction_hash,
                   blockHeight: event.block_identifier?.index || 0,
-                  timestamp: event.metadata?.pox_cycle_position || Date.now()
+                  timestamp: event.metadata?.pox_cycle_position || Date.now(),
                 };
 
                 this.logger.debug('Extracted badge metadata update event', {
                   badgeId: metadataEvent.badgeId,
                   level: metadataEvent.level,
-                  category: metadataEvent.category
+                  category: metadataEvent.category,
                 });
 
                 const notification = this.createNotification(metadataEvent);
@@ -175,24 +190,33 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
                 for (const topic of this.compiledTopicFilter) {
                   if (evt.topic && evt.topic.includes(topic)) {
                     try {
-                      const metadataEvent = EventMapper.mapBadgeMetadataUpdateEvent({
-                        ...evt.value,
-                        contractAddress: evt.contract_address,
-                        transactionHash: tx.transaction_hash,
-                        blockHeight: event.block_identifier?.index || 0,
-                        timestamp: event.metadata?.pox_cycle_position || Date.now()
-                      });
-
-                      if (metadataEvent && metadataEvent.badgeId) {
-                        this.logger.debug('Mapped badge metadata update event from contract event', {
-                          badgeId: metadataEvent.badgeId
+                      const metadataEvent =
+                        EventMapper.mapBadgeMetadataUpdateEvent({
+                          ...evt.value,
+                          contractAddress: evt.contract_address,
+                          transactionHash: tx.transaction_hash,
+                          blockHeight: event.block_identifier?.index || 0,
+                          timestamp:
+                            event.metadata?.pox_cycle_position || Date.now(),
                         });
 
-                        const notification = this.createNotification(metadataEvent);
+                      if (metadataEvent && metadataEvent.badgeId) {
+                        this.logger.debug(
+                          'Mapped badge metadata update event from contract event',
+                          {
+                            badgeId: metadataEvent.badgeId,
+                          }
+                        );
+
+                        const notification =
+                          this.createNotification(metadataEvent);
                         notifications.push(notification);
                       }
                     } catch (eventMapError) {
-                      this.logger.warn('Failed to map badge metadata update event:', eventMapError);
+                      this.logger.warn(
+                        'Failed to map badge metadata update event:',
+                        eventMapError
+                      );
                     }
                   }
                 }
@@ -205,7 +229,9 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
         }
       }
 
-      this.logger.info(`Processed badge metadata update event with ${notifications.length} notifications`);
+      this.logger.info(
+        `Processed badge metadata update event with ${notifications.length} notifications`
+      );
       return notifications;
     } catch (error) {
       this.logger.error('Error in BadgeMetadataUpdateHandler.handle:', error);
@@ -265,7 +291,9 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
     return prevDescription ? String(prevDescription) : undefined;
   }
 
-  private createNotification(metadataEvent: BadgeMetadataUpdateEvent): NotificationPayload {
+  private createNotification(
+    metadataEvent: BadgeMetadataUpdateEvent
+  ): NotificationPayload {
     const changeResult = this.changeDetector.detectChanges(metadataEvent);
     const impactLevel = this.changeDetector.getImpactLevel(changeResult);
     const changesSummary = this.changeDetector.generateSummary(changeResult);
@@ -292,8 +320,8 @@ export class BadgeMetadataUpdateHandler implements ChainhookEventHandler {
         changedFields: changeResult.changedFields,
         changes: changeResult.changes,
         impactLevel,
-        changeCount: changeResult.changeCount
-      }
+        changeCount: changeResult.changeCount,
+      },
     };
   }
 }

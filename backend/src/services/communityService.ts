@@ -571,7 +571,10 @@ export const getCommunityMembers = async (
   limit = 50,
   offset = 0
 ) => {
-  const safeLimit = Math.min(Math.max(1, Number.isFinite(limit) ? limit : 50), MAX_MEMBERS_LIMIT);
+  const safeLimit = Math.min(
+    Math.max(1, Number.isFinite(limit) ? limit : 50),
+    MAX_MEMBERS_LIMIT
+  );
   const safeOffset = Math.max(0, Number.isFinite(offset) ? offset : 0);
 
   try {

@@ -50,7 +50,9 @@ export class TransactionValidator {
 
     // Validate function arguments based on function name
     if (request.functionArgs) {
-      errors.push(...this.validateFunctionArgs(request.functionName, request.functionArgs));
+      errors.push(
+        ...this.validateFunctionArgs(request.functionName, request.functionArgs)
+      );
     }
 
     return {
@@ -59,7 +61,10 @@ export class TransactionValidator {
     };
   }
 
-  private static validateFunctionArgs(functionName: string, args: unknown[]): string[] {
+  private static validateFunctionArgs(
+    functionName: string,
+    args: unknown[]
+  ): string[] {
     const errors: string[] = [];
 
     switch (functionName) {
@@ -114,7 +119,10 @@ export class TransactionValidator {
     return errors;
   }
 
-  static validateGasParameters(gasLimit?: string, gasPrice?: string): ValidationResult {
+  static validateGasParameters(
+    gasLimit?: string,
+    gasPrice?: string
+  ): ValidationResult {
     const errors: string[] = [];
 
     if (gasLimit) {
@@ -141,7 +149,10 @@ export class TransactionValidator {
   }
 
   static isValidAddress(address: string): boolean {
-    return this.STX_ADDRESS_REGEX.test(address) || this.PRINCIPAL_ADDRESS_REGEX.test(address);
+    return (
+      this.STX_ADDRESS_REGEX.test(address) ||
+      this.PRINCIPAL_ADDRESS_REGEX.test(address)
+    );
   }
 
   static sanitizeAmount(amount: string): string {

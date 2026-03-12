@@ -13,19 +13,29 @@ interface TransactionStatusTrackerProps {
 
 export function TransactionStatusTracker(props: TransactionStatusTrackerProps) {
   return (
-    <ErrorBoundary fallback={<FallbackUI message="Transaction tracker error" />}>
+    <ErrorBoundary
+      fallback={<FallbackUI message="Transaction tracker error" />}
+    >
       <TransactionStatusTrackerInner {...props} />
     </ErrorBoundary>
   );
 }
 
-function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: TransactionStatusTrackerProps) {
-  const [currentStatus, setCurrentStatus] = useState<SignedTransaction['status']>(transaction.status);
+function TransactionStatusTrackerInner({
+  transaction,
+  onStatusUpdate,
+}: TransactionStatusTrackerProps) {
+  const [currentStatus, setCurrentStatus] = useState<
+    SignedTransaction['status']
+  >(transaction.status);
   const [confirmations, setConfirmations] = useState(0);
   const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
-    if (transaction.hash && (currentStatus === 'broadcasting' || currentStatus === 'pending')) {
+    if (
+      transaction.hash &&
+      (currentStatus === 'broadcasting' || currentStatus === 'pending')
+    ) {
       startPolling();
     }
   }, [transaction.hash, currentStatus]);
@@ -41,14 +51,16 @@ function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: Transact
         if (!transaction.hash) return;
 
         try {
-          const status = await TransactionBroadcaster.getBroadcastStatus(transaction.hash);
+          const status = await TransactionBroadcaster.getBroadcastStatus(
+            transaction.hash
+          );
 
           if (status !== currentStatus) {
             setCurrentStatus(status);
             onStatusUpdate?.(status);
 
             if (status === 'confirmed') {
-              setConfirmations(prev => prev + 1);
+              setConfirmations((prev) => prev + 1);
             }
           }
 
@@ -67,7 +79,6 @@ function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: Transact
         clearInterval(pollInterval);
         setIsPolling(false);
       }, 5 * 60 * 1000);
-
     } catch (error) {
       console.error('Failed to start polling:', error);
       setIsPolling(false);
@@ -111,7 +122,11 @@ function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: Transact
           <span className="text-lg">{getStatusIcon(currentStatus)}</span>
           <span className="font-medium">{transaction.request.type}</span>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(currentStatus)}`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+            currentStatus
+          )}`}
+        >
           {currentStatus}
         </span>
       </div>
@@ -119,12 +134,17 @@ function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: Transact
       <div className="text-sm text-gray-600 space-y-1">
         <div>ID: {transaction.id}</div>
         {transaction.hash && (
-          <div>Hash: {transaction.hash.slice(0, 10)}...{transaction.hash.slice(-8)}</div>
+          <div>
+            Hash: {transaction.hash.slice(0, 10)}...{transaction.hash.slice(-8)}
+          </div>
         )}
         <div>Time: {new Date(transaction.timestamp).toLocaleString()}</div>
 
         {transaction.request.recipient && (
-          <div>To: {transaction.request.recipient.slice(0, 6)}...{transaction.request.recipient.slice(-4)}</div>
+          <div>
+            To: {transaction.request.recipient.slice(0, 6)}...
+            {transaction.request.recipient.slice(-4)}
+          </div>
         )}
 
         {transaction.request.amount && (
@@ -142,9 +162,7 @@ function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: Transact
         )}
 
         {isPolling && (
-          <div className="text-blue-600">
-            🔄 Monitoring status...
-          </div>
+          <div className="text-blue-600">🔄 Monitoring status...</div>
         )}
 
         {transaction.error && (
@@ -157,17 +175,20 @@ function TransactionStatusTrackerInner({ transaction, onStatusUpdate }: Transact
   );
 }
 
-
 interface TransactionStatusListProps {
   transactions: SignedTransaction[];
 }
 
-export function TransactionStatusList({ transactions }: TransactionStatusListProps) {
+export function TransactionStatusList({
+  transactions,
+}: TransactionStatusListProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Transaction Status</h3>
       {transactions.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">No transactions to track</p>
+        <p className="text-gray-500 text-center py-8">
+          No transactions to track
+        </p>
       ) : (
         transactions.map((tx) => (
           <TransactionStatusTracker

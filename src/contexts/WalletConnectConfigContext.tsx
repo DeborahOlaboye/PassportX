@@ -1,9 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { WalletConnectProviderConfig, InitializationState } from '@/types/walletconnect-config';
-import { buildWalletConnectConfig, validateConfig } from '@/config/walletconnect';
-import { validateWalletConnectEnv, logEnvironmentValidation } from '@/utils/env-validation';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
+import {
+  WalletConnectProviderConfig,
+  InitializationState,
+} from '@/types/walletconnect-config';
+import {
+  buildWalletConnectConfig,
+  validateConfig,
+} from '@/config/walletconnect';
+import {
+  validateWalletConnectEnv,
+  logEnvironmentValidation,
+} from '@/utils/env-validation';
 
 interface WalletConnectConfigContextType {
   config: WalletConnectProviderConfig | null;
@@ -65,7 +80,10 @@ export function WalletConnectConfigProvider({
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error('WalletConnect configuration initialization failed:', errorMessage);
+      console.error(
+        'WalletConnect configuration initialization failed:',
+        errorMessage
+      );
 
       setState({
         isInitialized: false,

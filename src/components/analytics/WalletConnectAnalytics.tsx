@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Card, Title, Text, AreaChart, BarChart, DonutChart } from '@tremor/react';
+import {
+  Card,
+  Title,
+  Text,
+  AreaChart,
+  BarChart,
+  DonutChart,
+} from '@tremor/react';
 
 type TimeRange = '24h' | '7d' | '30d' | '90d' | 'all';
 
@@ -42,15 +49,19 @@ export function WalletConnectAnalytics() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/analytics/walletconnect?range=${timeRange}`);
+        const response = await fetch(
+          `/api/analytics/walletconnect?range=${timeRange}`
+        );
         if (!response.ok) {
           throw new Error(`Server responded with ${response.status}`);
         }
-        const data = await response.json() as WalletConnectStats;
+        const data = (await response.json()) as WalletConnectStats;
         setStats(data);
       } catch (err: unknown) {
         console.error('Error fetching WalletConnect analytics:', err);
-        setError('Failed to load WalletConnect analytics. Please try again later.');
+        setError(
+          'Failed to load WalletConnect analytics. Please try again later.'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -91,15 +102,21 @@ export function WalletConnectAnalytics() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <Text>Total Connections</Text>
-          <Title className="text-2xl font-bold">{stats.totalConnections.toLocaleString()}</Title>
+          <Title className="text-2xl font-bold">
+            {stats.totalConnections.toLocaleString()}
+          </Title>
         </Card>
         <Card>
           <Text>Unique Wallets</Text>
-          <Title className="text-2xl font-bold">{stats.uniqueWallets.toLocaleString()}</Title>
+          <Title className="text-2xl font-bold">
+            {stats.uniqueWallets.toLocaleString()}
+          </Title>
         </Card>
         <Card>
           <Text>Avg. Session</Text>
-          <Title className="text-2xl font-bold">{stats.averageSessionDuration.toFixed(1)} min</Title>
+          <Title className="text-2xl font-bold">
+            {stats.averageSessionDuration.toFixed(1)} min
+          </Title>
         </Card>
         <Card>
           <Text>Completion Rate</Text>

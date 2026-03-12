@@ -1,8 +1,17 @@
 // Integration tests for Chainhook with test network
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { PredicateEvaluator, PredicateBuilder } from '../src/utils/predicateEvaluator';
-import { EventHandlerRegistry, EventHandlerBuilder } from '../src/utils/eventHandlerRegistry';
-import { ReorgHandler, ReorgAwareEventProcessor } from '../src/utils/reorgHandler';
+import {
+  PredicateEvaluator,
+  PredicateBuilder,
+} from '../src/utils/predicateEvaluator';
+import {
+  EventHandlerRegistry,
+  EventHandlerBuilder,
+} from '../src/utils/eventHandlerRegistry';
+import {
+  ReorgHandler,
+  ReorgAwareEventProcessor,
+} from '../src/utils/reorgHandler';
 import { MockChainhookEventFactory } from '../src/utils/mockChainhookEvents';
 import { EventType } from '../src/types/chainhook';
 
@@ -38,7 +47,10 @@ describe('Chainhook Integration Tests', () => {
       const event = MockChainhookEventFactory.createBadgeMintEvent();
 
       // Evaluate predicate
-      const predicateResult = predicateEvaluator.evaluateEvent(event, predicate);
+      const predicateResult = predicateEvaluator.evaluateEvent(
+        event,
+        predicate
+      );
       expect(predicateResult.matched).toBe(true);
 
       // Dispatch event
@@ -54,7 +66,7 @@ describe('Chainhook Integration Tests', () => {
       const events = [
         MockChainhookEventFactory.createBadgeMintEvent({ badgeId: 'badge-1' }),
         MockChainhookEventFactory.createBadgeMintEvent({ badgeId: 'badge-2' }),
-        MockChainhookEventFactory.createBadgeMintEvent({ badgeId: 'badge-3' })
+        MockChainhookEventFactory.createBadgeMintEvent({ badgeId: 'badge-3' }),
       ];
 
       for (const event of events) {
@@ -70,13 +82,13 @@ describe('Chainhook Integration Tests', () => {
 
       // Create reorg affecting a transaction
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: ['tx-affected-badge']
+        affectedTransactions: ['tx-affected-badge'],
       });
       await reorgHandler.handleReorg(reorgEvent);
 
       // Create badge mint event with affected tx hash
       const badgeEvent = MockChainhookEventFactory.createBadgeMintEvent({
-        txHash: 'tx-affected-badge'
+        txHash: 'tx-affected-badge',
       });
 
       const result = await eventProcessor.processEvent(badgeEvent, async () => {
@@ -99,7 +111,10 @@ describe('Chainhook Integration Tests', () => {
 
       const event = MockChainhookEventFactory.createCommunityCreationEvent();
 
-      const predicateResult = predicateEvaluator.evaluateEvent(event, predicate);
+      const predicateResult = predicateEvaluator.evaluateEvent(
+        event,
+        predicate
+      );
       expect(predicateResult.matched).toBe(true);
 
       await eventRegistry.dispatch('community-creation', event);
@@ -113,7 +128,7 @@ describe('Chainhook Integration Tests', () => {
       new EventHandlerBuilder(eventRegistry).onRevocation(handler);
 
       const event = MockChainhookEventFactory.createRevocationEvent({
-        revokedEntityType: 'badge'
+        revokedEntityType: 'badge',
       });
 
       await eventRegistry.dispatch('revocation', event);
@@ -125,7 +140,7 @@ describe('Chainhook Integration Tests', () => {
       new EventHandlerBuilder(eventRegistry).onRevocation(handler);
 
       const event = MockChainhookEventFactory.createRevocationEvent({
-        revokedEntityType: 'community'
+        revokedEntityType: 'community',
       });
 
       await eventRegistry.dispatch('revocation', event);
@@ -164,7 +179,8 @@ describe('Chainhook Integration Tests', () => {
     });
 
     it('should retry failed operations', async () => {
-      const handler = jest.fn()
+      const handler = jest
+        .fn()
         .mockRejectedValueOnce(new Error('First attempt failed'))
         .mockResolvedValueOnce(undefined);
 
@@ -199,7 +215,7 @@ describe('Chainhook Integration Tests', () => {
         MockChainhookEventFactory.createBadgeMintEvent(),
         MockChainhookEventFactory.createCommunityCreationEvent(),
         MockChainhookEventFactory.createRevocationEvent(),
-        MockChainhookEventFactory.createBadgeMintEvent()
+        MockChainhookEventFactory.createBadgeMintEvent(),
       ];
 
       for (const event of events) {
@@ -223,24 +239,27 @@ describe('Chainhook Integration Tests', () => {
 
       // Create reorg
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: ['tx-1']
+        affectedTransactions: ['tx-1'],
       });
       await reorgHandler.handleReorg(reorgEvent);
 
       // Process batch with affected and safe transactions
       const events = [
         MockChainhookEventFactory.createBadgeMintEvent({ txHash: 'tx-1' }),
-        MockChainhookEventFactory.createBadgeMintEvent({ txHash: 'tx-2' })
+        MockChainhookEventFactory.createBadgeMintEvent({ txHash: 'tx-2' }),
       ];
 
-      const results = await eventProcessor.processEvents(events, async (event) => {
-        await eventRegistry.dispatch('badge-mint', event);
-      });
+      const results = await eventProcessor.processEvents(
+        events,
+        async (event) => {
+          await eventRegistry.dispatch('badge-mint', event);
+        }
+      );
 
       expect(results.size).toBe(2);
       const resultsArray = Array.from(results.values());
-      expect(resultsArray.some(r => !r.processed)).toBe(true);
-      expect(resultsArray.some(r => r.processed)).toBe(true);
+      expect(resultsArray.some((r) => !r.processed)).toBe(true);
+      expect(resultsArray.some((r) => r.processed)).toBe(true);
     });
   });
 
@@ -254,17 +273,21 @@ describe('Chainhook Integration Tests', () => {
         .withMinAmount(BigInt(500000))
         .build();
 
-      new EventHandlerBuilder(eventRegistry)
-        .action('notify', notifyAction);
+      new EventHandlerBuilder(eventRegistry).action('notify', notifyAction);
 
       const event = MockChainhookEventFactory.createSTXTransferEvent({
-        amount: BigInt(1000000)
+        amount: BigInt(1000000),
       });
 
-      const predicateResult = predicateEvaluator.evaluateEvent(event, predicate);
+      const predicateResult = predicateEvaluator.evaluateEvent(
+        event,
+        predicate
+      );
       if (predicateResult.matched) {
         predicateResult.actions = ['notify'];
-        const actionResults = await eventRegistry.executeActions(predicateResult);
+        const actionResults = await eventRegistry.executeActions(
+          predicateResult
+        );
         expect(actionResults[0].status).toBe('success');
         expect(notifyAction).toHaveBeenCalled();
       }

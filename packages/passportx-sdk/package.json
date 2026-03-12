@@ -1,5 +1,5 @@
 {
-  "name": "@passportx/sdk",
+  "name": "passportx-sdk",
   "version": "1.0.0",
   "description": "Official JavaScript SDK for PassportX - Achievement badges on Stacks blockchain",
   "main": "dist/index.js",

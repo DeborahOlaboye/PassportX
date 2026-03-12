@@ -1,6 +1,9 @@
 // Unit tests for reorg handling
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { ReorgHandler, ReorgAwareEventProcessor } from '../src/utils/reorgHandler';
+import {
+  ReorgHandler,
+  ReorgAwareEventProcessor,
+} from '../src/utils/reorgHandler';
 import { MockChainhookEventFactory } from '../src/utils/mockChainhookEvents';
 
 describe('Reorg Handling', () => {
@@ -14,7 +17,7 @@ describe('Reorg Handling', () => {
     it('should track reorg event', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         reorgDepth: 3,
-        commonAncestorHeight: 99997
+        commonAncestorHeight: 99997,
       });
 
       const state = await reorgHandler.handleReorg(reorgEvent);
@@ -50,7 +53,7 @@ describe('Reorg Handling', () => {
   describe('ReorgHandler.isTransactionAffected', () => {
     it('should identify affected transactions', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: ['tx-1', 'tx-2', 'tx-3']
+        affectedTransactions: ['tx-1', 'tx-2', 'tx-3'],
       });
 
       await reorgHandler.handleReorg(reorgEvent);
@@ -64,7 +67,7 @@ describe('Reorg Handling', () => {
   describe('ReorgHandler.isBlockRemoved', () => {
     it('should identify removed blocks', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        removedBlockHashes: ['block-1', 'block-2']
+        removedBlockHashes: ['block-1', 'block-2'],
       });
 
       await reorgHandler.handleReorg(reorgEvent);
@@ -83,7 +86,7 @@ describe('Reorg Handling', () => {
     it('should calculate reorg depth correctly', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100000,
-        commonAncestorHeight: 99995
+        commonAncestorHeight: 99995,
       });
 
       await reorgHandler.handleReorg(reorgEvent);
@@ -94,11 +97,11 @@ describe('Reorg Handling', () => {
     it('should return latest reorg depth', async () => {
       const reorg1 = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100000,
-        commonAncestorHeight: 99998
+        commonAncestorHeight: 99998,
       });
       const reorg2 = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100010,
-        commonAncestorHeight: 100005
+        commonAncestorHeight: 100005,
       });
 
       await reorgHandler.handleReorg(reorg1);
@@ -112,7 +115,7 @@ describe('Reorg Handling', () => {
     it('should check if reorg is within acceptable depth', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100000,
-        commonAncestorHeight: 99990
+        commonAncestorHeight: 99990,
       });
 
       await reorgHandler.handleReorg(reorgEvent);
@@ -128,12 +131,14 @@ describe('Reorg Handling', () => {
       reorgHandler.onAffectedTransactions(callback);
 
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: ['tx-1', 'tx-2']
+        affectedTransactions: ['tx-1', 'tx-2'],
       });
 
       await reorgHandler.handleReorg(reorgEvent);
 
-      expect(callback).toHaveBeenCalledWith(expect.arrayContaining(['tx-1', 'tx-2']));
+      expect(callback).toHaveBeenCalledWith(
+        expect.arrayContaining(['tx-1', 'tx-2'])
+      );
     });
 
     it('should handle multiple callbacks', async () => {
@@ -155,11 +160,11 @@ describe('Reorg Handling', () => {
     it('should get affected transactions since height', async () => {
       const reorg1 = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100000,
-        affectedTransactions: ['tx-1', 'tx-2']
+        affectedTransactions: ['tx-1', 'tx-2'],
       });
       const reorg2 = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100010,
-        affectedTransactions: ['tx-3', 'tx-4']
+        affectedTransactions: ['tx-3', 'tx-4'],
       });
 
       await reorgHandler.handleReorg(reorg1);
@@ -177,7 +182,7 @@ describe('Reorg Handling', () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
         blockHeight: 100000,
         removedBlockHashes: ['block-1', 'block-2'],
-        affectedTransactions: ['tx-1', 'tx-2', 'tx-3']
+        affectedTransactions: ['tx-1', 'tx-2', 'tx-3'],
       });
 
       await reorgHandler.handleReorg(reorgEvent);
@@ -202,7 +207,7 @@ describe('Reorg Handling', () => {
   describe('ReorgHandler.eventsOccurredBeforeReorg', () => {
     it('should verify events occurred before reorg', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        blockHeight: 100000
+        blockHeight: 100000,
       });
 
       await reorgHandler.handleReorg(reorgEvent);
@@ -252,13 +257,13 @@ describe('ReorgAwareEventProcessor', () => {
 
     it('should skip event affected by reorg', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: ['tx-affected']
+        affectedTransactions: ['tx-affected'],
       });
       await reorgHandler.handleReorg(reorgEvent);
 
       const handler = jest.fn().mockResolvedValue(undefined);
       const event = MockChainhookEventFactory.createSTXTransferEvent({
-        txHash: 'tx-affected'
+        txHash: 'tx-affected',
       });
 
       const result = await processor.processEvent(event, handler);
@@ -292,20 +297,22 @@ describe('ReorgAwareEventProcessor', () => {
 
     it('should skip affected events in batch', async () => {
       const reorgEvent = MockChainhookEventFactory.createReorgEvent({
-        affectedTransactions: ['tx-affected']
+        affectedTransactions: ['tx-affected'],
       });
       await reorgHandler.handleReorg(reorgEvent);
 
       const handler = jest.fn().mockResolvedValue(undefined);
       const events = [
-        MockChainhookEventFactory.createSTXTransferEvent({ txHash: 'tx-affected' }),
-        MockChainhookEventFactory.createSTXTransferEvent({ txHash: 'tx-safe' })
+        MockChainhookEventFactory.createSTXTransferEvent({
+          txHash: 'tx-affected',
+        }),
+        MockChainhookEventFactory.createSTXTransferEvent({ txHash: 'tx-safe' }),
       ];
 
       const results = await processor.processEvents(events, handler);
 
-      expect(Array.from(results.values()).some(r => r.processed)).toBe(true);
-      expect(Array.from(results.values()).some(r => !r.processed)).toBe(true);
+      expect(Array.from(results.values()).some((r) => r.processed)).toBe(true);
+      expect(Array.from(results.values()).some((r) => !r.processed)).toBe(true);
     });
   });
 });

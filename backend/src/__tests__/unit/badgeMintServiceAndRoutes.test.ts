@@ -1,6 +1,9 @@
 // Mock Mongoose models so pre-existing type errors in Badge.ts don't block compilation
 jest.mock('../../models/Badge', () => ({ default: {}, __esModule: true }));
-jest.mock('../../models/BadgeTemplate', () => ({ default: {}, __esModule: true }));
+jest.mock('../../models/BadgeTemplate', () => ({
+  default: {},
+  __esModule: true,
+}));
 jest.mock('../../models/User', () => ({ default: {}, __esModule: true }));
 jest.mock('../../models/Community', () => ({ default: {}, __esModule: true }));
 

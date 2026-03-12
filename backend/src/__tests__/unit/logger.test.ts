@@ -58,8 +58,8 @@ describe('logger', () => {
     it('suppresses info when LOG_LEVEL=warn', () => {
       process.env.NODE_ENV = 'development';
       process.env.LOG_LEVEL = 'warn';
-      const infoSpy  = jest.spyOn(console, 'log').mockImplementation(() => {});
-      const warnSpy  = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const infoSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       const logger = require('../../utils/logger').default;
 
       logger.info('should be suppressed');
@@ -74,8 +74,10 @@ describe('logger', () => {
     it('suppresses nothing when LOG_LEVEL=debug', () => {
       process.env.NODE_ENV = 'development';
       process.env.LOG_LEVEL = 'debug';
-      const logSpy   = jest.spyOn(console, 'log').mockImplementation(() => {});
-      const debugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {});
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const debugSpy = jest
+        .spyOn(console, 'debug')
+        .mockImplementation(() => {});
       const logger = require('../../utils/logger').default;
 
       logger.info('info');
@@ -91,7 +93,9 @@ describe('logger', () => {
   describe('production JSON output', () => {
     it('writes a valid JSON line to stdout in production', () => {
       process.env.NODE_ENV = 'production';
-      const writeSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+      const writeSpy = jest
+        .spyOn(process.stdout, 'write')
+        .mockImplementation(() => true);
       const logger = require('../../utils/logger').default;
 
       logger.info('prod message', { key: 'value' });
@@ -108,7 +112,9 @@ describe('logger', () => {
 
     it('omits meta field from JSON when not provided', () => {
       process.env.NODE_ENV = 'production';
-      const writeSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+      const writeSpy = jest
+        .spyOn(process.stdout, 'write')
+        .mockImplementation(() => true);
       const logger = require('../../utils/logger').default;
 
       logger.warn('no meta here');

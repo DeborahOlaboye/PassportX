@@ -23,7 +23,7 @@ export class BadgeUIRefreshService extends EventEmitter {
     totalRefreshEvents: 0,
     refreshesByType: new Map(),
     refreshesByBadge: new Map(),
-    averageRefreshDelay: 0
+    averageRefreshDelay: 0,
   };
   private refreshTimings: number[] = [];
   private readonly MAX_TIMING_SAMPLES = 1000;
@@ -39,21 +39,29 @@ export class BadgeUIRefreshService extends EventEmitter {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[UIRefreshService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[UIRefreshService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[UIRefreshService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[UIRefreshService] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[UIRefreshService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[UIRefreshService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[UIRefreshService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[UIRefreshService] ${msg}`, ...args),
     };
   }
 
-  async notifyBadgeMetadataUpdate(badgeId: string, changedFields: string[], meta: any): Promise<void> {
+  async notifyBadgeMetadataUpdate(
+    badgeId: string,
+    changedFields: string[],
+    meta: any
+  ): Promise<void> {
     const event: UIRefreshEvent = {
       badgeId,
       refreshType: 'metadata',
       changedFields,
       timestamp: Date.now(),
       transactionHash: meta.transactionHash || '',
-      blockHeight: meta.blockHeight || 0
+      blockHeight: meta.blockHeight || 0,
     };
 
     await this.queueRefresh(event);
@@ -66,20 +74,24 @@ export class BadgeUIRefreshService extends EventEmitter {
       changedFields: ['display'],
       timestamp: Date.now(),
       transactionHash: meta.transactionHash || '',
-      blockHeight: meta.blockHeight || 0
+      blockHeight: meta.blockHeight || 0,
     };
 
     await this.queueRefresh(event);
   }
 
-  async notifyFullBadgeRefresh(badgeId: string, changedFields: string[], meta: any): Promise<void> {
+  async notifyFullBadgeRefresh(
+    badgeId: string,
+    changedFields: string[],
+    meta: any
+  ): Promise<void> {
     const event: UIRefreshEvent = {
       badgeId,
       refreshType: 'full',
       changedFields,
       timestamp: Date.now(),
       transactionHash: meta.transactionHash || '',
-      blockHeight: meta.blockHeight || 0
+      blockHeight: meta.blockHeight || 0,
     };
 
     await this.queueRefresh(event);
@@ -87,7 +99,9 @@ export class BadgeUIRefreshService extends EventEmitter {
 
   private async queueRefresh(event: UIRefreshEvent): Promise<void> {
     this.refreshQueue.push(event);
-    this.logger.debug(`Queued UI refresh for badge: ${event.badgeId} (type: ${event.refreshType})`);
+    this.logger.debug(
+      `Queued UI refresh for badge: ${event.badgeId} (type: ${event.refreshType})`
+    );
   }
 
   private startQueueProcessing(): void {
@@ -125,15 +139,17 @@ export class BadgeUIRefreshService extends EventEmitter {
     try {
       this.metrics.totalRefreshEvents++;
 
-      const typeCount = (this.metrics.refreshesByType.get(event.refreshType) || 0) + 1;
+      const typeCount =
+        (this.metrics.refreshesByType.get(event.refreshType) || 0) + 1;
       this.metrics.refreshesByType.set(event.refreshType, typeCount);
 
-      const badgeCount = (this.metrics.refreshesByBadge.get(event.badgeId) || 0) + 1;
+      const badgeCount =
+        (this.metrics.refreshesByBadge.get(event.badgeId) || 0) + 1;
       this.metrics.refreshesByBadge.set(event.badgeId, badgeCount);
 
       this.logger.debug(`Processing UI refresh for badge: ${event.badgeId}`, {
         type: event.refreshType,
-        fields: event.changedFields
+        fields: event.changedFields,
       });
 
       this.emit('refresh', event);
@@ -144,7 +160,10 @@ export class BadgeUIRefreshService extends EventEmitter {
       const duration = performance.now() - startTime;
       this.recordRefreshTiming(duration);
     } catch (error) {
-      this.logger.error(`Error processing refresh event for badge ${event.badgeId}:`, error);
+      this.logger.error(
+        `Error processing refresh event for badge ${event.badgeId}:`,
+        error
+      );
     }
   }
 
@@ -164,13 +183,15 @@ export class BadgeUIRefreshService extends EventEmitter {
   getMetrics(): any {
     return {
       totalRefreshEvents: this.metrics.totalRefreshEvents,
-      averageRefreshDelay: parseFloat(this.metrics.averageRefreshDelay.toFixed(4)),
+      averageRefreshDelay: parseFloat(
+        this.metrics.averageRefreshDelay.toFixed(4)
+      ),
       queueSize: this.refreshQueue.length,
       refreshesByType: Object.fromEntries(this.metrics.refreshesByType),
       topRefreshedBadges: Array.from(this.metrics.refreshesByBadge.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10)
-        .map(([badgeId, count]) => ({ badgeId, count }))
+        .map(([badgeId, count]) => ({ badgeId, count })),
     };
   }
 
@@ -187,7 +208,7 @@ export class BadgeUIRefreshService extends EventEmitter {
       totalRefreshEvents: 0,
       refreshesByType: new Map(),
       refreshesByBadge: new Map(),
-      averageRefreshDelay: 0
+      averageRefreshDelay: 0,
     };
     this.refreshTimings = [];
     this.logger.info('UI refresh metrics reset');

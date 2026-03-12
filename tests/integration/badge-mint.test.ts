@@ -13,12 +13,15 @@ describe('Badge Minting Integration Tests', () => {
       debug: jest.fn(),
       info: jest.fn(),
       warn: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
     };
 
     badgeMintService = new BadgeMintService(mockLogger);
     notificationService = new BadgeMintNotificationService(mockLogger);
-    cacheService = new BadgeCacheService({ enabled: true, ttl: 300, provider: 'memory' }, mockLogger);
+    cacheService = new BadgeCacheService(
+      { enabled: true, ttl: 300, provider: 'memory' },
+      mockLogger
+    );
   });
 
   describe('Badge Minting Service', () => {
@@ -29,10 +32,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         const result = badgeMintService.processBadgeMintEvent(event);
@@ -44,10 +48,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         const result = await badgeMintService.processBadgeMintEvent(event);
@@ -61,10 +66,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: -1,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         const result = await badgeMintService.processBadgeMintEvent(event);
@@ -77,10 +83,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: -1
+          timestamp: -1,
         };
 
         const result = await badgeMintService.processBadgeMintEvent(event);
@@ -95,10 +102,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         const logs = badgeMintService.getAuditLogs();
@@ -117,10 +125,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         await badgeMintService.processBadgeMintEvent(event);
@@ -136,10 +145,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId,
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         await badgeMintService.processBadgeMintEvent(event);
@@ -158,13 +168,15 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
-        const notification = notificationService.createBadgeMintNotification(event);
+        const notification =
+          notificationService.createBadgeMintNotification(event);
 
         expect(notification).toBeDefined();
         expect(notification.userId).toBe(event.userId);
@@ -179,17 +191,21 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
-        const notification = notificationService.createBadgeMintNotification(event, {
-          includeInstructions: false,
-          includePassportLink: true,
-          includeCommunityLink: true
-        });
+        const notification = notificationService.createBadgeMintNotification(
+          event,
+          {
+            includeInstructions: false,
+            includePassportLink: true,
+            includeCommunityLink: true,
+          }
+        );
 
         expect(notification).toBeDefined();
         expect(notification.message).toBeDefined();
@@ -200,13 +216,16 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
-        expect(() => notificationService.createBadgeMintNotification(event)).toThrow();
+        expect(() =>
+          notificationService.createBadgeMintNotification(event)
+        ).toThrow();
       });
     });
 
@@ -217,18 +236,22 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         const recipientAddresses = [
           'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-          'ST2PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+          'ST2PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
         ];
 
-        const notifications = await notificationService.buildNotificationBatch(event, recipientAddresses);
+        const notifications = await notificationService.buildNotificationBatch(
+          event,
+          recipientAddresses
+        );
 
         expect(Array.isArray(notifications)).toBe(true);
         expect(notifications.length).toBe(2);
@@ -240,21 +263,30 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
-        const recipientAddresses = ['ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'];
+        const recipientAddresses = [
+          'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+        ];
         const issuerAddresses = ['ST3PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'];
 
-        const notifications = await notificationService.buildNotificationBatch(event, recipientAddresses, issuerAddresses);
+        const notifications = await notificationService.buildNotificationBatch(
+          event,
+          recipientAddresses,
+          issuerAddresses
+        );
 
         expect(Array.isArray(notifications)).toBe(true);
         expect(notifications.length).toBe(2);
 
-        const hasIssuanceNotification = notifications.some(n => n.type === 'badge_issued');
+        const hasIssuanceNotification = notifications.some(
+          (n) => n.type === 'badge_issued'
+        );
         expect(hasIssuanceNotification).toBe(true);
       });
     });
@@ -266,14 +298,17 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
-        const notification = notificationService.createBadgeMintNotification(event);
-        const isValid = notificationService.validateNotificationPayload(notification);
+        const notification =
+          notificationService.createBadgeMintNotification(event);
+        const isValid =
+          notificationService.validateNotificationPayload(notification);
 
         expect(isValid).toBe(true);
       });
@@ -285,11 +320,12 @@ describe('Badge Minting Integration Tests', () => {
           title: 'Gold Badge',
           message: 'You received a badge',
           data: {
-            eventType: 'badge-mint'
-          }
+            eventType: 'badge-mint',
+          },
         };
 
-        const isValid = notificationService.validateNotificationPayload(invalidNotification);
+        const isValid =
+          notificationService.validateNotificationPayload(invalidNotification);
         expect(isValid).toBe(false);
       });
     });
@@ -363,10 +399,11 @@ describe('Badge Minting Integration Tests', () => {
           badgeId,
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         cacheService.onBadgeMinted(event);
@@ -377,7 +414,7 @@ describe('Badge Minting Integration Tests', () => {
 
       it('should handle invalid badge mint events gracefully', () => {
         const invalidEvent: any = {
-          badgeName: 'Gold Badge'
+          badgeName: 'Gold Badge',
         };
 
         expect(() => cacheService.onBadgeMinted(invalidEvent)).not.toThrow();
@@ -407,18 +444,22 @@ describe('Badge Minting Integration Tests', () => {
         badgeId: 'badge-001',
         badgeName: 'Gold Badge',
         criteria: 'Completed 10 verifications',
-        contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+        contractAddress:
+          'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
         transactionHash: 'abc123def456',
         blockHeight: 100,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       const processResult = await badgeMintService.processBadgeMintEvent(event);
       expect(processResult).toBeDefined();
 
-      const notification = notificationService.createBadgeMintNotification(event);
+      const notification =
+        notificationService.createBadgeMintNotification(event);
       expect(notification).toBeDefined();
-      expect(notificationService.validateNotificationPayload(notification)).toBe(true);
+      expect(
+        notificationService.validateNotificationPayload(notification)
+      ).toBe(true);
 
       cacheService.onBadgeMinted(event);
       const stats = cacheService.getStats();
@@ -432,28 +473,31 @@ describe('Badge Minting Integration Tests', () => {
           badgeId: 'badge-001',
           badgeName: 'Gold Badge',
           criteria: 'Completed 10 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'abc123def456',
           blockHeight: 100,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         },
         {
           userId: 'ST2PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
           badgeId: 'badge-002',
           badgeName: 'Silver Badge',
           criteria: 'Completed 5 verifications',
-          contractAddress: 'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
+          contractAddress:
+            'SP101YT8S9464KE0S0TQDGWV83V5H3A37DKEFYSJ0.passport-nft',
           transactionHash: 'xyz789uvw012',
           blockHeight: 101,
-          timestamp: Date.now() + 1000
-        }
+          timestamp: Date.now() + 1000,
+        },
       ];
 
       for (const event of events) {
         const result = await badgeMintService.processBadgeMintEvent(event);
         expect(result).toBeDefined();
 
-        const notification = notificationService.createBadgeMintNotification(event);
+        const notification =
+          notificationService.createBadgeMintNotification(event);
         expect(notification).toBeDefined();
 
         cacheService.onBadgeMinted(event);

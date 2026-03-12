@@ -1,36 +1,40 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { AppConfig, UserSession, showConnect } from '@stacks/connect'
-import { StacksUserData } from '@/types/auth'
-import { Wallet, LogOut } from 'lucide-react'
-import ErrorBoundary from './ErrorBoundary'
-import { WalletErrorFallback } from './FallbackUI'
+import { useState, useEffect } from 'react';
+import { AppConfig, UserSession, showConnect } from '@stacks/connect';
+import { StacksUserData } from '@/types/auth';
+import { Wallet, LogOut } from 'lucide-react';
+import ErrorBoundary from './ErrorBoundary';
+import { WalletErrorFallback } from './FallbackUI';
 
-const appConfig = new AppConfig(['store_write', 'publish_data'])
-const userSession = new UserSession({ appConfig })
+const appConfig = new AppConfig(['store_write', 'publish_data']);
+const userSession = new UserSession({ appConfig });
 
 export default function WalletConnect(): JSX.Element {
   return (
-    <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <WalletErrorFallback error={error} reset={reset} />
+      )}
+    >
       <WalletConnectInner />
     </ErrorBoundary>
-  )
+  );
 }
 
 function WalletConnectInner() {
   // Use typed userData state instead of any
-  const [userData, setUserData] = useState<StacksUserData | null>(null)
+  const [userData, setUserData] = useState<StacksUserData | null>(null);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
       userSession.handlePendingSignIn().then((data) => {
-        setUserData(data as StacksUserData)
-      })
+        setUserData(data as StacksUserData);
+      });
     } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData() as StacksUserData)
+      setUserData(userSession.loadUserData() as StacksUserData);
     }
-  }, [])
+  }, []);
 
   const connectWallet = () => {
     showConnect({
@@ -40,22 +44,23 @@ function WalletConnectInner() {
       },
       redirectTo: '/',
       onFinish: () => {
-        setUserData(userSession.loadUserData() as StacksUserData)
+        setUserData(userSession.loadUserData() as StacksUserData);
       },
       userSession,
-    })
-  }
+    });
+  };
 
   const disconnectWallet = () => {
-    userSession.signUserOut()
-    setUserData(null)
-  }
+    userSession.signUserOut();
+    setUserData(null);
+  };
 
   if (userData) {
     return (
       <div className="flex items-center space-x-4">
         <span className="text-sm text-gray-600">
-          {userData.profile?.stxAddress?.testnet || userData.profile?.stxAddress?.mainnet}
+          {userData.profile?.stxAddress?.testnet ||
+            userData.profile?.stxAddress?.mainnet}
         </span>
         <button
           onClick={disconnectWallet}
@@ -65,7 +70,7 @@ function WalletConnectInner() {
           <span>Disconnect</span>
         </button>
       </div>
-    )
+    );
   }
 
   return (
@@ -76,5 +81,5 @@ function WalletConnectInner() {
       <Wallet className="w-4 h-4" />
       <span>Connect Wallet</span>
     </button>
-  )
+  );
 }

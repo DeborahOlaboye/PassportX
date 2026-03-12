@@ -375,7 +375,11 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { principal } = req.params;
-      if (!principal || typeof principal !== 'string' || principal.trim() === '') {
+      if (
+        !principal ||
+        typeof principal !== 'string' ||
+        principal.trim() === ''
+      ) {
         return res.status(400).json({ error: 'principal is required' });
       }
       const rawLimit = parseInt(req.query.limit as string, 10);
@@ -403,7 +407,11 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const { communityId } = req.params;
-      if (!communityId || typeof communityId !== 'string' || communityId.trim() === '') {
+      if (
+        !communityId ||
+        typeof communityId !== 'string' ||
+        communityId.trim() === ''
+      ) {
         return res.status(400).json({ error: 'communityId is required' });
       }
       const rawLimit = parseInt(req.query.limit as string, 10);

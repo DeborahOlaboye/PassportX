@@ -15,11 +15,11 @@ describe('validateStacksAddress', () => {
   ];
 
   const invalidAddresses = [
-    '',                  // empty
-    'BC1QXYZ',           // bitcoin address
+    '', // empty
+    'BC1QXYZ', // bitcoin address
     'SA2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', // bad second char
-    'SP',                // too short
-    'not-an-address',   // garbage
+    'SP', // too short
+    'not-an-address', // garbage
     'sp2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9', // lowercase prefix
   ];
 
@@ -52,7 +52,9 @@ describe('getCommunityLeaderboard', () => {
     };
     (User.find as jest.Mock).mockReturnValue(mockUserQuery);
 
-    const { getCommunityLeaderboard } = require('../../services/communityService');
+    const {
+      getCommunityLeaderboard,
+    } = require('../../services/communityService');
     const result = await getCommunityLeaderboard('community-id', 10);
 
     // User.find must be called exactly once regardless of leaderboard size
@@ -67,11 +69,20 @@ describe('getCommunityLeaderboard', () => {
 
   it('falls back to Anonymous when user is not found', async () => {
     (Badge.aggregate as jest.Mock).mockResolvedValue([
-      { _id: 'unknown-addr', badgeCount: 1, highestLevel: 1, latestBadge: new Date() },
+      {
+        _id: 'unknown-addr',
+        badgeCount: 1,
+        highestLevel: 1,
+        latestBadge: new Date(),
+      },
     ]);
-    (User.find as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
+    (User.find as jest.Mock).mockReturnValue({
+      select: jest.fn().mockResolvedValue([]),
+    });
 
-    const { getCommunityLeaderboard } = require('../../services/communityService');
+    const {
+      getCommunityLeaderboard,
+    } = require('../../services/communityService');
     const result = await getCommunityLeaderboard('community-id', 5);
 
     expect(result[0].name).toBe('Anonymous');

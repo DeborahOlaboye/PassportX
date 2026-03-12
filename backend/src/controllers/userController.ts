@@ -130,12 +130,10 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
           throw new Error('Invalid protocol');
         }
       } catch {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: 'Avatar must be a valid URL (http or https)',
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Avatar must be a valid URL (http or https)',
+        });
       }
     }
 
@@ -290,7 +288,10 @@ export const getUserBadges = async (req: Request, res: Response) => {
     const MAX_BADGE_LIMIT = 100;
     const rawLimit = parseInt(limit as string, 10);
     const rawOffset = parseInt(offset as string, 10);
-    const safeLimit = isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, MAX_BADGE_LIMIT);
+    const safeLimit =
+      isNaN(rawLimit) || rawLimit < 1
+        ? 20
+        : Math.min(rawLimit, MAX_BADGE_LIMIT);
     const safeOffset = isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset;
 
     // This would integrate with the badge service

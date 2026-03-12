@@ -1,9 +1,24 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { ArrowLeft, Copy, Check, Smartphone, ExternalLink, Share2 } from 'lucide-react';
-import { createStacksWalletConfig, createWalletConnectUri, getMobileWalletDeepLinks, openMobileWallet } from '@/utils/stacksWalletConnect';
-import { optimizeQRCodeForMobile, shareWalletConnection, vibrateDevice } from '@/utils/mobileUXOptimizer';
+import {
+  ArrowLeft,
+  Copy,
+  Check,
+  Smartphone,
+  ExternalLink,
+  Share2,
+} from 'lucide-react';
+import {
+  createStacksWalletConfig,
+  createWalletConnectUri,
+  openMobileWallet,
+} from '@/utils/stacksWalletConnect';
+import {
+  optimizeQRCodeForMobile,
+  shareWalletConnection,
+  vibrateDevice,
+} from '@/utils/mobileUXOptimizer';
 
 interface QRCodeDisplayProps {
   onBack: () => void;
@@ -11,20 +26,30 @@ interface QRCodeDisplayProps {
   preferredWallet?: 'xverse' | 'hiro' | 'leather';
 }
 
-export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCodeDisplayProps) {
+export default function QRCodeDisplay({
+  onBack,
+  onClose,
+  preferredWallet,
+}: QRCodeDisplayProps) {
   const [qrCode, setQrCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [sessionUri, setSessionUri] = useState('');
-  const [sessionTopic, setSessionTopic] = useState('');
+  const [_sessionTopic, setSessionTopic] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedWallet, setSelectedWallet] = useState<'xverse' | 'hiro' | 'leather' | null>(preferredWallet || null);
+  const [_selectedWallet, setSelectedWallet] = useState<
+    'xverse' | 'hiro' | 'leather' | null
+  >(preferredWallet || null);
   const qrCodeRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     // Detect if user is on mobile
     const checkMobile = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      setIsMobile(/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent));
+      setIsMobile(
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+          userAgent
+        )
+      );
     };
 
     checkMobile();
@@ -41,7 +66,9 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
   const generateQRCode = async () => {
     try {
       const config = createStacksWalletConfig();
-      const topic = `stacks_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const topic = `stacks_session_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
       setSessionTopic(topic);
 
       const uri = createWalletConnectUri(topic, config);
@@ -92,9 +119,24 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
   };
 
   const wallets = [
-    { id: 'xverse' as const, name: 'Xverse', icon: '🔷', description: 'Popular Stacks wallet' },
-    { id: 'hiro' as const, name: 'Hiro Wallet', icon: '🔶', description: 'Official Stacks wallet' },
-    { id: 'leather' as const, name: 'Leather', icon: '🟫', description: 'Bitcoin-native wallet' },
+    {
+      id: 'xverse' as const,
+      name: 'Xverse',
+      icon: '🔷',
+      description: 'Popular Stacks wallet',
+    },
+    {
+      id: 'hiro' as const,
+      name: 'Hiro Wallet',
+      icon: '🔶',
+      description: 'Official Stacks wallet',
+    },
+    {
+      id: 'leather' as const,
+      name: 'Leather',
+      icon: '🟫',
+      description: 'Bitcoin-native wallet',
+    },
   ];
 
   return (
@@ -158,7 +200,9 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
                   <span className="text-2xl">{wallet.icon}</span>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-900">{wallet.name}</p>
-                    <p className="text-sm text-gray-500">{wallet.description}</p>
+                    <p className="text-sm text-gray-500">
+                      {wallet.description}
+                    </p>
                   </div>
                   <ExternalLink className="w-4 h-4 text-gray-400" />
                 </div>
@@ -170,7 +214,9 @@ export default function QRCodeDisplay({ onBack, onClose, preferredWallet }: QRCo
 
       {/* Connection URI Section */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Connection URI</label>
+        <label className="text-sm font-medium text-gray-700">
+          Connection URI
+        </label>
         <div className="flex items-center space-x-2">
           <input
             type="text"

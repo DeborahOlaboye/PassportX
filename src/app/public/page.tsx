@@ -1,5 +1,5 @@
-import Link from 'next/link'
-import { Search, TrendingUp, Users, Award } from 'lucide-react'
+import Link from 'next/link';
+import { Search, TrendingUp, Users, Award } from 'lucide-react';
 
 // Mock data for featured passports
 const featuredPassports = [
@@ -9,7 +9,7 @@ const featuredPassports = [
     badgeCount: 4,
     communities: 3,
     recentBadge: 'JavaScript Expert',
-    avatar: 'AD'
+    avatar: 'AD',
   },
   {
     userId: 'user456',
@@ -17,7 +17,7 @@ const featuredPassports = [
     badgeCount: 7,
     communities: 2,
     recentBadge: 'UI/UX Master',
-    avatar: 'SD'
+    avatar: 'SD',
   },
   {
     userId: 'user789',
@@ -25,16 +25,16 @@ const featuredPassports = [
     badgeCount: 12,
     communities: 5,
     recentBadge: 'Smart Contract Auditor',
-    avatar: 'MB'
-  }
-]
+    avatar: 'MB',
+  },
+];
 
 const trendingCommunities = [
   { name: 'Open Code Guild', members: 1250, badges: 15 },
   { name: 'Web3 Events', members: 890, badges: 8 },
   { name: 'DevDAO', members: 2100, badges: 22 },
-  { name: 'Design Collective', members: 650, badges: 12 }
-]
+  { name: 'Design Collective', members: 650, badges: 12 },
+];
 
 export default function ExplorePage() {
   return (
@@ -44,7 +44,8 @@ export default function ExplorePage() {
           Explore PassportX
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Discover amazing achievements from our community members and find inspiration for your own journey
+          Discover amazing achievements from our community members and find
+          inspiration for your own journey
         </p>
       </div>
 
@@ -65,11 +66,13 @@ export default function ExplorePage() {
         <div className="lg:col-span-2">
           <div className="flex items-center space-x-2 mb-6">
             <TrendingUp className="w-5 h-5 text-primary-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Featured Passports</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Featured Passports
+            </h2>
           </div>
-          
+
           <div className="space-y-4">
-            {featuredPassports.map(passport => (
+            {featuredPassports.map((passport) => (
               <Link
                 key={passport.userId}
                 href={`/public/passport/${passport.userId}`}
@@ -101,18 +104,18 @@ export default function ExplorePage() {
               </Link>
             ))}
           </div>
-          
+
           <div className="text-center mt-8">
-            <button className="btn-secondary">
-              Load More Passports
-            </button>
+            <button className="btn-secondary">Load More Passports</button>
           </div>
         </div>
 
         {/* Trending Communities */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Trending Communities</h2>
-          
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Trending Communities
+          </h2>
+
           <div className="space-y-4">
             {trendingCommunities.map((community, index) => (
               <div key={community.name} className="card">
@@ -120,13 +123,17 @@ export default function ExplorePage() {
                   <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-bold text-sm">
                     #{index + 1}
                   </div>
-                  <h3 className="font-semibold text-gray-900">{community.name}</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    {community.name}
+                  </h3>
                 </div>
-                
+
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Members</span>
-                    <span className="font-medium">{community.members.toLocaleString()}</span>
+                    <span className="font-medium">
+                      {community.members.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Badge Types</span>
@@ -136,14 +143,17 @@ export default function ExplorePage() {
               </div>
             ))}
           </div>
-          
+
           <div className="mt-6">
-            <Link href="/admin" className="w-full btn-primary text-center block">
+            <Link
+              href="/admin"
+              className="w-full btn-primary text-center block"
+            >
               Create Your Community
             </Link>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

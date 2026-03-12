@@ -1,20 +1,29 @@
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import ErrorBoundary from './ErrorBoundary'
-import { WalletErrorFallback } from './FallbackUI'
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import ErrorBoundary from './ErrorBoundary';
+import { WalletErrorFallback } from './FallbackUI';
 
 const WalletConnect = dynamic(() => import('./WalletConnect'), {
   ssr: false,
-  loading: () => <div className="h-10 w-32 animate-pulse bg-gray-200 rounded-lg" />
-})
+  loading: () => (
+    <div className="h-10 w-32 animate-pulse bg-gray-200 rounded-lg" />
+  ),
+});
 const MobileMenu = dynamic(() => import('./MobileMenu'), {
   ssr: false,
-  loading: () => <div className="h-10 w-10 animate-pulse bg-gray-200 rounded-lg" />
-})
-const NetworkSelector = dynamic(() => import('./NetworkSelector').then(mod => mod.NetworkSelector), {
-  ssr: false,
-  loading: () => <div className="h-8 w-24 animate-pulse bg-gray-200 rounded-lg" />
-})
+  loading: () => (
+    <div className="h-10 w-10 animate-pulse bg-gray-200 rounded-lg" />
+  ),
+});
+const NetworkSelector = dynamic(
+  () => import('./NetworkSelector').then((mod) => mod.NetworkSelector),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-8 w-24 animate-pulse bg-gray-200 rounded-lg" />
+    ),
+  }
+);
 
 export default function Header() {
   return (
@@ -25,12 +34,18 @@ export default function Header() {
             <span className="text-2xl">🌍</span>
             <span className="text-xl font-bold text-gray-900">PassportX</span>
           </Link>
-          
+
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/passport" className="text-gray-600 hover:text-gray-900">
+            <Link
+              href="/passport"
+              className="text-gray-600 hover:text-gray-900"
+            >
               My Passport
             </Link>
-            <Link href="/transactions" className="text-gray-600 hover:text-gray-900">
+            <Link
+              href="/transactions"
+              className="text-gray-600 hover:text-gray-900"
+            >
               Transactions
             </Link>
             <Link href="/sign" className="text-gray-600 hover:text-gray-900">
@@ -46,29 +61,43 @@ export default function Header() {
               Explore
             </Link>
           </nav>
-          
+
           <div className="flex items-center space-x-4">
-            <ErrorBoundary fallback={<div className="text-xs text-red-500">Network Error</div>}>
+            <ErrorBoundary
+              fallback={
+                <div className="text-xs text-red-500">Network Error</div>
+              }
+            >
               <NetworkSelector variant="minimal" />
             </ErrorBoundary>
             <div className="hidden sm:block">
-              <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+              <ErrorBoundary
+                fallback={(error, reset) => (
+                  <WalletErrorFallback error={error} reset={reset} />
+                )}
+              >
                 <WalletConnect />
               </ErrorBoundary>
             </div>
-            <ErrorBoundary fallback={<div className="p-2 text-red-500">Menu Error</div>}>
+            <ErrorBoundary
+              fallback={<div className="p-2 text-red-500">Menu Error</div>}
+            >
               <MobileMenu />
             </ErrorBoundary>
           </div>
         </div>
-        
+
         {/* Mobile wallet connect */}
         <div className="sm:hidden mt-4 pt-4 border-t">
-          <ErrorBoundary fallback={(error, reset) => <WalletErrorFallback error={error} reset={reset} />}>
+          <ErrorBoundary
+            fallback={(error, reset) => (
+              <WalletErrorFallback error={error} reset={reset} />
+            )}
+          >
             <WalletConnect />
           </ErrorBoundary>
         </div>
       </div>
     </header>
-  )
+  );
 }

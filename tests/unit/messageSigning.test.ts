@@ -2,13 +2,22 @@
  * Unit tests for message signing and verification.
  */
 
-import { createSignaturePayload, formatMessageForSigning } from '../../src/utils/messageSigning';
-import { verifySignature, isSignatureExpired } from '../../src/utils/signatureVerification';
+import {
+  createSignaturePayload,
+  formatMessageForSigning,
+} from '../../src/utils/messageSigning';
+import {
+  verifySignature,
+  isSignatureExpired,
+} from '../../src/utils/signatureVerification';
 import { SignedMessage } from '../../src/utils/signatureVerification';
 
 describe('Message signing and verification', () => {
   it('should create signature payload with domain and timestamp', () => {
-    const payload = createSignaturePayload({ message: 'test', domain: 'example.com' });
+    const payload = createSignaturePayload({
+      message: 'test',
+      domain: 'example.com',
+    });
     expect(payload.message).toBe('test');
     expect(payload.domain).toBe('example.com');
     expect(payload.timestamp).toBeGreaterThan(0);
@@ -25,7 +34,7 @@ describe('Message signing and verification', () => {
     const signed: SignedMessage = {
       payload: createSignaturePayload({ message: 'test' }),
       signature: 'abc123def456',
-      account: 'ST1234567890'
+      account: 'ST1234567890',
     };
     const result = verifySignature(signed);
     expect(result.valid).toBe(true);
@@ -35,7 +44,7 @@ describe('Message signing and verification', () => {
     const signed: SignedMessage = {
       payload: createSignaturePayload({ message: 'test' }),
       signature: '',
-      account: 'ST1234567890'
+      account: 'ST1234567890',
     };
     const result = verifySignature(signed);
     expect(result.valid).toBe(false);
@@ -48,7 +57,7 @@ describe('Message signing and verification', () => {
     const signed: SignedMessage = {
       payload,
       signature: 'abc123',
-      account: 'ST1234567890'
+      account: 'ST1234567890',
     };
     const expired = isSignatureExpired(signed, 1000 * 60 * 5); // 5 minute window
     expect(expired).toBe(true);

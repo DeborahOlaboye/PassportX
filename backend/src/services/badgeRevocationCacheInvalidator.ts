@@ -21,7 +21,9 @@ export interface InvalidationMetrics {
 export class BadgeRevocationCacheInvalidator extends EventEmitter {
   private invalidatedBadges: Map<string, RevocationInvalidation> = new Map();
   private userBadgeCache: Map<string, Set<string>> = new Map();
-  private invalidationCallbacks: ((invalidation: RevocationInvalidation) => Promise<void>)[] = [];
+  private invalidationCallbacks: ((
+    invalidation: RevocationInvalidation
+  ) => Promise<void>)[] = [];
   private logger: any;
   private metrics: InvalidationMetrics = {
     totalInvalidations: 0,
@@ -31,7 +33,7 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
     uniqueUsersAffected: 0,
     averageInvalidationTime: 0,
     cacheHits: 0,
-    cacheMisses: 0
+    cacheMisses: 0,
   };
   private invalidationTimes: number[] = [];
   private invalidationBatch: RevocationInvalidation[] = [];
@@ -46,19 +48,29 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[RevocationCacheInvalidator] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[RevocationCacheInvalidator] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[RevocationCacheInvalidator] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[RevocationCacheInvalidator] ${msg}`, ...args)
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[RevocationCacheInvalidator] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[RevocationCacheInvalidator] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[RevocationCacheInvalidator] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[RevocationCacheInvalidator] ${msg}`, ...args),
     };
   }
 
-  registerInvalidationCallback(callback: (invalidation: RevocationInvalidation) => Promise<void>): void {
+  registerInvalidationCallback(
+    callback: (invalidation: RevocationInvalidation) => Promise<void>
+  ): void {
     this.invalidationCallbacks.push(callback);
     this.logger.debug('Invalidation callback registered');
   }
 
-  async invalidateBadgeCache(badgeId: string, userId: string, revocationType: 'soft' | 'hard'): Promise<void> {
+  async invalidateBadgeCache(
+    badgeId: string,
+    userId: string,
+    revocationType: 'soft' | 'hard'
+  ): Promise<void> {
     const startTime = Date.now();
 
     try {
@@ -66,7 +78,7 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
         badgeId,
         userId,
         timestamp: Date.now(),
-        revocationType
+        revocationType,
       };
 
       this.invalidationBatch.push(invalidation);
@@ -74,7 +86,10 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
       if (this.invalidationBatch.length >= this.BATCH_SIZE) {
         await this.processBatch();
       } else if (!this.batchTimer) {
-        this.batchTimer = setTimeout(() => this.processBatch(), this.BATCH_TIMEOUT);
+        this.batchTimer = setTimeout(
+          () => this.processBatch(),
+          this.BATCH_TIMEOUT
+        );
       }
 
       const processingTime = Date.now() - startTime;
@@ -88,7 +103,11 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
       }
 
       this.updateAverageInvalidationTime();
-      this.logger.debug('Badge cache invalidation queued', { badgeId, userId, revocationType });
+      this.logger.debug('Badge cache invalidation queued', {
+        badgeId,
+        userId,
+        revocationType,
+      });
     } catch (error) {
       this.logger.error('Error invalidating badge cache', { error });
       throw error;
@@ -96,20 +115,33 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
   }
 
   async invalidateBatchBadges(
-    invalidations: Array<{ badgeId: string; userId: string; revocationType: 'soft' | 'hard' }>
+    invalidations: Array<{
+      badgeId: string;
+      userId: string;
+      revocationType: 'soft' | 'hard';
+    }>
   ): Promise<void> {
     try {
       for (const inv of invalidations) {
-        await this.invalidateBadgeCache(inv.badgeId, inv.userId, inv.revocationType);
+        await this.invalidateBadgeCache(
+          inv.badgeId,
+          inv.userId,
+          inv.revocationType
+        );
       }
-      this.logger.info(`Batch invalidation queued for ${invalidations.length} badges`);
+      this.logger.info(
+        `Batch invalidation queued for ${invalidations.length} badges`
+      );
     } catch (error) {
       this.logger.error('Error in batch invalidation', { error });
       throw error;
     }
   }
 
-  async invalidateUserBadgeCache(userId: string, revocationType: 'soft' | 'hard'): Promise<void> {
+  async invalidateUserBadgeCache(
+    userId: string,
+    revocationType: 'soft' | 'hard'
+  ): Promise<void> {
     try {
       const userBadges = this.userBadgeCache.get(userId) || new Set();
 
@@ -117,7 +149,9 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
         await this.invalidateBadgeCache(badgeId, userId, revocationType);
       }
 
-      this.logger.info(`Invalidated all badges for user ${userId}`, { count: userBadges.size });
+      this.logger.info(`Invalidated all badges for user ${userId}`, {
+        count: userBadges.size,
+      });
     } catch (error) {
       this.logger.error('Error invalidating user badge cache', { error });
       throw error;
@@ -141,7 +175,8 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
         const cacheKey = `${invalidation.userId}:${invalidation.badgeId}`;
         this.invalidatedBadges.set(cacheKey, invalidation);
 
-        const userBadges = this.userBadgeCache.get(invalidation.userId) || new Set();
+        const userBadges =
+          this.userBadgeCache.get(invalidation.userId) || new Set();
         userBadges.delete(invalidation.badgeId);
         this.userBadgeCache.set(invalidation.userId, userBadges);
 
@@ -151,7 +186,10 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
           try {
             await callback(invalidation);
           } catch (error) {
-            this.logger.error('Error in invalidation callback', { error, badgeId: invalidation.badgeId });
+            this.logger.error('Error in invalidation callback', {
+              error,
+              badgeId: invalidation.badgeId,
+            });
           }
         }
       }
@@ -165,7 +203,10 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
     }
 
     if (this.invalidationBatch.length > 0) {
-      this.batchTimer = setTimeout(() => this.processBatch(), this.BATCH_TIMEOUT);
+      this.batchTimer = setTimeout(
+        () => this.processBatch(),
+        this.BATCH_TIMEOUT
+      );
     }
   }
 
@@ -208,7 +249,8 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
   private updateAverageInvalidationTime(): void {
     if (this.invalidationTimes.length > 0) {
       const sum = this.invalidationTimes.reduce((a, b) => a + b, 0);
-      this.metrics.averageInvalidationTime = sum / this.invalidationTimes.length;
+      this.metrics.averageInvalidationTime =
+        sum / this.invalidationTimes.length;
 
       if (this.invalidationTimes.length > 1000) {
         this.invalidationTimes = this.invalidationTimes.slice(-1000);
@@ -220,20 +262,25 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
     return {
       ...this.metrics,
       uniqueBadgesInvalidated: this.invalidatedBadges.size,
-      uniqueUsersAffected: this.userBadgeCache.size
+      uniqueUsersAffected: this.userBadgeCache.size,
     };
   }
 
   getDetailedMetrics() {
-    const hitRate = this.metrics.cacheHits + this.metrics.cacheMisses > 0
-      ? ((this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses)) * 100).toFixed(2) + '%'
-      : '0%';
+    const hitRate =
+      this.metrics.cacheHits + this.metrics.cacheMisses > 0
+        ? (
+            (this.metrics.cacheHits /
+              (this.metrics.cacheHits + this.metrics.cacheMisses)) *
+            100
+          ).toFixed(2) + '%'
+        : '0%';
 
     return {
       ...this.getMetrics(),
       hitRate,
       cacheHitMissRatio: `${this.metrics.cacheHits}:${this.metrics.cacheMisses}`,
-      pendingInvalidations: this.invalidationBatch.length
+      pendingInvalidations: this.invalidationBatch.length,
     };
   }
 
@@ -246,7 +293,7 @@ export class BadgeRevocationCacheInvalidator extends EventEmitter {
       uniqueUsersAffected: 0,
       averageInvalidationTime: 0,
       cacheHits: 0,
-      cacheMisses: 0
+      cacheMisses: 0,
     };
     this.invalidationTimes = [];
     this.logger.info('Invalidation metrics reset');

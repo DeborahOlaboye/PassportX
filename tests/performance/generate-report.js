@@ -36,17 +36,29 @@ const html = `
   <h2>HTTP Request Duration</h2>
   <table>
     <tr><th>Metric</th><th>Value</th></tr>
-    <tr><td>Average</td><td>${metrics.http_req_duration?.avg?.toFixed(2) || 'N/A'} ms</td></tr>
-    <tr><td>P95</td><td>${metrics.http_req_duration?.['p(95)']?.toFixed(2) || 'N/A'} ms</td></tr>
-    <tr><td>P99</td><td>${metrics.http_req_duration?.['p(99)']?.toFixed(2) || 'N/A'} ms</td></tr>
+    <tr><td>Average</td><td>${
+      metrics.http_req_duration?.avg?.toFixed(2) || 'N/A'
+    } ms</td></tr>
+    <tr><td>P95</td><td>${
+      metrics.http_req_duration?.['p(95)']?.toFixed(2) || 'N/A'
+    } ms</td></tr>
+    <tr><td>P99</td><td>${
+      metrics.http_req_duration?.['p(99)']?.toFixed(2) || 'N/A'
+    } ms</td></tr>
   </table>
   
   <h2>Request Statistics</h2>
   <table>
     <tr><th>Metric</th><th>Value</th></tr>
-    <tr><td>Total Requests</td><td>${metrics.http_reqs?.count || 'N/A'}</td></tr>
-    <tr><td>Request Rate</td><td>${metrics.http_reqs?.rate?.toFixed(2) || 'N/A'} req/s</td></tr>
-    <tr><td>Failed Requests</td><td class="${(metrics.http_req_failed?.rate || 0) > 0.1 ? 'fail' : 'pass'}">${((metrics.http_req_failed?.rate || 0) * 100).toFixed(2)}%</td></tr>
+    <tr><td>Total Requests</td><td>${
+      metrics.http_reqs?.count || 'N/A'
+    }</td></tr>
+    <tr><td>Request Rate</td><td>${
+      metrics.http_reqs?.rate?.toFixed(2) || 'N/A'
+    } req/s</td></tr>
+    <tr><td>Failed Requests</td><td class="${
+      (metrics.http_req_failed?.rate || 0) > 0.1 ? 'fail' : 'pass'
+    }">${((metrics.http_req_failed?.rate || 0) * 100).toFixed(2)}%</td></tr>
   </table>
 </body>
 </html>

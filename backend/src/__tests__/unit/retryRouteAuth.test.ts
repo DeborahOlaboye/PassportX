@@ -11,7 +11,9 @@ jest.mock('../../utils/logger', () => ({
   default: { error: jest.fn(), info: jest.fn(), debug: jest.fn() },
 }));
 
-const mockProcessQueue = jest.fn().mockResolvedValue({ processed: 0, failed: 0 });
+const mockProcessQueue = jest
+  .fn()
+  .mockResolvedValue({ processed: 0, failed: 0 });
 const mockRetryNow = jest.fn().mockResolvedValue(undefined);
 const mockCancelRetry = jest.fn().mockResolvedValue(undefined);
 const mockCleanupOldItems = jest.fn().mockResolvedValue(0);
@@ -44,7 +46,8 @@ jest.mock('../../services/DeadLetterQueueService', () => ({
     recoverItems: (f: any) => mockRecoverItems(f),
     archiveOldItems: (days: number) => mockArchiveOldItems(days),
     getErrorAnalysis: () => mockGetErrorAnalysis(),
-    getItemsForManualReview: (limit: number) => mockGetItemsForManualReview(limit),
+    getItemsForManualReview: (limit: number) =>
+      mockGetItemsForManualReview(limit),
   },
 }));
 
@@ -52,7 +55,8 @@ jest.mock('../../services/RetryMetricsService', () => ({
   default: {
     getMetrics: () => mockGetMetrics(),
     getSuccessRateTimeSeries: (h: number) => mockGetSuccessRateTimeSeries(h),
-    getErrorDistributionTimeSeries: (h: number) => mockGetErrorDistributionTimeSeries(h),
+    getErrorDistributionTimeSeries: (h: number) =>
+      mockGetErrorDistributionTimeSeries(h),
     getTopFailingItems: (l: number) => mockGetTopFailingItems(l),
     exportMetrics: () => mockGetMetrics(),
   },
@@ -67,7 +71,10 @@ jest.mock('../../services/ErrorMonitoringService', () => ({
 }));
 
 jest.mock('../../services/CircuitBreakerService', () => ({
-  default: { getAllStats: () => mockGetAllStats(), getBreaker: () => ({ forceClose: jest.fn() }) },
+  default: {
+    getAllStats: () => mockGetAllStats(),
+    getBreaker: () => ({ forceClose: jest.fn() }),
+  },
 }));
 
 let authNextFn: jest.Mock;

@@ -12,10 +12,10 @@ export async function POST(req: Request) {
   try {
     const { db } = await connectToDatabase();
     const analyticsCollection = db.collection('analytics_events');
-    
+
     // Parse the raw body
     const body = await req.json();
-    
+
     // Basic validation
     if (!body.eventName || !body.timestamp) {
       return createErrorResponse('Invalid event data', null, { status: 400 });

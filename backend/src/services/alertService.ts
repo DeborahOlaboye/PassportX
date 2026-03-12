@@ -1,41 +1,46 @@
-import Alert from '../models/Alert'
-import { IAlert } from '../types'
+import Alert from '../models/Alert';
+import { IAlert } from '../types';
 
 export interface CreateAlertOptions {
-  type: 'performance' | 'connection' | 'failed_event' | 'anomaly'
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  message: string
-  details?: any
+  type: 'performance' | 'connection' | 'failed_event' | 'anomaly';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  details?: any;
 }
 
 export interface AlertThresholds {
-  performanceThreshold?: number
-  failureRateThreshold?: number
-  connectionTimeoutThreshold?: number
-  maxConsecutiveFailures?: number
+  performanceThreshold?: number;
+  failureRateThreshold?: number;
+  connectionTimeoutThreshold?: number;
+  maxConsecutiveFailures?: number;
 }
 
 export class AlertService {
-  private logger: any
-  private thresholds: AlertThresholds
+  private logger: any;
+  private thresholds: AlertThresholds;
 
   constructor(thresholds?: AlertThresholds, logger?: any) {
-    this.logger = logger || this.getDefaultLogger()
+    this.logger = logger || this.getDefaultLogger();
     this.thresholds = {
       performanceThreshold: thresholds?.performanceThreshold || 5000,
       failureRateThreshold: thresholds?.failureRateThreshold || 10,
-      connectionTimeoutThreshold: thresholds?.connectionTimeoutThreshold || 30000,
-      maxConsecutiveFailures: thresholds?.maxConsecutiveFailures || 5
-    }
+      connectionTimeoutThreshold:
+        thresholds?.connectionTimeoutThreshold || 30000,
+      maxConsecutiveFailures: thresholds?.maxConsecutiveFailures || 5,
+    };
   }
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) => console.debug(`[AlertService] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) => console.info(`[AlertService] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) => console.warn(`[AlertService] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) => console.error(`[AlertService] ${msg}`, ...args)
-    }
+      debug: (msg: string, ...args: any[]) =>
+        console.debug(`[AlertService] ${msg}`, ...args),
+      info: (msg: string, ...args: any[]) =>
+        console.info(`[AlertService] ${msg}`, ...args),
+      warn: (msg: string, ...args: any[]) =>
+        console.warn(`[AlertService] ${msg}`, ...args),
+      error: (msg: string, ...args: any[]) =>
+        console.error(`[AlertService] ${msg}`, ...args),
+    };
   }
 
   async createAlert(options: CreateAlertOptions): Promise<IAlert | null> {
@@ -46,19 +51,19 @@ export class AlertService {
         message: options.message,
         details: options.details,
         resolved: false,
-        createdAt: new Date()
-      })
+        createdAt: new Date(),
+      });
 
       this.logger.warn(`Alert created: ${options.type} - ${options.severity}`, {
-        message: options.message
-      })
+        message: options.message,
+      });
 
-      return alert
+      return alert;
     } catch (error) {
       this.logger.error('Failed to create alert', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return null
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
   }
 
@@ -67,23 +72,27 @@ export class AlertService {
     eventsFailed: number,
     eventsProcessed: number
   ): Promise<boolean> {
-    let anomalyDetected = false
+    let anomalyDetected = false;
 
-    if (averageProcessingTime > (this.thresholds.performanceThreshold || 5000)) {
+    if (
+      averageProcessingTime > (this.thresholds.performanceThreshold || 5000)
+    ) {
       await this.createAlert({
         type: 'performance',
         severity: 'high',
-        message: `High event processing time detected: ${averageProcessingTime.toFixed(2)}ms`,
+        message: `High event processing time detected: ${averageProcessingTime.toFixed(
+          2
+        )}ms`,
         details: {
           averageProcessingTime,
-          threshold: this.thresholds.performanceThreshold
-        }
-      })
-      anomalyDetected = true
+          threshold: this.thresholds.performanceThreshold,
+        },
+      });
+      anomalyDetected = true;
     }
 
     if (eventsProcessed > 0) {
-      const failureRate = (eventsFailed / eventsProcessed) * 100
+      const failureRate = (eventsFailed / eventsProcessed) * 100;
       if (failureRate > (this.thresholds.failureRateThreshold || 10)) {
         await this.createAlert({
           type: 'anomaly',
@@ -93,14 +102,14 @@ export class AlertService {
             failureRate,
             eventsFailed,
             eventsProcessed,
-            threshold: this.thresholds.failureRateThreshold
-          }
-        })
-        anomalyDetected = true
+            threshold: this.thresholds.failureRateThreshold,
+          },
+        });
+        anomalyDetected = true;
       }
     }
 
-    return anomalyDetected
+    return anomalyDetected;
   }
 
   async checkConnectionAnomaly(
@@ -115,14 +124,14 @@ export class AlertService {
           message: `Connection lost with ${failedAttempts} consecutive failures`,
           details: {
             failedAttempts,
-            threshold: this.thresholds.maxConsecutiveFailures
-          }
-        })
-        return true
+            threshold: this.thresholds.maxConsecutiveFailures,
+          },
+        });
+        return true;
       }
     }
 
-    return false
+    return false;
   }
 
   async resolveAlert(alertId: string): Promise<IAlert | null> {
@@ -131,22 +140,22 @@ export class AlertService {
         alertId,
         {
           resolved: true,
-          resolvedAt: new Date()
+          resolvedAt: new Date(),
         },
         { new: true }
-      )
+      );
 
       if (alert) {
-        this.logger.info('Alert resolved', { alertId })
+        this.logger.info('Alert resolved', { alertId });
       }
 
-      return alert
+      return alert;
     } catch (error) {
       this.logger.error('Failed to resolve alert', {
         alertId,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return null
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
   }
 
@@ -154,12 +163,12 @@ export class AlertService {
     try {
       return await Alert.find({ resolved: false })
         .sort({ createdAt: -1 })
-        .limit(limit)
+        .limit(limit);
     } catch (error) {
       this.logger.error('Failed to get unresolved alerts', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return []
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
   }
 
@@ -170,13 +179,13 @@ export class AlertService {
     try {
       return await Alert.find({ severity, resolved: false })
         .sort({ createdAt: -1 })
-        .limit(limit)
+        .limit(limit);
     } catch (error) {
       this.logger.error('Failed to get alerts by severity', {
         severity,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return []
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
   }
 
@@ -187,73 +196,76 @@ export class AlertService {
     try {
       return await Alert.find({ type, resolved: false })
         .sort({ createdAt: -1 })
-        .limit(limit)
+        .limit(limit);
     } catch (error) {
       this.logger.error('Failed to get alerts by type', {
         type,
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return []
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
   }
 
-  async getRecentAlerts(hours: number = 1, limit: number = 50): Promise<IAlert[]> {
+  async getRecentAlerts(
+    hours: number = 1,
+    limit: number = 50
+  ): Promise<IAlert[]> {
     try {
-      const startTime = new Date()
-      startTime.setHours(startTime.getHours() - hours)
+      const startTime = new Date();
+      startTime.setHours(startTime.getHours() - hours);
 
       return await Alert.find({
-        createdAt: { $gte: startTime }
+        createdAt: { $gte: startTime },
       })
         .sort({ createdAt: -1 })
-        .limit(limit)
+        .limit(limit);
     } catch (error) {
       this.logger.error('Failed to get recent alerts', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return []
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
   }
 
   async getCriticalAlerts(): Promise<IAlert[]> {
-    return this.getAlertsBySeverity('critical', 100)
+    return this.getAlertsBySeverity('critical', 100);
   }
 
   async getAlertCount(resolved?: boolean): Promise<number> {
     try {
-      const query = resolved !== undefined ? { resolved } : {}
-      return await Alert.countDocuments(query)
+      const query = resolved !== undefined ? { resolved } : {};
+      return await Alert.countDocuments(query);
     } catch (error) {
       this.logger.error('Failed to get alert count', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return 0
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return 0;
     }
   }
 
   async clearResolvedAlerts(daysOld: number = 7): Promise<number> {
     try {
-      const cutoffDate = new Date()
-      cutoffDate.setDate(cutoffDate.getDate() - daysOld)
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
       const result = await Alert.deleteMany({
         resolved: true,
-        resolvedAt: { $lt: cutoffDate }
-      })
+        resolvedAt: { $lt: cutoffDate },
+      });
 
       this.logger.info('Resolved alerts cleared', {
         deletedCount: result.deletedCount,
-        cutoffDate
-      })
+        cutoffDate,
+      });
 
-      return result.deletedCount || 0
+      return result.deletedCount || 0;
     } catch (error) {
       this.logger.error('Failed to clear resolved alerts', {
-        error: error instanceof Error ? error.message : String(error)
-      })
-      return 0
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return 0;
     }
   }
 }
 
-export default AlertService
+export default AlertService;

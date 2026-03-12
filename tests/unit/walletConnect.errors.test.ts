@@ -38,7 +38,7 @@ describe('WalletConnect error handling', () => {
       if (attempts < 2) throw new Error('Transient failure');
       return { success: true };
     };
-    
+
     try {
       await operation();
     } catch (e) {
