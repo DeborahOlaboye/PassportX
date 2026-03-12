@@ -36,5 +36,5 @@ export interface BadgeTemplate {
   category: number;
   level: number;
   icon?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
