@@ -6,8 +6,6 @@ import {
   Smartphone,
   Bell,
   Shield,
-  Clock,
-  Wifi,
   Save,
   RotateCcw,
 } from 'lucide-react';

@@ -12,7 +12,6 @@ import {
 import {
   createStacksWalletConfig,
   createWalletConnectUri,
-  getMobileWalletDeepLinks,
   openMobileWallet,
 } from '@/utils/stacksWalletConnect';
 import {
@@ -35,9 +34,9 @@ export default function QRCodeDisplay({
   const [qrCode, setQrCode] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [sessionUri, setSessionUri] = useState('');
-  const [sessionTopic, setSessionTopic] = useState('');
+  const [_sessionTopic, setSessionTopic] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedWallet, setSelectedWallet] = useState<
+  const [_selectedWallet, setSelectedWallet] = useState<
     'xverse' | 'hiro' | 'leather' | null
   >(preferredWallet || null);
   const qrCodeRef = useRef<HTMLImageElement>(null);

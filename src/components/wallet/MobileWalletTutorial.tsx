@@ -212,7 +212,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 export default function MobileWalletTutorial() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [_progress, setProgress] = useState(0);
 
   const currentTutorialStep = TUTORIAL_STEPS[currentStep];
   const totalSteps = TUTORIAL_STEPS.length;

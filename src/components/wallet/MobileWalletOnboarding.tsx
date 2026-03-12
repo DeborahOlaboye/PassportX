@@ -1,7 +1,7 @@
 'use client';
 import ErrorBoundary from '../ErrorBoundary';
 import FallbackUI from '../FallbackUI';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Smartphone,
   QrCode,
@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Download,
-  ExternalLink,
   Star,
   Clock,
 } from 'lucide-react';
@@ -432,7 +431,7 @@ function MobileWalletOnboardingInner() {
         </div>
 
         <div className="flex justify-between text-sm text-gray-600">
-          {steps.map((step, index) => (
+          {steps.map((step) => (
             <div key={step.id} className="text-center max-w-24">
               <div className="font-medium">{step.title}</div>
               <div className="text-xs">{step.estimatedTime}</div>

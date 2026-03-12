@@ -145,7 +145,7 @@ export default function MobileWalletPerformanceMonitor() {
     setIsLoading(false);
   };
 
-  const getStatusColor = (status: PerformanceMetric['status']) => {
+  const _getStatusColor = (status: PerformanceMetric['status']) => {
     switch (status) {
       case 'good':
         return 'text-green-600';

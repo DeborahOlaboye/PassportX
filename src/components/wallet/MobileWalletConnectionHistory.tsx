@@ -6,7 +6,6 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Smartphone,
   Trash2,
   Download,
   Filter,
@@ -118,7 +117,7 @@ const MOCK_HISTORY: ConnectionRecord[] = [
 export default function MobileWalletConnectionHistory({
   onClearHistory,
   onExportHistory,
-  maxRecords = 50,
+  maxRecords: _maxRecords = 50,
 }: MobileWalletConnectionHistoryProps) {
   const [history, setHistory] = useState<ConnectionRecord[]>(MOCK_HISTORY);
   const [filter, setFilter] = useState<'all' | 'success' | 'failed'>('all');
@@ -129,10 +128,12 @@ export default function MobileWalletConnectionHistory({
     const stored = localStorage.getItem('mobileWalletHistory');
     if (stored) {
       try {
-        const parsed = JSON.parse(stored).map((record: any) => ({
-          ...record,
-          timestamp: new Date(record.timestamp),
-        }));
+        const parsed = JSON.parse(stored).map(
+          (record: ConnectionRecord & { timestamp: string }) => ({
+            ...record,
+            timestamp: new Date(record.timestamp),
+          })
+        );
         setHistory(parsed);
       } catch (error) {
         console.error('Failed to load wallet history:', error);

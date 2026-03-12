@@ -2,12 +2,11 @@
 import ErrorBoundary from '../ErrorBoundary';
 import { WalletErrorFallback } from '../FallbackUI';
 import React, { useState, useEffect } from 'react';
-import { X, Smartphone, Monitor, Copy, Check } from 'lucide-react';
+import { X, Smartphone, Monitor } from 'lucide-react';
 import QRCodeDisplay from './QRCodeDisplay';
 import {
   initiateMobileWalletConnection,
   waitForMobileWalletResponse,
-  MobileWalletResponse,
 } from '@/utils/mobileWalletResponseHandler';
 import { openMobileWallet } from '@/utils/stacksWalletConnect';
 import {
@@ -196,7 +195,7 @@ function MobileWalletSelectorInner({ onClose }: MobileWalletSelectorProps) {
     );
   };
 
-  const handleCopyUri = async (uri: string) => {
+  const _handleCopyUri = async (uri: string) => {
     try {
       await navigator.clipboard.writeText(uri);
       // Could add a toast notification here

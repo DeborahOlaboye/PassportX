@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   RefreshCw,
   AlertTriangle,
@@ -9,7 +9,6 @@ import {
   Smartphone,
   Wifi,
   Clock,
-  ArrowRight,
   Home,
   Settings,
 } from 'lucide-react';
@@ -151,7 +150,7 @@ export default function MobileWalletConnectionRecovery() {
 
     // Check network connectivity
     try {
-      const response = await fetch('https://www.google.com/favicon.ico', {
+      await fetch('https://www.google.com/favicon.ico', {
         method: 'HEAD',
         mode: 'no-cors',
       });
@@ -200,8 +199,7 @@ export default function MobileWalletConnectionRecovery() {
           // Test network connectivity
           const testResponse = await fetch('https://httpbin.org/status/200', {
             method: 'HEAD',
-            timeout: 5000,
-          } as any);
+          });
           return testResponse.ok;
 
         case 'update-wallet':
