@@ -27,14 +27,14 @@ if (process.env.NODE_ENV === 'development') {
   clientPromise = client.connect();
 }
 
-export async function connectToDatabase() {
+export async function connectToDatabase(): Promise<{ client: MongoClient; db: any }> {
   const client = await clientPromise;
   const db = client.db('passportx');
   return { client, db };
 }
 
 // Create indexes for better query performance
-export async function createIndexes() {
+export async function createIndexes(): Promise<void> {
   try {
     const { db } = await connectToDatabase();
     await db.collection('analytics_events').createIndex({ eventName: 1 });
