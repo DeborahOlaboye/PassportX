@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function ProfileSettingsPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const { theme, accentColor, updateThemePreferences } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -366,7 +366,10 @@ export default function ProfileSettingsPage() {
                             ...prev,
                             themePreferences: {
                               ...prev.themePreferences,
-                              mode: e.target.value as any,
+                              mode: e.target.value as
+                                | 'light'
+                                | 'dark'
+                                | 'system',
                             },
                           }))
                         }

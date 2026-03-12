@@ -3,7 +3,6 @@
 import { use, useEffect, useState } from 'react';
 import {
   User,
-  Mail,
   Globe,
   Github,
   Twitter,

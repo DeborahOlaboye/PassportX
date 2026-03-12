@@ -31,10 +31,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params: _params }: { params: { address: string } }
 ) {
   try {
-    const { address } = params;
     const body = await request.json();
     const cookie = request.headers.get('cookie');
     const authHeader = request.headers.get('authorization');

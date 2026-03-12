@@ -3,7 +3,7 @@ import { createErrorResponse } from '@/lib/error-response';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/badges/filters`, {
       method: 'GET',

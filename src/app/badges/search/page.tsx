@@ -145,6 +145,11 @@ export default function BadgeSearchPage() {
           />
         )}
 
+        {/* Error State */}
+        {fetchError && !isLoading && (
+          <div className="text-center py-8 text-red-600">{fetchError}</div>
+        )}
+
         {/* Loading State */}
         {isLoading && (
           <div className="flex justify-center items-center py-12">
