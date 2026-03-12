@@ -8,19 +8,30 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
-    // Disable all rules by default
+    // TypeScript strict rules
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-non-null-assertion': 'off',
-    'no-console': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { 
+      'argsIgnorePattern': '^_',
+      'varsIgnorePattern': '^_',
+      'ignoreRestSiblings': true
+    }],
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/explicit-function-return-type': ['error', {
+      'allowExpressions': true,
+      'allowTypedFunctionExpressions': true,
+      'allowHigherOrderFunctions': true
+    }],
+    '@typescript-eslint/explicit-module-boundary-types': 'error',
+    '@typescript-eslint/no-inferrable-types': 'off',
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     'react/no-unescaped-entities': 'off',
     '@next/next/no-img-element': 'off',
-    'react-hooks/exhaustive-deps': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
     'react/display-name': 'off',
     'react/prop-types': 'off',
-    'prefer-const': 'off',
-    'no-var': 'off',
+    'prefer-const': 'error',
+    'no-var': 'error',
   },
   env: {
     node: true,
