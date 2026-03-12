@@ -46,5 +46,10 @@ export const getTokenExpiryTime = (
   return Date.now() + durationMs;
 };
 
-const authUtils = { AuthToken, AuthSession, isTokenExpired, getTokenExpiryTime };
+const authUtils = {
+  AuthToken,
+  AuthSession,
+  isTokenExpired,
+  getTokenExpiryTime,
+};
 export default authUtils;
