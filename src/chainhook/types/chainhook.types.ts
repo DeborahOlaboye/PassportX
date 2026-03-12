@@ -37,7 +37,7 @@ export interface IChainhookEvent {
   };
   type: string;
   timestamp: number;
-  transactions: any[];
+  transactions: unknown[];
   metadata: {
     bitcoin_anchor_block_identifier: {
       index: number;
