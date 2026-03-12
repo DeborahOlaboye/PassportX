@@ -12,14 +12,14 @@ export enum ErrorCategory {
   EXTERNAL_API = 'EXTERNAL_API',
   USER_INPUT = 'USER_INPUT',
   SYSTEM = 'SYSTEM',
-  BUSINESS_LOGIC = 'BUSINESS_LOGIC'
+  BUSINESS_LOGIC = 'BUSINESS_LOGIC',
 }
 
 export enum ErrorSeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 export interface ErrorContext {
@@ -75,7 +75,7 @@ export class BasePassportXError extends Error implements PassportXError {
     this.code = code;
     this.context = {
       timestamp: Date.now(),
-      ...context
+      ...context,
     };
     this.isRetryable = isRetryable;
     this.userMessage = userMessage || this.getDefaultUserMessage();
@@ -119,7 +119,7 @@ export class BasePassportXError extends Error implements PassportXError {
       isRetryable: this.isRetryable,
       userMessage: this.userMessage,
       stackTrace: this.stackTrace,
-      originalError: this.originalError?.message
+      originalError: this.originalError?.message,
     };
   }
 }

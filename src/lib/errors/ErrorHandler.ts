@@ -3,12 +3,12 @@
  */
 
 import { logger } from '../logger';
-import { 
-  PassportXError, 
-  BasePassportXError, 
-  ErrorCategory, 
-  ErrorSeverity, 
-  ErrorContext 
+import {
+  PassportXError,
+  BasePassportXError,
+  ErrorCategory,
+  ErrorSeverity,
+  ErrorContext,
 } from './ErrorTypes';
 
 export interface ErrorReporter {
@@ -103,11 +103,17 @@ export class ErrorHandler {
     if (error.name === 'TypeError' || error.name === 'ReferenceError') {
       category = ErrorCategory.SYSTEM;
       severity = ErrorSeverity.HIGH;
-    } else if (error.message.includes('network') || error.message.includes('fetch')) {
+    } else if (
+      error.message.includes('network') ||
+      error.message.includes('fetch')
+    ) {
       category = ErrorCategory.NETWORK;
       severity = ErrorSeverity.MEDIUM;
       isRetryable = true;
-    } else if (error.message.includes('validation') || error.message.includes('invalid')) {
+    } else if (
+      error.message.includes('validation') ||
+      error.message.includes('invalid')
+    ) {
       category = ErrorCategory.VALIDATION;
       severity = ErrorSeverity.LOW;
     }
@@ -131,7 +137,8 @@ export class ErrorHandler {
     const enhancedContext: ErrorContext = {
       ...error.context,
       ...additionalContext,
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
+      userAgent:
+        typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
       url: typeof window !== 'undefined' ? window.location.href : undefined,
     };
 
@@ -157,7 +164,7 @@ export class ErrorHandler {
       severity: error.severity,
       context: error.context,
       isRetryable: error.isRetryable,
-      stackTrace: error.stackTrace
+      stackTrace: error.stackTrace,
     };
 
     switch (logLevel) {
@@ -189,23 +196,32 @@ export class ErrorHandler {
       category: error.category,
       severity: error.severity,
       code: error.code,
-      retryable: error.isRetryable.toString()
+      retryable: error.isRetryable.toString(),
     };
 
     this.metrics.increment('error.count', tags);
-    this.metrics.increment(`error.category.${error.category.toLowerCase()}`, tags);
-    this.metrics.increment(`error.severity.${error.severity.toLowerCase()}`, tags);
+    this.metrics.increment(
+      `error.category.${error.category.toLowerCase()}`,
+      tags
+    );
+    this.metrics.increment(
+      `error.severity.${error.severity.toLowerCase()}`,
+      tags
+    );
   }
 
   private async reportError(error: PassportXError): Promise<void> {
     // Only report high severity errors or critical errors
-    if (error.severity === ErrorSeverity.HIGH || error.severity === ErrorSeverity.CRITICAL) {
-      const reportPromises = this.reporters.map(reporter => 
-        reporter.report(error).catch(reportError => {
+    if (
+      error.severity === ErrorSeverity.HIGH ||
+      error.severity === ErrorSeverity.CRITICAL
+    ) {
+      const reportPromises = this.reporters.map((reporter) =>
+        reporter.report(error).catch((reportError) => {
           console.error('Failed to report error:', reportError);
         })
       );
-      
+
       await Promise.allSettled(reportPromises);
     }
   }
@@ -213,14 +229,14 @@ export class ErrorHandler {
   private trackErrorFrequency(error: PassportXError): void {
     const errorKey = `${error.category}:${error.code}`;
     const now = Date.now();
-    
+
     // Update error count
     const currentCount = this.errorCounts.get(errorKey) || 0;
     this.errorCounts.set(errorKey, currentCount + 1);
-    
+
     // Update last error time
     this.lastErrorTimes.set(errorKey, now);
-    
+
     // Check for error spikes (more than 10 errors of same type in 5 minutes)
     if (currentCount > 10) {
       const firstErrorTime = this.lastErrorTimes.get(errorKey) || now;
@@ -228,7 +244,7 @@ export class ErrorHandler {
         logger.warn('Error spike detected', {
           errorKey,
           count: currentCount,
-          timeWindow: now - firstErrorTime
+          timeWindow: now - firstErrorTime,
         });
       }
     }
@@ -237,7 +253,7 @@ export class ErrorHandler {
   getErrorStats(): Record<string, unknown> {
     return {
       errorCounts: Object.fromEntries(this.errorCounts),
-      lastErrorTimes: Object.fromEntries(this.lastErrorTimes)
+      lastErrorTimes: Object.fromEntries(this.lastErrorTimes),
     };
   }
 
@@ -255,24 +271,23 @@ if (typeof window !== 'undefined') {
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     errorHandler.handleError(
-      event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
+      event.reason instanceof Error
+        ? event.reason
+        : new Error(String(event.reason)),
       { component: 'global', action: 'unhandledrejection' }
     );
   });
 
   // Handle uncaught errors
   window.addEventListener('error', (event) => {
-    errorHandler.handleError(
-      event.error || new Error(event.message),
-      { 
-        component: 'global', 
-        action: 'uncaughterror',
-        additionalData: {
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno
-        }
-      }
-    );
+    errorHandler.handleError(event.error || new Error(event.message), {
+      component: 'global',
+      action: 'uncaughterror',
+      additionalData: {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      },
+    });
   });
 }

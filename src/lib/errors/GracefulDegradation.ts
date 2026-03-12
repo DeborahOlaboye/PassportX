@@ -3,8 +3,7 @@
  */
 
 import { logger } from '../logger';
-import { errorHandler } from './ErrorHandler';
-import { ErrorCategory, ErrorSeverity } from './ErrorTypes';
+import { ErrorCategory } from './ErrorTypes';
 
 export interface FeatureFlag {
   name: string;
@@ -36,12 +35,15 @@ export interface DegradationRule {
 
 export interface SystemHealth {
   overall: 'healthy' | 'degraded' | 'critical';
-  features: Record<string, {
-    status: 'active' | 'degraded' | 'disabled';
-    lastError?: string;
-    errorCount: number;
-    lastHealthCheck: number;
-  }>;
+  features: Record<
+    string,
+    {
+      status: 'active' | 'degraded' | 'disabled';
+      lastError?: string;
+      errorCount: number;
+      lastHealthCheck: number;
+    }
+  >;
   degradationLevel: number; // 0-100, where 100 is fully degraded
   activeRules: string[];
 }
@@ -53,17 +55,19 @@ export class GracefulDegradationManager {
     overall: 'healthy',
     features: {},
     degradationLevel: 0,
-    activeRules: []
+    activeRules: [],
   };
   private errorCounts = new Map<string, number>();
   private errorTimestamps = new Map<string, number[]>();
   private healthCheckInterval: NodeJS.Timeout | null = null;
   private onHealthChange?: (health: SystemHealth) => void;
 
-  constructor(options: {
-    onHealthChange?: (health: SystemHealth) => void;
-    healthCheckInterval?: number;
-  } = {}) {
+  constructor(
+    options: {
+      onHealthChange?: (health: SystemHealth) => void;
+      healthCheckInterval?: number;
+    } = {}
+  ) {
     this.onHealthChange = options.onHealthChange;
     this.startHealthMonitoring(options.healthCheckInterval || 30000);
   }
@@ -73,13 +77,13 @@ export class GracefulDegradationManager {
     this.systemHealth.features[feature.name] = {
       status: feature.enabled ? 'active' : 'disabled',
       errorCount: 0,
-      lastHealthCheck: Date.now()
+      lastHealthCheck: Date.now(),
     };
 
     logger.info('Feature registered for graceful degradation', {
       featureName: feature.name,
       enabled: feature.enabled,
-      criticalLevel: feature.criticalLevel
+      criticalLevel: feature.criticalLevel,
     });
   }
 
@@ -101,7 +105,7 @@ export class GracefulDegradationManager {
 
   getFeatureFallback<T>(featureName: string, defaultValue: T): T {
     const feature = this.features.get(featureName);
-    
+
     if (!feature || !this.isFeatureEnabled(featureName)) {
       const fallbackValue = feature?.fallbackValue as T;
       return fallbackValue !== undefined ? fallbackValue : defaultValue;
@@ -120,7 +124,9 @@ export class GracefulDegradationManager {
         logger.info('Using fallback for disabled feature', { featureName });
         return await fallback();
       }
-      throw new Error(`Feature ${featureName} is disabled and no fallback provided`);
+      throw new Error(
+        `Feature ${featureName} is disabled and no fallback provided`
+      );
     }
 
     try {
@@ -129,22 +135,22 @@ export class GracefulDegradationManager {
       return result;
     } catch (error) {
       this.recordError(featureName, error as Error);
-      
+
       if (fallback) {
-        logger.warn('Operation failed, using fallback', { 
-          featureName, 
-          error: (error as Error).message 
+        logger.warn('Operation failed, using fallback', {
+          featureName,
+          error: (error as Error).message,
         });
         return await fallback();
       }
-      
+
       throw error;
     }
   }
 
   private recordError(featureName: string, error: Error): void {
     const now = Date.now();
-    
+
     // Update error count
     const currentCount = this.errorCounts.get(featureName) || 0;
     this.errorCounts.set(featureName, currentCount + 1);
@@ -153,8 +159,8 @@ export class GracefulDegradationManager {
     const timestamps = this.errorTimestamps.get(featureName) || [];
     timestamps.push(now);
     // Keep only last hour of timestamps
-    const oneHourAgo = now - (60 * 60 * 1000);
-    const recentTimestamps = timestamps.filter(ts => ts >= oneHourAgo);
+    const oneHourAgo = now - 60 * 60 * 1000;
+    const recentTimestamps = timestamps.filter((ts) => ts >= oneHourAgo);
     this.errorTimestamps.set(featureName, recentTimestamps);
 
     // Update feature health
@@ -171,7 +177,7 @@ export class GracefulDegradationManager {
       featureName,
       errorCount: currentCount,
       recentErrors: recentTimestamps.length,
-      error: error.message
+      error: error.message,
     });
   }
 
@@ -185,10 +191,10 @@ export class GracefulDegradationManager {
 
   private evaluateDegradationRules(): void {
     const now = Date.now();
-    
+
     for (const [ruleName, rule] of this.degradationRules) {
       const shouldTrigger = this.shouldTriggerRule(rule, now);
-      
+
       if (shouldTrigger && !this.systemHealth.activeRules.includes(ruleName)) {
         this.triggerDegradation(ruleName, rule);
       }
@@ -197,15 +203,15 @@ export class GracefulDegradationManager {
 
   private shouldTriggerRule(rule: DegradationRule, now: number): boolean {
     const { triggerConditions } = rule;
-    
+
     // Check error rate condition
     if (triggerConditions.errorRate && triggerConditions.timeWindow) {
       const windowStart = now - triggerConditions.timeWindow;
       let totalErrors = 0;
       let totalOperations = 0;
 
-      for (const [featureName, timestamps] of this.errorTimestamps) {
-        const recentErrors = timestamps.filter(ts => ts >= windowStart);
+      for (const [, timestamps] of this.errorTimestamps) {
+        const recentErrors = timestamps.filter((ts) => ts >= windowStart);
         totalErrors += recentErrors.length;
         // Estimate total operations (in a real system, this would be tracked)
         totalOperations += recentErrors.length * 10; // Rough estimate
@@ -226,9 +232,9 @@ export class GracefulDegradationManager {
 
   private triggerDegradation(ruleName: string, rule: DegradationRule): void {
     logger.warn('Triggering degradation rule', { ruleName });
-    
+
     this.systemHealth.activeRules.push(ruleName);
-    
+
     // Disable features
     if (rule.actions.disableFeatures) {
       for (const featureName of rule.actions.disableFeatures) {
@@ -266,7 +272,7 @@ export class GracefulDegradationManager {
       if (featureHealth) {
         featureHealth.status = 'disabled';
       }
-      
+
       logger.warn('Feature disabled due to degradation', { featureName });
     }
   }
@@ -276,16 +282,16 @@ export class GracefulDegradationManager {
     if (featureHealth) {
       featureHealth.status = 'degraded';
     }
-    
+
     logger.info('Feature fallback enabled', { featureName });
   }
 
   private attemptRecovery(ruleName: string, rule: DegradationRule): void {
     logger.info('Attempting recovery from degradation', { ruleName });
-    
+
     // Perform health checks on affected features
     const healthyFeatures: string[] = [];
-    
+
     if (rule.actions.disableFeatures) {
       for (const featureName of rule.actions.disableFeatures) {
         if (this.performHealthCheck(featureName)) {
@@ -300,17 +306,19 @@ export class GracefulDegradationManager {
     }
 
     // Remove rule from active rules if all features are healthy
-    if (healthyFeatures.length === (rule.actions.disableFeatures?.length || 0)) {
+    if (
+      healthyFeatures.length === (rule.actions.disableFeatures?.length || 0)
+    ) {
       const ruleIndex = this.systemHealth.activeRules.indexOf(ruleName);
       if (ruleIndex > -1) {
         this.systemHealth.activeRules.splice(ruleIndex, 1);
       }
-      
+
       logger.info('Recovery completed for degradation rule', { ruleName });
     }
 
     this.updateSystemHealth();
-    
+
     if (this.onHealthChange) {
       this.onHealthChange(this.systemHealth);
     }
@@ -319,18 +327,18 @@ export class GracefulDegradationManager {
   private performHealthCheck(featureName: string): boolean {
     // Simple health check based on recent error rate
     const now = Date.now();
-    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    const fiveMinutesAgo = now - 5 * 60 * 1000;
     const timestamps = this.errorTimestamps.get(featureName) || [];
-    const recentErrors = timestamps.filter(ts => ts >= fiveMinutesAgo);
-    
+    const recentErrors = timestamps.filter((ts) => ts >= fiveMinutesAgo);
+
     // Consider healthy if less than 3 errors in the last 5 minutes
     const isHealthy = recentErrors.length < 3;
-    
+
     const featureHealth = this.systemHealth.features[featureName];
     if (featureHealth) {
       featureHealth.lastHealthCheck = now;
     }
-    
+
     return isHealthy;
   }
 
@@ -339,7 +347,7 @@ export class GracefulDegradationManager {
     if (featureHealth) {
       featureHealth.status = 'active';
     }
-    
+
     logger.info('Feature re-enabled after recovery', { featureName });
   }
 
@@ -347,8 +355,8 @@ export class GracefulDegradationManager {
     // Check if feature has been stable for a while
     const now = Date.now();
     const timestamps = this.errorTimestamps.get(featureName) || [];
-    const recentErrors = timestamps.filter(ts => ts >= (now - 10 * 60 * 1000)); // Last 10 minutes
-    
+    const recentErrors = timestamps.filter((ts) => ts >= now - 10 * 60 * 1000); // Last 10 minutes
+
     if (recentErrors.length === 0) {
       this.enableFeature(featureName);
       this.updateSystemHealth();
@@ -357,15 +365,23 @@ export class GracefulDegradationManager {
 
   private updateSystemHealth(): void {
     const features = Object.values(this.systemHealth.features);
-    const activeFeatures = features.filter(f => f.status === 'active').length;
-    const degradedFeatures = features.filter(f => f.status === 'degraded').length;
-    const disabledFeatures = features.filter(f => f.status === 'disabled').length;
-    
+    const _activeFeatures = features.filter(
+      (f) => f.status === 'active'
+    ).length;
+    const degradedFeatures = features.filter(
+      (f) => f.status === 'degraded'
+    ).length;
+    const disabledFeatures = features.filter(
+      (f) => f.status === 'disabled'
+    ).length;
+
     // Calculate degradation level
     const totalFeatures = features.length;
-    this.systemHealth.degradationLevel = totalFeatures > 0 ? 
-      ((degradedFeatures * 0.5 + disabledFeatures) / totalFeatures) * 100 : 0;
-    
+    this.systemHealth.degradationLevel =
+      totalFeatures > 0
+        ? ((degradedFeatures * 0.5 + disabledFeatures) / totalFeatures) * 100
+        : 0;
+
     // Determine overall health
     if (this.systemHealth.degradationLevel === 0) {
       this.systemHealth.overall = 'healthy';
@@ -382,9 +398,9 @@ export class GracefulDegradationManager {
       for (const featureName of this.features.keys()) {
         this.performHealthCheck(featureName);
       }
-      
+
       this.updateSystemHealth();
-      
+
       if (this.onHealthChange) {
         this.onHealthChange(this.systemHealth);
       }
@@ -395,27 +411,29 @@ export class GracefulDegradationManager {
     return { ...this.systemHealth };
   }
 
-  getFeatureHealth(featureName: string): SystemHealth['features'][string] | null {
+  getFeatureHealth(
+    featureName: string
+  ): SystemHealth['features'][string] | null {
     return this.systemHealth.features[featureName] || null;
   }
 
   forceRecovery(): void {
     logger.info('Forcing system recovery');
-    
+
     // Re-enable all features
     for (const featureName of this.features.keys()) {
       this.enableFeature(featureName);
     }
-    
+
     // Clear active rules
     this.systemHealth.activeRules = [];
-    
+
     // Reset error counts
     this.errorCounts.clear();
     this.errorTimestamps.clear();
-    
+
     this.updateSystemHealth();
-    
+
     if (this.onHealthChange) {
       this.onHealthChange(this.systemHealth);
     }
@@ -435,9 +453,9 @@ export const degradationManager = new GracefulDegradationManager({
     logger.info('System health changed', {
       overall: health.overall,
       degradationLevel: health.degradationLevel,
-      activeRules: health.activeRules.length
+      activeRules: health.activeRules.length,
     });
-  }
+  },
 });
 
 // Utility function to register common features
@@ -446,45 +464,45 @@ export function registerCommonFeatures(): void {
     name: 'badge-minting',
     enabled: true,
     criticalLevel: 'critical',
-    fallbackValue: null
+    fallbackValue: null,
   });
 
   degradationManager.registerFeature({
     name: 'community-creation',
     enabled: true,
     criticalLevel: 'important',
-    fallbackValue: null
+    fallbackValue: null,
   });
 
   degradationManager.registerFeature({
     name: 'analytics-tracking',
     enabled: true,
     criticalLevel: 'nice-to-have',
-    fallbackValue: false
+    fallbackValue: false,
   });
 
   degradationManager.registerFeature({
     name: 'real-time-notifications',
     enabled: true,
     criticalLevel: 'nice-to-have',
-    fallbackValue: false
+    fallbackValue: false,
   });
 
   // Register degradation rules
   degradationManager.registerDegradationRule('high-error-rate', {
     triggerConditions: {
       errorRate: 0.1, // 10% error rate
-      timeWindow: 5 * 60 * 1000 // 5 minutes
+      timeWindow: 5 * 60 * 1000, // 5 minutes
     },
     actions: {
       disableFeatures: ['analytics-tracking', 'real-time-notifications'],
       enableFallbacks: ['community-creation'],
-      notifyUsers: true
+      notifyUsers: true,
     },
     recovery: {
       autoRecover: true,
       recoveryDelay: 10 * 60 * 1000, // 10 minutes
-      healthCheckInterval: 2 * 60 * 1000 // 2 minutes
-    }
+      healthCheckInterval: 2 * 60 * 1000, // 2 minutes
+    },
   });
 }

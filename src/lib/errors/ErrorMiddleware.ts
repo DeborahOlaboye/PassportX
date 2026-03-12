@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ErrorHandler } from './ErrorHandler';
-import { ErrorCategory, ErrorSeverity } from './ErrorTypes';
 
 export interface ErrorMiddlewareOptions {
   enableLogging?: boolean;
@@ -18,7 +17,7 @@ export class ErrorMiddleware {
       enableLogging: true,
       enableReporting: true,
       enableMetrics: true,
-      ...options
+      ...options,
     };
   }
 
@@ -31,7 +30,7 @@ export class ErrorMiddleware {
       url: request.url,
       method: request.method,
       userAgent: request.headers.get('user-agent'),
-      ...context
+      ...context,
     };
 
     await this.errorHandler.handleError(error, errorContext);
@@ -65,9 +64,7 @@ export class ErrorMiddleware {
     );
   }
 
-  createAsyncHandler(
-    handler: (request: NextRequest) => Promise<NextResponse>
-  ) {
+  createAsyncHandler(handler: (request: NextRequest) => Promise<NextResponse>) {
     return async (request: NextRequest): Promise<NextResponse> => {
       try {
         return await handler(request);

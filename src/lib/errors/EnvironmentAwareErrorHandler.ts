@@ -33,8 +33,18 @@ export interface ErrorDisplayOptions {
 export class EnvironmentAwareErrorHandler {
   private config: EnvironmentConfig;
   private sensitiveFields = new Set([
-    'password', 'token', 'secret', 'key', 'auth', 'credential',
-    'ssn', 'social', 'credit', 'card', 'account', 'pin'
+    'password',
+    'token',
+    'secret',
+    'key',
+    'auth',
+    'credential',
+    'ssn',
+    'social',
+    'credit',
+    'card',
+    'account',
+    'pin',
   ]);
 
   constructor(environment?: string) {
@@ -43,66 +53,69 @@ export class EnvironmentAwareErrorHandler {
   }
 
   private getEnvironmentConfig(env?: string): EnvironmentConfig {
-    const environment = (env || process.env.NODE_ENV || 'development') as EnvironmentConfig['environment'];
+    const environment = (env ||
+      process.env.NODE_ENV ||
+      'development') as EnvironmentConfig['environment'];
 
-    const configs: Record<EnvironmentConfig['environment'], EnvironmentConfig> = {
-      development: {
-        environment: 'development',
-        showStackTraces: true,
-        showErrorIds: true,
-        enableVerboseLogging: true,
-        enableErrorReporting: false,
-        enablePerformanceMonitoring: true,
-        enableMemoryTracking: true,
-        enableDebugMode: true,
-        errorDisplayLevel: 'full',
-        logLevel: 'debug',
-        sensitiveDataMasking: false,
-        errorRetention: 7
-      },
-      staging: {
-        environment: 'staging',
-        showStackTraces: true,
-        showErrorIds: true,
-        enableVerboseLogging: true,
-        enableErrorReporting: true,
-        enablePerformanceMonitoring: true,
-        enableMemoryTracking: true,
-        enableDebugMode: false,
-        errorDisplayLevel: 'detailed',
-        logLevel: 'info',
-        sensitiveDataMasking: true,
-        errorRetention: 14
-      },
-      production: {
-        environment: 'production',
-        showStackTraces: false,
-        showErrorIds: false,
-        enableVerboseLogging: false,
-        enableErrorReporting: true,
-        enablePerformanceMonitoring: true,
-        enableMemoryTracking: false,
-        enableDebugMode: false,
-        errorDisplayLevel: 'minimal',
-        logLevel: 'warn',
-        sensitiveDataMasking: true,
-        errorRetention: 30
-      },
-      test: {
-        environment: 'test',
-        showStackTraces: true,
-        showErrorIds: true,
-        enableVerboseLogging: false,
-        enableErrorReporting: false,
-        enablePerformanceMonitoring: false,
-        enableMemoryTracking: false,
-        enableDebugMode: true,
-        errorDisplayLevel: 'full',
-        logLevel: 'error',
-        sensitiveDataMasking: false,
-        errorRetention: 1
-      }
-    };
+    const configs: Record<EnvironmentConfig['environment'], EnvironmentConfig> =
+      {
+        development: {
+          environment: 'development',
+          showStackTraces: true,
+          showErrorIds: true,
+          enableVerboseLogging: true,
+          enableErrorReporting: false,
+          enablePerformanceMonitoring: true,
+          enableMemoryTracking: true,
+          enableDebugMode: true,
+          errorDisplayLevel: 'full',
+          logLevel: 'debug',
+          sensitiveDataMasking: false,
+          errorRetention: 7,
+        },
+        staging: {
+          environment: 'staging',
+          showStackTraces: true,
+          showErrorIds: true,
+          enableVerboseLogging: true,
+          enableErrorReporting: true,
+          enablePerformanceMonitoring: true,
+          enableMemoryTracking: true,
+          enableDebugMode: false,
+          errorDisplayLevel: 'detailed',
+          logLevel: 'info',
+          sensitiveDataMasking: true,
+          errorRetention: 14,
+        },
+        production: {
+          environment: 'production',
+          showStackTraces: false,
+          showErrorIds: false,
+          enableVerboseLogging: false,
+          enableErrorReporting: true,
+          enablePerformanceMonitoring: true,
+          enableMemoryTracking: false,
+          enableDebugMode: false,
+          errorDisplayLevel: 'minimal',
+          logLevel: 'warn',
+          sensitiveDataMasking: true,
+          errorRetention: 30,
+        },
+        test: {
+          environment: 'test',
+          showStackTraces: true,
+          showErrorIds: true,
+          enableVerboseLogging: false,
+          enableErrorReporting: false,
+          enablePerformanceMonitoring: false,
+          enableMemoryTracking: false,
+          enableDebugMode: true,
+          errorDisplayLevel: 'full',
+          logLevel: 'error',
+          sensitiveDataMasking: false,
+          errorRetention: 1,
+        },
+      };
 
     return configs[environment];
   }
@@ -112,7 +125,7 @@ export class EnvironmentAwareErrorHandler {
     if (this.config.enableVerboseLogging) {
       logger.debug('Environment-aware error handler initialized', {
         environment: this.config.environment,
-        config: this.config
+        config: this.config,
       });
     }
 
@@ -132,13 +145,15 @@ export class EnvironmentAwareErrorHandler {
           filename: event.filename,
           lineno: event.lineno,
           colno: event.colno,
-          type: 'javascript_error'
+          type: 'javascript_error',
         });
       });
 
       window.addEventListener('unhandledrejection', (event) => {
         this.handleGlobalError(
-          event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
+          event.reason instanceof Error
+            ? event.reason
+            : new Error(String(event.reason)),
           { type: 'unhandled_promise_rejection' }
         );
       });
@@ -158,25 +173,31 @@ export class EnvironmentAwareErrorHandler {
     // Server-side specific error handling
     process.on('uncaughtException', (error) => {
       this.handleGlobalError(error, { type: 'uncaught_exception' });
-      
+
       // In production, gracefully shutdown
       if (this.config.environment === 'production') {
-        logger.error('Uncaught exception in production, shutting down gracefully');
+        logger.error(
+          'Uncaught exception in production, shutting down gracefully'
+        );
         process.exit(1);
       }
     });
 
     process.on('unhandledRejection', (reason) => {
-      const error = reason instanceof Error ? reason : new Error(String(reason));
+      const error =
+        reason instanceof Error ? reason : new Error(String(reason));
       this.handleGlobalError(error, { type: 'unhandled_rejection' });
     });
   }
 
-  private async handleGlobalError(error: Error, context: Record<string, unknown>): Promise<void> {
+  private async handleGlobalError(
+    error: Error,
+    context: Record<string, unknown>
+  ): Promise<void> {
     await errorHandler.handleError(error, {
       component: 'EnvironmentAwareErrorHandler',
       action: 'global_error',
-      additionalData: context
+      additionalData: context,
     });
   }
 
@@ -188,11 +209,14 @@ export class EnvironmentAwareErrorHandler {
     stackTrace?: string;
   } {
     const displayOptions = this.getErrorDisplayOptions(error);
-    
+
     let message = error.userMessage;
-    
+
     // Enhance message based on environment
-    if (this.config.environment === 'development' && error.message !== error.userMessage) {
+    if (
+      this.config.environment === 'development' &&
+      error.message !== error.userMessage
+    ) {
       message += ` (Technical: ${error.message})`;
     }
 
@@ -209,12 +233,13 @@ export class EnvironmentAwareErrorHandler {
         category: error.category,
         severity: error.severity,
         code: error.code,
-        isRetryable: error.isRetryable
+        isRetryable: error.isRetryable,
       };
 
       if (displayOptions.showContext) {
-        result.details.context = this.config.sensitiveDataMasking ? 
-          this.maskSensitiveData(error.context) : error.context;
+        result.details.context = this.config.sensitiveDataMasking
+          ? this.maskSensitiveData(error.context)
+          : error.context;
       }
     }
 
@@ -238,7 +263,7 @@ export class EnvironmentAwareErrorHandler {
       showErrorId: false,
       showContext: false,
       showSuggestions: false,
-      maskSensitiveData: this.config.sensitiveDataMasking
+      maskSensitiveData: this.config.sensitiveDataMasking,
     };
 
     switch (this.config.errorDisplayLevel) {
@@ -249,7 +274,7 @@ export class EnvironmentAwareErrorHandler {
           showStackTrace: this.config.showStackTraces,
           showErrorId: this.config.showErrorIds,
           showContext: true,
-          showSuggestions: true
+          showSuggestions: true,
         };
 
       case 'detailed':
@@ -258,14 +283,18 @@ export class EnvironmentAwareErrorHandler {
           showTechnicalDetails: true,
           showErrorId: this.config.showErrorIds,
           showSuggestions: true,
-          showStackTrace: error.severity === ErrorSeverity.CRITICAL && this.config.showStackTraces
+          showStackTrace:
+            error.severity === ErrorSeverity.CRITICAL &&
+            this.config.showStackTraces,
         };
 
       case 'minimal':
         return {
           ...baseOptions,
           showSuggestions: error.severity === ErrorSeverity.CRITICAL,
-          showErrorId: error.severity === ErrorSeverity.CRITICAL && this.config.showErrorIds
+          showErrorId:
+            error.severity === ErrorSeverity.CRITICAL &&
+            this.config.showErrorIds,
         };
 
       default:
@@ -283,15 +312,15 @@ export class EnvironmentAwareErrorHandler {
     }
 
     if (Array.isArray(data)) {
-      return data.map(item => this.maskSensitiveData(item));
+      return data.map((item) => this.maskSensitiveData(item));
     }
 
     if (data && typeof data === 'object') {
       const masked: Record<string, unknown> = {};
-      
+
       for (const [key, value] of Object.entries(data)) {
         const lowerKey = key.toLowerCase();
-        const isSensitive = Array.from(this.sensitiveFields).some(field => 
+        const isSensitive = Array.from(this.sensitiveFields).some((field) =>
           lowerKey.includes(field)
         );
 
@@ -311,7 +340,10 @@ export class EnvironmentAwareErrorHandler {
   private maskSensitiveString(str: string): string {
     // Mask potential sensitive patterns
     return str
-      .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '****-****-****-****') // Credit cards
+      .replace(
+        /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g,
+        '****-****-****-****'
+      ) // Credit cards
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '***-**-****') // SSN
       .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '***@***.***') // Email
       .replace(/\b(?:Bearer\s+)?[A-Za-z0-9+/]{20,}={0,2}\b/g, '[MASKED_TOKEN]'); // Tokens
@@ -320,7 +352,11 @@ export class EnvironmentAwareErrorHandler {
   private maskValue(value: unknown): string {
     if (typeof value === 'string') {
       if (value.length <= 4) return '***';
-      return value.substring(0, 2) + '*'.repeat(value.length - 4) + value.substring(value.length - 2);
+      return (
+        value.substring(0, 2) +
+        '*'.repeat(value.length - 4) +
+        value.substring(value.length - 2)
+      );
     }
     return '[MASKED]';
   }
@@ -365,7 +401,9 @@ export class EnvironmentAwareErrorHandler {
 
     // Environment-specific suggestions
     if (this.config.environment === 'development') {
-      suggestions.push('Check the development console for detailed error information');
+      suggestions.push(
+        'Check the development console for detailed error information'
+      );
       if (error.stackTrace) {
         suggestions.push('Review the stack trace for debugging information');
       }
@@ -387,13 +425,19 @@ export class EnvironmentAwareErrorHandler {
     }
 
     // Report high severity errors in production and staging
-    if (error.severity === ErrorSeverity.HIGH && 
-        (this.config.environment === 'production' || this.config.environment === 'staging')) {
+    if (
+      error.severity === ErrorSeverity.HIGH &&
+      (this.config.environment === 'production' ||
+        this.config.environment === 'staging')
+    ) {
       return true;
     }
 
     // Don't report low severity errors in production
-    if (error.severity === ErrorSeverity.LOW && this.config.environment === 'production') {
+    if (
+      error.severity === ErrorSeverity.LOW &&
+      this.config.environment === 'production'
+    ) {
       return false;
     }
 
@@ -446,7 +490,7 @@ export class EnvironmentAwareErrorHandler {
 
   updateConfig(updates: Partial<EnvironmentConfig>): void {
     this.config = { ...this.config, ...updates };
-    
+
     if (this.config.enableVerboseLogging) {
       logger.info('Environment config updated', { updates });
     }
@@ -486,9 +530,12 @@ export class EnvironmentAwareErrorHandler {
       if (message.length > 100) {
         adjustedMessage = message.substring(0, 97) + '...';
       }
-      
+
       // Downgrade some error severities in production to reduce noise
-      if (severity === ErrorSeverity.MEDIUM && category === ErrorCategory.VALIDATION) {
+      if (
+        severity === ErrorSeverity.MEDIUM &&
+        category === ErrorCategory.VALIDATION
+      ) {
         adjustedSeverity = ErrorSeverity.LOW;
       }
     }
@@ -502,39 +549,44 @@ export class EnvironmentAwareErrorHandler {
       code,
       context: {
         timestamp: Date.now(),
-        ...context
+        ...context,
       },
-      isRetryable: category === ErrorCategory.NETWORK || category === ErrorCategory.BLOCKCHAIN,
+      isRetryable:
+        category === ErrorCategory.NETWORK ||
+        category === ErrorCategory.BLOCKCHAIN,
       userMessage: this.generateUserMessage(category, adjustedSeverity),
-      stackTrace: this.config.showStackTraces ? new Error().stack : undefined
+      stackTrace: this.config.showStackTraces ? new Error().stack : undefined,
     } as PassportXError;
   }
 
-  private generateUserMessage(category: ErrorCategory, severity: ErrorSeverity): string {
+  private generateUserMessage(
+    category: ErrorCategory,
+    severity: ErrorSeverity
+  ): string {
     const isProduction = this.config.environment === 'production';
-    
+
     if (isProduction && severity === ErrorSeverity.LOW) {
       return 'Please try again.';
     }
 
     switch (category) {
       case ErrorCategory.NETWORK:
-        return isProduction ? 
-          'Connection issue. Please check your internet and try again.' :
-          'Network error occurred. Check your connection and retry.';
-      
+        return isProduction
+          ? 'Connection issue. Please check your internet and try again.'
+          : 'Network error occurred. Check your connection and retry.';
+
       case ErrorCategory.AUTHENTICATION:
         return 'Authentication failed. Please log in again.';
-      
+
       case ErrorCategory.BLOCKCHAIN:
-        return isProduction ?
-          'Transaction failed. Please try again.' :
-          'Blockchain operation failed. Check your wallet and try again.';
-      
+        return isProduction
+          ? 'Transaction failed. Please try again.'
+          : 'Blockchain operation failed. Check your wallet and try again.';
+
       default:
-        return isProduction ?
-          'Something went wrong. Please try again.' :
-          'An error occurred. Please try again or check the console for details.';
+        return isProduction
+          ? 'Something went wrong. Please try again.'
+          : 'An error occurred. Please try again or check the console for details.';
     }
   }
 }
@@ -543,17 +595,17 @@ export class EnvironmentAwareErrorHandler {
 export const environmentErrorHandler = new EnvironmentAwareErrorHandler();
 
 // Utility functions
-export const isDevelopment = (): boolean => 
+export const isDevelopment = (): boolean =>
   environmentErrorHandler.getConfig().environment === 'development';
 
-export const isProduction = (): boolean => 
+export const isProduction = (): boolean =>
   environmentErrorHandler.getConfig().environment === 'production';
 
-export const isStaging = (): boolean => 
+export const isStaging = (): boolean =>
   environmentErrorHandler.getConfig().environment === 'staging';
 
-export const shouldShowDebugInfo = (): boolean => 
+export const shouldShowDebugInfo = (): boolean =>
   environmentErrorHandler.isFeatureEnabled('enableDebugMode');
 
-export const shouldTrackPerformance = (): boolean => 
+export const shouldTrackPerformance = (): boolean =>
   environmentErrorHandler.isFeatureEnabled('enablePerformanceMonitoring');

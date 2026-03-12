@@ -21,27 +21,29 @@ export * from './MemoryLeakPrevention';
 export * from './EnvironmentAwareErrorHandler';
 
 // Utility functions for common error handling patterns
-export const createErrorHandler = (options?: {
+export const createErrorHandler = (_options?: {
   enableLogging?: boolean;
   enableReporting?: boolean;
   enableMetrics?: boolean;
-}) => {
+}): ErrorHandler => {
   return ErrorHandler.getInstance();
 };
 
-export const createRetryManager = (options?: {
+export const createRetryManager = (_options?: {
   maxRetries?: number;
   baseDelay?: number;
   maxDelay?: number;
-}) => {
+}): RetryManager => {
   return RetryManager.getInstance();
 };
 
-export const withErrorHandling = <T extends (...args: any[]) => any>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const withErrorHandling = <T extends (...args: unknown[]) => unknown>(
   fn: T,
   context?: Record<string, unknown>
 ): T => {
-  return ((...args: any[]) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((...args: unknown[]) => {
     try {
       const result = fn(...args);
       if (result instanceof Promise) {
@@ -58,11 +60,14 @@ export const withErrorHandling = <T extends (...args: any[]) => any>(
   }) as T;
 };
 
-export const withAsyncErrorHandling = <T extends (...args: any[]) => Promise<any>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const withAsyncErrorHandling = <
+  T extends (...args: unknown[]) => Promise<unknown>
+>(
   fn: T,
   context?: Record<string, unknown>
 ): T => {
-  return (async (...args: any[]) => {
+  return (async (...args: unknown[]) => {
     try {
       return await fn(...args);
     } catch (error) {
@@ -96,13 +101,11 @@ export const defaultErrorConfig = {
   maxDelay: 30000,
   enableGracefulDegradation: true,
   enablePerformanceMonitoring: true,
-  enableMemoryLeakPrevention: true
+  enableMemoryLeakPrevention: true,
 };
 
 // Initialize error handling system
-export const initializeErrorHandling = (config = defaultErrorConfig) => {
-  console.log('Initializing comprehensive error handling system...');
-  
+export const initializeErrorHandling = (_config = defaultErrorConfig): void => {
   // Set global error handlers
   if (typeof window !== 'undefined') {
     window.addEventListener('error', (event) => {
@@ -110,13 +113,13 @@ export const initializeErrorHandling = (config = defaultErrorConfig) => {
         type: 'unhandled_error',
         filename: event.filename,
         lineno: event.lineno,
-        colno: event.colno
+        colno: event.colno,
       });
     });
 
     window.addEventListener('unhandledrejection', (event) => {
       errorHandler.handleError(new Error(event.reason), {
-        type: 'unhandled_promise_rejection'
+        type: 'unhandled_promise_rejection',
       });
     });
   }
@@ -124,13 +127,13 @@ export const initializeErrorHandling = (config = defaultErrorConfig) => {
   if (typeof process !== 'undefined') {
     process.on('uncaughtException', (error) => {
       errorHandler.handleError(error, {
-        type: 'uncaught_exception'
+        type: 'uncaught_exception',
       });
     });
 
     process.on('unhandledRejection', (reason) => {
       errorHandler.handleError(new Error(String(reason)), {
-        type: 'unhandled_rejection'
+        type: 'unhandled_rejection',
       });
     });
   }

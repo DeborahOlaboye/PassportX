@@ -4,7 +4,7 @@
 
 import { logger } from '../logger';
 import { errorHandler } from './ErrorHandler';
-import { NetworkError, SystemError, ErrorCategory, ErrorSeverity } from './ErrorTypes';
+import { NetworkError } from './ErrorTypes';
 import { withRetry } from './RetryManager';
 
 export interface AsyncOperationOptions {
@@ -37,39 +37,41 @@ export async function safeAsync<T>(
 
   const executeOperation = async (): Promise<T> => {
     attempts++;
-    
+
     if (options.timeout) {
       return Promise.race([
         operation(),
         new Promise<never>((_, reject) => {
           setTimeout(() => {
-            reject(new NetworkError(
-              `Operation timed out after ${options.timeout}ms`,
-              'OPERATION_TIMEOUT',
-              { timeout: options.timeout, attempts }
-            ));
+            reject(
+              new NetworkError(
+                `Operation timed out after ${options.timeout}ms`,
+                'OPERATION_TIMEOUT',
+                { timeout: options.timeout, attempts }
+              )
+            );
           }, options.timeout);
-        })
+        }),
       ]);
     }
-    
+
     return operation();
   };
 
   try {
     let result: T;
-    
+
     if (maxRetries > 0) {
       result = await withRetry(executeOperation, {
         maxAttempts: maxRetries + 1,
-        retryCondition: options.retryCondition
+        retryCondition: options.retryCondition,
       });
     } else {
       result = await executeOperation();
     }
 
     const duration = Date.now() - startTime;
-    
+
     if (options.onSuccess) {
       options.onSuccess(result);
     }
@@ -78,7 +80,7 @@ export async function safeAsync<T>(
       success: true,
       data: result,
       duration,
-      attempts
+      attempts,
     };
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -92,8 +94,8 @@ export async function safeAsync<T>(
         ...options.context,
         duration,
         attempts,
-        timeout: options.timeout
-      }
+        timeout: options.timeout,
+      },
     });
 
     if (options.onError) {
@@ -104,7 +106,7 @@ export async function safeAsync<T>(
       success: false,
       error: errorInstance,
       duration,
-      attempts
+      attempts,
     };
   }
 }
@@ -125,7 +127,7 @@ export async function batchAsync<T>(
     concurrency = 5,
     failFast = false,
     isolateErrors = true,
-    onProgress
+    onProgress,
   } = options;
 
   const results: Array<AsyncResult<T>> = [];
@@ -142,9 +144,12 @@ export async function batchAsync<T>(
     const batchPromises = batch.map(async (operation, index) => {
       try {
         const result = await safeAsync(operation, {
-          context: { batchIndex: batches.indexOf(batch), operationIndex: index }
+          context: {
+            batchIndex: batches.indexOf(batch),
+            operationIndex: index,
+          },
         });
-        
+
         completed++;
         if (onProgress) {
           onProgress(completed, operations.length);
@@ -156,7 +161,7 @@ export async function batchAsync<T>(
           success: false,
           error: error as Error,
           duration: 0,
-          attempts: 1
+          attempts: 1,
         };
 
         completed++;
@@ -176,7 +181,7 @@ export async function batchAsync<T>(
     results.push(...batchResults);
 
     // Check for failures in fail-fast mode
-    if (failFast && batchResults.some(result => !result.success)) {
+    if (failFast && batchResults.some((result) => !result.success)) {
       break;
     }
   }
@@ -243,7 +248,7 @@ export function throttledAsync<T extends unknown[], R>(
 
   return (...args: T): Promise<R> => {
     const now = Date.now();
-    
+
     if (now - lastExecution >= interval) {
       lastExecution = now;
       pendingPromise = operation(...args);
@@ -258,7 +263,7 @@ export function throttledAsync<T extends unknown[], R>(
     // Schedule execution for later
     return new Promise<R>((resolve, reject) => {
       const timeToWait = interval - (now - lastExecution);
-      
+
       setTimeout(async () => {
         try {
           lastExecution = Date.now();
@@ -286,7 +291,7 @@ export function memoizedAsync<T extends unknown[], R>(
   const {
     ttl = 5 * 60 * 1000, // 5 minutes
     maxSize = 100,
-    keyGenerator = (...args) => JSON.stringify(args)
+    keyGenerator = (...args) => JSON.stringify(args),
   } = options;
 
   const cache = new Map<string, { value: Promise<R>; timestamp: number }>();
@@ -297,7 +302,7 @@ export function memoizedAsync<T extends unknown[], R>(
 
     // Check if we have a valid cached result
     const cached = cache.get(key);
-    if (cached && (now - cached.timestamp) < ttl) {
+    if (cached && now - cached.timestamp < ttl) {
       return cached.value;
     }
 
@@ -315,7 +320,7 @@ export function memoizedAsync<T extends unknown[], R>(
     }
 
     // Execute and cache the operation
-    const promise = operation(...args).catch(error => {
+    const promise = operation(...args).catch((error) => {
       // Remove failed operations from cache
       cache.delete(key);
       throw error;
@@ -352,15 +357,17 @@ export async function raceWithTimeout<T>(
   operations: Array<() => Promise<T>>,
   timeout: number
 ): Promise<T> {
-  const operationPromises = operations.map(op => op());
-  
+  const operationPromises = operations.map((op) => op());
+
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => {
-      reject(new NetworkError(
-        `Race operation timed out after ${timeout}ms`,
-        'RACE_TIMEOUT',
-        { timeout, operationCount: operations.length }
-      ));
+      reject(
+        new NetworkError(
+          `Race operation timed out after ${timeout}ms`,
+          'RACE_TIMEOUT',
+          { timeout, operationCount: operations.length }
+        )
+      );
     }, timeout);
   });
 
@@ -371,12 +378,14 @@ export async function raceWithTimeout<T>(
  * Async operation with progress tracking
  */
 export async function withProgress<T>(
-  operation: (updateProgress: (progress: number, message?: string) => void) => Promise<T>,
+  operation: (
+    updateProgress: (progress: number, message?: string) => void
+  ) => Promise<T>,
   onProgress: (progress: number, message?: string) => void
 ): Promise<T> {
   let lastProgress = 0;
-  
-  const updateProgress = (progress: number, message?: string) => {
+
+  const updateProgress = (progress: number, message?: string): void => {
     // Ensure progress only moves forward
     if (progress > lastProgress) {
       lastProgress = progress;

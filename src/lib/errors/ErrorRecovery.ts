@@ -1,6 +1,5 @@
 import { RetryManager } from './RetryManager';
 import { ErrorHandler } from './ErrorHandler';
-import { ErrorCategory } from './ErrorTypes';
 
 export interface RecoveryStrategy {
   name: string;
@@ -31,36 +30,37 @@ export class ErrorRecovery {
     // Network error recovery
     this.addStrategy({
       name: 'NetworkErrorRecovery',
-      canRecover: (error) => error.name === 'NetworkError' || error.message.includes('fetch'),
-      recover: async (error, context) => {
-        console.log('Attempting network error recovery...');
+      canRecover: (error) =>
+        error.name === 'NetworkError' || error.message.includes('fetch'),
+      recover: async (_error, _context) => {
         // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      },
     });
 
     // Database connection recovery
     this.addStrategy({
       name: 'DatabaseErrorRecovery',
-      canRecover: (error) => error.message.includes('database') || error.message.includes('connection'),
-      recover: async (error, context) => {
-        console.log('Attempting database connection recovery...');
+      canRecover: (error) =>
+        error.message.includes('database') ||
+        error.message.includes('connection'),
+      recover: async (_error, _context) => {
         // Implement database reconnection logic
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      },
     });
 
     // Memory error recovery
     this.addStrategy({
       name: 'MemoryErrorRecovery',
-      canRecover: (error) => error.message.includes('memory') || error.name === 'RangeError',
-      recover: async (error, context) => {
-        console.log('Attempting memory cleanup...');
+      canRecover: (error) =>
+        error.message.includes('memory') || error.name === 'RangeError',
+      recover: async (_error, _context) => {
         // Force garbage collection if available
         if (global.gc) {
           global.gc();
         }
-      }
+      },
     });
   }
 
@@ -68,7 +68,10 @@ export class ErrorRecovery {
     this.strategies.push(strategy);
   }
 
-  async attemptRecovery(error: Error, context?: Record<string, unknown>): Promise<boolean> {
+  async attemptRecovery(
+    error: Error,
+    context?: Record<string, unknown>
+  ): Promise<boolean> {
     for (const strategy of this.strategies) {
       if (strategy.canRecover(error)) {
         try {
@@ -76,11 +79,14 @@ export class ErrorRecovery {
           console.log(`Recovery successful using strategy: ${strategy.name}`);
           return true;
         } catch (recoveryError) {
-          console.error(`Recovery failed for strategy ${strategy.name}:`, recoveryError);
+          console.error(
+            `Recovery failed for strategy ${strategy.name}:`,
+            recoveryError
+          );
           await this.errorHandler.handleError(recoveryError as Error, {
             originalError: error.message,
             recoveryStrategy: strategy.name,
-            ...context
+            ...context,
           });
         }
       }
@@ -116,7 +122,7 @@ export class ErrorRecovery {
   }
 
   removeStrategy(name: string): boolean {
-    const index = this.strategies.findIndex(s => s.name === name);
+    const index = this.strategies.findIndex((s) => s.name === name);
     if (index !== -1) {
       this.strategies.splice(index, 1);
       return true;

@@ -63,11 +63,13 @@ export class ErrorAnalyticsCollector {
   private analyticsInterval: NodeJS.Timeout | null = null;
   private onAnalyticsUpdate?: (analytics: ErrorAnalytics) => void;
 
-  constructor(options: {
-    maxMetrics?: number;
-    retentionPeriod?: number;
-    onAnalyticsUpdate?: (analytics: ErrorAnalytics) => void;
-  } = {}) {
+  constructor(
+    options: {
+      maxMetrics?: number;
+      retentionPeriod?: number;
+      onAnalyticsUpdate?: (analytics: ErrorAnalytics) => void;
+    } = {}
+  ) {
     this.maxMetrics = options.maxMetrics || this.maxMetrics;
     this.retentionPeriod = options.retentionPeriod || this.retentionPeriod;
     this.onAnalyticsUpdate = options.onAnalyticsUpdate;
@@ -76,7 +78,10 @@ export class ErrorAnalyticsCollector {
     this.startPeriodicTasks();
   }
 
-  collectError(error: PassportXError, additionalData?: Record<string, unknown>): void {
+  collectError(
+    error: PassportXError,
+    additionalData?: Record<string, unknown>
+  ): void {
     const metric: ErrorMetric = {
       id: error.id,
       timestamp: Date.now(),
@@ -93,8 +98,8 @@ export class ErrorAnalyticsCollector {
       stackTrace: error.stackTrace,
       additionalData: {
         ...error.context.additionalData,
-        ...additionalData
-      }
+        ...additionalData,
+      },
     };
 
     this.metrics.push(metric);
@@ -104,16 +109,25 @@ export class ErrorAnalyticsCollector {
       this.metrics = this.metrics.slice(-this.maxMetrics);
     }
 
-    logger.debug('Error metric collected', { errorId: error.id, category: error.category });
+    logger.debug('Error metric collected', {
+      errorId: error.id,
+      category: error.category,
+    });
   }
 
-  generateAnalytics(timeRange?: { start: number; end: number }): ErrorAnalytics {
+  generateAnalytics(timeRange?: {
+    start: number;
+    end: number;
+  }): ErrorAnalytics {
     const now = Date.now();
-    const filteredMetrics = this.metrics.filter(metric => {
+    const filteredMetrics = this.metrics.filter((metric) => {
       if (timeRange) {
-        return metric.timestamp >= timeRange.start && metric.timestamp <= timeRange.end;
+        return (
+          metric.timestamp >= timeRange.start &&
+          metric.timestamp <= timeRange.end
+        );
       }
-      return metric.timestamp >= (now - this.retentionPeriod);
+      return metric.timestamp >= now - this.retentionPeriod;
     });
 
     const analytics: ErrorAnalytics = {
@@ -125,15 +139,17 @@ export class ErrorAnalyticsCollector {
       errorTrends: this.generateErrorTrends(filteredMetrics),
       topErrors: this.getTopErrors(filteredMetrics),
       userImpact: this.calculateUserImpact(filteredMetrics),
-      performanceImpact: this.calculatePerformanceImpact(filteredMetrics)
+      performanceImpact: this.calculatePerformanceImpact(filteredMetrics),
     };
 
     return analytics;
   }
 
-  private groupByCategory(metrics: ErrorMetric[]): Record<ErrorCategory, number> {
+  private groupByCategory(
+    metrics: ErrorMetric[]
+  ): Record<ErrorCategory, number> {
     const grouped = {} as Record<ErrorCategory, number>;
-    
+
     for (const category of Object.values(ErrorCategory)) {
       grouped[category] = 0;
     }
@@ -145,9 +161,11 @@ export class ErrorAnalyticsCollector {
     return grouped;
   }
 
-  private groupBySeverity(metrics: ErrorMetric[]): Record<ErrorSeverity, number> {
+  private groupBySeverity(
+    metrics: ErrorMetric[]
+  ): Record<ErrorSeverity, number> {
     const grouped = {} as Record<ErrorSeverity, number>;
-    
+
     for (const severity of Object.values(ErrorSeverity)) {
       grouped[severity] = 0;
     }
@@ -189,11 +207,11 @@ export class ErrorAnalyticsCollector {
   }> {
     const hourlyBuckets = new Map<string, Map<string, number>>();
     const now = Date.now();
-    const oneDayAgo = now - (24 * 60 * 60 * 1000);
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
     // Create hourly buckets for the last 24 hours
     for (let i = 0; i < 24; i++) {
-      const bucketTime = oneDayAgo + (i * 60 * 60 * 1000);
+      const bucketTime = oneDayAgo + i * 60 * 60 * 1000;
       const bucketKey = Math.floor(bucketTime / (60 * 60 * 1000)).toString();
       hourlyBuckets.set(bucketKey, new Map());
     }
@@ -201,9 +219,11 @@ export class ErrorAnalyticsCollector {
     // Fill buckets with error data
     for (const metric of metrics) {
       if (metric.timestamp >= oneDayAgo) {
-        const bucketKey = Math.floor(metric.timestamp / (60 * 60 * 1000)).toString();
+        const bucketKey = Math.floor(
+          metric.timestamp / (60 * 60 * 1000)
+        ).toString();
         const bucket = hourlyBuckets.get(bucketKey);
-        
+
         if (bucket) {
           const errorKey = `${metric.category}:${metric.severity}`;
           bucket.set(errorKey, (bucket.get(errorKey) || 0) + 1);
@@ -221,9 +241,12 @@ export class ErrorAnalyticsCollector {
 
     for (const [bucketKey, bucket] of hourlyBuckets) {
       const timestamp = parseInt(bucketKey) * 60 * 60 * 1000;
-      
+
       for (const [errorKey, count] of bucket) {
-        const [category, severity] = errorKey.split(':') as [ErrorCategory, ErrorSeverity];
+        const [category, severity] = errorKey.split(':') as [
+          ErrorCategory,
+          ErrorSeverity
+        ];
         trends.push({ timestamp, count, category, severity });
       }
     }
@@ -237,23 +260,29 @@ export class ErrorAnalyticsCollector {
     count: number;
     lastOccurrence: number;
   }> {
-    const errorCounts = new Map<string, {
-      message: string;
-      count: number;
-      lastOccurrence: number;
-    }>();
+    const errorCounts = new Map<
+      string,
+      {
+        message: string;
+        count: number;
+        lastOccurrence: number;
+      }
+    >();
 
     for (const metric of metrics) {
       const existing = errorCounts.get(metric.code);
-      
+
       if (existing) {
         existing.count++;
-        existing.lastOccurrence = Math.max(existing.lastOccurrence, metric.timestamp);
+        existing.lastOccurrence = Math.max(
+          existing.lastOccurrence,
+          metric.timestamp
+        );
       } else {
         errorCounts.set(metric.code, {
           message: metric.message,
           count: 1,
-          lastOccurrence: metric.timestamp
+          lastOccurrence: metric.timestamp,
         });
       }
     }
@@ -290,7 +319,7 @@ export class ErrorAnalyticsCollector {
     return {
       affectedUsers: uniqueUsers.size,
       affectedSessions: uniqueSessions.size,
-      errorRate: Math.min(errorRate, 1)
+      errorRate: Math.min(errorRate, 1),
     };
   }
 
@@ -302,18 +331,26 @@ export class ErrorAnalyticsCollector {
       count: number;
     }>;
   } {
-    const metricsWithDuration = metrics.filter(m => m.duration !== undefined);
-    const totalDuration = metricsWithDuration.reduce((sum, m) => sum + (m.duration || 0), 0);
-    const averageErrorDuration = metricsWithDuration.length > 0 ? 
-      totalDuration / metricsWithDuration.length : 0;
+    const metricsWithDuration = metrics.filter((m) => m.duration !== undefined);
+    const totalDuration = metricsWithDuration.reduce(
+      (sum, m) => sum + (m.duration || 0),
+      0
+    );
+    const averageErrorDuration =
+      metricsWithDuration.length > 0
+        ? totalDuration / metricsWithDuration.length
+        : 0;
 
     // Group by error code and calculate average duration
-    const durationByCode = new Map<string, { totalDuration: number; count: number }>();
-    
+    const durationByCode = new Map<
+      string,
+      { totalDuration: number; count: number }
+    >();
+
     for (const metric of metricsWithDuration) {
       const existing = durationByCode.get(metric.code);
       const duration = metric.duration || 0;
-      
+
       if (existing) {
         existing.totalDuration += duration;
         existing.count++;
@@ -326,14 +363,14 @@ export class ErrorAnalyticsCollector {
       .map(([code, data]) => ({
         code,
         averageDuration: data.totalDuration / data.count,
-        count: data.count
+        count: data.count,
       }))
       .sort((a, b) => b.averageDuration - a.averageDuration)
       .slice(0, 5);
 
     return {
       averageErrorDuration,
-      slowestErrors
+      slowestErrors,
     };
   }
 
@@ -341,7 +378,7 @@ export class ErrorAnalyticsCollector {
     // Run cleanup and analytics generation every 5 minutes
     this.analyticsInterval = setInterval(() => {
       this.cleanupOldMetrics();
-      
+
       if (this.onAnalyticsUpdate) {
         const analytics = this.generateAnalytics();
         this.onAnalyticsUpdate(analytics);
@@ -352,12 +389,17 @@ export class ErrorAnalyticsCollector {
   private cleanupOldMetrics(): void {
     const cutoffTime = Date.now() - this.retentionPeriod;
     const initialLength = this.metrics.length;
-    
-    this.metrics = this.metrics.filter(metric => metric.timestamp >= cutoffTime);
-    
+
+    this.metrics = this.metrics.filter(
+      (metric) => metric.timestamp >= cutoffTime
+    );
+
     const removedCount = initialLength - this.metrics.length;
     if (removedCount > 0) {
-      logger.debug('Cleaned up old error metrics', { removedCount, remaining: this.metrics.length });
+      logger.debug('Cleaned up old error metrics', {
+        removedCount,
+        remaining: this.metrics.length,
+      });
     }
   }
 
@@ -370,16 +412,22 @@ export class ErrorAnalyticsCollector {
 
     if (filters) {
       if (filters.category) {
-        filteredMetrics = filteredMetrics.filter(m => m.category === filters.category);
+        filteredMetrics = filteredMetrics.filter(
+          (m) => m.category === filters.category
+        );
       }
-      
+
       if (filters.severity) {
-        filteredMetrics = filteredMetrics.filter(m => m.severity === filters.severity);
+        filteredMetrics = filteredMetrics.filter(
+          (m) => m.severity === filters.severity
+        );
       }
-      
+
       if (filters.timeRange) {
-        filteredMetrics = filteredMetrics.filter(m => 
-          m.timestamp >= filters.timeRange!.start && m.timestamp <= filters.timeRange!.end
+        filteredMetrics = filteredMetrics.filter(
+          (m) =>
+            m.timestamp >= filters.timeRange!.start &&
+            m.timestamp <= filters.timeRange!.end
         );
       }
     }
@@ -390,20 +438,34 @@ export class ErrorAnalyticsCollector {
   exportMetrics(format: 'json' | 'csv' = 'json'): string {
     if (format === 'csv') {
       const headers = [
-        'id', 'timestamp', 'category', 'severity', 'code', 'message',
-        'userAgent', 'url', 'userId', 'sessionId', 'component', 'action'
+        'id',
+        'timestamp',
+        'category',
+        'severity',
+        'code',
+        'message',
+        'userAgent',
+        'url',
+        'userId',
+        'sessionId',
+        'component',
+        'action',
       ];
-      
+
       const csvRows = [
         headers.join(','),
-        ...this.metrics.map(metric => 
-          headers.map(header => {
-            const value = metric[header as keyof ErrorMetric];
-            return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
-          }).join(',')
-        )
+        ...this.metrics.map((metric) =>
+          headers
+            .map((header) => {
+              const value = metric[header as keyof ErrorMetric];
+              return typeof value === 'string'
+                ? `"${value.replace(/"/g, '""')}"`
+                : value;
+            })
+            .join(',')
+        ),
       ];
-      
+
       return csvRows.join('\n');
     }
 
@@ -429,7 +491,7 @@ export const errorAnalytics = new ErrorAnalyticsCollector({
     logger.info('Error analytics updated', {
       totalErrors: analytics.totalErrors,
       errorRate: analytics.userImpact.errorRate,
-      topErrorCode: analytics.topErrors[0]?.code
+      topErrorCode: analytics.topErrors[0]?.code,
     });
-  }
+  },
 });

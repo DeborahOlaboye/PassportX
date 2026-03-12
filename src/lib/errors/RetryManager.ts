@@ -23,7 +23,7 @@ export interface CircuitBreakerOptions {
 export enum CircuitBreakerState {
   CLOSED = 'CLOSED',
   OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN'
+  HALF_OPEN = 'HALF_OPEN',
 }
 
 export class CircuitBreaker {
@@ -64,10 +64,11 @@ export class CircuitBreaker {
 
   private onSuccess(): void {
     this.failureCount = 0;
-    
+
     if (this.state === CircuitBreakerState.HALF_OPEN) {
       this.successCount++;
-      if (this.successCount >= 3) { // Require 3 successes to close
+      if (this.successCount >= 3) {
+        // Require 3 successes to close
         this.state = CircuitBreakerState.CLOSED;
         logger.info('Circuit breaker transitioning to CLOSED');
       }
@@ -82,7 +83,7 @@ export class CircuitBreaker {
       this.state = CircuitBreakerState.OPEN;
       logger.warn('Circuit breaker transitioning to OPEN', {
         failureCount: this.failureCount,
-        threshold: this.options.failureThreshold
+        threshold: this.options.failureThreshold,
       });
     }
   }
@@ -96,7 +97,7 @@ export class CircuitBreaker {
       state: this.state,
       failureCount: this.failureCount,
       successCount: this.successCount,
-      lastFailureTime: this.lastFailureTime
+      lastFailureTime: this.lastFailureTime,
     };
   }
 
@@ -123,43 +124,48 @@ export class RetryManager {
       backoffMultiplier: 2,
       jitter: true,
       retryCondition: this.defaultRetryCondition,
-      ...options
+      ...options,
     };
 
     const executeOperation = async (): Promise<T> => {
       if (circuitBreakerKey) {
-        const circuitBreaker = this.getOrCreateCircuitBreaker(circuitBreakerKey);
+        const circuitBreaker =
+          this.getOrCreateCircuitBreaker(circuitBreakerKey);
         return circuitBreaker.execute(operation);
       }
       return operation();
     };
 
     let lastError: Error;
-    
+
     for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
       try {
         const result = await executeOperation();
-        
+
         if (attempt > 1) {
           logger.info('Operation succeeded after retry', {
             attempt,
-            maxAttempts: config.maxAttempts
+            maxAttempts: config.maxAttempts,
           });
         }
-        
+
         return result;
       } catch (error) {
         lastError = error as Error;
-        
+
         logger.warn('Operation failed', {
           attempt,
           maxAttempts: config.maxAttempts,
           error: lastError.message,
-          willRetry: attempt < config.maxAttempts && config.retryCondition!(lastError)
+          willRetry:
+            attempt < config.maxAttempts && config.retryCondition!(lastError),
         });
 
         // Don't retry if this is the last attempt or if retry condition fails
-        if (attempt === config.maxAttempts || !config.retryCondition!(lastError)) {
+        if (
+          attempt === config.maxAttempts ||
+          !config.retryCondition!(lastError)
+        ) {
           break;
         }
 
@@ -173,9 +179,9 @@ export class RetryManager {
     throw new NetworkError(
       `Operation failed after ${config.maxAttempts} attempts: ${lastError.message}`,
       'RETRY_EXHAUSTED',
-      { 
+      {
         maxAttempts: config.maxAttempts,
-        originalError: lastError.message 
+        originalError: lastError.message,
       },
       lastError
     );
@@ -198,7 +204,8 @@ export class RetryManager {
   }
 
   private calculateDelay(attempt: number, options: RetryOptions): number {
-    let delay = options.baseDelay * Math.pow(options.backoffMultiplier, attempt - 1);
+    let delay =
+      options.baseDelay * Math.pow(options.backoffMultiplier, attempt - 1);
     delay = Math.min(delay, options.maxDelay);
 
     if (options.jitter) {
@@ -210,7 +217,7 @@ export class RetryManager {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getOrCreateCircuitBreaker(key: string): CircuitBreaker {
@@ -218,7 +225,7 @@ export class RetryManager {
       const circuitBreaker = new CircuitBreaker({
         failureThreshold: 5,
         resetTimeout: 60000, // 1 minute
-        monitoringPeriod: 10000 // 10 seconds
+        monitoringPeriod: 10000, // 10 seconds
       });
       this.circuitBreakers.set(key, circuitBreaker);
     }

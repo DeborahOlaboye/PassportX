@@ -42,7 +42,7 @@ export class ErrorContextManager {
     const mergedContext = {
       ...this.globalContext,
       ...context,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     return this.asyncLocalStorage.run(mergedContext, callback);
   }
@@ -54,7 +54,7 @@ export class ErrorContextManager {
     const mergedContext = {
       ...this.globalContext,
       ...context,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     return this.asyncLocalStorage.run(mergedContext, callback);
   }
@@ -71,7 +71,7 @@ export class ErrorContextManager {
       requestId,
       userId,
       timestamp: Date.now(),
-      metadata: {}
+      metadata: {},
     };
   }
 
@@ -81,45 +81,45 @@ export class ErrorContextManager {
       ...current,
       operation,
       component,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
   captureStackTrace(): string[] {
     const stack = new Error().stack;
     if (!stack) return [];
-    
+
     return stack
       .split('\n')
       .slice(2) // Remove Error and captureStackTrace lines
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
   }
 
   enrichErrorWithContext(error: Error): Error & { context?: ErrorContext } {
     const context = this.getCurrentContext();
     const enrichedError = error as Error & { context?: ErrorContext };
-    
+
     if (context) {
       enrichedError.context = {
         ...context,
-        stackTrace: this.captureStackTrace()
+        stackTrace: this.captureStackTrace(),
       };
     }
-    
+
     return enrichedError;
   }
 
   formatContextForLogging(context?: ErrorContext): Record<string, unknown> {
     if (!context) return {};
-    
+
     return {
       requestId: context.requestId,
       userId: context.userId,
       operation: context.operation,
       component: context.component,
       timestamp: context.timestamp,
-      metadata: context.metadata
+      metadata: context.metadata,
     };
   }
 
@@ -132,17 +132,27 @@ export class ErrorContextManager {
 export const errorContextManager = ErrorContextManager.getInstance();
 
 // Utility decorators for automatic context management
-export function withErrorContext(operation: string, component?: string) {
-  return function <T extends (...args: any[]) => any>(
-    target: any,
-    propertyKey: string,
+export function withErrorContext(
+  operation: string,
+  component?: string
+): (
+  target: unknown,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<(...args: unknown[]) => unknown>
+) => TypedPropertyDescriptor<(...args: unknown[]) => unknown> {
+  return function <T extends (...args: unknown[]) => unknown>(
+    _target: unknown,
+    _propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>
-  ) {
+  ): TypedPropertyDescriptor<T> {
     const originalMethod = descriptor.value;
     if (!originalMethod) return descriptor;
 
-    descriptor.value = function (this: any, ...args: any[]) {
-      const context = errorContextManager.createOperationContext(operation, component);
+    descriptor.value = function (this: unknown, ...args: unknown[]) {
+      const context = errorContextManager.createOperationContext(
+        operation,
+        component
+      );
       return errorContextManager.runWithContext(context, () => {
         return originalMethod.apply(this, args);
       });
@@ -152,17 +162,27 @@ export function withErrorContext(operation: string, component?: string) {
   };
 }
 
-export function withAsyncErrorContext(operation: string, component?: string) {
-  return function <T extends (...args: any[]) => Promise<any>>(
-    target: any,
-    propertyKey: string,
+export function withAsyncErrorContext(
+  operation: string,
+  component?: string
+): (
+  target: unknown,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<(...args: unknown[]) => Promise<unknown>>
+) => TypedPropertyDescriptor<(...args: unknown[]) => Promise<unknown>> {
+  return function <T extends (...args: unknown[]) => Promise<unknown>>(
+    _target: unknown,
+    _propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>
-  ) {
+  ): TypedPropertyDescriptor<T> {
     const originalMethod = descriptor.value;
     if (!originalMethod) return descriptor;
 
-    descriptor.value = async function (this: any, ...args: any[]) {
-      const context = errorContextManager.createOperationContext(operation, component);
+    descriptor.value = async function (this: unknown, ...args: unknown[]) {
+      const context = errorContextManager.createOperationContext(
+        operation,
+        component
+      );
       return errorContextManager.runWithContextAsync(context, () => {
         return originalMethod.apply(this, args);
       });
