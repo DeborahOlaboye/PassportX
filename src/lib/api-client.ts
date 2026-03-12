@@ -2,8 +2,6 @@
  * Standardized API client for the frontend
  */
 
-import { APIErrorResponse, APISuccessResponse } from './api-responses';
-
 export class APIClientError extends Error {
   constructor(
     public message: string,
@@ -38,9 +36,13 @@ export async function request<T>(
     }
 
     // Handle legacy/other error formats
-    const errorMessage = data?.error || data?.message || response.statusText || 'An unknown error occurred';
+    const errorMessage =
+      data?.error ||
+      data?.message ||
+      response.statusText ||
+      'An unknown error occurred';
     const errorCode = data?.code || 'API_ERROR';
-    
+
     throw new APIClientError(errorMessage, errorCode, response.status, data);
   }
 
@@ -53,26 +55,30 @@ export async function request<T>(
   return data as T;
 }
 
+interface RequestBody {
+  [key: string]: unknown;
+}
+
 export const apiClient = {
-  get: <T>(url: string, options?: RequestInit) => 
+  get: <T>(url: string, options?: RequestInit): Promise<T> =>
     request<T>(url, { ...options, method: 'GET' }),
-  
-  post: <T>(url: string, body: any, options?: RequestInit) => 
-    request<T>(url, { 
-      ...options, 
-      method: 'POST', 
+
+  post: <T>(url: string, body: RequestBody, options?: RequestInit): Promise<T> =>
+    request<T>(url, {
+      ...options,
+      method: 'POST',
       headers: { 'Content-Type': 'application/json', ...options?.headers },
-      body: JSON.stringify(body) 
+      body: JSON.stringify(body),
     }),
-  
-  put: <T>(url: string, body: any, options?: RequestInit) => 
-    request<T>(url, { 
-      ...options, 
-      method: 'PUT', 
+
+  put: <T>(url: string, body: RequestBody, options?: RequestInit): Promise<T> =>
+    request<T>(url, {
+      ...options,
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...options?.headers },
-      body: JSON.stringify(body) 
+      body: JSON.stringify(body),
     }),
-  
-  delete: <T>(url: string, options?: RequestInit) => 
+
+  delete: <T>(url: string, options?: RequestInit): Promise<T> =>
     request<T>(url, { ...options, method: 'DELETE' }),
 };
