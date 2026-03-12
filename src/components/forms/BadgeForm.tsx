@@ -2,7 +2,6 @@
 import ErrorBoundary from '../ErrorBoundary';
 import { BadgeErrorFallback } from '../FallbackUI';
 import { useState } from 'react';
-import { Award, Upload, Palette } from 'lucide-react';
 import {
   validateBadgeMetadata,
   ValidationError,

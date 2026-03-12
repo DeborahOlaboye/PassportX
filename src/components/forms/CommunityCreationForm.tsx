@@ -2,7 +2,7 @@
 import ErrorBoundary from '../ErrorBoundary';
 import { CommunityErrorFallback } from '../FallbackUI';
 import { useState } from 'react';
-import { Users, Palette, Settings, Wallet } from 'lucide-react';
+import { Palette, Settings, Wallet } from 'lucide-react';
 
 interface CommunityFormData {
   name: string;

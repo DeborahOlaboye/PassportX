@@ -1,7 +1,7 @@
 'use client';
 import ErrorBoundary from '../ErrorBoundary';
 import { BadgeErrorFallback } from '../FallbackUI';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Award, Mail, User, Loader } from 'lucide-react';
 import { validateBadgeIssuanceForm } from '@/lib/validation/badgeValidation';
 

@@ -188,7 +188,7 @@ function SearchBarInner({
             </div>
           ) : (
             <ul className="py-2">
-              {suggestions.map((suggestion, index) => (
+              {suggestions.map((suggestion) => (
                 <li key={suggestion.id} role="option" aria-selected={false}>
                   <button
                     onClick={() => handleSuggestionClick(suggestion)}
