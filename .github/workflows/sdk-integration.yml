@@ -99,11 +99,11 @@ jobs:
       - name: Install passportx-sdk and TypeScript tools
         run: |
           npm install passportx-sdk
-          npm install -g ts-node typescript
+          npm install -g tsx typescript
 
       - name: Run TypeScript demo
         continue-on-error: true
-        run: ts-node examples/demo.ts
+        run: tsx examples/demo.ts
 
   sdk-bundle-size:
     name: Check SDK Bundle Size
