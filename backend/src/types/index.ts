@@ -49,6 +49,13 @@ export interface IUser extends Document {
   passportId?: string;
   settings?: IUserSettings;
   isAdmin: boolean;
+  permissions?: Map<string, boolean>;
+  status?: 'active' | 'suspended';
+  suspendedAt?: Date;
+  suspendedBy?: string;
+  suspensionReason?: string;
+  unsuspendedAt?: Date;
+  unsuspendedBy?: string;
 }
 
 export interface ICommunityTheme {
