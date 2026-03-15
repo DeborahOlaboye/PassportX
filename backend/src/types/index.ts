@@ -92,13 +92,25 @@ export interface ICommunityMetadata {
   createdAtTimestamp?: Date;
 }
 
+export interface ICommunityMember {
+  address: string;
+  role: string;
+  joinedAt: Date;
+  roleAssignedAt?: Date;
+  roleRevokedAt?: Date;
+}
+
 export interface ICommunity extends Document {
+  communityId?: string; // On-chain community identifier (blockchainId alias)
   name: string;
   slug: string;
   description: string;
   about?: string;
   website?: string;
+  creator?: string; // Stacks address of original creator
   admins: string[]; // Array of Stacks addresses
+  members: ICommunityMember[]; // Member list with roles
+  issuers: string[]; // Authorised badge issuer addresses
   theme: ICommunityTheme;
   socialLinks?: ISocialLinks;
   memberCount: number;
