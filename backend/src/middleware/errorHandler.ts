@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import {
   AppError,
-  isAppError,
   getErrorMessage,
   getErrorStatusCode,
 } from '../errors';
+import logger from '../utils/logger';
 
 export { AppError };
 
@@ -17,10 +17,7 @@ export const errorHandler = (
   const statusCode = getErrorStatusCode(err);
   const message = getErrorMessage(err);
 
-  // Log error in development
-  if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', err);
-  }
+  logger.error('Request error', { statusCode, message, err });
 
   res.status(statusCode).json({
     error: message,

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { Transaction, TransactionHistoryState } from '@/types/transaction';
+import logger from '@/utils/logger';
 
 type TransactionAction =
   | { type: 'ADD_TRANSACTION'; payload: Omit<Transaction, 'id' | 'timestamp'> }
@@ -63,7 +64,7 @@ export function TransactionProvider({
           dispatch({ type: 'ADD_TRANSACTION', payload: tx });
         });
       } catch (error) {
-        console.error('Failed to load transaction history:', error);
+        logger.error('Failed to load transaction history', { error });
       }
     }
   }, []);
