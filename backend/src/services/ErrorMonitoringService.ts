@@ -3,6 +3,7 @@ import { DeadLetterQueue } from '../models/DeadLetterQueue';
 import { RetryQueue } from '../models/RetryQueue';
 import CircuitBreakerRegistry from './CircuitBreakerService';
 import emailService from './EmailService';
+import { htmlEmail, detailRow, AlertSeverity } from '../utils/emailTemplates';
 
 /**
  * ErrorMonitoringService
@@ -400,6 +401,12 @@ export class ErrorMonitoringService {
         ? notification.timestamp.toISOString()
         : String(notification.timestamp);
 
+    const severity = notification.severity as AlertSeverity;
+    const detailTable = `<table style="border-collapse:collapse;width:100%">
+      ${detailRow('Severity', severity)}
+      ${detailRow('Time', timestamp)}
+    </table>`;
+
     await emailService.send({
       to,
       subject: `[PassportX Error] ${notification.title}`,
@@ -408,19 +415,14 @@ export class ErrorMonitoringService {
         '',
         notification.message ?? '',
         '',
-        `Severity : ${notification.severity}`,
+        `Severity : ${severity}`,
         `Time     : ${timestamp}`,
       ].join('\n'),
-      html: `
-        <h2 style="color:#dc2626">${notification.title}</h2>
-        <p>${notification.message ?? ''}</p>
-        <table style="border-collapse:collapse;font-family:monospace">
-          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${
-            notification.severity
-          }</td></tr>
-          <tr><td style="padding:2px 8px"><strong>Time</strong></td><td>${timestamp}</td></tr>
-        </table>
-      `.trim(),
+      html: htmlEmail({
+        title: notification.title,
+        severity,
+        body: `<p>${notification.message ?? ''}</p>${detailTable}`,
+      }),
     });
   }
 

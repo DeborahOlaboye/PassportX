@@ -2,6 +2,7 @@ import { AccessControlAuditLog } from '../models/AccessControlAuditLog';
 import { AccessControlEventType } from '../types/accessControl';
 import ErrorMonitoringService from './ErrorMonitoringService';
 import emailService from './EmailService';
+import { htmlEmail, detailRow, AlertSeverity } from '../utils/emailTemplates';
 
 /**
  * Access Control Security Monitor
@@ -512,6 +513,13 @@ export class AccessControlSecurityMonitor {
         ? notification.timestamp.toISOString()
         : String(notification.timestamp);
 
+    const severity = notification.severity as AlertSeverity;
+    const detailTable = `<table style="border-collapse:collapse;width:100%">
+      ${detailRow('Type', notification.type)}
+      ${detailRow('Severity', severity)}
+      ${detailRow('Time', timestamp)}
+    </table>`;
+
     await emailService.send({
       to,
       subject: `[PassportX Security] ${notification.title}`,
@@ -521,24 +529,14 @@ export class AccessControlSecurityMonitor {
         notification.message ?? '',
         '',
         `Type     : ${notification.type}`,
-        `Severity : ${notification.severity}`,
+        `Severity : ${severity}`,
         `Time     : ${timestamp}`,
       ].join('\n'),
-      html: `
-        <h2 style="color:#dc2626">&#x26A0; Security Alert: ${
-          notification.title
-        }</h2>
-        <p>${notification.message ?? ''}</p>
-        <table style="border-collapse:collapse;font-family:monospace">
-          <tr><td style="padding:2px 8px"><strong>Type</strong></td><td>${
-            notification.type
-          }</td></tr>
-          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${
-            notification.severity
-          }</td></tr>
-          <tr><td style="padding:2px 8px"><strong>Time</strong></td><td>${timestamp}</td></tr>
-        </table>
-      `.trim(),
+      html: htmlEmail({
+        title: `\u26A0 Security Alert: ${notification.title}`,
+        severity,
+        body: `<p>${notification.message ?? ''}</p>${detailTable}`,
+      }),
     });
   }
 
