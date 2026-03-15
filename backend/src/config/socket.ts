@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { requireJwtSecret } from '../utils/jwtSecret';
 
 interface SocketUser {
   stacksAddress: string;
@@ -11,24 +12,8 @@ interface AuthenticatedSocket extends Socket {
   user?: SocketUser;
 }
 
-/**
- * Returns the JWT secret or throws at startup – never falls back to a
- * hardcoded default so that misconfigured deployments fail fast and
- * visibly rather than silently accepting forged tokens.
- */
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error(
-      'JWT_SECRET environment variable is not set. ' +
-        'Set a strong, random secret before starting the server.'
-    );
-  }
-  return secret;
-}
-
 export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
-  const jwtSecret = getJwtSecret();
+  const jwtSecret = requireJwtSecret();
 
   const io = new SocketIOServer(httpServer, {
     cors: {
