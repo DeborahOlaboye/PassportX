@@ -525,11 +525,17 @@ export class AccessControlSecurityMonitor {
         `Time     : ${timestamp}`,
       ].join('\n'),
       html: `
-        <h2 style="color:#dc2626">&#x26A0; Security Alert: ${notification.title}</h2>
+        <h2 style="color:#dc2626">&#x26A0; Security Alert: ${
+          notification.title
+        }</h2>
         <p>${notification.message ?? ''}</p>
         <table style="border-collapse:collapse;font-family:monospace">
-          <tr><td style="padding:2px 8px"><strong>Type</strong></td><td>${notification.type}</td></tr>
-          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${notification.severity}</td></tr>
+          <tr><td style="padding:2px 8px"><strong>Type</strong></td><td>${
+            notification.type
+          }</td></tr>
+          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${
+            notification.severity
+          }</td></tr>
           <tr><td style="padding:2px 8px"><strong>Time</strong></td><td>${timestamp}</td></tr>
         </table>
       `.trim(),

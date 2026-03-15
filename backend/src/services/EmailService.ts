@@ -44,9 +44,7 @@ export class EmailService {
   constructor() {
     this.transporter = buildTransport();
     this.from =
-      process.env.SMTP_FROM ??
-      process.env.SMTP_USER ??
-      'noreply@passportx.app';
+      process.env.SMTP_FROM ?? process.env.SMTP_USER ?? 'noreply@passportx.app';
   }
 
   isConfigured(): boolean {

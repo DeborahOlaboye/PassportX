@@ -415,7 +415,9 @@ export class ErrorMonitoringService {
         <h2 style="color:#dc2626">${notification.title}</h2>
         <p>${notification.message ?? ''}</p>
         <table style="border-collapse:collapse;font-family:monospace">
-          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${notification.severity}</td></tr>
+          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${
+            notification.severity
+          }</td></tr>
           <tr><td style="padding:2px 8px"><strong>Time</strong></td><td>${timestamp}</td></tr>
         </table>
       `.trim(),
