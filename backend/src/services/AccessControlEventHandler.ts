@@ -403,10 +403,10 @@ export class AccessControlEventHandler {
       const user = await User.findOne({ stacksAddress: suspendedUser });
 
       if (user) {
-        (user as any).status = 'suspended';
-        (user as any).suspendedAt = new Date();
-        (user as any).suspendedBy = event.principal;
-        (user as any).suspensionReason = event.metadata.reason;
+        user.status = 'suspended';
+        user.suspendedAt = new Date();
+        user.suspendedBy = event.principal;
+        user.suspensionReason = event.metadata.reason;
         user.lastActive = new Date();
         await user.save();
 
@@ -443,10 +443,10 @@ export class AccessControlEventHandler {
       const user = await User.findOne({ stacksAddress: unsuspendedUser });
 
       if (user) {
-        (user as any).status = 'active';
-        (user as any).unsuspendedAt = new Date();
-        (user as any).unsuspendedBy = event.principal;
-        (user as any).suspensionReason = null;
+        user.status = 'active';
+        user.unsuspendedAt = new Date();
+        user.unsuspendedBy = event.principal;
+        user.suspensionReason = undefined;
         user.lastActive = new Date();
         await user.save();
 
