@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import {
-  AppError,
-  getErrorMessage,
-  getErrorStatusCode,
-} from '../errors';
+import { AppError, getErrorMessage, getErrorStatusCode } from '../errors';
 import logger from '../utils/logger';
 
 export { AppError };
