@@ -10,7 +10,7 @@ import React, {
 import { AppConfig, UserSession, showConnect } from '@stacks/connect';
 import { apiClient, APIClientError } from '@/lib/api-client';
 
-interface User {
+export interface User {
   stacksAddress: string;
   profile?: {
     name?: string;
@@ -23,7 +23,7 @@ interface User {
   joinDate?: Date;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
