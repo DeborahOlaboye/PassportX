@@ -9,6 +9,7 @@ import {
   useCallback,
 } from 'react';
 import { io, Socket } from 'socket.io-client';
+import logger from '@/utils/logger';
 
 interface NotificationData {
   badgeId?: string;
@@ -76,23 +77,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     });
 
     socketInstance.on('connect', () => {
-      console.log('WebSocket connected');
+      logger.info('WebSocket connected');
       setIsConnected(true);
     });
 
     socketInstance.on('disconnect', () => {
-      console.log('WebSocket disconnected');
+      logger.info('WebSocket disconnected');
       setIsConnected(false);
     });
 
     socketInstance.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
+      logger.error('WebSocket connection error', { error });
       setIsConnected(false);
     });
 
     // Listen for new notifications
     socketInstance.on('notification:new', (notification: Notification) => {
-      console.log('New notification received:', notification);
+      logger.debug('New notification received', { notification });
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
 
@@ -107,7 +108,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     // Listen for system announcements
     socketInstance.on('notification:system', (notification: Notification) => {
-      console.log('System announcement received:', notification);
+      logger.info('System announcement received', { notification });
       // Handle system-wide announcements
     });
 
@@ -139,7 +140,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(data.unreadCount || 0);
       }
     } catch (error: unknown) {
-      console.error('Error fetching notifications:', error);
+      logger.error('Error fetching notifications', { error });
     }
   }, []);
 
@@ -160,7 +161,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(data.count || 0);
       }
     } catch (error: unknown) {
-      console.error('Error fetching unread count:', error);
+      logger.error('Error fetching unread count', { error });
     }
   }, []);
 
@@ -195,7 +196,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error: unknown) {
-        console.error('Error marking notification as read:', error);
+        logger.error('Error marking notification as read', { error });
       }
     },
     [socket]
@@ -224,7 +225,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error: unknown) {
-      console.error('Error marking all notifications as read:', error);
+      logger.error('Error marking all notifications as read', { error });
     }
   }, [socket]);
 
@@ -251,14 +252,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (error: unknown) {
-      console.error('Error deleting notification:', error);
+      logger.error('Error deleting notification', { error });
     }
   }, []);
 
   // Fetch notifications on mount
   useEffect(() => {
     fetchNotifications().catch((err: unknown) => {
-      console.error('Failed to fetch notifications on mount:', err);
+      logger.error('Failed to fetch notifications on mount', { err });
     });
   }, [fetchNotifications]);
 
@@ -266,7 +267,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch((err: unknown) => {
-        console.warn('Failed to request notification permission:', err);
+        logger.warn('Failed to request notification permission', { err });
       });
     }
   }, []);
