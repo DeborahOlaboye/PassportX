@@ -42,7 +42,16 @@ export interface Alert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+}
+
+/** Notification payload built from an Alert and passed to channel senders. */
+interface AlertNotificationPayload {
+  title: string;
+  message: string;
+  severity: Alert['severity'];
+  timestamp: Date;
+  metadata?: Record<string, unknown>;
 }
 
 export class ErrorMonitoringService {
@@ -330,7 +339,9 @@ export class ErrorMonitoringService {
   /**
    * Send notification to Slack
    */
-  private async sendSlackNotification(notification: any): Promise<void> {
+  private async sendSlackNotification(
+    notification: AlertNotificationPayload
+  ): Promise<void> {
     const webhookUrl = process.env.SLACK_WEBHOOK_URL;
     if (!webhookUrl) return;
 
@@ -389,7 +400,9 @@ export class ErrorMonitoringService {
   /**
    * Send notification via email
    */
-  private async sendEmailNotification(notification: any): Promise<void> {
+  private async sendEmailNotification(
+    notification: AlertNotificationPayload
+  ): Promise<void> {
     const to = process.env.ERROR_EMAIL_TO;
     if (!to) {
       this.logger.warn('ERROR_EMAIL_TO not configured — skipping email alert');
