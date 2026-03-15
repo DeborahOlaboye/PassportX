@@ -24,7 +24,7 @@ app.get(
 const makeToken = (userId: string) =>
   jwt.sign(
     { userId, stacksAddress: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM' },
-    process.env.JWT_SECRET!,
+    process.env.JWT_SECRET as string,
     { expiresIn: '1h' }
   );
 
