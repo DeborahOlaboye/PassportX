@@ -20,17 +20,15 @@ import defaultLogger from '../utils/logger';
  * Processes access control events from Chainhook webhooks
  */
 
+type Logger = typeof defaultLogger;
+
 export class AccessControlEventHandler {
   private auditService: typeof AccessControlAuditService;
-  private logger: any;
+  private logger: Logger;
 
-  constructor(logger?: any) {
+  constructor(logger?: Logger) {
     this.auditService = AccessControlAuditService;
-    this.logger = logger || this.getDefaultLogger();
-  }
-
-  private getDefaultLogger() {
-    return defaultLogger;
+    this.logger = logger ?? defaultLogger;
   }
 
   /**
