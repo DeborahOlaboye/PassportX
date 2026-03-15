@@ -12,6 +12,7 @@ import {
 import AccessControlAuditService from './AccessControlAuditService';
 import { Community } from '../models/Community';
 import { User } from '../models/User';
+import defaultLogger from '../utils/logger';
 
 /**
  * Access Control Event Handler
@@ -29,16 +30,7 @@ export class AccessControlEventHandler {
   }
 
   private getDefaultLogger() {
-    return {
-      debug: (msg: string, ...args: any[]) =>
-        console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
-        console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
-        console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
-        console.error(`[ERROR] ${msg}`, ...args),
-    };
+    return defaultLogger;
   }
 
   /**
