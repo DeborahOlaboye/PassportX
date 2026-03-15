@@ -22,7 +22,9 @@ function read(...parts: string[]): string {
 describe('AuthContext consolidation (Issue #4)', () => {
   describe('src/context/AuthContext (SDK layer)', () => {
     let content: string;
-    beforeAll(() => { content = read('context', 'AuthContext.tsx'); });
+    beforeAll(() => {
+      content = read('context', 'AuthContext.tsx');
+    });
 
     it("has 'use client' directive", () => {
       expect(content).toMatch(/^'use client'/m);
@@ -36,7 +38,9 @@ describe('AuthContext consolidation (Issue #4)', () => {
 
   describe('src/hooks/useAuth (SDK re-export hook)', () => {
     let content: string;
-    beforeAll(() => { content = read('hooks', 'useAuth.tsx'); });
+    beforeAll(() => {
+      content = read('hooks', 'useAuth.tsx');
+    });
 
     it('imports from contexts/AuthContext (canonical), not context/AuthContext (SDK)', () => {
       expect(content).toContain('contexts/AuthContext');
@@ -50,7 +54,9 @@ describe('AuthContext consolidation (Issue #4)', () => {
 
   describe('src/index.ts (public SDK exports)', () => {
     let content: string;
-    beforeAll(() => { content = read('index.ts'); });
+    beforeAll(() => {
+      content = read('index.ts');
+    });
 
     it('routes AuthProvider through hooks/useAuth (which delegates to canonical context)', () => {
       expect(content).toContain('./hooks/useAuth');
@@ -65,7 +71,9 @@ describe('AuthContext consolidation (Issue #4)', () => {
 
   describe('src/contexts/AuthContext (canonical app auth)', () => {
     let content: string;
-    beforeAll(() => { content = read('contexts', 'AuthContext.tsx'); });
+    beforeAll(() => {
+      content = read('contexts', 'AuthContext.tsx');
+    });
 
     it('exports the User interface', () => {
       expect(content).toContain('export interface User');
