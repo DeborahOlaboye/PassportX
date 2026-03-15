@@ -49,6 +49,29 @@ const router = Router();
  *         description: Database health info
  *       500:
  *         description: Database connection error
+ * /health/email:
+ *   get:
+ *     summary: SMTP / email health
+ *     description: >
+ *       Returns whether SMTP is configured and whether the mail server is
+ *       reachable. Returns HTTP 200 when ok, 503 when unreachable, and 200
+ *       with status "unconfigured" when SMTP env vars are not set.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: SMTP is ok or unconfigured
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [ok, unconfigured]
+ *                 configured:
+ *                   type: boolean
+ *       503:
+ *         description: SMTP is configured but unreachable
  */
 // Basic health check
 router.get('/', (req, res) => {
