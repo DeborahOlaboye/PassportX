@@ -1,5 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
-import { ICommunity } from '../types';
+import { ICommunity, ICommunityMember } from '../types';
+
+export type { ICommunityMember };
 
 const communitySchema = new Schema<ICommunity>(
   {
