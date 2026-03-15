@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ChainhookPerformanceProfiler from '../services/chainhookPerformanceProfiler';
+import defaultLogger from '../utils/logger';
 
 export interface PerformanceMonitoringConfig {
   enabled: boolean;
@@ -38,14 +39,14 @@ export class ChainhookPerformanceMonitoring {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) =>
-        console.debug(`[PerfMonitoring] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
-        console.info(`[PerfMonitoring] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
-        console.warn(`[PerfMonitoring] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
-        console.error(`[PerfMonitoring] ${msg}`, ...args),
+      debug: (msg: string, meta?: unknown) =>
+        defaultLogger.debug(`[PerfMonitoring] ${msg}`, meta),
+      info: (msg: string, meta?: unknown) =>
+        defaultLogger.info(`[PerfMonitoring] ${msg}`, meta),
+      warn: (msg: string, meta?: unknown) =>
+        defaultLogger.warn(`[PerfMonitoring] ${msg}`, meta),
+      error: (msg: string, meta?: unknown) =>
+        defaultLogger.error(`[PerfMonitoring] ${msg}`, meta),
     };
   }
 

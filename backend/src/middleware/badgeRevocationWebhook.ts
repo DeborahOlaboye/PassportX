@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import BadgeRevocationCoordinator from '../services/badgeRevocationCoordinator';
 import { BadgeRevocationEvent } from '../chainhook/types/handlers';
+import defaultLogger from '../utils/logger';
 
 export interface RevocationWebhookConfig {
   enabled: boolean;
@@ -42,14 +43,14 @@ export class BadgeRevocationWebhookMiddleware {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) =>
-        console.debug(`[BadgeRevocationWebhook] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
-        console.info(`[BadgeRevocationWebhook] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
-        console.warn(`[BadgeRevocationWebhook] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
-        console.error(`[BadgeRevocationWebhook] ${msg}`, ...args),
+      debug: (msg: string, meta?: unknown) =>
+        defaultLogger.debug(`[BadgeRevocationWebhook] ${msg}`, meta),
+      info: (msg: string, meta?: unknown) =>
+        defaultLogger.info(`[BadgeRevocationWebhook] ${msg}`, meta),
+      warn: (msg: string, meta?: unknown) =>
+        defaultLogger.warn(`[BadgeRevocationWebhook] ${msg}`, meta),
+      error: (msg: string, meta?: unknown) =>
+        defaultLogger.error(`[BadgeRevocationWebhook] ${msg}`, meta),
     };
   }
 

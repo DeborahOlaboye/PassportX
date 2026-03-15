@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import BadgeMetadataUpdateService from '../services/badgeMetadataUpdateService';
 import { BadgeMetadataUpdateEvent } from '../chainhook/types/handlers';
+import defaultLogger from '../utils/logger';
 
 export interface WebhookValidationConfig {
   enabled: boolean;
@@ -52,14 +53,14 @@ export class BadgeMetadataUpdateWebhookMiddleware {
 
   private getDefaultLogger() {
     return {
-      debug: (msg: string, ...args: any[]) =>
-        console.debug(`[BadgeMetadataWebhook] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
-        console.info(`[BadgeMetadataWebhook] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
-        console.warn(`[BadgeMetadataWebhook] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
-        console.error(`[BadgeMetadataWebhook] ${msg}`, ...args),
+      debug: (msg: string, meta?: unknown) =>
+        defaultLogger.debug(`[BadgeMetadataWebhook] ${msg}`, meta),
+      info: (msg: string, meta?: unknown) =>
+        defaultLogger.info(`[BadgeMetadataWebhook] ${msg}`, meta),
+      warn: (msg: string, meta?: unknown) =>
+        defaultLogger.warn(`[BadgeMetadataWebhook] ${msg}`, meta),
+      error: (msg: string, meta?: unknown) =>
+        defaultLogger.error(`[BadgeMetadataWebhook] ${msg}`, meta),
     };
   }
 
