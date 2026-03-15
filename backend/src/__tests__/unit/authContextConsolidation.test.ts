@@ -69,6 +69,28 @@ describe('AuthContext consolidation (Issue #4)', () => {
     });
   });
 
+  describe('src/context/WalletSessionContext (SDK layer)', () => {
+    let content: string;
+    beforeAll(() => {
+      content = read('context', 'WalletSessionContext.tsx');
+    });
+
+    it("has 'use client' directive", () => {
+      expect(content).toMatch(/^'use client'/m);
+    });
+  });
+
+  describe('src/hooks/useWalletSession (SDK hook)', () => {
+    let content: string;
+    beforeAll(() => {
+      content = read('hooks', 'useWalletSession.tsx');
+    });
+
+    it("has 'use client' directive", () => {
+      expect(content).toMatch(/^'use client'/m);
+    });
+  });
+
   describe('src/contexts/AuthContext (canonical app auth)', () => {
     let content: string;
     beforeAll(() => {
