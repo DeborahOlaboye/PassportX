@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { DeadLetterQueue } from '../models/DeadLetterQueue';
 import { RetryQueue } from '../models/RetryQueue';
 import CircuitBreakerRegistry from './CircuitBreakerService';
+import emailService from './EmailService';
 
 /**
  * ErrorMonitoringService
@@ -385,17 +386,40 @@ export class ErrorMonitoringService {
   }
 
   /**
-   * Send notification via email (placeholder for email service integration)
+   * Send notification via email
    */
   private async sendEmailNotification(notification: any): Promise<void> {
-    this.logger.info('Email notification placeholder', {
-      to: process.env.ERROR_EMAIL_TO,
-      subject: notification.title,
-      severity: notification.severity,
-    });
+    const to = process.env.ERROR_EMAIL_TO;
+    if (!to) {
+      this.logger.warn('ERROR_EMAIL_TO not configured — skipping email alert');
+      return;
+    }
 
-    // TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
-    // Example implementation would go here
+    const timestamp =
+      notification.timestamp instanceof Date
+        ? notification.timestamp.toISOString()
+        : String(notification.timestamp);
+
+    await emailService.send({
+      to,
+      subject: `[PassportX Error] ${notification.title}`,
+      text: [
+        notification.title,
+        '',
+        notification.message ?? '',
+        '',
+        `Severity : ${notification.severity}`,
+        `Time     : ${timestamp}`,
+      ].join('\n'),
+      html: `
+        <h2 style="color:#dc2626">${notification.title}</h2>
+        <p>${notification.message ?? ''}</p>
+        <table style="border-collapse:collapse;font-family:monospace">
+          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${notification.severity}</td></tr>
+          <tr><td style="padding:2px 8px"><strong>Time</strong></td><td>${timestamp}</td></tr>
+        </table>
+      `.trim(),
+    });
   }
 
   /**

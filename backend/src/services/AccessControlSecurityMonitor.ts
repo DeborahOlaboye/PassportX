@@ -1,6 +1,7 @@
 import { AccessControlAuditLog } from '../models/AccessControlAuditLog';
 import { AccessControlEventType } from '../types/accessControl';
 import ErrorMonitoringService from './ErrorMonitoringService';
+import emailService from './EmailService';
 
 /**
  * Access Control Security Monitor
@@ -493,19 +494,46 @@ export class AccessControlSecurityMonitor {
   }
 
   /**
-   * Send security alert via email (placeholder)
+   * Send security alert via email
    */
   private async sendSecurityEmailNotification(
     notification: any
   ): Promise<void> {
-    this.logger.info('Security email notification placeholder', {
-      to: process.env.SECURITY_EMAIL_TO,
-      subject: notification.title,
-      type: notification.type,
-      severity: notification.severity,
-    });
+    const to = process.env.SECURITY_EMAIL_TO;
+    if (!to) {
+      this.logger.warn(
+        'SECURITY_EMAIL_TO not configured — skipping security email alert'
+      );
+      return;
+    }
 
-    // TODO: Integrate with actual email service
+    const timestamp =
+      notification.timestamp instanceof Date
+        ? notification.timestamp.toISOString()
+        : String(notification.timestamp);
+
+    await emailService.send({
+      to,
+      subject: `[PassportX Security] ${notification.title}`,
+      text: [
+        `SECURITY ALERT: ${notification.title}`,
+        '',
+        notification.message ?? '',
+        '',
+        `Type     : ${notification.type}`,
+        `Severity : ${notification.severity}`,
+        `Time     : ${timestamp}`,
+      ].join('\n'),
+      html: `
+        <h2 style="color:#dc2626">&#x26A0; Security Alert: ${notification.title}</h2>
+        <p>${notification.message ?? ''}</p>
+        <table style="border-collapse:collapse;font-family:monospace">
+          <tr><td style="padding:2px 8px"><strong>Type</strong></td><td>${notification.type}</td></tr>
+          <tr><td style="padding:2px 8px"><strong>Severity</strong></td><td>${notification.severity}</td></tr>
+          <tr><td style="padding:2px 8px"><strong>Time</strong></td><td>${timestamp}</td></tr>
+        </table>
+      `.trim(),
+    });
   }
 
   /**
