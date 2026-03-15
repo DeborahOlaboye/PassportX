@@ -80,7 +80,9 @@ export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
 
     // Mark notification as read
     socket.on('notification:read', (notificationId: string) => {
-      logger.debug(`Notification ${notificationId} marked as read by ${userId}`);
+      logger.debug(
+        `Notification ${notificationId} marked as read by ${userId}`
+      );
       // Emit acknowledgment
       socket.emit('notification:read:ack', { notificationId });
     });

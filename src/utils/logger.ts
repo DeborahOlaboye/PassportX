@@ -22,7 +22,8 @@ function emit(level: LogLevel, message: string, meta?: unknown): void {
   if (!isEnabled(level)) return;
 
   const prefix = `[passportx][${level.toUpperCase()}] ${timestamp()}`;
-  const args: unknown[] = meta !== undefined ? [prefix, message, meta] : [prefix, message];
+  const args: unknown[] =
+    meta !== undefined ? [prefix, message, meta] : [prefix, message];
 
   switch (level) {
     case 'error':
@@ -48,7 +49,8 @@ const logger = {
   debug: (message: string, meta?: unknown): void =>
     emit('debug', message, meta),
   /** @deprecated Use logger.info instead */
-  logInfo: (...args: unknown[]): void => emit('info', String(args[0]), args.slice(1)),
+  logInfo: (...args: unknown[]): void =>
+    emit('info', String(args[0]), args.slice(1)),
   /** @deprecated Use logger.error instead */
   logError: (...args: unknown[]): void =>
     emit('error', String(args[0]), args.slice(1)),
