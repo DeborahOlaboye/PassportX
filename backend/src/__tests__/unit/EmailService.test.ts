@@ -12,7 +12,9 @@ describe('EmailService', () => {
     process.env = originalEnv;
   });
 
-  function mockTransport(overrides: Partial<{ sendMail: jest.Mock; verify: jest.Mock }> = {}) {
+  function mockTransport(
+    overrides: Partial<{ sendMail: jest.Mock; verify: jest.Mock }> = {}
+  ) {
     const transport = {
       sendMail: overrides.sendMail ?? jest.fn().mockResolvedValue({}),
       verify: overrides.verify ?? jest.fn().mockResolvedValue(true),
@@ -113,7 +115,9 @@ describe('EmailService', () => {
       process.env.SMTP_USER = 'user@example.com';
       process.env.SMTP_PASS = 'secret';
 
-      mockTransport({ sendMail: jest.fn().mockRejectedValue(new Error('SMTP error')) });
+      mockTransport({
+        sendMail: jest.fn().mockRejectedValue(new Error('SMTP error')),
+      });
       const { EmailService } = require('../../services/EmailService');
       const svc = new EmailService();
 
