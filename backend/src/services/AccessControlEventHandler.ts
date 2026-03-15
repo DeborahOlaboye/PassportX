@@ -480,20 +480,16 @@ export class AccessControlEventHandler {
 
     try {
       const Community = (await import('../models/Community')).default;
-      const community = await Community.findOne({ contractId: communityId });
+      const community = await Community.findOne({ communityId });
 
       if (community && issuer) {
-        if (!community.issuers) {
-          community.issuers = [];
-        }
-
         if (authorized) {
           if (!community.issuers.includes(issuer)) {
             community.issuers.push(issuer);
           }
         } else {
           community.issuers = community.issuers.filter(
-            (addr: string) => addr !== issuer
+            (addr) => addr !== issuer
           );
         }
 
