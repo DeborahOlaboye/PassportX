@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
+import { requireJwtSecret } from './jwtSecret';
 
 export interface SessionData {
   stacksAddress: string;
@@ -19,18 +20,6 @@ const DEFAULT_OPTIONS: SessionOptions = {
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict',
 };
-
-/**
- * Returns JWT_SECRET or throws – never falls back to a default so that
- * misconfigured deployments are caught immediately.
- */
-function requireJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET environment variable is not set');
-  }
-  return secret;
-}
 
 /**
  * Generate a JWT token for user session
