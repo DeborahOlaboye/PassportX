@@ -9,6 +9,7 @@ import {
   validateContractAddresses,
   formatValidationErrors,
 } from '../utils/addressValidation';
+import logger from '../utils/logger';
 
 export interface ContractConfig {
   address: string;
@@ -173,10 +174,10 @@ export function verifyContractConfiguration(): boolean {
 
   if (Object.keys(contractAddresses).length === 0) {
     if (network === 'devnet') {
-      console.warn('Warning: No contract addresses configured for devnet');
+      logger.warn('No contract addresses configured for devnet');
       return true;
     } else {
-      console.error(`Contract addresses are required for ${network} network`);
+      logger.error(`Contract addresses are required for ${network} network`);
       return false;
     }
   }
@@ -184,7 +185,7 @@ export function verifyContractConfiguration(): boolean {
   const validation = validateContractAddresses(contractAddresses);
 
   if (!validation.valid) {
-    console.error(
+    logger.error(
       `Contract address validation failed:\n${formatValidationErrors(
         validation.errors
       )}`
@@ -200,13 +201,13 @@ export function verifyContractConfiguration(): boolean {
         expectedNetwork
       );
       if (!networkValidation.valid) {
-        console.error(`${name}: ${networkValidation.error}`);
+        logger.error(`${name}: ${networkValidation.error}`);
         return false;
       }
     }
   }
 
-  console.log(`Contract configuration verified for ${network} network`);
+  logger.info(`Contract configuration verified for ${network} network`);
   return true;
 }
 
