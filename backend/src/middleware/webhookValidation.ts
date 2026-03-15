@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
+import logger from '../utils/logger';
 
 export interface WebhookValidationConfig {
   enabled: boolean;
@@ -15,7 +16,7 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
       }
 
       if (!config.secretKey) {
-        console.warn('Webhook validation enabled but no secret key configured');
+        logger.warn('Webhook validation enabled but no secret key configured');
         return next();
       }
 
@@ -73,7 +74,7 @@ export function validateWebhookSignature(config: WebhookValidationConfig) {
 
       next();
     } catch (error) {
-      console.error('Error validating webhook signature:', error);
+      logger.error('Error validating webhook signature', { error });
       return res.status(500).json({
         success: false,
         error: 'Failed to validate webhook signature',
