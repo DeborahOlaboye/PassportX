@@ -123,9 +123,6 @@ export class AccessControlEventHandler {
       const user = await User.findOne({ stacksAddress: event.principal });
 
       if (user) {
-        if (!user.permissions) {
-          user.permissions = new Map();
-        }
         user.permissions.set(
           event.metadata.permission,
           event.metadata.newValue
