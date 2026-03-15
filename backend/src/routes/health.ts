@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import { monitoringService } from '../middleware/monitoring';
+import emailService from '../services/EmailService';
 
 const router = Router();
 
@@ -104,6 +105,21 @@ router.get('/db', async (req, res) => {
       error: (error as Error).message,
     });
   }
+});
+
+// Email / SMTP health
+router.get('/email', async (req, res) => {
+  const configured = emailService.isConfigured();
+  if (!configured) {
+    res.json({ status: 'unconfigured', message: 'SMTP env vars not set' });
+    return;
+  }
+
+  const reachable = await emailService.verifyConnection();
+  res.status(reachable ? 200 : 503).json({
+    status: reachable ? 'ok' : 'unreachable',
+    configured,
+  });
 });
 
 export default router;
