@@ -11,7 +11,7 @@ import { AppConfig, UserSession, showConnect } from '@stacks/connect';
 import { apiClient, APIClientError } from '@/lib/api-client';
 import logger from '@/utils/logger';
 
-interface User {
+export interface User {
   stacksAddress: string;
   profile?: {
     name?: string;
@@ -24,7 +24,7 @@ interface User {
   joinDate?: Date;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUser({ stacksAddress, isPublic: true, hasPassport: false });
               setIsAuthenticated(true);
             } else {
-              logger.error('Auth data fetch failed', { err });
+              logger.error('Auth data fetch failed', err);
               setError(
                 'Failed to load your account data. Please refresh the page.'
               );
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch (err: unknown) {
-        logger.error('Auth check failed', { err });
+        logger.error('Auth check failed', err);
         setError('Authentication check failed. Please try again.');
       } finally {
         setIsLoading(false);
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 // New user – trigger registration
                 setUser({ stacksAddress, isPublic: true, hasPassport: false });
               } else {
-                logger.error('Login backend check failed', { err });
+                logger.error('Login backend check failed', err);
                 setError(
                   'Connected to wallet but failed to load account. Please refresh.'
                 );
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         userSession,
       });
     } catch (err: unknown) {
-      logger.error('Wallet connection failed', { err });
+      logger.error('Wallet connection failed', err);
       setError('Wallet connection failed. Please try again.');
       setIsLoading(false);
     }
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       );
       setUser({ ...user, profile: { ...user.profile, ...profileData } });
     } catch (err: unknown) {
-      logger.error('Profile update failed', { err });
+      logger.error('Profile update failed', err);
       throw err;
     }
   };
@@ -199,7 +199,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
       setUser({ ...user, hasPassport: true });
     } catch (err: unknown) {
-      logger.error('Passport initialization failed', { err });
+      logger.error('Passport initialization failed', err);
       throw err;
     }
   };
