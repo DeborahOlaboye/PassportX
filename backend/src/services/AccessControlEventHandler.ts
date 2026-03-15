@@ -308,7 +308,9 @@ export class AccessControlEventHandler {
       // Update Community model
       const community = await Community.findOne({ communityId });
       if (!community) {
-        this.logger.warn(`Community not found for admin addition: ${communityId}`);
+        this.logger.warn(
+          `Community not found for admin addition: ${communityId}`
+        );
         return;
       }
 
@@ -366,7 +368,7 @@ export class AccessControlEventHandler {
         const user = await User.findOne({ stacksAddress: removedAdmin });
         if (user) {
           user.adminCommunities = user.adminCommunities.filter(
-            (id: any) => !id.equals(community._id)
+            (id) => String(id) !== String(community._id)
           );
           await user.save();
           this.logger.debug(`Removed community from user's admin communities`);
