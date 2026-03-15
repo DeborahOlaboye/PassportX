@@ -51,6 +51,22 @@ export class EmailService {
     return this.transporter !== null;
   }
 
+  /**
+   * Verify the SMTP connection is reachable.
+   * Returns true on success, false if SMTP is not configured or unreachable.
+   */
+  async verifyConnection(): Promise<boolean> {
+    if (!this.transporter) return false;
+    try {
+      await this.transporter.verify();
+      logger.info('SMTP connection verified successfully');
+      return true;
+    } catch (error) {
+      logger.error('SMTP connection verification failed', { error });
+      return false;
+    }
+  }
+
   async send(options: EmailOptions): Promise<void> {
     if (!this.transporter) {
       logger.warn('Email not sent: SMTP is not configured', {
