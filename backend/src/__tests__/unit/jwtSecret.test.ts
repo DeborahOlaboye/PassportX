@@ -1,7 +1,4 @@
-import {
-  requireJwtSecret,
-  _resetJwtSecretCache,
-} from '../../utils/jwtSecret';
+import { requireJwtSecret, _resetJwtSecretCache } from '../../utils/jwtSecret';
 
 describe('requireJwtSecret()', () => {
   const originalEnv = process.env;
