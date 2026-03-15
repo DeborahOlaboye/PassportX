@@ -307,12 +307,15 @@ export class AccessControlEventHandler {
     try {
       // Update Community model
       const community = await Community.findOne({ communityId });
-      if (community) {
-        if (!community.admins.includes(newAdmin)) {
-          community.admins.push(newAdmin);
-          await community.save();
-          this.logger.debug(`Added ${newAdmin} to community admins`);
-        }
+      if (!community) {
+        this.logger.warn(`Community not found for admin addition: ${communityId}`);
+        return;
+      }
+
+      if (!community.admins.includes(newAdmin)) {
+        community.admins.push(newAdmin);
+        await community.save();
+        this.logger.debug(`Added ${newAdmin} to community admins`);
       }
 
       // Update User model
