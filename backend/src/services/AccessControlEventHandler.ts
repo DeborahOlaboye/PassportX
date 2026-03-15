@@ -169,8 +169,29 @@ export class AccessControlEventHandler {
         return;
       }
 
-      // Update community member role if needed
-      // This logic depends on how Community model stores member roles
+      if (event.targetPrincipal) {
+        const memberIndex = community.members.findIndex(
+          (m) => m.address === event.targetPrincipal
+        );
+        if (memberIndex !== -1) {
+          community.members[memberIndex].role = role;
+          community.members[memberIndex].roleAssignedAt = new Date();
+        } else {
+          community.members.push({
+            address: event.targetPrincipal,
+            role,
+            joinedAt: new Date(),
+            roleAssignedAt: new Date(),
+          });
+        }
+        await community.save();
+
+        this.logger.info('Community member role updated via permission set', {
+          communityId,
+          member: event.targetPrincipal,
+          role,
+        });
+      }
     } catch (error) {
       this.logger.error(
         `Error updating community permissions for ${communityId}`,
