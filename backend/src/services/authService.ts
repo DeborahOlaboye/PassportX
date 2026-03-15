@@ -176,7 +176,7 @@ export const authenticateUser = async (
       email: user.email,
       isPublic: user.isPublic,
       joinDate: user.joinDate,
-      hasPassport: !!(user as any).passportId,
+      hasPassport: !!user.passportId,
       communities: user.communities,
       adminCommunities: user.adminCommunities,
     },
