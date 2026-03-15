@@ -30,10 +30,34 @@ const communitySchema = new Schema<ICommunity>(
       type: String,
       match: /^https?:\/\/[\w\d-]+(\.[\w\d-]+)+[/#?]?.*$/,
     },
+    communityId: {
+      type: String,
+      index: true,
+      sparse: true,
+    },
+    creator: {
+      type: String,
+      index: true,
+    },
     admins: [
       {
         type: String,
         required: true,
+        index: true,
+      },
+    ],
+    members: [
+      {
+        address: { type: String, required: true },
+        role: { type: String, default: 'member' },
+        joinedAt: { type: Date, default: Date.now },
+        roleAssignedAt: { type: Date },
+        roleRevokedAt: { type: Date },
+      },
+    ],
+    issuers: [
+      {
+        type: String,
         index: true,
       },
     ],
@@ -135,7 +159,10 @@ const communitySchema = new Schema<ICommunity>(
   }
 );
 
+communitySchema.index({ communityId: 1 });
 communitySchema.index({ admins: 1 });
+communitySchema.index({ issuers: 1 });
+communitySchema.index({ 'members.address': 1 });
 communitySchema.index({ isActive: 1 });
 communitySchema.index({ name: 'text', description: 'text' });
 communitySchema.index({
