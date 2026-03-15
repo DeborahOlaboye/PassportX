@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { DeadLetterQueue } from '../models/DeadLetterQueue';
 import { RetryQueue } from '../models/RetryQueue';
 import CircuitBreakerRegistry from './CircuitBreakerService';
+import emailService from './EmailService';
+import { htmlEmail, detailRow, AlertSeverity } from '../utils/emailTemplates';
 
 /**
  * ErrorMonitoringService
@@ -40,7 +42,16 @@ export interface Alert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+}
+
+/** Notification payload built from an Alert and passed to channel senders. */
+interface AlertNotificationPayload {
+  title: string;
+  message: string;
+  severity: Alert['severity'];
+  timestamp: Date;
+  metadata?: Record<string, unknown>;
 }
 
 export class ErrorMonitoringService {
@@ -328,7 +339,9 @@ export class ErrorMonitoringService {
   /**
    * Send notification to Slack
    */
-  private async sendSlackNotification(notification: any): Promise<void> {
+  private async sendSlackNotification(
+    notification: AlertNotificationPayload
+  ): Promise<void> {
     const webhookUrl = process.env.SLACK_WEBHOOK_URL;
     if (!webhookUrl) return;
 
@@ -385,17 +398,45 @@ export class ErrorMonitoringService {
   }
 
   /**
-   * Send notification via email (placeholder for email service integration)
+   * Send notification via email
    */
-  private async sendEmailNotification(notification: any): Promise<void> {
-    this.logger.info('Email notification placeholder', {
-      to: process.env.ERROR_EMAIL_TO,
-      subject: notification.title,
-      severity: notification.severity,
-    });
+  private async sendEmailNotification(
+    notification: AlertNotificationPayload
+  ): Promise<void> {
+    const to = process.env.ERROR_EMAIL_TO;
+    if (!to) {
+      this.logger.warn('ERROR_EMAIL_TO not configured — skipping email alert');
+      return;
+    }
 
-    // TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
-    // Example implementation would go here
+    const timestamp =
+      notification.timestamp instanceof Date
+        ? notification.timestamp.toISOString()
+        : String(notification.timestamp);
+
+    const severity = notification.severity as AlertSeverity;
+    const detailTable = `<table style="border-collapse:collapse;width:100%">
+      ${detailRow('Severity', severity)}
+      ${detailRow('Time', timestamp)}
+    </table>`;
+
+    await emailService.send({
+      to,
+      subject: `[PassportX Error] ${notification.title}`,
+      text: [
+        notification.title,
+        '',
+        notification.message ?? '',
+        '',
+        `Severity : ${severity}`,
+        `Time     : ${timestamp}`,
+      ].join('\n'),
+      html: htmlEmail({
+        title: notification.title,
+        severity,
+        body: `<p>${notification.message ?? ''}</p>${detailTable}`,
+      }),
+    });
   }
 
   /**

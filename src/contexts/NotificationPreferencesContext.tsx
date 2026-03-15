@@ -9,6 +9,7 @@ import {
   useCallback,
 } from 'react';
 import { UserNotificationPreferences } from '@/chainhook/types/handlers';
+import logger from '@/utils/logger';
 
 interface NotificationPreferencesContextType {
   preferences: UserNotificationPreferences | null;
@@ -68,7 +69,7 @@ export function NotificationPreferencesProvider({
         setError('Failed to fetch notification preferences');
       }
     } catch (err) {
-      console.error('Error fetching notification preferences:', err);
+      logger.error('Error fetching notification preferences', { err });
       setError('Failed to fetch notification preferences');
     } finally {
       setIsLoading(false);
@@ -99,7 +100,7 @@ export function NotificationPreferencesProvider({
           setError('Failed to update notification preferences');
         }
       } catch (err) {
-        console.error('Error updating notification preferences:', err);
+        logger.error('Error updating notification preferences', { err });
         setError('Failed to update notification preferences');
       }
     },
@@ -222,7 +223,7 @@ export function NotificationPreferencesProvider({
         setError('Failed to reset notification preferences');
       }
     } catch (err) {
-      console.error('Error resetting notification preferences:', err);
+      logger.error('Error resetting notification preferences', { err });
       setError('Failed to reset notification preferences');
     }
   }, [fetchPreferences]);

@@ -52,32 +52,34 @@ export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
       return;
     }
 
-    console.log(`User connected: ${userId} (${socket.id})`);
+    logger.info(`User connected: ${userId} (${socket.id})`);
 
     // Join user-specific room
     socket.join(`user:${userId}`);
 
     // Handle disconnect
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${userId} (${socket.id})`);
+      logger.info(`User disconnected: ${userId} (${socket.id})`);
     });
 
     // Mark notification as read
     socket.on('notification:read', (notificationId: string) => {
-      console.log(`Notification ${notificationId} marked as read by ${userId}`);
+      logger.debug(
+        `Notification ${notificationId} marked as read by ${userId}`
+      );
       // Emit acknowledgment
       socket.emit('notification:read:ack', { notificationId });
     });
 
     // Mark all notifications as read
     socket.on('notifications:readAll', () => {
-      console.log(`All notifications marked as read by ${userId}`);
+      logger.debug(`All notifications marked as read by ${userId}`);
       socket.emit('notifications:readAll:ack');
     });
 
     // Request notification list
     socket.on('notifications:fetch', () => {
-      console.log(`Fetch notifications requested by ${userId}`);
+      logger.debug(`Fetch notifications requested by ${userId}`);
       // This will be handled by the notification service
       socket.emit('notifications:fetch:ack');
     });

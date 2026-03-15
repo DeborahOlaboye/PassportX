@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import ChainhookEventLogger from '../services/chainhookEventLogger';
 import MetricsTracker from '../services/metricsTracker';
 import AlertService from '../services/alertService';
+import logger from '../utils/logger';
 
 let eventLogger: ChainhookEventLogger | null = null;
 let metricsTracker: MetricsTracker | null = null;
@@ -86,11 +87,11 @@ export async function chainhookEventMonitoringMiddleware(
           }
         }
       } catch (error) {
-        console.error('Error in chainhook monitoring middleware:', error);
+        logger.error('Error in chainhook monitoring middleware', { error });
       }
     });
   } catch (error) {
-    console.error('Error logging chainhook event:', error);
+    logger.error('Error logging chainhook event', { error });
   }
 
   next();

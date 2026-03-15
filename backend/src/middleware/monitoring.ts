@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import logger from '../utils/logger';
 
 interface RequestMetrics {
   method: string;
@@ -30,7 +31,7 @@ class MonitoringService {
 
     // Log slow requests
     if (responseTime > 1000) {
-      console.warn(
+      logger.warn(
         `Slow request: ${req.method} ${req.path} - ${responseTime}ms`
       );
     }

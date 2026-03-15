@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { WalletSessionProvider } from '../context/WalletSessionContext';
 import { useWalletSession } from '../hooks/useWalletSession';

@@ -15,6 +15,7 @@ import {
   MultiAccountState,
   AccountFilter,
 } from '@/types/multi-account';
+import logger from '@/utils/logger';
 
 interface MultiAccountContextType {
   state: MultiAccountState;
@@ -271,7 +272,7 @@ export function MultiAccountProvider({
         }));
       }
     } catch (error: unknown) {
-      console.error('Failed to load preferences:', error);
+      logger.error('Failed to load preferences', { error });
     }
   }, []);
 
@@ -296,7 +297,7 @@ export function MultiAccountProvider({
 
   useEffect(() => {
     loadPreferences().catch((err: unknown) => {
-      console.error('Failed to load account preferences on mount:', err);
+      logger.error('Failed to load account preferences on mount', { err });
     });
   }, [loadPreferences]);
 

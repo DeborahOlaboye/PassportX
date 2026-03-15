@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
+import logger from '../utils/logger';
 
 /**
  * Validate badge ID format
@@ -108,7 +109,7 @@ export function handleVerificationError(
   res: Response,
   next: NextFunction
 ) {
-  console.error('Verification error:', error);
+  logger.error('Verification error', { error });
 
   // Handle specific error types
   if (error.name === 'CastError') {
