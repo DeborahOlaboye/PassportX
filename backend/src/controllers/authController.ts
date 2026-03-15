@@ -13,7 +13,7 @@ import { getErrorMessage, getErrorStatusCode } from '../errors';
 
 // Helper function to handle errors with type-safe error narrowing
 const handleError = (res: Response, error: unknown, message: string) => {
-  console.error(message, error);
+  logger.error(message, { error });
   const status = getErrorStatusCode(error);
   res.status(status).json({
     success: false,
