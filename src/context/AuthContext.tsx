@@ -1,6 +1,12 @@
+'use client';
+
 /**
- * Create a React context for authentication.
- * Manages signing, token generation, and session verification.
+ * SDK token-based authentication context.
+ *
+ * @deprecated The canonical auth context for the PassportX app lives at
+ * `@/contexts/AuthContext`. This file is kept for the SDK public API
+ * (re-exported via `src/index.ts`). Do NOT import this in Next.js pages or
+ * components — use `useAuth` from `@/contexts/AuthContext` instead.
  */
 
 import React, { createContext, useCallback, useEffect, useState } from 'react';
