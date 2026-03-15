@@ -99,6 +99,22 @@ const userSchema = new Schema<IUser>(
       default: false,
       index: true,
     },
+    permissions: {
+      type: Map,
+      of: Boolean,
+      default: {},
+    },
+    status: {
+      type: String,
+      enum: ['active', 'suspended'],
+      default: 'active',
+      index: true,
+    },
+    suspendedAt: { type: Date },
+    suspendedBy: { type: String },
+    suspensionReason: { type: String },
+    unsuspendedAt: { type: Date },
+    unsuspendedBy: { type: String },
   },
   {
     timestamps: true,

@@ -12,6 +12,7 @@ import {
 import AccessControlAuditService from './AccessControlAuditService';
 import { Community } from '../models/Community';
 import { User } from '../models/User';
+import defaultLogger from '../utils/logger';
 
 /**
  * Access Control Event Handler
@@ -19,26 +20,15 @@ import { User } from '../models/User';
  * Processes access control events from Chainhook webhooks
  */
 
+type Logger = typeof defaultLogger;
+
 export class AccessControlEventHandler {
   private auditService: typeof AccessControlAuditService;
-  private logger: any;
+  private logger: Logger;
 
-  constructor(logger?: any) {
+  constructor(logger?: Logger) {
     this.auditService = AccessControlAuditService;
-    this.logger = logger || this.getDefaultLogger();
-  }
-
-  private getDefaultLogger() {
-    return {
-      debug: (msg: string, ...args: any[]) =>
-        console.debug(`[DEBUG] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
-        console.info(`[INFO] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
-        console.warn(`[WARN] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
-        console.error(`[ERROR] ${msg}`, ...args),
-    };
+    this.logger = logger ?? defaultLogger;
   }
 
   /**
@@ -133,9 +123,6 @@ export class AccessControlEventHandler {
       const user = await User.findOne({ stacksAddress: event.principal });
 
       if (user) {
-        if (!user.permissions) {
-          user.permissions = new Map();
-        }
         user.permissions.set(
           event.metadata.permission,
           event.metadata.newValue
@@ -177,8 +164,29 @@ export class AccessControlEventHandler {
         return;
       }
 
-      // Update community member role if needed
-      // This logic depends on how Community model stores member roles
+      if (event.targetPrincipal) {
+        const memberIndex = community.members.findIndex(
+          (m) => m.address === event.targetPrincipal
+        );
+        if (memberIndex !== -1) {
+          community.members[memberIndex].role = role;
+          community.members[memberIndex].roleAssignedAt = new Date();
+        } else {
+          community.members.push({
+            address: event.targetPrincipal,
+            role,
+            joinedAt: new Date(),
+            roleAssignedAt: new Date(),
+          });
+        }
+        await community.save();
+
+        this.logger.info('Community member role updated via permission set', {
+          communityId,
+          member: event.targetPrincipal,
+          role,
+        });
+      }
     } catch (error) {
       this.logger.error(
         `Error updating community permissions for ${communityId}`,
@@ -199,11 +207,11 @@ export class AccessControlEventHandler {
 
     try {
       const Community = (await import('../models/Community')).default;
-      const community = await Community.findOne({ contractId: communityId });
+      const community = await Community.findOne({ communityId });
 
       if (community && event.targetPrincipal) {
         const memberIndex = community.members.findIndex(
-          (m: any) => m.address === event.targetPrincipal
+          (m) => m.address === event.targetPrincipal
         );
 
         if (memberIndex !== -1) {
@@ -246,15 +254,15 @@ export class AccessControlEventHandler {
 
     try {
       const Community = (await import('../models/Community')).default;
-      const community = await Community.findOne({ contractId: communityId });
+      const community = await Community.findOne({ communityId });
 
       if (community && event.targetPrincipal) {
         const memberIndex = community.members.findIndex(
-          (m: any) => m.address === event.targetPrincipal
+          (m) => m.address === event.targetPrincipal
         );
 
         if (memberIndex !== -1) {
-          community.members[memberIndex].role = null;
+          community.members[memberIndex].role = 'member';
           community.members[memberIndex].roleRevokedAt = new Date();
         }
 
@@ -294,12 +302,17 @@ export class AccessControlEventHandler {
     try {
       // Update Community model
       const community = await Community.findOne({ communityId });
-      if (community) {
-        if (!community.admins.includes(newAdmin)) {
-          community.admins.push(newAdmin);
-          await community.save();
-          this.logger.debug(`Added ${newAdmin} to community admins`);
-        }
+      if (!community) {
+        this.logger.warn(
+          `Community not found for admin addition: ${communityId}`
+        );
+        return;
+      }
+
+      if (!community.admins.includes(newAdmin)) {
+        community.admins.push(newAdmin);
+        await community.save();
+        this.logger.debug(`Added ${newAdmin} to community admins`);
       }
 
       // Update User model
@@ -350,7 +363,7 @@ export class AccessControlEventHandler {
         const user = await User.findOne({ stacksAddress: removedAdmin });
         if (user) {
           user.adminCommunities = user.adminCommunities.filter(
-            (id: any) => !id.equals(community._id)
+            (id) => String(id) !== String(community._id)
           );
           await user.save();
           this.logger.debug(`Removed community from user's admin communities`);
@@ -385,10 +398,10 @@ export class AccessControlEventHandler {
       const user = await User.findOne({ stacksAddress: suspendedUser });
 
       if (user) {
-        (user as any).status = 'suspended';
-        (user as any).suspendedAt = new Date();
-        (user as any).suspendedBy = event.principal;
-        (user as any).suspensionReason = event.metadata.reason;
+        user.status = 'suspended';
+        user.suspendedAt = new Date();
+        user.suspendedBy = event.principal;
+        user.suspensionReason = event.metadata.reason;
         user.lastActive = new Date();
         await user.save();
 
@@ -425,10 +438,10 @@ export class AccessControlEventHandler {
       const user = await User.findOne({ stacksAddress: unsuspendedUser });
 
       if (user) {
-        (user as any).status = 'active';
-        (user as any).unsuspendedAt = new Date();
-        (user as any).unsuspendedBy = event.principal;
-        (user as any).suspensionReason = null;
+        user.status = 'active';
+        user.unsuspendedAt = new Date();
+        user.unsuspendedBy = event.principal;
+        user.suspensionReason = undefined;
         user.lastActive = new Date();
         await user.save();
 
@@ -462,20 +475,16 @@ export class AccessControlEventHandler {
 
     try {
       const Community = (await import('../models/Community')).default;
-      const community = await Community.findOne({ contractId: communityId });
+      const community = await Community.findOne({ communityId });
 
       if (community && issuer) {
-        if (!community.issuers) {
-          community.issuers = [];
-        }
-
         if (authorized) {
           if (!community.issuers.includes(issuer)) {
             community.issuers.push(issuer);
           }
         } else {
           community.issuers = community.issuers.filter(
-            (addr: string) => addr !== issuer
+            (addr) => addr !== issuer
           );
         }
 
@@ -518,10 +527,8 @@ export class AccessControlEventHandler {
           community.admins.push(newOwner);
         }
 
-        // Update creator field if exists
-        if (community.creator) {
-          community.creator = newOwner;
-        }
+        // Update creator field to new owner
+        community.creator = newOwner;
 
         await community.save();
         this.logger.debug(`Updated community ownership`);

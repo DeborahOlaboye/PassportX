@@ -598,7 +598,7 @@ router.put(
         showCommunities: showCommunities ?? true,
       };
 
-      (user as any).settings = settings;
+      user.settings = settings;
       user.lastActive = new Date();
 
       await user.save();

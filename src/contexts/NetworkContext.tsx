@@ -13,6 +13,7 @@ import {
   NetworkState,
   NETWORK_CONFIGS,
 } from '@/types/network';
+import logger from '@/utils/logger';
 
 const NetworkContext = createContext<NetworkState | undefined>(undefined);
 
@@ -53,9 +54,9 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
           })
         );
 
-        console.log(`Switched to ${NETWORK_CONFIGS[network].name}`);
+        logger.info(`Switched to ${NETWORK_CONFIGS[network].name}`);
       } catch (error) {
-        console.error('Failed to switch network:', error);
+        logger.error('Failed to switch network', { error });
         throw error;
       } finally {
         setIsSwitching(false);
