@@ -212,11 +212,11 @@ export class AccessControlEventHandler {
 
     try {
       const Community = (await import('../models/Community')).default;
-      const community = await Community.findOne({ contractId: communityId });
+      const community = await Community.findOne({ communityId });
 
       if (community && event.targetPrincipal) {
         const memberIndex = community.members.findIndex(
-          (m: any) => m.address === event.targetPrincipal
+          (m) => m.address === event.targetPrincipal
         );
 
         if (memberIndex !== -1) {
@@ -259,15 +259,15 @@ export class AccessControlEventHandler {
 
     try {
       const Community = (await import('../models/Community')).default;
-      const community = await Community.findOne({ contractId: communityId });
+      const community = await Community.findOne({ communityId });
 
       if (community && event.targetPrincipal) {
         const memberIndex = community.members.findIndex(
-          (m: any) => m.address === event.targetPrincipal
+          (m) => m.address === event.targetPrincipal
         );
 
         if (memberIndex !== -1) {
-          community.members[memberIndex].role = null;
+          community.members[memberIndex].role = 'member';
           community.members[memberIndex].roleRevokedAt = new Date();
         }
 
