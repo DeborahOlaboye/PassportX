@@ -532,10 +532,8 @@ export class AccessControlEventHandler {
           community.admins.push(newOwner);
         }
 
-        // Update creator field if exists
-        if (community.creator) {
-          community.creator = newOwner;
-        }
+        // Update creator field to new owner
+        community.creator = newOwner;
 
         await community.save();
         this.logger.debug(`Updated community ownership`);
