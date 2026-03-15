@@ -59,7 +59,9 @@ describe('authenticateToken middleware', () => {
     authenticateToken(req as Request, res, next);
 
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid or expired token' });
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Invalid or expired token',
+    });
     expect(next).not.toHaveBeenCalled();
   });
 
