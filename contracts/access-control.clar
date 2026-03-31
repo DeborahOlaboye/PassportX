@@ -3,7 +3,7 @@
 
 (use-trait pausable-trait .pausable-trait.pausable)
 (impl-trait .pausable-trait.pausable)
-;;
+
 ;; Error Codes Used:
 ;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
 ;; - u400: ERR-INSUFFICIENT-PERMISSIONS - Lacks required permissions
@@ -177,10 +177,9 @@
     (
       (perms (map-get? community-permissions { community-id: community-id, user: user }))
     )
-    (and
-      (is-some perms)
-      (get can-issue-badges (unwrap-panic perms))
-      (is-eq (get role (unwrap-panic perms)) ROLE-COMMUNITY-ISSUER)
+    (match perms
+      perms-data (and (get can-issue-badges perms-data) (is-eq (get role perms-data) ROLE-COMMUNITY-ISSUER))
+      false
     )
   )
 )
@@ -190,10 +189,9 @@
     (
       (perms (map-get? global-permissions { user: user }))
     )
-    (and 
-      (is-some perms)
-      (get can-create-communities (unwrap-panic perms))
-      (not (get suspended (unwrap-panic perms)))
+    (match perms
+      perms-data (and (get can-create-communities perms-data) (not (get suspended perms-data)))
+      false
     )
   )
 )
@@ -203,10 +201,9 @@
     (
       (perms (map-get? global-permissions { user: user }))
     )
-    (and 
-      (is-some perms)
-      (get can-issue-badges (unwrap-panic perms))
-      (not (get suspended (unwrap-panic perms)))
+    (match perms
+      perms-data (and (get can-issue-badges perms-data) (not (get suspended perms-data)))
+      false
     )
   )
 )
@@ -219,15 +216,14 @@
     )
     (or
       ;; Has community-specific permission
-      (and 
-        (is-some community-perms)
-        (get can-issue-badges (unwrap-panic community-perms))
+      (match community-perms
+        perms-data (get can-issue-badges perms-data)
+        false
       )
       ;; Has global permission and not suspended
-      (and
-        (is-some global-perms)
-        (get can-issue-badges (unwrap-panic global-perms))
-        (not (get suspended (unwrap-panic global-perms)))
+      (match global-perms
+        perms-data (and (get can-issue-badges perms-data) (not (get suspended perms-data)))
+        false
       )
     )
   )
@@ -240,9 +236,9 @@
     )
     (or
       (is-platform-admin user)
-      (and 
-        (is-some community-perms)
-        (get can-manage-members (unwrap-panic community-perms))
+      (match community-perms
+        perms-data (get can-manage-members perms-data)
+        false
       )
     )
   )
@@ -255,9 +251,9 @@
     )
     (or
       (is-platform-admin user)
-      (and 
-        (is-some community-perms)
-        (get can-revoke-badges (unwrap-panic community-perms))
+      (match community-perms
+        perms-data (get can-revoke-badges perms-data)
+        false
       )
     )
   )
@@ -315,18 +311,27 @@
 )
 
 ;; Pausable management
-(define-public (set-paused (paused bool))
+(define-public (pause)
   (begin
     (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
-    
     (print {
-      event: "contract-pause-status-changed",
-      paused: paused,
+      event: "contract-paused",
       updated-by: tx-sender,
       block-height: block-height
     })
+    (ok (var-set contract-paused true))
+  )
+)
 
-    (ok (var-set contract-paused paused))
+(define-public (resume)
+  (begin
+    (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
+    (print {
+      event: "contract-resumed",
+      updated-by: tx-sender,
+      block-height: block-height
+    })
+    (ok (var-set contract-paused false))
   )
 )
 
