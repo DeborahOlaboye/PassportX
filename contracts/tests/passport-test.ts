@@ -13,7 +13,26 @@ Clarinet.test({
     const deployer = accounts.get('deployer')!;
     const user1 = accounts.get('wallet_1')!;
 
+    // Setup: Must create community and template first for permissions to pass
     const block = chain.mineBlock([
+      Tx.contractCall(
+        'community-manager',
+        'create-community',
+        [types.ascii("Test Community"), types.ascii("Description")],
+        deployer.address
+      ),
+      Tx.contractCall(
+        'badge-metadata',
+        'create-badge-template',
+        [
+          types.ascii("Test Template"),
+          types.ascii("Description"),
+          types.uint(1), // category
+          types.uint(1), // level
+          types.uint(0), // expiration
+        ],
+        deployer.address
+      ),
       Tx.contractCall(
         'badge-issuer',
         'mint-badge',
@@ -22,15 +41,16 @@ Clarinet.test({
       ),
     ]);
 
-    assertEquals(block.receipts.length, 1);
-    assertEquals(block.receipts[0].result.expectOk(), types.uint(1));
+    assertEquals(block.receipts.length, 3);
+    block.receipts[0].result.expectOk();
+    block.receipts[1].result.expectOk();
+    block.receipts[2].result.expectOk().expectUint(1);
   },
 });
 
 Clarinet.test({
   name: 'Non-transferable NFT prevents transfers',
   async fn(chain: Chain, accounts: Map<string, Account>) {
-    const deployer = accounts.get('deployer')!;
     const user1 = accounts.get('wallet_1')!;
     const user2 = accounts.get('wallet_2')!;
 
@@ -47,6 +67,8 @@ Clarinet.test({
       ),
     ]);
 
-    assertEquals(block.receipts[0].result.expectErr(), types.uint(103));
+    assertEquals(block.receipts.length, 1);
+    // ERR-TRANSFER-DISABLED is u103
+    block.receipts[0].result.expectErr().expectUint(103);
   },
 });
