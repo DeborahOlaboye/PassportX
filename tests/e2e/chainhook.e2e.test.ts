@@ -218,8 +218,11 @@ describe('Chainhook E2E Scenarios', () => {
         .withSender('ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG')
         .build();
 
+      // FIX: Added the specific sender to this mock event. Without this, it evaluates 
+      // to 0 matches instead of the expected 1 match (the sender predicate).
       const lowValueEvent = MockChainhookEventFactory.createSTXTransferEvent({
         amount: BigInt(100000),
+        sender: 'ST1PQHQV0NNYJXWZ98C0JHRCJMZC0Y4SKTMM0GCXG', 
       });
 
       const highValueEvent = MockChainhookEventFactory.createSTXTransferEvent({
