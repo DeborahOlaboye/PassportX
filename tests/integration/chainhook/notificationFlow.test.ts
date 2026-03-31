@@ -1,9 +1,8 @@
 import { NotificationService } from '@/chainhook/services/notificationService';
 import { NotificationDeliveryService } from '@/chainhook/services/notificationDeliveryService';
 import { ChainhookNotificationIntegration } from '@/chainhook/services/chainhookNotificationIntegration';
-import { BadgeMintHandler } from '@/chainhook/handlers/badgeMintHandler';
-import { BadgeVerificationHandler } from '@/chainhook/handlers/badgeVerificationHandler';
 import { ChainhookEventPayload } from '@/chainhook/types/handlers';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 describe('Chainhook Notification Integration Flow', () => {
   beforeEach(() => {
@@ -104,7 +103,7 @@ describe('Chainhook Notification Integration Flow', () => {
       expect(filtered).toHaveLength(0);
     });
 
-    it('should deliver multiple notifications', async () => {
+    it('should deliver multiple notifications from one block', async () => {
       const event: ChainhookEventPayload = {
         block_identifier: { index: 100, hash: 'abc123' },
         parent_block_identifier: { index: 99, hash: 'def456' },
@@ -161,11 +160,12 @@ describe('Chainhook Notification Integration Flow', () => {
       const notifications = await NotificationService.processEvent(event, {});
 
       expect(notifications.length).toBeGreaterThanOrEqual(2);
-      expect(notifications.map((n) => n.userId)).toContain('user-1');
-      expect(notifications.map((n) => n.userId)).toContain('user-2');
+      const userIds = notifications.map((n) => n.userId);
+      expect(userIds).toContain('user-1');
+      expect(userIds).toContain('user-2');
     });
 
-    it('should store notifications in delivery service', async () => {
+    it('should store and retrieve notifications in delivery service', async () => {
       const userId = 'delivery-test-user';
       const notification = {
         userId,
@@ -195,7 +195,7 @@ describe('Chainhook Notification Integration Flow', () => {
       expect(userNotifications[0].userId).toBe(userId);
     });
 
-    it('should mark notifications as read', async () => {
+    it('should mark notifications as read correctly', async () => {
       const userId = 'read-test-user';
       const notification = {
         userId,
@@ -230,7 +230,7 @@ describe('Chainhook Notification Integration Flow', () => {
       expect(unreadAfter).toBe(unreadBefore - 1);
     });
 
-    it('should filter notifications by type', async () => {
+    it('should filter delivered notifications by specific type', async () => {
       const userId = 'filter-test-user';
 
       const badgeNotification = {
@@ -276,7 +276,7 @@ describe('Chainhook Notification Integration Flow', () => {
       );
     });
 
-    it('should handle user preference updates', async () => {
+    it('should handle user preference updates and re-enabling', async () => {
       const userId = 'prefs-update-user';
 
       const initialPrefs = await NotificationService.createDefaultPreferences(
@@ -301,7 +301,7 @@ describe('Chainhook Notification Integration Flow', () => {
       expect(re_enabled?.badges.mint).toBe(true);
     });
 
-    it('should clear old notifications', async () => {
+    it('should clear old notifications from storage', async () => {
       const userId = 'old-notif-user';
 
       const notification = {
@@ -320,10 +320,13 @@ describe('Chainhook Notification Integration Flow', () => {
       await NotificationDeliveryService.deliverNotification(notification);
 
       const countBefore =
-        NotificationDeliveryService.getUserNotificationCount(userId);
+        await NotificationDeliveryService.getUserNotificationCount(userId);
+      
+      // Clear with age 0 to force removal
       await NotificationDeliveryService.clearOldNotifications(userId, 0);
+      
       const countAfter =
-        NotificationDeliveryService.getUserNotificationCount(userId);
+        await NotificationDeliveryService.getUserNotificationCount(userId);
 
       expect(countAfter).toBeLessThanOrEqual(countBefore);
     });
