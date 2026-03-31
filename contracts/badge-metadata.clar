@@ -100,47 +100,48 @@
 ;; Write functions
 (define-public (set-badge-metadata (badge-id uint) (metadata {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))
   (begin
-    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
-    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+    (asserts! (not (unwrap-panic (contract-call? .access-control is-paused))) ERR-PAUSED)
+    (asserts! (or (is-eq tx-sender contract-owner) (is-eq contract-caller .badge-issuer)) ERR-OWNER-ONLY)
     (ok (map-set badge-metadata { id: badge-id } metadata))
+  )
+)
+
+;; Private helper for batch updates
+(define-private (batch-set-iter (item {id: uint, meta: {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}}) (previous-result bool))
+  (begin
+    (map-set badge-metadata { id: (get id item) } (get meta item))
+    true
   )
 )
 
 ;; Batch update badge metadata
 (define-public (batch-set-badge-metadata (badge-ids (list 50 uint)) (metadatas (list 50 {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))) 
   (begin
-    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (asserts! (not (unwrap-panic (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let (
         (badge-ids-len (len badge-ids))
         (metadatas-len (len metadatas))
       )
-      ;; Input validation
       (asserts! (is-eq badge-ids-len metadatas-len) ERR-BATCH-MISMATCHED-LENGTHS)
-      (asserts! (<= badge-ids-len u50) ERR-BATCH-TOO-LARGE)
       (asserts! (> badge-ids-len u0) ERR-BATCH-EMPTY)
-      (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
+      (asserts! (or (is-eq tx-sender contract-owner) (is-eq contract-caller .badge-issuer)) ERR-OWNER-ONLY)
 
-    ;; Process each metadata update
-    (let ((i u0))
-      (while (< i badge-ids-len)
-        (let (
-            (badge-id (unwrap! (element-at badge-ids i) ERR-INVALID-BATCH-INDEX))
-            (metadata (unwrap! (element-at metadatas i) ERR-INVALID-METADATA))
-          )
-          (try! (ok (map-set badge-metadata { id: badge-id } metadata)))
-        )
-        (set! i (+ i u1))
+      (let (
+        (input-list (map merge-id-metadata badge-ids metadatas))
       )
-    )
-    
-    (ok true)
+        (ok (fold batch-set-iter input-list true))
+      )
     )
   )
 )
 
+(define-private (merge-id-metadata (id uint) (meta {template-id: uint, level: uint, category: uint, timestamp: uint, expiration-height: uint, issuer: principal, active: bool}))
+  {id: id, meta: meta}
+)
+
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (expiration-duration uint))
   (begin
-    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (asserts! (not (unwrap-panic (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
       (
         (template-id (var-get next-template-id))
