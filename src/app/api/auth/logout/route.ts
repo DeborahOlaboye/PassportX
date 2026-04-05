@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { parseBackendJson } from '@/lib/backend-proxy';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { BACKEND_URL } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
