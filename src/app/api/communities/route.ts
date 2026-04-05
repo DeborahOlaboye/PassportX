@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { sendSuccess } from '@/lib/api-responses';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 interface CommunityCreationRequest {
   txId: string;
@@ -68,11 +69,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await parseBackendJson(response);
       return NextResponse.json(error, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return sendSuccess(
       {
@@ -116,10 +117,11 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Backend error: ${response.statusText}`);
+      const errorData = await parseBackendJson(response);
+      return NextResponse.json(errorData, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(data);
   } catch (error) {

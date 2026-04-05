@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 interface ApprovalRequest {
   approved: boolean;
@@ -49,11 +50,11 @@ export async function POST(
     );
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await parseBackendJson(response);
       return NextResponse.json(error, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(
       {
@@ -86,10 +87,11 @@ export async function GET(
     );
 
     if (!response.ok) {
-      throw new Error(`Backend error: ${response.statusText}`);
+      const errorData = await parseBackendJson(response);
+      return NextResponse.json(errorData, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(data);
   } catch (error) {
