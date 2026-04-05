@@ -1,14 +1,13 @@
+'use client';
+
 /**
- * Hook to consume AuthContext.
+ * Re-exports the canonical `useAuth` hook from the app's AuthContext so that
+ * SDK consumers and internal code can import it from a single stable location.
+ *
+ * Previously this file wrapped the SDK token-based context (`context/AuthContext`),
+ * which has a completely different API from the app's Stacks-wallet-based context
+ * (`contexts/AuthContext`). That mismatch caused a silent runtime failure whenever
+ * the hook was used inside the app's provider tree.
  */
-
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-};
-
-export default useAuth;
+export { useAuth, AuthProvider } from '@/contexts/AuthContext';
+export type { AuthContextType, User } from '@/contexts/AuthContext';

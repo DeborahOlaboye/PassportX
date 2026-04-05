@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { requireJwtSecret } from '../utils/jwtSecret';
 
 interface SocketUser {
   stacksAddress: string;
@@ -11,24 +12,8 @@ interface AuthenticatedSocket extends Socket {
   user?: SocketUser;
 }
 
-/**
- * Returns the JWT secret or throws at startup – never falls back to a
- * hardcoded default so that misconfigured deployments fail fast and
- * visibly rather than silently accepting forged tokens.
- */
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error(
-      'JWT_SECRET environment variable is not set. ' +
-        'Set a strong, random secret before starting the server.'
-    );
-  }
-  return secret;
-}
-
 export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
-  const jwtSecret = getJwtSecret();
+  const jwtSecret = requireJwtSecret();
 
   const io = new SocketIOServer(httpServer, {
     cors: {
@@ -67,32 +52,34 @@ export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
       return;
     }
 
-    console.log(`User connected: ${userId} (${socket.id})`);
+    logger.info(`User connected: ${userId} (${socket.id})`);
 
     // Join user-specific room
     socket.join(`user:${userId}`);
 
     // Handle disconnect
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${userId} (${socket.id})`);
+      logger.info(`User disconnected: ${userId} (${socket.id})`);
     });
 
     // Mark notification as read
     socket.on('notification:read', (notificationId: string) => {
-      console.log(`Notification ${notificationId} marked as read by ${userId}`);
+      logger.debug(
+        `Notification ${notificationId} marked as read by ${userId}`
+      );
       // Emit acknowledgment
       socket.emit('notification:read:ack', { notificationId });
     });
 
     // Mark all notifications as read
     socket.on('notifications:readAll', () => {
-      console.log(`All notifications marked as read by ${userId}`);
+      logger.debug(`All notifications marked as read by ${userId}`);
       socket.emit('notifications:readAll:ack');
     });
 
     // Request notification list
     socket.on('notifications:fetch', () => {
-      console.log(`Fetch notifications requested by ${userId}`);
+      logger.debug(`Fetch notifications requested by ${userId}`);
       // This will be handled by the notification service
       socket.emit('notifications:fetch:ack');
     });

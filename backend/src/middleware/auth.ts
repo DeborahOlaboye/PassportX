@@ -3,14 +3,16 @@ import jwt from 'jsonwebtoken';
 import { AuthRequest, JWTPayload } from '../types';
 import User from '../models/User';
 import logger from '../utils/logger';
+import { requireJwtSecret } from '../utils/jwtSecret';
 
-const isValidJWTPayload = (decoded: any): decoded is JWTPayload => {
+const isValidJWTPayload = (decoded: unknown): decoded is JWTPayload => {
   return (
-    decoded &&
-    typeof decoded.userId === 'string' &&
-    typeof decoded.stacksAddress === 'string' &&
-    typeof decoded.iat === 'number' &&
-    typeof decoded.exp === 'number'
+    typeof decoded === 'object' &&
+    decoded !== null &&
+    typeof (decoded as Record<string, unknown>).userId === 'string' &&
+    typeof (decoded as Record<string, unknown>).stacksAddress === 'string' &&
+    typeof (decoded as Record<string, unknown>).iat === 'number' &&
+    typeof (decoded as Record<string, unknown>).exp === 'number'
   );
 };
 
@@ -33,9 +35,10 @@ export const authenticateToken = (
 
   jwt.verify(
     token,
-    process.env.JWT_SECRET!,
-    (err: jwt.VerifyErrors | null, decoded: any) => {
+    requireJwtSecret(),
+    (err: jwt.VerifyErrors | null, decoded: unknown) => {
       if (err) {
+        logger.warn('JWT verification failed', { error: err.message });
         return res.status(403).json({ error: 'Invalid or expired token' });
       }
 
@@ -84,8 +87,8 @@ export const optionalAuth = (
   if (token) {
     jwt.verify(
       token,
-      process.env.JWT_SECRET!,
-      (err: jwt.VerifyErrors | null, decoded: any) => {
+      requireJwtSecret(),
+      (err: jwt.VerifyErrors | null, decoded: unknown) => {
         if (!err && isValidJWTPayload(decoded)) {
           req.user = {
             stacksAddress: decoded.stacksAddress,

@@ -13,6 +13,7 @@ import { Response } from 'express';
 import { setSessionCookie, clearSessionCookie } from '../utils/sessionManager';
 import { generateNonce, validateNonce, invalidateNonce } from './nonceService';
 import logger from '../utils/logger';
+import { requireJwtSecret } from '../utils/jwtSecret';
 
 /**
  * Generate an authentication challenge message containing a server-issued
@@ -92,7 +93,7 @@ export const generateToken = (
   stacksAddress: string,
   userId: string
 ): string => {
-  return jwt.sign({ stacksAddress, userId }, process.env.JWT_SECRET!, {
+  return jwt.sign({ stacksAddress, userId }, requireJwtSecret(), {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 };
@@ -176,7 +177,7 @@ export const authenticateUser = async (
       email: user.email,
       isPublic: user.isPublic,
       joinDate: user.joinDate,
-      hasPassport: !!(user as any).passportId,
+      hasPassport: !!user.passportId,
       communities: user.communities,
       adminCommunities: user.adminCommunities,
     },

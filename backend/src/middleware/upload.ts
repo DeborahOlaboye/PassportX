@@ -2,6 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import logger from '../utils/logger';
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../../uploads/avatars');
@@ -67,6 +68,6 @@ export const deleteOldAvatar = (avatarPath: string) => {
       fs.unlinkSync(filePath);
     }
   } catch (error) {
-    console.error('Error deleting old avatar:', error);
+    logger.error('Error deleting old avatar', { error });
   }
 };

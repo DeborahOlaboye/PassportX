@@ -19,6 +19,7 @@ import {
   validateWalletConnectEnv,
   logEnvironmentValidation,
 } from '@/utils/env-validation';
+import logger from '@/utils/logger';
 
 interface WalletConnectConfigContextType {
   config: WalletConnectProviderConfig | null;
@@ -70,7 +71,7 @@ export function WalletConnectConfigProvider({
 
       if (process.env.NODE_ENV === 'development') {
         logEnvironmentValidation();
-        console.log('WalletConnect Config Initialized:', config);
+        logger.debug('WalletConnect Config Initialized', { config });
       }
 
       setState({
@@ -80,10 +81,9 @@ export function WalletConnectConfigProvider({
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error(
-        'WalletConnect configuration initialization failed:',
-        errorMessage
-      );
+      logger.error('WalletConnect configuration initialization failed', {
+        error: errorMessage,
+      });
 
       setState({
         isInitialized: false,

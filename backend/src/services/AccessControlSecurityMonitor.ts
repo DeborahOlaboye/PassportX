@@ -1,6 +1,8 @@
 import { AccessControlAuditLog } from '../models/AccessControlAuditLog';
 import { AccessControlEventType } from '../types/accessControl';
 import ErrorMonitoringService from './ErrorMonitoringService';
+import emailService from './EmailService';
+import { htmlEmail, detailRow, AlertSeverity } from '../utils/emailTemplates';
 
 /**
  * Access Control Security Monitor
@@ -493,19 +495,49 @@ export class AccessControlSecurityMonitor {
   }
 
   /**
-   * Send security alert via email (placeholder)
+   * Send security alert via email
    */
   private async sendSecurityEmailNotification(
     notification: any
   ): Promise<void> {
-    this.logger.info('Security email notification placeholder', {
-      to: process.env.SECURITY_EMAIL_TO,
-      subject: notification.title,
-      type: notification.type,
-      severity: notification.severity,
-    });
+    const to = process.env.SECURITY_EMAIL_TO;
+    if (!to) {
+      this.logger.warn(
+        'SECURITY_EMAIL_TO not configured — skipping security email alert'
+      );
+      return;
+    }
 
-    // TODO: Integrate with actual email service
+    const timestamp =
+      notification.timestamp instanceof Date
+        ? notification.timestamp.toISOString()
+        : String(notification.timestamp);
+
+    const severity = notification.severity as AlertSeverity;
+    const detailTable = `<table style="border-collapse:collapse;width:100%">
+      ${detailRow('Type', notification.type)}
+      ${detailRow('Severity', severity)}
+      ${detailRow('Time', timestamp)}
+    </table>`;
+
+    await emailService.send({
+      to,
+      subject: `[PassportX Security] ${notification.title}`,
+      text: [
+        `SECURITY ALERT: ${notification.title}`,
+        '',
+        notification.message ?? '',
+        '',
+        `Type     : ${notification.type}`,
+        `Severity : ${severity}`,
+        `Time     : ${timestamp}`,
+      ].join('\n'),
+      html: htmlEmail({
+        title: `\u26A0 Security Alert: ${notification.title}`,
+        severity,
+        body: `<p>${notification.message ?? ''}</p>${detailTable}`,
+      }),
+    });
   }
 
   /**

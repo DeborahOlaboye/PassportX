@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import defaultLogger from '../utils/logger';
 
 export interface RequestLog {
   id: string;
@@ -65,18 +66,11 @@ export function chainhookRequestLoggingMiddleware(logger?: any) {
 
       const logMessage = `[${log.id}] ${log.method} ${log.path} - ${log.statusCode} (${log.duration}ms)`;
 
-      if (logger) {
-        if (statusCode >= 400) {
-          logger.warn(logMessage, { duration: log.duration, statusCode });
-        } else {
-          logger.info(logMessage, { duration: log.duration, statusCode });
-        }
+      const log_ = logger ?? defaultLogger;
+      if (statusCode >= 400) {
+        log_.warn(logMessage, { duration: log.duration, statusCode });
       } else {
-        if (statusCode >= 400) {
-          console.warn(logMessage);
-        } else {
-          console.log(logMessage);
-        }
+        log_.info(logMessage, { duration: log.duration, statusCode });
       }
 
       return originalSend(data);

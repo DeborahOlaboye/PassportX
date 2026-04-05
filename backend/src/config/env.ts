@@ -51,4 +51,14 @@ export function registerRequiredEnvVars(): void {
   if (process.env.WEBHOOK_SIGNATURE_VALIDATION === 'true') {
     EnvValidator.addRequiredVariable('WEBHOOK_SECRET_KEY');
   }
+
+  // SMTP — required when any email notification channel is enabled
+  if (
+    process.env.ERROR_EMAIL_ENABLED === 'true' ||
+    process.env.SECURITY_EMAIL_ENABLED === 'true'
+  ) {
+    EnvValidator.addRequiredVariable('SMTP_HOST');
+    EnvValidator.addRequiredVariable('SMTP_USER');
+    EnvValidator.addRequiredVariable('SMTP_PASS');
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "passportx-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official JavaScript SDK for PassportX - Achievement badges on Stacks blockchain",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -33,7 +33,10 @@
     "sdk",
     "typescript"
   ],
-  "author": "PassportX Team",
+  "author": {
+    "name": "DeborahOlaboye",
+    "url": "https://github.com/DeborahOlaboye"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
