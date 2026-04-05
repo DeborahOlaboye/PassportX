@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
+import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
 /**
  * GET /api/notifications/stats

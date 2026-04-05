@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
+import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
 
 interface ApprovalRequest {
@@ -30,12 +31,10 @@ export async function POST(
       });
     }
 
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001';
-
     const endpoint = body.approved ? 'approve' : 'reject';
 
     const response = await fetch(
-      `${backendUrl}/api/communities/${communityId}/${endpoint}`,
+      `${BACKEND_URL}/api/communities/${communityId}/${endpoint}`,
       {
         method: 'POST',
         headers: {
@@ -75,10 +74,9 @@ export async function GET(
 ) {
   try {
     const { communityId } = params;
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001';
 
     const response = await fetch(
-      `${backendUrl}/api/communities/${communityId}/approval`,
+      `${BACKEND_URL}/api/communities/${communityId}/approval`,
       {
         headers: {
           Authorization: `Bearer ${process.env.BACKEND_API_KEY || ''}`,
