@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
@@ -59,7 +60,7 @@ export async function PUT(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
