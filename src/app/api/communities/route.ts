@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { sendSuccess } from '@/lib/api-responses';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 interface CommunityCreationRequest {
   txId: string;
@@ -68,11 +69,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await parseBackendJson(response);
       return NextResponse.json(error, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return sendSuccess(
       {
@@ -94,8 +95,10 @@ export async function GET(request: NextRequest) {
     const admin = searchParams.get('admin');
     const search = searchParams.get('search');
     const tags = searchParams.getAll('tags');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const rawLimit = parseInt(searchParams.get('limit') || '10', 10);
+    const rawOffset = parseInt(searchParams.get('offset') || '0', 10);
+    const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? 10 : Math.min(rawLimit, 100);
+    const offset = Number.isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset;
 
     const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001';
 
@@ -116,10 +119,11 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Backend error: ${response.statusText}`);
+      const errorData = await parseBackendJson(response);
+      return NextResponse.json(errorData, { status: response.status });
     }
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(data);
   } catch (error) {
