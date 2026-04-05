@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 
 export async function GET(_request: NextRequest) {
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest) {
       next: { revalidate: 60 }, // Cache for 60 seconds
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
 
     return NextResponse.json(data, {
       status: response.status,

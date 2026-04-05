@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 
 /**
@@ -33,7 +34,7 @@ export async function PUT(
       }
     );
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     return createErrorResponse('Failed to mark notification as read', error);
@@ -67,7 +68,7 @@ export async function DELETE(
       },
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     return createErrorResponse('Failed to delete notification', error);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
+import { parseBackendJson } from '@/lib/backend-proxy';
 
 
 export async function GET(
@@ -22,7 +23,7 @@ export async function GET(
       }
     );
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     return createErrorResponse('Failed to fetch user', error);
@@ -48,7 +49,7 @@ export async function PUT(
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const data = await parseBackendJson(response);
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     return createErrorResponse('Failed to update user', error);
