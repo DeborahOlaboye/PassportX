@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { sendSuccess } from '@/lib/api-responses';
+import { BACKEND_URL } from '@/lib/config';
 
 interface CommunityCreationRequest {
   txId: string;
@@ -43,9 +44,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001';
-
-    const response = await fetch(`${backendUrl}/api/communities`, {
+    const response = await fetch(`${BACKEND_URL}/api/communities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -97,8 +96,6 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const backendUrl = process.env.BACKEND_API_URL || 'http://localhost:3001';
-
     const queryParams = new URLSearchParams();
     if (admin) queryParams.append('admin', admin);
     if (search) queryParams.append('search', search);
@@ -107,7 +104,7 @@ export async function GET(request: NextRequest) {
     queryParams.append('offset', offset.toString());
 
     const response = await fetch(
-      `${backendUrl}/api/communities?${queryParams.toString()}`,
+      `${BACKEND_URL}/api/communities?${queryParams.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.BACKEND_API_KEY || ''}`,
