@@ -1,5 +1,5 @@
 ;; PassportX NFT Contract
-;; SIP-12 compliant non-transferable NFT for achievement badges
+;; SIP-009 compliant non-transferable NFT for achievement badges
 ;;
 ;; Error Codes Used:
 ;; - u100: ERR-OWNER-ONLY - Action restricted to contract owner
@@ -22,14 +22,10 @@
 ;; Data Variables
 (define-data-var last-token-id uint u0)
 
-;; Maps
-(define-map token-count principal uint)
-(define-map market {token-id: uint} {price: uint, commission: principal})
-
 ;; Non-Fungible Token Definition
 (define-non-fungible-token passport-badge uint)
 
-;; SIP-12 Functions
+;; SIP-009 Functions
 (define-read-only (get-last-token-id)
   (ok (var-get last-token-id))
 )
@@ -50,28 +46,30 @@
   )
 )
 
-;; Mint function - only contract owner can mint
+;; Mint function - authorized by access control
 (define-public (mint (recipient principal))
   (begin
-    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (asserts! (not (unwrap-panic (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
       (
         (token-id (+ (var-get last-token-id) u1))
       )
-    (asserts! (is-eq tx-sender contract-owner) ERR-OWNER-ONLY)
-    (try! (nft-mint? passport-badge token-id recipient))
+      ;; Authorization: only the contract-owner or the badge-issuer contract can mint
+      (asserts! (or (is-eq tx-sender contract-owner) (is-eq contract-caller .badge-issuer)) ERR-OWNER-ONLY)
+      
+      (try! (nft-mint? passport-badge token-id recipient))
 
-    ;; Emit passport badge minted event
-    (print {
-      event: "passport-badge-minted",
-      token-id: token-id,
-      recipient: recipient,
-      minted-by: tx-sender,
-      block-height: block-height
-    })
+      ;; Emit passport badge minted event
+      (print {
+        event: "passport-badge-minted",
+        token-id: token-id,
+        recipient: recipient,
+        minted-by: tx-sender,
+        block-height: block-height
+      })
 
-    (var-set last-token-id token-id)
-    (ok token-id)
+      (var-set last-token-id token-id)
+      (ok token-id)
     )
   )
 )
