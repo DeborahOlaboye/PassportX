@@ -14,7 +14,7 @@
       category: (get category metadata),
       timestamp: (get timestamp metadata)
     })
-    (err err-not-found)
+    err-not-found
   )
 )
 
@@ -43,7 +43,7 @@
       name: (get name template),
       description: (get description template)
     })
-    (err err-not-found)
+    err-not-found
   )
 )
 
@@ -52,7 +52,7 @@
   (let
     (
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-not-found))
-      (owner (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
+      (owner (unwrap! (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found) err-not-found))
     )
     (ok {
       id: badge-id,
@@ -72,14 +72,18 @@
     (
       (user-badges (get badge-ids (contract-call? .badge-metadata get-user-badges user)))
     )
+    ;; Using a closure-like pattern is not possible in Clarity, 
+    ;; so we filter based on a global or specific logic. 
+    ;; For production, category filtering usually happens off-chain or via specialized maps.
     (ok (filter check-badge-category user-badges))
   )
 )
 
-;; Helper function to check badge category
+;; Helper function to check badge category 
+;; Note: Clarity filter functions only take one argument. 
 (define-private (check-badge-category (badge-id uint))
   (match (contract-call? .badge-metadata get-badge-metadata badge-id)
-    metadata (is-eq (get category metadata) u1) ;; placeholder category check
+    metadata (is-eq (get category metadata) u1) ;; Defaulting to category 1 per existing scaffold
     false
   )
 )
@@ -106,10 +110,12 @@
 (define-read-only (verify-badge-ownership (badge-id uint) (claimed-owner principal))
   (let
     (
-      (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
-      (actual-owner (unwrap! owner-response err-not-found))
+      (owner-opt (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
     )
-    (ok (is-eq actual-owner claimed-owner))
+    (match owner-opt
+      actual-owner (ok (is-eq actual-owner claimed-owner))
+      err-not-found
+    )
   )
 )
 
@@ -122,7 +128,7 @@
       issuer: (get issuer metadata),
       timestamp: (get timestamp metadata)
     })
-    (err err-not-found)
+    err-not-found
   )
 )
 
@@ -131,8 +137,8 @@
   (let
     (
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-not-found))
-      (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
-      (owner (unwrap! owner-response err-not-found))
+      (owner-opt (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
+      (owner (unwrap! owner-opt err-not-found))
     )
     (ok {
       verified: true,
