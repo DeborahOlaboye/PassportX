@@ -23,7 +23,8 @@ export const buildBadgeSearchParams = (
 
   if (searchQuery) params.append('search', searchQuery);
   if (sortBy) params.append('sortBy', sortBy);
-  if (filters.levels.length > 0) params.append('level', filters.levels.join(','));
+  if (filters.levels.length > 0)
+    params.append('level', filters.levels.join(','));
   if (filters.categories.length > 0)
     params.append('category', filters.categories.join(','));
   if (filters.community) params.append('community', filters.community);
