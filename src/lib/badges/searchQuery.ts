@@ -10,7 +10,8 @@ export const buildBadgeSearchParams = (
   searchQuery: string,
   sortBy: string,
   filters: BadgeSearchFilters,
-  currentPage: number
+  currentPage: number,
+  limit = 20
 ): URLSearchParams => {
   const params = new URLSearchParams();
 
@@ -23,7 +24,7 @@ export const buildBadgeSearchParams = (
   if (filters.startDate) params.append('startDate', filters.startDate);
   if (filters.endDate) params.append('endDate', filters.endDate);
   params.append('page', currentPage.toString());
-  params.append('limit', '20');
+  params.append('limit', limit.toString());
 
   return params;
 };

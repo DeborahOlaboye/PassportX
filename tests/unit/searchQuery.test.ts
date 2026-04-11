@@ -26,6 +26,21 @@ describe('buildBadgeSearchParams', () => {
     expect(params.get('limit')).toBe('20');
   });
 
+  it('supports a custom page size limit', () => {
+    const params = buildBadgeSearchParams(
+      'custom',
+      'popular',
+      {
+        levels: [],
+        categories: [],
+      },
+      1,
+      50
+    );
+
+    expect(params.get('limit')).toBe('50');
+  });
+
   it('omits empty filters from the query string', () => {
     const params = buildBadgeSearchParams(
       '',
