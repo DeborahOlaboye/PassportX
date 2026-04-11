@@ -69,25 +69,26 @@ export default function BadgeSearchPage() {
     ]
   );
 
+  const searchUrl = useMemo(() => {
+    const params = buildBadgeSearchParams(
+      searchQuery,
+      sortBy,
+      filters,
+      currentPage
+    );
+
+    return `/api/badges/search?${params.toString()}`;
+  }, [searchQuery, sortBy, filters, currentPage]);
+
   const fetchBadges = useCallback(
     async (signal?: AbortSignal) => {
       try {
         setFetchError(null);
         setIsLoading(true);
 
-        const params = buildBadgeSearchParams(
-          searchQuery,
-          sortBy,
-          filters,
-          currentPage
-        );
-
-        const response = await fetch(
-          `/api/badges/search?${params.toString()}`,
-          {
-            signal,
-          }
-        );
+        const response = await fetch(searchUrl, {
+          signal,
+        });
         const data = await response.json();
 
         if (!response.ok || data?.success === false) {
