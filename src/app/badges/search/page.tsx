@@ -9,7 +9,10 @@ import BadgeCard from '@/components/BadgeCard';
 import { Loader2 } from 'lucide-react';
 import {
   BadgeSearchFilters,
+  DEFAULT_BADGE_SEARCH_LIMIT,
+  areBadgeSearchFiltersActive,
   buildBadgeSearchParams,
+  createEmptyBadgeSearchResult,
 } from '@/lib/badges/searchQuery';
 
 interface Badge {
@@ -50,15 +53,13 @@ export default function BadgeSearchPage() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const hasFilters = useMemo(
-    () =>
-      !!searchQuery ||
-      filters.levels.length > 0 ||
-      filters.categories.length > 0 ||
-      !!filters.community,
+    () => areBadgeSearchFiltersActive(filters, searchQuery),
     [
       filters.categories.length,
       filters.community,
+      filters.endDate,
       filters.levels.length,
+      filters.startDate,
       searchQuery,
     ]
   );
@@ -95,14 +96,12 @@ export default function BadgeSearchPage() {
         if (data?.success) {
           setResults(data.data);
         } else {
-          setResults({
-            badges: [],
-            total: 0,
-            page: currentPage,
-            limit: 20,
-            totalPages: 0,
-            hasMore: false,
-          });
+          setResults(
+            createEmptyBadgeSearchResult<Badge>(
+              currentPage,
+              DEFAULT_BADGE_SEARCH_LIMIT
+            )
+          );
         }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -135,7 +134,13 @@ export default function BadgeSearchPage() {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setFilters({ levels: [], categories: [] });
+    setFilters({
+      levels: [],
+      categories: [],
+      community: undefined,
+      startDate: undefined,
+      endDate: undefined,
+    });
     setCurrentPage(1);
     setFetchError(null);
   };
