@@ -125,6 +125,13 @@ export default function BadgeSearchPage() {
     return () => controller.abort();
   }, [fetchBadges]);
 
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilters({ levels: [], categories: [] });
+    setCurrentPage(1);
+    setFetchError(null);
+  };
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page on new search
@@ -173,19 +180,13 @@ export default function BadgeSearchPage() {
           <SortDropdown value={sortBy} onChange={handleSortChange} />
         </div>
 
-        {/* Results Info */}
-        {results && !isLoading && (
-          <ResultsInfo
-            currentPage={results.page}
-            limit={results.limit}
-            total={results.total}
-            className="mb-4"
-          />
-        )}
-
         {/* Error State */}
         {fetchError && !isLoading && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-center text-sm text-red-700">
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-center text-sm text-red-700"
+          >
             {fetchError}
           </div>
         )}
@@ -200,11 +201,30 @@ export default function BadgeSearchPage() {
 
         {/* Results Grid */}
         {!isLoading && results && results.badges.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {results.badges.map((badge) => (
-              <BadgeCard key={badge.id} badge={badge} showVerification={true} />
-            ))}
-          </div>
+          <>
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <ResultsInfo
+                currentPage={results.page}
+                limit={results.limit}
+                total={results.total}
+                className="flex-1"
+              />
+              {hasFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  aria-label="Clear all filters and search"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {results.badges.map((badge) => (
+                <BadgeCard key={badge.id} badge={badge} showVerification={true} />
+              ))}
+            </div>
+          </>
         )}
 
         {/* Empty State */}
@@ -219,18 +239,13 @@ export default function BadgeSearchPage() {
               for
             </p>
             {hasFilters && (
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setFilters({ levels: [], categories: [] });
-              setCurrentPage(1);
-              setFetchError(null);
-            }}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Clear all filters
-          </button>
-        )}
+              <button
+                onClick={clearFilters}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         )}
 
