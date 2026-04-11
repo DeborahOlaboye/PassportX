@@ -5,6 +5,7 @@ import {
   isBackendSuccessStatus,
   isJsonContentType,
   getBackendResponseMetadata,
+  normalizeErrorResponse,
 } from '../backend-proxy';
 
 function makeResponse(
@@ -149,11 +150,7 @@ describe('getBackendResponseMetadata', () => {
   });
 
   it('handles non-JSON error responses', () => {
-    const res = makeResponse(
-      '<html>502 Bad Gateway</html>',
-      'text/html',
-      502
-    );
+    const res = makeResponse('<html>502 Bad Gateway</html>', 'text/html', 502);
     const meta = getBackendResponseMetadata(res);
 
     expect(meta.isError).toBe(true);

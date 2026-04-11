@@ -85,6 +85,23 @@ export function normalizeErrorResponse(
 }
 
 /**
+ * Safe headers to forward from backend responses to the client.
+ * Excludes sensitive or problematic headers that should not be propagated.
+ */
+export const SAFE_FORWARDED_HEADERS = new Set([
+  'cache-control',
+  'content-type',
+  'age',
+  'date',
+  'expires',
+  'etag',
+  'vary',
+  'x-ratelimit-limit',
+  'x-ratelimit-remaining',
+  'x-ratelimit-reset',
+]);
+
+/**
  * Safely parse JSON from a backend response.
  * If the response body is not valid JSON (e.g. HTML error page, empty body),
  * returns a fallback object with the HTTP status text instead of throwing.
