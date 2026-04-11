@@ -1,4 +1,7 @@
-import { buildBadgeSearchParams } from '../../src/lib/badges/searchQuery';
+import {
+  buildBadgeSearchParams,
+  areBadgeSearchFiltersActive,
+} from '../../src/lib/badges/searchQuery';
 
 describe('buildBadgeSearchParams', () => {
   it('builds query params for search filters', () => {
@@ -57,5 +60,20 @@ describe('buildBadgeSearchParams', () => {
     expect(params.get('category')).toBeNull();
     expect(params.get('page')).toBe('1');
     expect(params.get('limit')).toBe('20');
+  });
+
+  it('considers date filters active for badge search state', () => {
+    expect(
+      areBadgeSearchFiltersActive(
+        { levels: [], categories: [], startDate: '2026-01-01' },
+        ''
+      )
+    ).toBe(true);
+    expect(
+      areBadgeSearchFiltersActive(
+        { levels: [], categories: [], endDate: '2026-01-31' },
+        ''
+      )
+    ).toBe(true);
   });
 });
