@@ -6,6 +6,12 @@ export interface BadgeSearchFilters {
   endDate?: string;
 }
 
+/**
+ * Build a URLSearchParams object for badge search requests.
+ *
+ * This helper ensures the same query parameter conventions are used
+ * across client-side search pages and server API proxies.
+ */
 export const buildBadgeSearchParams = (
   searchQuery: string,
   sortBy: string,

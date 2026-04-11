@@ -164,6 +164,9 @@ export default function BadgeSearchPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const hasResults = !!results && results.badges.length > 0;
+  const isEmptyResults = !!results && results.badges.length === 0;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -208,7 +211,7 @@ export default function BadgeSearchPage() {
         )}
 
         {/* Results Grid */}
-        {!isLoading && results && results.badges.length > 0 && (
+        {!isLoading && hasResults && (
           <>
             <div className="flex items-center justify-between mb-4 gap-4">
               <ResultsInfo
@@ -240,7 +243,7 @@ export default function BadgeSearchPage() {
         )}
 
         {/* Empty State */}
-        {!isLoading && results && results.badges.length === 0 && (
+        {!isLoading && isEmptyResults && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
