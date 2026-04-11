@@ -40,13 +40,18 @@ interface SearchResult {
 
 type ActiveFilters = BadgeSearchFilters;
 
+const initialFilters: ActiveFilters = {
+  levels: [],
+  categories: [],
+  community: undefined,
+  startDate: undefined,
+  endDate: undefined,
+};
+
 export default function BadgeSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [filters, setFilters] = useState<ActiveFilters>({
-    levels: [],
-    categories: [],
-  });
+  const [filters, setFilters] = useState<ActiveFilters>(initialFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -134,13 +139,7 @@ export default function BadgeSearchPage() {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setFilters({
-      levels: [],
-      categories: [],
-      community: undefined,
-      startDate: undefined,
-      endDate: undefined,
-    });
+    setFilters(initialFilters);
     setCurrentPage(1);
     setFetchError(null);
   };
