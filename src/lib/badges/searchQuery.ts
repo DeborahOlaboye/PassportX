@@ -6,6 +6,31 @@ export interface BadgeSearchFilters {
   endDate?: string;
 }
 
+export const DEFAULT_BADGE_SEARCH_LIMIT = 20;
+
+export const areBadgeSearchFiltersActive = (
+  filters: BadgeSearchFilters,
+  searchQuery: string
+): boolean =>
+  !!searchQuery ||
+  filters.levels.length > 0 ||
+  filters.categories.length > 0 ||
+  !!filters.community ||
+  !!filters.startDate ||
+  !!filters.endDate;
+
+export const createEmptyBadgeSearchResult = (
+  currentPage = 1,
+  limit = DEFAULT_BADGE_SEARCH_LIMIT
+) => ({
+  badges: [] as Array<unknown>,
+  total: 0,
+  page: currentPage,
+  limit,
+  totalPages: 0,
+  hasMore: false,
+});
+
 /**
  * Build a URLSearchParams object for badge search requests.
  *
