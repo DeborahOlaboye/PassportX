@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import SearchBar from '@/components/search/SearchBar';
 import FilterPanel from '@/components/search/FilterPanel';
 import SortDropdown, { SortOption } from '@/components/search/SortDropdown';
@@ -49,16 +49,9 @@ export default function BadgeSearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [_fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Fetch badges when search parameters change
-  useEffect(() => {
-    fetchBadges().catch((err: unknown) => {
-      console.error('Unhandled error in badge search:', err);
-    });
-  }, [searchQuery, sortBy, filters, currentPage]);
-
-  const fetchBadges = async () => {
+  const fetchBadges = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -88,7 +81,14 @@ export default function BadgeSearchPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchQuery, sortBy, filters, currentPage]);
+
+  // Fetch badges when search parameters change
+  useEffect(() => {
+    fetchBadges().catch((err: unknown) => {
+      console.error('Unhandled error in badge search:', err);
+    });
+  }, [fetchBadges]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
