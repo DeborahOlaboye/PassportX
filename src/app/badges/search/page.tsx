@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import SearchBar from '@/components/search/SearchBar';
 import FilterPanel from '@/components/search/FilterPanel';
 import SortDropdown, { SortOption } from '@/components/search/SortDropdown';
 import Pagination, { ResultsInfo } from '@/components/search/Pagination';
 import BadgeCard from '@/components/BadgeCard';
 import { Loader2 } from 'lucide-react';
+import {
+  BadgeSearchFilters,
+  DEFAULT_BADGE_SEARCH_LIMIT,
+  areBadgeSearchFiltersActive,
+  buildBadgeSearchParams,
+  createEmptyBadgeSearchResult,
+} from '@/lib/badges/searchQuery';
 
 interface Badge {
   id: number;
@@ -31,78 +38,129 @@ interface SearchResult {
   hasMore: boolean;
 }
 
-interface ActiveFilters {
-  levels: number[];
-  categories: string[];
-  community?: string;
-  startDate?: string;
-  endDate?: string;
-}
+type ActiveFilters = BadgeSearchFilters;
+
+const initialFilters: ActiveFilters = {
+  levels: [],
+  categories: [],
+  community: undefined,
+  startDate: undefined,
+  endDate: undefined,
+};
 
 export default function BadgeSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [filters, setFilters] = useState<ActiveFilters>({
-    levels: [],
-    categories: [],
-  });
+  const [filters, setFilters] = useState<ActiveFilters>(initialFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [results, setResults] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [_fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const hasFilters = useMemo(
+    () => areBadgeSearchFiltersActive(filters, searchQuery),
+    [
+      filters.categories.length,
+      filters.community,
+      filters.endDate,
+      filters.levels.length,
+      filters.startDate,
+      searchQuery,
+    ]
+  );
+
+  const searchUrl = useMemo(() => {
+    const params = buildBadgeSearchParams(
+      searchQuery,
+      sortBy,
+      filters,
+      currentPage
+    );
+
+    return `/api/badges/search?${params.toString()}`;
+  }, [searchQuery, sortBy, filters, currentPage]);
+
+  const fetchBadges = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        setFetchError(null);
+        setIsLoading(true);
+
+        const response = await fetch(searchUrl, {
+          signal,
+        });
+        const data = await response.json();
+
+        if (!response.ok || data?.success === false) {
+          setFetchError(
+            data?.message || 'Failed to load badges. Please try again.'
+          );
+          setResults(null);
+          return;
+        }
+
+        if (data?.success) {
+          setResults(data.data);
+        } else {
+          setResults(
+            createEmptyBadgeSearchResult<Badge>(
+              currentPage,
+              DEFAULT_BADGE_SEARCH_LIMIT
+            )
+          );
+        }
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+
+        console.error('Error fetching badges:', error);
+        setFetchError('Failed to load badges. Please try again.');
+        setResults(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [searchQuery, sortBy, filters, currentPage]
+  );
 
   // Fetch badges when search parameters change
   useEffect(() => {
-    fetchBadges().catch((err: unknown) => {
+    const controller = new AbortController();
+
+    fetchBadges(controller.signal).catch((err: unknown) => {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
       console.error('Unhandled error in badge search:', err);
     });
-  }, [searchQuery, sortBy, filters, currentPage]);
 
-  const fetchBadges = async () => {
-    try {
-      setIsLoading(true);
+    return () => controller.abort();
+  }, [fetchBadges]);
 
-      // Build query parameters
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('search', searchQuery);
-      if (sortBy) params.append('sortBy', sortBy);
-      if (filters.levels.length > 0)
-        params.append('level', filters.levels.join(','));
-      if (filters.categories.length > 0)
-        params.append('category', filters.categories.join(','));
-      if (filters.community) params.append('community', filters.community);
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      params.append('page', currentPage.toString());
-      params.append('limit', '20');
-
-      const response = await fetch(`/api/badges/search?${params.toString()}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setResults(data.data);
-      }
-    } catch (error: unknown) {
-      console.error('Error fetching badges:', error);
-      setFetchError('Failed to load badges. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilters(initialFilters);
+    setCurrentPage(1);
+    setFetchError(null);
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page on new search
+    setFetchError(null);
   };
 
   const handleFilterChange = (newFilters: ActiveFilters) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page on filter change
+    setFetchError(null);
   };
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
     setCurrentPage(1); // Reset to first page on sort change
+    setFetchError(null);
   };
 
   const handlePageChange = (page: number) => {
@@ -110,6 +168,9 @@ export default function BadgeSearchPage() {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const hasResults = !!results && results.badges.length > 0;
+  const isEmptyResults = !!results && results.badges.length === 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,19 +196,15 @@ export default function BadgeSearchPage() {
           <SortDropdown value={sortBy} onChange={handleSortChange} />
         </div>
 
-        {/* Results Info */}
-        {results && !isLoading && (
-          <ResultsInfo
-            currentPage={results.page}
-            limit={results.limit}
-            total={results.total}
-            className="mb-4"
-          />
-        )}
-
         {/* Error State */}
         {fetchError && !isLoading && (
-          <div className="text-center py-8 text-red-600">{fetchError}</div>
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-center text-sm text-red-700"
+          >
+            {fetchError}
+          </div>
         )}
 
         {/* Loading State */}
@@ -159,16 +216,39 @@ export default function BadgeSearchPage() {
         )}
 
         {/* Results Grid */}
-        {!isLoading && results && results.badges.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {results.badges.map((badge) => (
-              <BadgeCard key={badge.id} badge={badge} showVerification={true} />
-            ))}
-          </div>
+        {!isLoading && hasResults && (
+          <>
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <ResultsInfo
+                currentPage={results.page}
+                limit={results.limit}
+                total={results.total}
+                className="flex-1"
+              />
+              {hasFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  aria-label="Clear all filters and search"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {results.badges.map((badge) => (
+                <BadgeCard
+                  key={badge.id}
+                  badge={badge}
+                  showVerification={true}
+                />
+              ))}
+            </div>
+          </>
         )}
 
         {/* Empty State */}
-        {!isLoading && results && results.badges.length === 0 && (
+        {!isLoading && isEmptyResults && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -178,15 +258,9 @@ export default function BadgeSearchPage() {
               Try adjusting your search or filters to find what you're looking
               for
             </p>
-            {(searchQuery ||
-              filters.levels.length > 0 ||
-              filters.categories.length > 0) && (
+            {hasFilters && (
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilters({ levels: [], categories: [] });
-                  setCurrentPage(1);
-                }}
+                onClick={clearFilters}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Clear all filters
