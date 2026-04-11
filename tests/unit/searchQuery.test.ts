@@ -1,6 +1,8 @@
 import {
   buildBadgeSearchParams,
   areBadgeSearchFiltersActive,
+  createEmptyBadgeSearchResult,
+  DEFAULT_BADGE_SEARCH_LIMIT,
 } from '../../src/lib/badges/searchQuery';
 
 describe('buildBadgeSearchParams', () => {
@@ -75,5 +77,15 @@ describe('buildBadgeSearchParams', () => {
         ''
       )
     ).toBe(true);
+  });
+
+  it('creates an empty badge search result with the default limit', () => {
+    const result = createEmptyBadgeSearchResult<unknown>(2);
+
+    expect(result.badges).toEqual([]);
+    expect(result.page).toBe(2);
+    expect(result.limit).toBe(DEFAULT_BADGE_SEARCH_LIMIT);
+    expect(result.total).toBe(0);
+    expect(result.hasMore).toBe(false);
   });
 });
