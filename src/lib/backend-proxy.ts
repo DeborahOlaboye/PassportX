@@ -63,6 +63,28 @@ export function getBackendResponseMetadata(response: Response): {
 }
 
 /**
+ * Normalize any error input into a consistent error object format.
+ */
+export function normalizeErrorResponse(
+  error: unknown,
+  fallbackMessage = 'An error occurred'
+): Record<string, unknown> {
+  if (error instanceof Error) {
+    return { error: error.message };
+  }
+
+  if (typeof error === 'string') {
+    return { error };
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    return error as Record<string, unknown>;
+  }
+
+  return { error: fallbackMessage };
+}
+
+/**
  * Safely parse JSON from a backend response.
  * If the response body is not valid JSON (e.g. HTML error page, empty body),
  * returns a fallback object with the HTTP status text instead of throwing.
