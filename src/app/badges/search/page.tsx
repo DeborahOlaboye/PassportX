@@ -55,7 +55,12 @@ export default function BadgeSearchPage() {
       filters.levels.length > 0 ||
       filters.categories.length > 0 ||
       !!filters.community,
-    [filters.categories.length, filters.community, filters.levels.length, searchQuery]
+    [
+      filters.categories.length,
+      filters.community,
+      filters.levels.length,
+      searchQuery,
+    ]
   );
 
   const fetchBadges = useCallback(
@@ -71,9 +76,12 @@ export default function BadgeSearchPage() {
           currentPage
         );
 
-        const response = await fetch(`/api/badges/search?${params.toString()}`, {
-          signal,
-        });
+        const response = await fetch(
+          `/api/badges/search?${params.toString()}`,
+          {
+            signal,
+          }
+        );
         const data = await response.json();
 
         if (!response.ok || data?.success === false) {
@@ -221,7 +229,11 @@ export default function BadgeSearchPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {results.badges.map((badge) => (
-                <BadgeCard key={badge.id} badge={badge} showVerification={true} />
+                <BadgeCard
+                  key={badge.id}
+                  badge={badge}
+                  showVerification={true}
+                />
               ))}
             </div>
           </>
