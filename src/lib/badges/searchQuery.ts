@@ -8,6 +8,15 @@ export interface BadgeSearchFilters {
 
 export const DEFAULT_BADGE_SEARCH_LIMIT = 20;
 
+export interface BadgeSearchResult<T = unknown> {
+  badges: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 export const areBadgeSearchFiltersActive = (
   filters: BadgeSearchFilters,
   searchQuery: string
@@ -19,11 +28,11 @@ export const areBadgeSearchFiltersActive = (
   !!filters.startDate ||
   !!filters.endDate;
 
-export const createEmptyBadgeSearchResult = (
+export const createEmptyBadgeSearchResult = <T = unknown>(
   currentPage = 1,
   limit = DEFAULT_BADGE_SEARCH_LIMIT
-) => ({
-  badges: [] as Array<unknown>,
+): BadgeSearchResult<T> => ({
+  badges: [] as T[],
   total: 0,
   page: currentPage,
   limit,
