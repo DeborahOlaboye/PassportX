@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import SearchBar from '@/components/search/SearchBar';
 import FilterPanel from '@/components/search/FilterPanel';
 import SortDropdown, { SortOption } from '@/components/search/SortDropdown';
 import Pagination, { ResultsInfo } from '@/components/search/Pagination';
 import BadgeCard from '@/components/BadgeCard';
 import { Loader2 } from 'lucide-react';
+import {
+  BadgeSearchFilters,
+  buildBadgeSearchParams,
+} from '@/lib/badges/searchQuery';
 
 interface Badge {
   id: number;
@@ -31,13 +35,7 @@ interface SearchResult {
   hasMore: boolean;
 }
 
-interface ActiveFilters {
-  levels: number[];
-  categories: string[];
-  community?: string;
-  startDate?: string;
-  endDate?: string;
-}
+type ActiveFilters = BadgeSearchFilters;
 
 export default function BadgeSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,58 +49,98 @@ export default function BadgeSearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const fetchBadges = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const hasFilters = useMemo(
+    () =>
+      !!searchQuery ||
+      filters.levels.length > 0 ||
+      filters.categories.length > 0 ||
+      !!filters.community,
+    [filters.categories.length, filters.community, filters.levels.length, searchQuery]
+  );
 
-      // Build query parameters
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('search', searchQuery);
-      if (sortBy) params.append('sortBy', sortBy);
-      if (filters.levels.length > 0)
-        params.append('level', filters.levels.join(','));
-      if (filters.categories.length > 0)
-        params.append('category', filters.categories.join(','));
-      if (filters.community) params.append('community', filters.community);
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      params.append('page', currentPage.toString());
-      params.append('limit', '20');
+  const fetchBadges = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        setFetchError(null);
+        setIsLoading(true);
 
-      const response = await fetch(`/api/badges/search?${params.toString()}`);
-      const data = await response.json();
+        const params = buildBadgeSearchParams(
+          searchQuery,
+          sortBy,
+          filters,
+          currentPage
+        );
 
-      if (data.success) {
-        setResults(data.data);
+        const response = await fetch(`/api/badges/search?${params.toString()}`, {
+          signal,
+        });
+        const data = await response.json();
+
+        if (!response.ok || data?.success === false) {
+          setFetchError(
+            data?.message || 'Failed to load badges. Please try again.'
+          );
+          setResults(null);
+          return;
+        }
+
+        if (data?.success) {
+          setResults(data.data);
+        } else {
+          setResults({
+            badges: [],
+            total: 0,
+            page: currentPage,
+            limit: 20,
+            totalPages: 0,
+            hasMore: false,
+          });
+        }
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+
+        console.error('Error fetching badges:', error);
+        setFetchError('Failed to load badges. Please try again.');
+        setResults(null);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: unknown) {
-      console.error('Error fetching badges:', error);
-      setFetchError('Failed to load badges. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchQuery, sortBy, filters, currentPage]);
+    },
+    [searchQuery, sortBy, filters, currentPage]
+  );
 
   // Fetch badges when search parameters change
   useEffect(() => {
-    fetchBadges().catch((err: unknown) => {
+    const controller = new AbortController();
+
+    fetchBadges(controller.signal).catch((err: unknown) => {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
       console.error('Unhandled error in badge search:', err);
     });
+
+    return () => controller.abort();
   }, [fetchBadges]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page on new search
+    setFetchError(null);
   };
 
   const handleFilterChange = (newFilters: ActiveFilters) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page on filter change
+    setFetchError(null);
   };
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
     setCurrentPage(1); // Reset to first page on sort change
+    setFetchError(null);
   };
 
   const handlePageChange = (page: number) => {
@@ -147,7 +185,9 @@ export default function BadgeSearchPage() {
 
         {/* Error State */}
         {fetchError && !isLoading && (
-          <div className="text-center py-8 text-red-600">{fetchError}</div>
+          <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-center text-sm text-red-700">
+            {fetchError}
+          </div>
         )}
 
         {/* Loading State */}
@@ -178,20 +218,19 @@ export default function BadgeSearchPage() {
               Try adjusting your search or filters to find what you're looking
               for
             </p>
-            {(searchQuery ||
-              filters.levels.length > 0 ||
-              filters.categories.length > 0) && (
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilters({ levels: [], categories: [] });
-                  setCurrentPage(1);
-                }}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Clear all filters
-              </button>
-            )}
+            {hasFilters && (
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setFilters({ levels: [], categories: [] });
+              setCurrentPage(1);
+              setFetchError(null);
+            }}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Clear all filters
+          </button>
+        )}
           </div>
         )}
 
