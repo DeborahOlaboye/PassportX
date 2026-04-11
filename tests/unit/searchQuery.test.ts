@@ -31,6 +31,23 @@ describe('buildBadgeSearchParams', () => {
     expect(params.get('limit')).toBe('20');
   });
 
+  it('includes date range fields when provided', () => {
+    const params = buildBadgeSearchParams(
+      '',
+      'newest',
+      {
+        levels: [],
+        categories: [],
+        startDate: '2026-02-01',
+        endDate: '2026-02-28',
+      },
+      1
+    );
+
+    expect(params.get('startDate')).toBe('2026-02-01');
+    expect(params.get('endDate')).toBe('2026-02-28');
+  });
+
   it('supports a custom page size limit', () => {
     const params = buildBadgeSearchParams(
       'custom',
