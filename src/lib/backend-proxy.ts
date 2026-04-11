@@ -1,6 +1,27 @@
 import { NextResponse } from 'next/server';
 
 /**
+ * Maximum allowed size for backend response bodies (10 MB).
+ */
+export const MAX_RESPONSE_BODY_SIZE = 10 * 1024 * 1024;
+
+/**
+ * Configuration options for backend response validation.
+ */
+export interface BackendResponseValidationOptions {
+  maxBodySize?: number;
+  allowedContentTypes?: string[];
+}
+
+/**
+ * Default validation options for backend responses.
+ */
+export const DEFAULT_VALIDATION_OPTIONS: BackendResponseValidationOptions = {
+  maxBodySize: MAX_RESPONSE_BODY_SIZE,
+  allowedContentTypes: ['application/json', 'text/plain', 'text/html'],
+};
+
+/**
  * Safely parse JSON from a backend response.
  * If the response body is not valid JSON (e.g. HTML error page, empty body),
  * returns a fallback object with the HTTP status text instead of throwing.
