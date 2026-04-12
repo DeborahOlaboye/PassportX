@@ -17,6 +17,9 @@ const searchLimiter = createRateLimiter(API_READ_RATE_LIMIT);
 // Rate limiter for public read endpoints — filters and trending (120 req / 15 min)
 const publicReadLimiter = createRateLimiter(BADGE_PUBLIC_READ_RATE_LIMIT);
 
+// Rate limiter for autocomplete suggestions (60 req / 15 min — tighter due to regex DB hit)
+const suggestionsLimiter = createRateLimiter(BADGE_SUGGESTIONS_RATE_LIMIT);
+
 /**
  * POST /api/badges/search
  * Search and filter badges
