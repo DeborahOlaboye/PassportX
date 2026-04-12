@@ -3,7 +3,11 @@ import badgeSearchService from '../services/badgeSearchService';
 import { IBadgeSearchQuery } from '../types';
 import { validatePagination } from '../middleware/validation';
 import { createRateLimiter } from '../middleware/rateLimiter';
-import { API_READ_RATE_LIMIT } from '../config/rateLimits';
+import {
+  API_READ_RATE_LIMIT,
+  BADGE_PUBLIC_READ_RATE_LIMIT,
+  BADGE_SUGGESTIONS_RATE_LIMIT,
+} from '../config/rateLimits';
 
 const router = express.Router();
 
