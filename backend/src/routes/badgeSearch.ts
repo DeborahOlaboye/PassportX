@@ -14,6 +14,9 @@ const router = express.Router();
 // Rate limiter for search operations (200 requests per 15 minutes)
 const searchLimiter = createRateLimiter(API_READ_RATE_LIMIT);
 
+// Rate limiter for public read endpoints — filters and trending (120 req / 15 min)
+const publicReadLimiter = createRateLimiter(BADGE_PUBLIC_READ_RATE_LIMIT);
+
 /**
  * POST /api/badges/search
  * Search and filter badges
