@@ -9,6 +9,9 @@ export interface AddressValidationResult {
   isMainnet?: boolean;
   isTestnet?: boolean;
   addressType?: 'contract' | 'wallet' | 'unknown';
+  checksumValid?: boolean;
+  version?: number;
+  networkId?: number;
 }
 
 const BASE32_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -28,6 +31,10 @@ function decodeBase32Check(address: string): number[] | null {
   return decoded;
 }
 
+/**
+ * Verify checksum using CRC-16 algorithm
+ * @internal Used for advanced validation scenarios
+ */
 function verifyChecksum(address: string): boolean {
   const decoded = decodeBase32Check(address);
   if (!decoded || decoded.length < 4) return false;
@@ -58,6 +65,10 @@ function verifyChecksum(address: string): boolean {
   );
 }
 
+/**
+ * Calculate CRC-16 hash for address data
+ * @internal Used for advanced validation scenarios
+ */
 function crc16Hash(data: string): number {
   let crc = 0xffff;
   const polynomial = 0x1021;
@@ -76,6 +87,17 @@ function crc16Hash(data: string): number {
 
   return crc & 0xffff;
 }
+
+/**
+ * Export utility functions for advanced use cases
+ * These functions are used internally but exposed for advanced validation needs
+ */
+export const addressUtils = {
+  verifyChecksum,
+  crc16Hash,
+  decodeBase32Check,
+  BASE32_ALPHABET,
+};
 
 export interface AddressTypeResult {
   type: 'contract' | 'wallet' | 'unknown';
@@ -140,12 +162,16 @@ export function isValidStacksAddressWithChecksum(
   const isTestnet = address.startsWith('ST');
 
   const addressType = getAddressType(address);
+  const checksumValid = addressUtils.verifyChecksum(address);
 
   return {
     valid: true,
     isMainnet,
     isTestnet,
     addressType: addressType?.type ?? 'unknown',
+    checksumValid,
+    version: addressType?.version,
+    networkId: isMainnet ? 1 : 0,
   };
 }
 
@@ -304,4 +330,258 @@ export function validateContractAddresses(addresses: Record<string, string>): {
     valid: errors.length === 0,
     errors,
   };
+}
+
+export interface AddressParsingResult {
+  prefix: string;
+  version: number;
+  data: string;
+  checksum: string;
+  isMainnet: boolean;
+  isTestnet: boolean;
+}
+
+export function parseAddress(address: string): AddressParsingResult | null {
+  if (!isValidStacksAddress(address)) {
+    return null;
+  }
+
+  const prefix = address.substring(0, 2);
+  const versionChar = address[2].toUpperCase();
+  const version = BASE32_ALPHABET.indexOf(versionChar);
+  const data = address.substring(3, 40);
+  const checksum = address.substring(40);
+
+  return {
+    prefix,
+    version,
+    data,
+    checksum,
+    isMainnet: prefix === 'SP',
+    isTestnet: prefix === 'ST',
+  };
+}
+
+export function createAddress(
+  prefix: 'SP' | 'ST',
+  version: number,
+  data: string,
+  checksum: string
+): string {
+  const versionChar = BASE32_ALPHABET[version % 32];
+  return `${prefix}${versionChar}${data}${checksum}`;
+}
+
+export function convertAddressNetwork(
+  address: string,
+  targetNetwork: 'mainnet' | 'testnet'
+): string | null {
+  const parsed = parseAddress(address);
+  if (!parsed) return null;
+
+  const newPrefix = targetNetwork === 'mainnet' ? 'SP' : 'ST';
+  return createAddress(newPrefix, parsed.version, parsed.data, parsed.checksum);
+}
+
+export interface ValidationCacheOptions {
+  maxSize?: number;
+  ttlMs?: number;
+}
+
+const validationCache = new Map<
+  string,
+  { result: AddressValidationResult; timestamp: number }
+>();
+
+export function cachedValidation(
+  address: string,
+  options: ValidationCacheOptions = {}
+): AddressValidationResult {
+  const key = address.toUpperCase();
+  const cached = validationCache.get(key);
+  const now = Date.now();
+  const ttl = options.ttlMs ?? 60000;
+
+  if (cached && now - cached.timestamp < ttl) {
+    return cached.result;
+  }
+
+  const result = isValidStacksAddressWithChecksum(address);
+  validationCache.set(key, { result, timestamp: now });
+
+  if (validationCache.size > (options.maxSize ?? 1000)) {
+    const firstKey = validationCache.keys().next().value;
+    if (firstKey) validationCache.delete(firstKey);
+  }
+
+  return result;
+}
+
+export function clearValidationCache(): void {
+  validationCache.clear();
+}
+
+export function getValidationCacheSize(): number {
+  return validationCache.size;
+}
+
+export interface BatchValidationProgress {
+  total: number;
+  processed: number;
+  valid: number;
+  invalid: number;
+  percentage: number;
+}
+
+export function validateAddressesBatch(
+  addresses: string[],
+  onProgress?: (progress: BatchValidationProgress) => void
+): Map<string, AddressValidationResult> {
+  const results = new Map<string, AddressValidationResult>();
+  const total = addresses.length;
+  let processed = 0;
+  let valid = 0;
+  let invalid = 0;
+
+  for (const address of addresses) {
+    const result = isValidStacksAddressWithChecksum(address);
+    results.set(address, result);
+    processed++;
+    if (result.valid) valid++;
+    else invalid++;
+
+    if (onProgress) {
+      onProgress({
+        total,
+        processed,
+        valid,
+        invalid,
+        percentage: Math.round((processed / total) * 100),
+      });
+    }
+  }
+
+  return results;
+}
+
+const BECH32M_CHARSET = '0123456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+function bech32Encode(prefix: string, data: number[]): string {
+  const converted = convertToBase32(data);
+  return `${prefix.toLowerCase()}${converted.join('').toUpperCase()}`;
+}
+
+function convertToBase32(data: number[]): string[] {
+  const result: string[] = [];
+  let buffer = 0;
+  let bits = 0;
+
+  for (const byte of data) {
+    buffer = (buffer << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      bits -= 5;
+      result.push(BECH32M_CHARSET[(buffer >> bits) & 31]);
+    }
+  }
+
+  if (bits > 0) {
+    result.push(BECH32M_CHARSET[(buffer << (5 - bits)) & 31]);
+  }
+
+  return result;
+}
+
+function convertFromBase32(data: string): number[] | null {
+  const result: number[] = [];
+  let buffer = 0;
+  let bits = 0;
+
+  for (const char of data.toUpperCase()) {
+    const value = BECH32M_CHARSET.indexOf(char);
+    if (value === -1) return null;
+    buffer = (buffer << 5) | value;
+    bits += 5;
+    if (bits >= 8) {
+      bits -= 8;
+      result.push((buffer >> bits) & 255);
+    }
+  }
+
+  return result;
+}
+
+export interface Bech32EncodingResult {
+  encoded: string;
+  prefix: string;
+  version: number;
+  data: string;
+}
+
+export function encodeStacksAddress(
+  prefix: string,
+  version: number,
+  data: string
+): Bech32EncodingResult {
+  const versionByte = [version];
+  const dataBytes = convertFromBase32(data);
+  if (!dataBytes) {
+    throw new Error('Invalid base32 data');
+  }
+  const payload = [...versionByte, ...dataBytes];
+  const encoded = bech32Encode(prefix, payload);
+  return { encoded, prefix, version, data };
+}
+
+export function decodeStacksAddress(
+  address: string
+): { prefix: string; version: number; data: string } | null {
+  const lowerAddress = address.toLowerCase();
+  const separatorIndex = lowerAddress.indexOf('1');
+  if (separatorIndex === -1) return null;
+
+  const prefix = address.substring(0, separatorIndex + 1).toLowerCase();
+  const data = address.substring(separatorIndex + 1);
+  const decoded = convertFromBase32(data);
+
+  if (!decoded || decoded.length < 1) return null;
+
+  const version = decoded[0];
+  const payloadData = decoded.slice(1);
+  const dataStr = payloadData.map((b) => BECH32M_CHARSET[b % 32]).join('');
+
+  return { prefix, version, data: dataStr };
+}
+
+export interface AddressVersion {
+  mainnet: {
+    wallet: number;
+    contract: number;
+    smartContract: number;
+  };
+  testnet: {
+    wallet: number;
+    contract: number;
+    smartContract: number;
+  };
+}
+
+export const ADDRESS_VERSIONS: AddressVersion = {
+  mainnet: {
+    wallet: 0,
+    contract: 22,
+    smartContract: 24,
+  },
+  testnet: {
+    wallet: 26,
+    contract: 20,
+    smartContract: 21,
+  },
+};
+
+export function getVersionForType(
+  network: 'mainnet' | 'testnet',
+  type: 'wallet' | 'contract' | 'smartContract'
+): number {
+  return ADDRESS_VERSIONS[network][type];
 }
