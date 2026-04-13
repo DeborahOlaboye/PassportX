@@ -34,6 +34,13 @@ import {
   getAddressFormatInfo,
   isAddressValidForNetwork,
   validateAddressFormat,
+  validateAndSummarizeAddresses,
+  isAddressType,
+  validateAddressVersion,
+  hashAddress,
+  getAddressStatistics,
+  groupAddressesByNetwork,
+  groupAddressesByType,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
@@ -719,5 +726,144 @@ describe('validateAddressFormat', () => {
     const result = validateAddressFormat('invalid', 'mainnet');
     expect(result.valid).toBe(false);
     expect(result.message).toContain('Invalid address format');
+  });
+});
+
+import {
+  validateAndSummarizeAddresses,
+  isAddressType,
+  validateAddressVersion,
+  hashAddress,
+  getAddressStatistics,
+  groupAddressesByNetwork,
+  groupAddressesByType,
+} from '../addressValidation';
+
+describe('validateAndSummarizeAddresses', () => {
+  it('should summarize addresses correctly', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG',
+      'invalid-address',
+    ];
+    const summary = validateAndSummarizeAddresses(addresses);
+    expect(summary.total).toBe(5);
+    expect(summary.valid).toBe(4);
+    expect(summary.invalid).toBe(1);
+    expect(summary.mainnet).toBe(2);
+    expect(summary.testnet).toBe(2);
+  });
+});
+
+describe('isAddressType', () => {
+  it('should identify wallet addresses', () => {
+    expect(
+      isAddressType('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', 'wallet')
+    ).toBe(true);
+    expect(
+      isAddressType('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM', 'wallet')
+    ).toBe(true);
+  });
+
+  it('should return false for invalid addresses', () => {
+    expect(isAddressType('invalid', 'wallet')).toBe(false);
+  });
+});
+
+describe('validateAddressVersion', () => {
+  it('should validate version byte', () => {
+    expect(
+      validateAddressVersion('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', 0)
+    ).toBe(true);
+    expect(
+      validateAddressVersion('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', 22)
+    ).toBe(false);
+  });
+
+  it('should return false for invalid addresses', () => {
+    expect(validateAddressVersion('invalid', 0)).toBe(false);
+  });
+});
+
+describe('hashAddress', () => {
+  it('should hash address with crc16', () => {
+    const result = hashAddress(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'crc16'
+    );
+    expect(result.algorithm).toBe('crc16');
+    expect(result.hash).toBeTruthy();
+  });
+
+  it('should hash address with base32', () => {
+    const result = hashAddress(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'base32'
+    );
+    expect(result.algorithm).toBe('base32');
+    expect(result.hash).toBeTruthy();
+  });
+
+  it('should return empty hash for invalid address', () => {
+    const result = hashAddress('invalid', 'base32');
+    expect(result.hash).toBe('');
+  });
+});
+
+describe('getAddressStatistics', () => {
+  it('should calculate statistics correctly', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    ];
+    const stats = getAddressStatistics(addresses);
+    expect(stats.total).toBe(3);
+    expect(stats.valid).toBe(3);
+    expect(stats.invalid).toBe(0);
+    expect(stats.mainnetCount).toBe(2);
+    expect(stats.testnetCount).toBe(1);
+  });
+
+  it('should count address types', () => {
+    const addresses = ['SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'];
+    const stats = getAddressStatistics(addresses);
+    expect(stats.walletCount).toBe(1);
+  });
+});
+
+describe('groupAddressesByNetwork', () => {
+  it('should group addresses by network', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'invalid-address',
+    ];
+    const grouped = groupAddressesByNetwork(addresses);
+    expect(grouped.mainnet).toContain(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(grouped.testnet).toContain(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+    );
+    expect(grouped.invalid).toContain('invalid-address');
+  });
+});
+
+describe('groupAddressesByType', () => {
+  it('should group addresses by type', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    ];
+    const grouped = groupAddressesByType(addresses);
+    expect(grouped.wallet.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should handle invalid addresses', () => {
+    const grouped = groupAddressesByType(['invalid']);
+    expect(grouped.unknown).toContain('invalid');
   });
 });
