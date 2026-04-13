@@ -31,6 +31,9 @@ import {
   isTestnetAddress,
   validateAddressStrict,
   validateMultipleAddresses,
+  getAddressFormatInfo,
+  isAddressValidForNetwork,
+  validateAddressFormat,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
@@ -654,5 +657,67 @@ describe('validateMultipleAddresses', () => {
     });
     expect(result.valid).toHaveLength(1);
     expect(result.valid[0]).toBe('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE');
+  });
+});
+
+describe('getAddressFormatInfo', () => {
+  it('should return format info for valid address', () => {
+    const result = getAddressFormatInfo(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(result).not.toBeNull();
+    expect(result?.format).toBe('mainnet');
+    expect(result?.prefix).toBe('SP');
+    expect(result?.length).toBe(41);
+    expect(result?.addressType).toBeDefined();
+  });
+
+  it('should return null for invalid address', () => {
+    expect(getAddressFormatInfo('invalid')).toBeNull();
+  });
+});
+
+describe('isAddressValidForNetwork', () => {
+  it('should return true for mainnet address on mainnet', () => {
+    expect(
+      isAddressValidForNetwork(
+        'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+        'mainnet'
+      )
+    ).toBe(true);
+  });
+
+  it('should return false for testnet address on mainnet', () => {
+    expect(
+      isAddressValidForNetwork(
+        'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+        'mainnet'
+      )
+    ).toBe(false);
+  });
+});
+
+describe('validateAddressFormat', () => {
+  it('should validate correct format', () => {
+    const result = validateAddressFormat(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'mainnet'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('should reject wrong format', () => {
+    const result = validateAddressFormat(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'mainnet'
+    );
+    expect(result.valid).toBe(false);
+    expect(result.message).toContain('format mismatch');
+  });
+
+  it('should reject invalid address', () => {
+    const result = validateAddressFormat('invalid', 'mainnet');
+    expect(result.valid).toBe(false);
+    expect(result.message).toContain('Invalid address format');
   });
 });
