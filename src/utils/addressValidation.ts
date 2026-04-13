@@ -693,3 +693,65 @@ export function validateMultipleAddresses(
 
   return { valid, invalid };
 }
+
+export interface AddressFormatInfo {
+  format: 'mainnet' | 'testnet';
+  prefix: string;
+  length: number;
+  versionByte: number;
+  addressType: 'wallet' | 'contract' | 'smartContract';
+}
+
+export function getAddressFormatInfo(
+  address: string
+): AddressFormatInfo | null {
+  const validation = isValidStacksAddressWithChecksum(address);
+  if (!validation.valid) return null;
+
+  const prefix = address.substring(0, 2);
+  const versionByte = validation.version ?? 0;
+  let addressType: 'wallet' | 'contract' | 'smartContract' = 'wallet';
+
+  if (versionByte >= 20 && versionByte <= 24) {
+    addressType = versionByte >= 22 ? 'smartContract' : 'contract';
+  }
+
+  return {
+    format: prefix === 'SP' ? 'mainnet' : 'testnet',
+    prefix,
+    length: address.length,
+    versionByte,
+    addressType,
+  };
+}
+
+export function isAddressValidForNetwork(
+  address: string,
+  network: 'mainnet' | 'testnet'
+): boolean {
+  const detection = detectNetworkFromAddress(address);
+  return detection.network === network;
+}
+
+export function validateAddressFormat(
+  address: string,
+  expectedFormat: 'mainnet' | 'testnet'
+): { valid: boolean; message?: string } {
+  if (!isValidStacksAddress(address)) {
+    return { valid: false, message: 'Invalid address format' };
+  }
+
+  const formatInfo = getAddressFormatInfo(address);
+  if (!formatInfo) {
+    return { valid: false, message: 'Could not parse address format' };
+  }
+
+  if (formatInfo.format !== expectedFormat) {
+    return {
+      valid: false,
+      message: `Address format mismatch: expected ${expectedFormat}, got ${formatInfo.format}`,
+    };
+  }
+
+  return { valid: true };
+}
