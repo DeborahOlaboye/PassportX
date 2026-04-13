@@ -118,4 +118,60 @@ describe('ErrorDeduplicator', () => {
       expect(deduplicator.getStats().uniqueErrors).toBe(2);
     });
   });
+
+  describe('getCacheSize', () => {
+    it('should return correct cache size', () => {
+      expect(deduplicator.getCacheSize()).toBe(0);
+      deduplicator.shouldLogError('error1');
+      expect(deduplicator.getCacheSize()).toBe(1);
+      deduplicator.shouldLogError('error2');
+      expect(deduplicator.getCacheSize()).toBe(2);
+    });
+
+    it('should return zero after clear', () => {
+      deduplicator.shouldLogError('error1');
+      deduplicator.clear();
+      expect(deduplicator.getCacheSize()).toBe(0);
+    });
+  });
+
+  describe('getCacheEntries', () => {
+    it('should return all cache entries', () => {
+      deduplicator.shouldLogError('error1');
+      deduplicator.shouldLogError('error2');
+      const entries = deduplicator.getCacheEntries();
+      expect(entries.size).toBe(2);
+    });
+
+    it('should return empty map after clear', () => {
+      deduplicator.shouldLogError('error1');
+      deduplicator.clear();
+      const entries = deduplicator.getCacheEntries();
+      expect(entries.size).toBe(0);
+    });
+
+    it('entries should contain correct count values', () => {
+      deduplicator.shouldLogError('test error');
+      deduplicator.shouldLogError('test error');
+      const entries = deduplicator.getCacheEntries();
+      const entry = entries.values().next().value;
+      expect(entry?.count).toBe(2);
+    });
+  });
+
+  describe('getConfig', () => {
+    it('should return current configuration', () => {
+      const config = deduplicator.getConfig();
+      expect(config.windowMs).toBe(1000);
+      expect(config.maxErrors).toBe(3);
+      expect(config.enableGrouping).toBe(true);
+    });
+
+    it('should return a copy of config not original reference', () => {
+      const config = deduplicator.getConfig();
+      config.windowMs = 999999;
+      const currentConfig = deduplicator.getConfig();
+      expect(currentConfig.windowMs).toBe(1000);
+    });
+  });
 });

@@ -2,6 +2,9 @@ export interface DedupeConfig {
   windowMs: number;
   maxErrors: number;
   enableGrouping: boolean;
+  pruneIntervalMs?: number;
+  onErrorSpike?: (errorKey: string, count: number) => void;
+  onCacheFull?: (currentSize: number) => void;
 }
 
 export interface DedupeEntry {
@@ -20,6 +23,9 @@ export class ErrorDeduplicator {
       windowMs: config.windowMs || 60000,
       maxErrors: config.maxErrors || 100,
       enableGrouping: config.enableGrouping ?? true,
+      pruneIntervalMs: config.pruneIntervalMs,
+      onErrorSpike: config.onErrorSpike,
+      onCacheFull: config.onCacheFull,
     };
   }
 
@@ -93,6 +99,18 @@ export class ErrorDeduplicator {
       }
     }
     return pruned;
+  }
+
+  getCacheSize(): number {
+    return this.cache.size;
+  }
+
+  getCacheEntries(): Map<string, DedupeEntry> {
+    return new Map(this.cache);
+  }
+
+  getConfig(): Readonly<DedupeConfig> {
+    return { ...this.config };
   }
 }
 
