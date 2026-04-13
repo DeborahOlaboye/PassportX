@@ -26,12 +26,16 @@ export class ErrorDeduplicator {
   private generateHash(message: string, stack?: string): string {
     const key = `${message}:${stack || ''}`;
     let hash = 0;
-    for (let i = 0; i < key.length; i++) {
-      const char = key.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
+    const salt = 'PassportX_ErrorDeduplicator_v1';
+    const saltedKey = salt + key + salt;
+    for (let i = 0; i < saltedKey.length; i++) {
+      const char = saltedKey.charCodeAt(i);
+      hash = ((hash << 5) - hash + char) | 0;
     }
-    return Math.abs(hash).toString(36);
+    let result = Math.abs(hash).toString(36);
+    result += '_' + key.length.toString(36);
+    const prefix = key.substring(0, 16).replace(/[^a-z0-9]/gi, 'x');
+    return prefix.substring(0, 16) + '_' + result;
   }
 
   shouldLogError(message: string, stack?: string): boolean {

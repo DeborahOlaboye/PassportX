@@ -70,4 +70,52 @@ describe('ErrorDeduplicator', () => {
       expect(deduplicator.getStats().uniqueErrors).toBe(0);
     });
   });
+
+  describe('hash collision resistance', () => {
+    it('should generate unique hashes for similar error messages', () => {
+      const hashes = new Set<string>();
+      for (let i = 0; i < 100; i++) {
+        const msg = `Error message ${i}`;
+        const hash1 = deduplicator.shouldLogError(msg);
+        const hash2 = deduplicator.shouldLogError(msg + ' ');
+        expect(hash1).toBe(true);
+        expect(hash2).toBe(true);
+      }
+    });
+
+    it('should differentiate errors with different stack traces', () => {
+      const stack1 = 'Error: Test\n    at test (test.ts:1:1)';
+      const stack2 = 'Error: Test\n    at test (test.ts:2:2)';
+      deduplicator.shouldLogError('Test error', stack1);
+      const stats = deduplicator.getStats();
+      expect(stats.uniqueErrors).toBe(1);
+      deduplicator.shouldLogError('Test error', stack2);
+      const stats2 = deduplicator.getStats();
+      expect(stats2.uniqueErrors).toBe(2);
+    });
+
+    it('should handle very long error messages', () => {
+      const longMsg = 'A'.repeat(10000);
+      expect(deduplicator.shouldLogError(longMsg)).toBe(true);
+      expect(deduplicator.getStats().uniqueErrors).toBe(1);
+    });
+
+    it('should handle unicode characters in messages', () => {
+      expect(deduplicator.shouldLogError('Error with émoji 🎉')).toBe(true);
+      expect(deduplicator.shouldLogError('Error with 中文')).toBe(true);
+      expect(deduplicator.getStats().uniqueErrors).toBe(2);
+    });
+
+    it('should handle empty and whitespace-only messages', () => {
+      expect(deduplicator.shouldLogError('')).toBe(true);
+      expect(deduplicator.shouldLogError('   ')).toBe(true);
+      expect(deduplicator.getStats().uniqueErrors).toBe(2);
+    });
+
+    it('should differentiate messages with special characters', () => {
+      expect(deduplicator.shouldLogError('Error: "test"')).toBe(true);
+      expect(deduplicator.shouldLogError("Error: 'test'")).toBe(true);
+      expect(deduplicator.getStats().uniqueErrors).toBe(2);
+    });
+  });
 });
