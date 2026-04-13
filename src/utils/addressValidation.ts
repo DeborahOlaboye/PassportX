@@ -585,3 +585,111 @@ export function getVersionForType(
 ): number {
   return ADDRESS_VERSIONS[network][type];
 }
+
+export interface NetworkDetectionResult {
+  network: 'mainnet' | 'testnet' | 'unknown';
+  isMainnet: boolean;
+  isTestnet: boolean;
+  confidence: number;
+}
+
+export function detectNetworkFromAddress(
+  address: string
+): NetworkDetectionResult {
+  if (!isValidStacksAddress(address)) {
+    return {
+      network: 'unknown',
+      isMainnet: false,
+      isTestnet: false,
+      confidence: 0,
+    };
+  }
+
+  const prefix = address.substring(0, 2);
+  const isMainnet = prefix === 'SP';
+  const isTestnet = prefix === 'ST';
+
+  return {
+    network: isMainnet ? 'mainnet' : isTestnet ? 'testnet' : 'unknown',
+    isMainnet,
+    isTestnet,
+    confidence: isMainnet || isTestnet ? 1 : 0,
+  };
+}
+
+export function isMainnetAddress(address: string): boolean {
+  return detectNetworkFromAddress(address).isMainnet;
+}
+
+export function isTestnetAddress(address: string): boolean {
+  return detectNetworkFromAddress(address).isTestnet;
+}
+
+export interface StrictValidationOptions {
+  requireChecksum?: boolean;
+  requireValidVersion?: boolean;
+  allowedVersions?: number[];
+  allowedPrefixes?: string[];
+}
+
+export function validateAddressStrict(
+  address: string,
+  options: StrictValidationOptions = {}
+): AddressValidationResult {
+  const basicResult = isValidStacksAddressWithChecksum(address);
+
+  if (!basicResult.valid) {
+    return basicResult;
+  }
+
+  const errors: string[] = [];
+
+  if (options.requireChecksum && !basicResult.checksumValid) {
+    errors.push('Checksum verification failed');
+  }
+
+  if (options.requireValidVersion && basicResult.version === undefined) {
+    errors.push('Invalid version byte');
+  }
+
+  if (options.allowedVersions && basicResult.version !== undefined) {
+    if (!options.allowedVersions.includes(basicResult.version)) {
+      errors.push(`Version ${basicResult.version} not allowed`);
+    }
+  }
+
+  if (options.allowedPrefixes) {
+    const prefix = address.substring(0, 2);
+    if (!options.allowedPrefixes.includes(prefix)) {
+      errors.push(`Prefix ${prefix} not allowed`);
+    }
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, error: errors.join('; ') };
+  }
+
+  return basicResult;
+}
+
+export function validateMultipleAddresses(
+  addresses: string[],
+  options?: StrictValidationOptions
+): { valid: string[]; invalid: Map<string, string> } {
+  const valid: string[] = [];
+  const invalid = new Map<string, string>();
+
+  for (const address of addresses) {
+    const result = options
+      ? validateAddressStrict(address, options)
+      : isValidStacksAddressWithChecksum(address);
+
+    if (result.valid) {
+      valid.push(address);
+    } else if (result.error) {
+      invalid.set(address, result.error);
+    }
+  }
+
+  return { valid, invalid };
+}
