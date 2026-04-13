@@ -41,6 +41,16 @@ import {
   getAddressStatistics,
   groupAddressesByNetwork,
   groupAddressesByType,
+  compareAddressTypes,
+  isValidAddressString,
+  truncateAddress,
+  decomposeAddress,
+  isAddressInList,
+  filterValidAddresses,
+  createAddressBatch,
+  sortAddresses,
+  getValidationMetrics,
+  resetValidationMetrics,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
@@ -865,5 +875,150 @@ describe('groupAddressesByType', () => {
   it('should handle invalid addresses', () => {
     const grouped = groupAddressesByType(['invalid']);
     expect(grouped.unknown).toContain('invalid');
+  });
+});
+
+import {
+  compareAddressTypes,
+  isValidAddressString,
+  truncateAddress,
+  decomposeAddress,
+  isAddressInList,
+  filterValidAddresses,
+  createAddressBatch,
+  sortAddresses,
+  getValidationMetrics,
+  resetValidationMetrics,
+} from '../addressValidation';
+
+describe('compareAddressTypes', () => {
+  it('should compare addresses correctly', () => {
+    const result = compareAddressTypes(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7'
+    );
+    expect(result.sameNetwork).toBe(true);
+    expect(result.sameType).toBe(true);
+  });
+
+  it('should detect different networks', () => {
+    const result = compareAddressTypes(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+    );
+    expect(result.sameNetwork).toBe(false);
+  });
+
+  it('should handle invalid addresses', () => {
+    const result = compareAddressTypes(
+      'invalid',
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(result.difference.length).toBeGreaterThan(0);
+  });
+});
+
+describe('isValidAddressString', () => {
+  it('should validate valid addresses', () => {
+    expect(
+      isValidAddressString('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')
+    ).toBe(true);
+  });
+
+  it('should reject invalid addresses', () => {
+    expect(isValidAddressString('invalid')).toBe(false);
+    expect(isValidAddressString('')).toBe(false);
+    expect(isValidAddressString('SP')).toBe(false);
+  });
+});
+
+describe('truncateAddress', () => {
+  it('should truncate long addresses', () => {
+    const truncated = truncateAddress(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(truncated).toBe('SP3FB...SVTE');
+  });
+
+  it('should not truncate short addresses', () => {
+    const truncated = truncateAddress('SP123456', 6, 4);
+    expect(truncated).toBe('SP123456');
+  });
+});
+
+describe('decomposeAddress', () => {
+  it('should decompose address into components', () => {
+    const components = decomposeAddress(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(components).not.toBeNull();
+    expect(components?.prefix).toBe('SP');
+    expect(components?.network).toBe('mainnet');
+  });
+
+  it('should return null for invalid addresses', () => {
+    expect(decomposeAddress('invalid')).toBeNull();
+  });
+});
+
+describe('isAddressInList', () => {
+  it('should find address in list', () => {
+    const list = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+    ];
+    expect(
+      isAddressInList('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE', list)
+    ).toBe(true);
+  });
+
+  it('should return false for address not in list', () => {
+    const list = ['SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'];
+    expect(
+      isAddressInList('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM', list)
+    ).toBe(false);
+  });
+});
+
+describe('filterValidAddresses', () => {
+  it('should filter valid and invalid addresses', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'invalid',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    ];
+    const result = filterValidAddresses(addresses);
+    expect(result.valid.length).toBe(2);
+    expect(result.invalid.length).toBe(1);
+  });
+});
+
+describe('createAddressBatch', () => {
+  it('should create address batch', () => {
+    const batch = createAddressBatch(0, 5);
+    expect(batch).toEqual([0, 1, 2, 3, 4]);
+  });
+});
+
+describe('sortAddresses', () => {
+  it('should sort addresses alphabetically', () => {
+    const addresses = [
+      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+    ];
+    const sorted = sortAddresses(addresses, 'alphabetical');
+    expect(sorted[0]).toBe('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7');
+  });
+});
+
+describe('getValidationMetrics', () => {
+  beforeEach(() => {
+    resetValidationMetrics();
+  });
+
+  it('should return initial metrics', () => {
+    const metrics = getValidationMetrics();
+    expect(metrics.totalValidated).toBe(0);
+    expect(metrics.successRate).toBe(0);
   });
 });

@@ -955,3 +955,228 @@ export function groupAddressesByType(addresses: string[]): {
 
   return result;
 }
+
+export interface AddressComparisonResult {
+  equal: boolean;
+  sameNetwork: boolean;
+  sameType: boolean;
+  difference: string[];
+}
+
+export function compareAddressTypes(
+  address1: string,
+  address2: string
+): AddressComparisonResult {
+  const result: AddressComparisonResult = {
+    equal: false,
+    sameNetwork: false,
+    sameType: false,
+    difference: [],
+  };
+
+  const format1 = getAddressFormatInfo(address1);
+  const format2 = getAddressFormatInfo(address2);
+
+  if (!format1 || !format2) {
+    result.difference.push('One or both addresses are invalid');
+    return result;
+  }
+
+  result.equal = address1.toUpperCase() === address2.toUpperCase();
+  result.sameNetwork = format1.format === format2.format;
+  result.sameType = format1.addressType === format2.addressType;
+
+  if (!result.equal) {
+    if (!result.sameNetwork) {
+      result.difference.push('Different networks');
+    }
+    if (!result.sameType) {
+      result.difference.push('Different address types');
+    }
+  }
+
+  return result;
+}
+
+export function isValidAddressString(address: string): boolean {
+  if (!address || typeof address !== 'string') return false;
+  if (address.length < 20 || address.length > 50) return false;
+  return isValidStacksAddress(address);
+}
+
+export function truncateAddress(
+  address: string,
+  startChars: number = 6,
+  endChars: number = 4
+): string {
+  if (!address || address.length <= startChars + endChars) {
+    return address;
+  }
+  return `${address.substring(0, startChars)}...${address.substring(
+    address.length - endChars
+  )}`;
+}
+
+export interface AddressComponents {
+  prefix: string;
+  versionByte: number;
+  payload: string;
+  checksum: string;
+  network: string;
+  type: string;
+}
+
+export function decomposeAddress(address: string): AddressComponents | null {
+  const formatInfo = getAddressFormatInfo(address);
+  if (!formatInfo) return null;
+
+  const prefix = address.substring(0, 2);
+  const versionByte = formatInfo.versionByte;
+  const payload = address.substring(3, 40);
+  const checksum = address.substring(40);
+
+  return {
+    prefix,
+    versionByte,
+    payload,
+    checksum,
+    network: formatInfo.format,
+    type: formatInfo.addressType,
+  };
+}
+
+export function isAddressInList(
+  address: string,
+  addressList: string[]
+): boolean {
+  const normalizedAddress = address.toUpperCase();
+  return addressList.some((a) => a.toUpperCase() === normalizedAddress);
+}
+
+export function filterValidAddresses(addresses: string[]): {
+  valid: string[];
+  invalid: string[];
+} {
+  const valid: string[] = [];
+  const invalid: string[] = [];
+
+  for (const address of addresses) {
+    if (isValidStacksAddress(address)) {
+      valid.push(address);
+    } else {
+      invalid.push(address);
+    }
+  }
+
+  return { valid, invalid };
+}
+
+export interface AddressRangeResult {
+  start: string;
+  end: string;
+  count: number;
+}
+
+export function createAddressBatch(
+  startIndex: number,
+  count: number
+): number[] {
+  const batch: number[] = [];
+  for (let i = 0; i < count; i++) {
+    batch.push(startIndex + i);
+  }
+  return batch;
+}
+
+export function sortAddresses(
+  addresses: string[],
+  sortBy: 'network' | 'type' | 'alphabetical' = 'alphabetical'
+): string[] {
+  const sorted = [...addresses];
+
+  if (sortBy === 'alphabetical') {
+    return sorted.sort((a, b) => a.localeCompare(b));
+  }
+
+  if (sortBy === 'network') {
+    return sorted.sort((a, b) => {
+      const formatA = getAddressFormatInfo(a);
+      const formatB = getAddressFormatInfo(b);
+      if (!formatA || !formatB) return 0;
+      return formatA.format.localeCompare(formatB.format);
+    });
+  }
+
+  if (sortBy === 'type') {
+    return sorted.sort((a, b) => {
+      const formatA = getAddressFormatInfo(a);
+      const formatB = getAddressFormatInfo(b);
+      if (!formatA || !formatB) return 0;
+      return formatA.addressType.localeCompare(formatB.addressType);
+    });
+  }
+
+  return sorted;
+}
+
+export interface AddressValidationMetrics {
+  totalValidated: number;
+  successRate: number;
+  averageProcessingTime: number;
+  cacheHitRate: number;
+}
+
+const validationMetrics = {
+  total: 0,
+  successful: 0,
+  totalTime: 0,
+  cacheHits: 0,
+  cacheMisses: 0,
+};
+
+export function recordValidationMetrics(
+  success: boolean,
+  processingTimeMs: number,
+  fromCache: boolean = false
+): void {
+  validationMetrics.total++;
+  if (success) validationMetrics.successful++;
+  validationMetrics.totalTime += processingTimeMs;
+  if (fromCache) {
+    validationMetrics.cacheHits++;
+  } else {
+    validationMetrics.cacheMisses++;
+  }
+}
+
+export function getValidationMetrics(): AddressValidationMetrics {
+  const successRate =
+    validationMetrics.total > 0
+      ? (validationMetrics.successful / validationMetrics.total) * 100
+      : 0;
+  const avgTime =
+    validationMetrics.total > 0
+      ? validationMetrics.totalTime / validationMetrics.total
+      : 0;
+  const cacheRate =
+    validationMetrics.cacheHits + validationMetrics.cacheMisses > 0
+      ? (validationMetrics.cacheHits /
+          (validationMetrics.cacheHits + validationMetrics.cacheMisses)) *
+        100
+      : 0;
+
+  return {
+    totalValidated: validationMetrics.total,
+    successRate,
+    averageProcessingTime: avgTime,
+    cacheHitRate: cacheRate,
+  };
+}
+
+export function resetValidationMetrics(): void {
+  validationMetrics.total = 0;
+  validationMetrics.successful = 0;
+  validationMetrics.totalTime = 0;
+  validationMetrics.cacheHits = 0;
+  validationMetrics.cacheMisses = 0;
+}
