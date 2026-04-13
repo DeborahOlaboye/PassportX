@@ -811,3 +811,41 @@ export function validateAndSummarizeAddresses(
 
   return summary;
 }
+
+export function isAddressType(
+  address: string,
+  type: 'wallet' | 'contract' | 'smartContract'
+): boolean {
+  const formatInfo = getAddressFormatInfo(address);
+  if (!formatInfo) return false;
+  return formatInfo.addressType === type;
+}
+
+export function validateAddressVersion(
+  address: string,
+  expectedVersion: number
+): boolean {
+  const formatInfo = getAddressFormatInfo(address);
+  if (!formatInfo) return false;
+  return formatInfo.versionByte === expectedVersion;
+}
+
+export interface AddressHashResult {
+  hash: string;
+  algorithm: 'crc16' | 'base32';
+}
+
+export function hashAddress(
+  address: string,
+  algorithm: 'crc16' | 'base32' = 'crc16'
+): AddressHashResult {
+  if (algorithm === 'crc16') {
+    return { hash: crc16Hash(address).toString(16), algorithm };
+  }
+  const decoded = decodeBase32Check(address);
+  if (!decoded) {
+    return { hash: '', algorithm: 'base32' };
+  }
+  const hash = decoded.reduce((acc, b) => acc * 31 + b, 0);
+  return { hash: hash.toString(36), algorithm };
+}
