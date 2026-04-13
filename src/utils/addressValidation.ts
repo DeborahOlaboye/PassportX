@@ -1180,3 +1180,169 @@ export function resetValidationMetrics(): void {
   validationMetrics.cacheHits = 0;
   validationMetrics.cacheMisses = 0;
 }
+
+export function validateAddressChecksum(address: string): boolean {
+  const decoded = decodeBase32Check(address);
+  if (!decoded || decoded.length < 4) return false;
+
+  const version = decoded[0];
+  const dataLen = decoded.length - 4;
+  const providedChecksum = decoded.slice(dataLen);
+  const data = decoded.slice(0, dataLen);
+
+  let crc = 0xffff;
+  const poly = 0x1021;
+
+  crc ^= version << 8;
+  for (let i = 0; i < 8; i++) {
+    crc = (crc << 1) ^ (crc & 0x8000 ? poly : 0);
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    crc ^= data[i] << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc << 1) ^ (crc & 0x8000 ? poly : 0);
+    }
+  }
+
+  const computedChecksum = [(crc >> 8) & 0xff, crc & 0xff];
+  return (
+    computedChecksum[0] === providedChecksum[0] &&
+    computedChecksum[1] === providedChecksum[1]
+  );
+}
+
+export interface AddressValidationConfig {
+  allowTestnet: boolean;
+  allowMainnet: boolean;
+  requireChecksum: boolean;
+  allowedVersions: number[];
+}
+
+export function createValidationConfig(
+  options: Partial<AddressValidationConfig> = {}
+): AddressValidationConfig {
+  return {
+    allowTestnet: options.allowTestnet ?? true,
+    allowMainnet: options.allowMainnet ?? true,
+    requireChecksum: options.requireChecksum ?? false,
+    allowedVersions: options.allowedVersions ?? [],
+  };
+}
+
+export function validateWithConfig(
+  address: string,
+  config: AddressValidationConfig
+): AddressValidationResult {
+  const basicResult = isValidStacksAddressWithChecksum(address);
+
+  if (!basicResult.valid) {
+    return basicResult;
+  }
+
+  if (!config.allowTestnet && basicResult.isTestnet) {
+    return { valid: false, error: 'Testnet addresses not allowed' };
+  }
+
+  if (!config.allowMainnet && basicResult.isMainnet) {
+    return { valid: false, error: 'Mainnet addresses not allowed' };
+  }
+
+  if (config.requireChecksum && !basicResult.checksumValid) {
+    return { valid: false, error: 'Checksum verification required' };
+  }
+
+  if (
+    config.allowedVersions.length > 0 &&
+    basicResult.version !== undefined &&
+    !config.allowedVersions.includes(basicResult.version)
+  ) {
+    return { valid: false, error: 'Version not allowed' };
+  }
+
+  return basicResult;
+}
+
+export function parseAddressHash(address: string): string {
+  return addressUtils.crc16Hash(address).toString(16);
+}
+
+export function generateAddressFingerprint(address: string): string {
+  const normalized = address.toUpperCase();
+  const hash = addressUtils.crc16Hash(normalized);
+  return `addr_${hash.toString(16).substring(0, 8)}`;
+}
+
+export function isAddressEqual(
+  address1: string,
+  address2: string,
+  caseSensitive: boolean = false
+): boolean {
+  if (caseSensitive) {
+    return address1 === address2;
+  }
+  return address1.toUpperCase() === address2.toUpperCase();
+}
+
+export function getAddressPrefix(address: string): string {
+  if (!isValidStacksAddress(address)) return '';
+  return address.substring(0, 2);
+}
+
+export function getAddressVersionByte(address: string): number {
+  const formatInfo = getAddressFormatInfo(address);
+  return formatInfo?.versionByte ?? -1;
+}
+
+export function isMainnetVersion(version: number): boolean {
+  return version >= 0 && version <= 24;
+}
+
+export function isTestnetVersion(version: number): boolean {
+  return version >= 25 && version <= 31;
+}
+
+export function convertVersionToNetwork(
+  version: number
+): 'mainnet' | 'testnet' | 'unknown' {
+  if (isMainnetVersion(version)) return 'mainnet';
+  if (isTestnetVersion(version)) return 'testnet';
+  return 'unknown';
+}
+
+export interface AddressCollectionStats {
+  total: number;
+  unique: number;
+  mainnetCount: number;
+  testnetCount: number;
+  duplicateCount: number;
+}
+
+export function analyzeAddressCollection(
+  addresses: string[]
+): AddressCollectionStats {
+  const uniqueSet = new Set<string>();
+  const mainnetAddresses: string[] = [];
+  const testnetAddresses: string[] = [];
+
+  for (const address of addresses) {
+    const normalized = address.toUpperCase();
+    if (!uniqueSet.has(normalized)) {
+      uniqueSet.add(normalized);
+      const formatInfo = getAddressFormatInfo(address);
+      if (formatInfo?.format === 'mainnet') {
+        mainnetAddresses.push(address);
+      } else if (formatInfo?.format === 'testnet') {
+        testnetAddresses.push(address);
+      }
+    }
+  }
+
+  return {
+    total: addresses.length,
+    unique: uniqueSet.size,
+    mainnetCount: mainnetAddresses.length,
+    testnetCount: testnetAddresses.length,
+    duplicateCount: addresses.length - uniqueSet.size,
+  };
+}

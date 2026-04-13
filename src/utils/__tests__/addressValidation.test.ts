@@ -51,6 +51,16 @@ import {
   sortAddresses,
   getValidationMetrics,
   resetValidationMetrics,
+  validateAddressChecksum,
+  createValidationConfig,
+  validateWithConfig,
+  parseAddressHash,
+  generateAddressFingerprint,
+  isAddressEqual,
+  getAddressPrefix,
+  getAddressVersionByte,
+  convertVersionToNetwork,
+  analyzeAddressCollection,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
@@ -1020,5 +1030,149 @@ describe('getValidationMetrics', () => {
     const metrics = getValidationMetrics();
     expect(metrics.totalValidated).toBe(0);
     expect(metrics.successRate).toBe(0);
+  });
+});
+
+import {
+  validateAddressChecksum,
+  createValidationConfig,
+  validateWithConfig,
+  parseAddressHash,
+  generateAddressFingerprint,
+  isAddressEqual,
+  getAddressPrefix,
+  getAddressVersionByte,
+  convertVersionToNetwork,
+  analyzeAddressCollection,
+} from '../addressValidation';
+
+describe('validateAddressChecksum', () => {
+  it('should validate checksum correctly', () => {
+    const result = validateAddressChecksum(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(typeof result).toBe('boolean');
+  });
+
+  it('should return false for invalid address', () => {
+    expect(validateAddressChecksum('invalid')).toBe(false);
+  });
+});
+
+describe('createValidationConfig', () => {
+  it('should create default config', () => {
+    const config = createValidationConfig();
+    expect(config.allowTestnet).toBe(true);
+    expect(config.allowMainnet).toBe(true);
+    expect(config.requireChecksum).toBe(false);
+  });
+
+  it('should create custom config', () => {
+    const config = createValidationConfig({ allowTestnet: false });
+    expect(config.allowTestnet).toBe(false);
+  });
+});
+
+describe('validateWithConfig', () => {
+  it('should validate with config', () => {
+    const config = createValidationConfig({ allowTestnet: false });
+    const result = validateWithConfig(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      config
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Testnet');
+  });
+});
+
+describe('parseAddressHash', () => {
+  it('should parse address hash', () => {
+    const hash = parseAddressHash('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE');
+    expect(hash).toBeTruthy();
+  });
+});
+
+describe('generateAddressFingerprint', () => {
+  it('should generate fingerprint', () => {
+    const fingerprint = generateAddressFingerprint(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(fingerprint).toMatch(/^addr_[a-f0-9]+$/);
+  });
+});
+
+describe('isAddressEqual', () => {
+  it('should compare addresses case-insensitively', () => {
+    expect(
+      isAddressEqual(
+        'sp3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte',
+        'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+      )
+    ).toBe(true);
+  });
+
+  it('should compare addresses case-sensitively', () => {
+    expect(
+      isAddressEqual(
+        'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+        'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+        true
+      )
+    ).toBe(true);
+  });
+});
+
+describe('getAddressPrefix', () => {
+  it('should get prefix', () => {
+    expect(getAddressPrefix('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(
+      'SP'
+    );
+    expect(getAddressPrefix('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(
+      'ST'
+    );
+  });
+
+  it('should return empty for invalid', () => {
+    expect(getAddressPrefix('invalid')).toBe('');
+  });
+});
+
+describe('getAddressVersionByte', () => {
+  it('should get version byte', () => {
+    const version = getAddressVersionByte(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(version).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('convertVersionToNetwork', () => {
+  it('should convert version to network', () => {
+    expect(convertVersionToNetwork(0)).toBe('mainnet');
+    expect(convertVersionToNetwork(26)).toBe('testnet');
+    expect(convertVersionToNetwork(100)).toBe('unknown');
+  });
+});
+
+describe('analyzeAddressCollection', () => {
+  it('should analyze address collection', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    ];
+    const stats = analyzeAddressCollection(addresses);
+    expect(stats.total).toBe(3);
+    expect(stats.unique).toBe(3);
+    expect(stats.duplicateCount).toBe(0);
+  });
+
+  it('should detect duplicates', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+    ];
+    const stats = analyzeAddressCollection(addresses);
+    expect(stats.duplicateCount).toBe(1);
   });
 });
