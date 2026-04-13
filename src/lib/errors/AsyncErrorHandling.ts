@@ -386,7 +386,6 @@ export async function withProgress<T>(
   let lastProgress = 0;
 
   const updateProgress = (progress: number, message?: string): void => {
-    // Ensure progress only moves forward
     if (progress > lastProgress) {
       lastProgress = progress;
       onProgress(Math.min(progress, 100), message);
@@ -402,3 +401,102 @@ export async function withProgress<T>(
     throw error;
   }
 }
+
+export interface ErrorBoundaryOptions {
+  fallback?: (error: Error) => unknown;
+  onError?: (error: Error) => void;
+  retry?: boolean;
+  maxRetries?: number;
+}
+
+export class AsyncErrorHandler {
+  private static instance: AsyncErrorHandler;
+  private errorListeners: Array<
+    (error: Error, context?: Record<string, unknown>) => void
+  > = [];
+
+  static getInstance(): AsyncErrorHandler {
+    if (!AsyncErrorHandler.instance) {
+      AsyncErrorHandler.instance = new AsyncErrorHandler();
+    }
+    return AsyncErrorHandler.instance;
+  }
+
+  onError(
+    listener: (error: Error, context?: Record<string, unknown>) => void
+  ): void {
+    this.errorListeners.push(listener);
+  }
+
+  removeErrorListener(
+    listener: (error: Error, context?: Record<string, unknown>) => void
+  ): void {
+    const index = this.errorListeners.indexOf(listener);
+    if (index > -1) {
+      this.errorListeners.splice(index, 1);
+    }
+  }
+
+  private notifyError(error: Error, context?: Record<string, unknown>): void {
+    for (const listener of this.errorListeners) {
+      try {
+        listener(error, context);
+      } catch {
+        // Ignore listener errors
+      }
+    }
+  }
+
+  async wrap<T>(
+    operation: () => Promise<T>,
+    options: ErrorBoundaryOptions = {}
+  ): Promise<T> {
+    const { fallback, onError, retry, maxRetries = 3 } = options;
+
+    const execute = async (attempt: number): Promise<T> => {
+      try {
+        return await operation();
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
+        this.notifyError(err, { attempt });
+
+        if (onError) {
+          onError(err);
+        }
+
+        await errorHandler.handleError(err, {
+          component: 'AsyncErrorHandler',
+          action: 'wrap',
+          additionalData: { attempt },
+        });
+
+        if (retry && attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 100));
+          return execute(attempt + 1);
+        }
+
+        if (fallback) {
+          return fallback(err) as Promise<T>;
+        }
+
+        throw err;
+      }
+    };
+
+    return execute(1);
+  }
+}
+
+export function withErrorBoundary<T extends unknown[], R>(
+  operation: (...args: T) => Promise<R>,
+  options: ErrorBoundaryOptions = {}
+): (...args: T) => Promise<R> {
+  const handler = AsyncErrorHandler.getInstance();
+
+  return (...args: T) => {
+    return handler.wrap(() => operation(...args), options);
+  };
+}
+
+export const asyncErrorHandler = AsyncErrorHandler.getInstance();
