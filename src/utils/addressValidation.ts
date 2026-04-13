@@ -755,3 +755,59 @@ export function validateAddressFormat(
 
   return { valid: true };
 }
+
+export interface BatchValidationSummary {
+  total: number;
+  valid: number;
+  invalid: number;
+  mainnet: number;
+  testnet: number;
+  contracts: number;
+  wallets: number;
+  byNetwork: { mainnet: string[]; testnet: string[] };
+  byType: { contracts: string[]; wallets: string[] };
+}
+
+export function validateAndSummarizeAddresses(
+  addresses: string[]
+): BatchValidationSummary {
+  const summary: BatchValidationSummary = {
+    total: addresses.length,
+    valid: 0,
+    invalid: 0,
+    mainnet: 0,
+    testnet: 0,
+    contracts: 0,
+    wallets: 0,
+    byNetwork: { mainnet: [], testnet: [] },
+    byType: { contracts: [], wallets: [] },
+  };
+
+  for (const address of addresses) {
+    const result = isValidStacksAddressWithChecksum(address);
+    if (!result.valid) {
+      summary.invalid++;
+      continue;
+    }
+
+    summary.valid++;
+    if (result.isMainnet) {
+      summary.mainnet++;
+      summary.byNetwork.mainnet.push(address);
+    }
+    if (result.isTestnet) {
+      summary.testnet++;
+      summary.byNetwork.testnet.push(address);
+    }
+    if (result.addressType === 'contract') {
+      summary.contracts++;
+      summary.byType.contracts.push(address);
+    }
+    if (result.addressType === 'wallet') {
+      summary.wallets++;
+      summary.byType.wallets.push(address);
+    }
+  }
+
+  return summary;
+}
