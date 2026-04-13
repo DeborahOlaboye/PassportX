@@ -1,48 +1,41 @@
-// Error Types and Base Classes
-export * from './ErrorTypes';
+import { ErrorHandler } from './ErrorHandler';
+import { ErrorDeduplicator, errorDeduplicator } from './ErrorDeduplicator';
+import { RetryManager } from './RetryManager';
+import { ErrorRecovery } from './ErrorRecovery';
+import { ErrorContextManager } from './ErrorContextManager';
+import { ErrorMiddleware } from './ErrorMiddleware';
+import {
+  ErrorCategory,
+  ErrorSeverity,
+  PassportXError,
+  BasePassportXError,
+} from './ErrorTypes';
+import type { ErrorContext } from './ErrorTypes';
+
+// Error Types
+export { ErrorCategory, ErrorSeverity, PassportXError, BasePassportXError };
+export type { ErrorContext };
 
 // Core Error Handling
-export * from './ErrorHandler';
-export * from './RetryManager';
-export * from './ErrorRecovery';
-export * from './ErrorContextManager';
-export * from './ErrorMiddleware';
+export { ErrorHandler, ErrorDeduplicator, errorDeduplicator };
+export { RetryManager };
+export { ErrorRecovery };
+export { ErrorContextManager };
+export { ErrorMiddleware };
 
-// React Components
-export * from '../components/errors/EnhancedErrorBoundary';
-export * from '../components/errors/ErrorNotificationSystem';
+// Specialized Error Handling - use re-export with type keyword
+export { AsyncErrorHandler, withErrorBoundary } from './AsyncErrorHandling';
+export { ErrorAnalytics } from './ErrorAnalytics';
+export { GracefulDegradationService } from './GracefulDegradation';
+export { PerformanceMonitor } from './PerformanceMonitor';
+export { MemoryLeakPrevention } from './MemoryLeakPrevention';
+export { EnvironmentAwareErrorHandler } from './EnvironmentAwareErrorHandler';
 
-// Specialized Error Handling
-export * from './AsyncErrorHandling';
-export * from './ErrorAnalytics';
-export * from './GracefulDegradation';
-export * from './PerformanceMonitor';
-export * from './MemoryLeakPrevention';
-export * from './EnvironmentAwareErrorHandler';
-
-// Utility functions for common error handling patterns
-export const createErrorHandler = (_options?: {
-  enableLogging?: boolean;
-  enableReporting?: boolean;
-  enableMetrics?: boolean;
-}): ErrorHandler => {
-  return ErrorHandler.getInstance();
-};
-
-export const createRetryManager = (_options?: {
-  maxRetries?: number;
-  baseDelay?: number;
-  maxDelay?: number;
-}): RetryManager => {
-  return RetryManager.getInstance();
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Utility functions
 export const withErrorHandling = <T extends (...args: unknown[]) => unknown>(
   fn: T,
   context?: Record<string, unknown>
 ): T => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ((...args: unknown[]) => {
     try {
       const result = fn(...args);
@@ -60,7 +53,6 @@ export const withErrorHandling = <T extends (...args: unknown[]) => unknown>(
   }) as T;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const withAsyncErrorHandling = <
   T extends (...args: unknown[]) => Promise<unknown>
 >(
@@ -77,16 +69,9 @@ export const withAsyncErrorHandling = <
   }) as T;
 };
 
-// Re-export commonly used types
-import { ErrorHandler } from './ErrorHandler';
-import { RetryManager } from './RetryManager';
-import { ErrorRecovery } from './ErrorRecovery';
-import { ErrorContextManager } from './ErrorContextManager';
-import { ErrorMiddleware } from './ErrorMiddleware';
-
-// Singleton instances for easy access
+// Singleton instances
 export const errorHandler = ErrorHandler.getInstance();
-export const retryManager = RetryManager.getInstance();
+export const retryManager = new RetryManager();
 export const errorRecovery = ErrorRecovery.getInstance();
 export const errorContextManager = ErrorContextManager.getInstance();
 export const errorMiddleware = new ErrorMiddleware();
@@ -106,37 +91,21 @@ export const defaultErrorConfig = {
 
 // Initialize error handling system
 export const initializeErrorHandling = (_config = defaultErrorConfig): void => {
-  // Set global error handlers
   if (typeof window !== 'undefined') {
     window.addEventListener('error', (event) => {
-      errorHandler.handleError(event.error, {
-        type: 'unhandled_error',
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
+      errorHandler.handleError(event.error || new Error(event.message), {
+        component: 'global',
+        action: 'uncaughterror',
       });
     });
 
     window.addEventListener('unhandledrejection', (event) => {
-      errorHandler.handleError(new Error(event.reason), {
-        type: 'unhandled_promise_rejection',
-      });
+      errorHandler.handleError(
+        event.reason instanceof Error
+          ? event.reason
+          : new Error(String(event.reason)),
+        { component: 'global', action: 'unhandledrejection' }
+      );
     });
   }
-
-  if (typeof process !== 'undefined') {
-    process.on('uncaughtException', (error) => {
-      errorHandler.handleError(error, {
-        type: 'uncaught_exception',
-      });
-    });
-
-    process.on('unhandledRejection', (reason) => {
-      errorHandler.handleError(new Error(String(reason)), {
-        type: 'unhandled_rejection',
-      });
-    });
-  }
-
-  console.log('Error handling system initialized successfully');
 };
