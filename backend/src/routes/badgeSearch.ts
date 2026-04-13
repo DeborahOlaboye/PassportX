@@ -3,12 +3,34 @@ import badgeSearchService from '../services/badgeSearchService';
 import { IBadgeSearchQuery } from '../types';
 import { validatePagination } from '../middleware/validation';
 import { createRateLimiter } from '../middleware/rateLimiter';
-import { API_READ_RATE_LIMIT } from '../config/rateLimits';
+import {
+  API_READ_RATE_LIMIT,
+  BADGE_PUBLIC_READ_RATE_LIMIT,
+  BADGE_SUGGESTIONS_RATE_LIMIT,
+} from '../config/rateLimits';
 
 const router = express.Router();
 
 // Rate limiter for search operations (200 requests per 15 minutes)
 const searchLimiter = createRateLimiter(API_READ_RATE_LIMIT);
+
+// Rate limiter for public read endpoints — filters and trending (120 req / 15 min)
+const publicReadLimiter = createRateLimiter(BADGE_PUBLIC_READ_RATE_LIMIT);
+
+// Rate limiter for autocomplete suggestions (60 req / 15 min — tighter due to regex DB hit)
+const suggestionsLimiter = createRateLimiter(BADGE_SUGGESTIONS_RATE_LIMIT);
+
+// Exhaustive whitelist of accepted sort values — mirrors the switch in badgeSearchService
+const VALID_SORT_OPTIONS = [
+  'newest',
+  'oldest',
+  'level-high',
+  'level-low',
+  'name-asc',
+  'name-desc',
+] as const;
+
+type SortOption = (typeof VALID_SORT_OPTIONS)[number];
 
 /**
  * POST /api/badges/search

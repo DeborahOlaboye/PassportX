@@ -1,4 +1,5 @@
 // API utility functions for PassportX
+import { RateLimiter } from './api/RateLimiter';
 
 export interface Badge {
   id: number;
@@ -106,3 +107,10 @@ export interface APIResponse<T> {
   error?: string;
   success: boolean;
 }
+
+const defaultRateLimiter = new RateLimiter({
+  maxRequests: 100,
+  windowMs: 60000,
+});
+
+export { RateLimiter, defaultRateLimiter };

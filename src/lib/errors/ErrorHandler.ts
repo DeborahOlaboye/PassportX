@@ -1,7 +1,3 @@
-/**
- * Centralized error handler for PassportX
- */
-
 import { logger } from '../logger';
 import {
   PassportXError,
@@ -10,6 +6,7 @@ import {
   ErrorSeverity,
   ErrorContext,
 } from './ErrorTypes';
+import { ErrorDeduplicator } from './ErrorDeduplicator';
 
 export interface ErrorReporter {
   report(error: PassportXError): Promise<void>;
@@ -22,7 +19,16 @@ export interface ErrorMetrics {
 
 class ConsoleErrorReporter implements ErrorReporter {
   async report(error: PassportXError): Promise<void> {
-    console.error('Error reported:', error.toJSON());
+    console.error(
+      'Error reported:',
+      JSON.stringify({
+        id: error.id,
+        message: error.message,
+        category: error.category,
+        severity: error.severity,
+        code: error.code,
+      })
+    );
   }
 }
 
@@ -37,9 +43,13 @@ export class ErrorHandler {
   private metrics: ErrorMetrics = new NoOpMetrics();
   private errorCounts = new Map<string, number>();
   private lastErrorTimes = new Map<string, number>();
+  private deduplicator: ErrorDeduplicator;
 
   private constructor() {
-    // Add default console reporter in development
+    this.deduplicator = new ErrorDeduplicator({
+      windowMs: 60000,
+      maxErrors: 100,
+    });
     if (process.env.NODE_ENV === 'development') {
       this.reporters.push(new ConsoleErrorReporter());
     }
@@ -60,32 +70,39 @@ export class ErrorHandler {
     this.metrics = metrics;
   }
 
+  setDeduplicationConfig(config: {
+    windowMs?: number;
+    maxErrors?: number;
+  }): void {
+    this.deduplicator = new ErrorDeduplicator(config);
+  }
+
   async handleError(
     error: Error | PassportXError,
     context: Partial<ErrorContext> = {}
   ): Promise<PassportXError> {
     let passportXError: PassportXError;
 
-    // Convert regular Error to PassportXError if needed
     if (error instanceof BasePassportXError) {
       passportXError = error;
     } else {
       passportXError = this.convertToPassportXError(error, context);
     }
 
-    // Enhance context
     const enhancedError = this.enhanceErrorContext(passportXError, context);
 
-    // Log the error
+    if (
+      !this.deduplicator.shouldLogError(
+        enhancedError.message,
+        enhancedError.stackTrace
+      )
+    ) {
+      return enhancedError;
+    }
+
     this.logError(enhancedError);
-
-    // Update metrics
     this.updateMetrics(enhancedError);
-
-    // Report to external services
     await this.reportError(enhancedError);
-
-    // Track error frequency
     this.trackErrorFrequency(enhancedError);
 
     return enhancedError;
@@ -95,7 +112,6 @@ export class ErrorHandler {
     error: Error,
     context: Partial<ErrorContext>
   ): PassportXError {
-    // Try to categorize the error based on its properties
     let category = ErrorCategory.SYSTEM;
     let severity = ErrorSeverity.MEDIUM;
     let isRetryable = false;
@@ -142,7 +158,6 @@ export class ErrorHandler {
       url: typeof window !== 'undefined' ? window.location.href : undefined,
     };
 
-    // Create a new error with enhanced context
     return new BasePassportXError(
       error.message,
       error.category,
@@ -211,7 +226,6 @@ export class ErrorHandler {
   }
 
   private async reportError(error: PassportXError): Promise<void> {
-    // Only report high severity errors or critical errors
     if (
       error.severity === ErrorSeverity.HIGH ||
       error.severity === ErrorSeverity.CRITICAL
@@ -230,14 +244,10 @@ export class ErrorHandler {
     const errorKey = `${error.category}:${error.code}`;
     const now = Date.now();
 
-    // Update error count
     const currentCount = this.errorCounts.get(errorKey) || 0;
     this.errorCounts.set(errorKey, currentCount + 1);
-
-    // Update last error time
     this.lastErrorTimes.set(errorKey, now);
 
-    // Check for error spikes (more than 10 errors of same type in 5 minutes)
     if (currentCount > 10) {
       const firstErrorTime = this.lastErrorTimes.get(errorKey) || now;
       if (now - firstErrorTime < 5 * 60 * 1000) {
@@ -254,21 +264,20 @@ export class ErrorHandler {
     return {
       errorCounts: Object.fromEntries(this.errorCounts),
       lastErrorTimes: Object.fromEntries(this.lastErrorTimes),
+      deduplication: this.deduplicator.getStats(),
     };
   }
 
   clearErrorStats(): void {
     this.errorCounts.clear();
     this.lastErrorTimes.clear();
+    this.deduplicator.clear();
   }
 }
 
-// Global error handler instance
 export const errorHandler = ErrorHandler.getInstance();
 
-// Global error event listeners
 if (typeof window !== 'undefined') {
-  // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     errorHandler.handleError(
       event.reason instanceof Error
@@ -278,7 +287,6 @@ if (typeof window !== 'undefined') {
     );
   });
 
-  // Handle uncaught errors
   window.addEventListener('error', (event) => {
     errorHandler.handleError(event.error || new Error(event.message), {
       component: 'global',
