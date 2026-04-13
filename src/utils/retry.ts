@@ -134,6 +134,8 @@ export class RetryContext {
   private attempts: number = 0;
   private state: RetryStateType = RetryState.IDLE;
   private errors: Error[] = [];
+  private startTime?: number;
+  private endTime?: number;
 
   get attemptCount(): number {
     return this.attempts;
@@ -147,9 +149,22 @@ export class RetryContext {
     return [...this.errors];
   }
 
+  get elapsedMs(): number | undefined {
+    if (!this.startTime) return undefined;
+    const end = this.endTime ?? Date.now();
+    return end - this.startTime;
+  }
+
+  get isActive(): boolean {
+    return this.state === RetryState.RETRYING;
+  }
+
   recordAttempt(error?: Error): void {
     this.attempts++;
     this.state = RetryState.RETRYING;
+    if (!this.startTime) {
+      this.startTime = Date.now();
+    }
     if (error) {
       this.errors.push(error);
     }
@@ -157,16 +172,34 @@ export class RetryContext {
 
   markSuccess(): void {
     this.state = RetryState.SUCCESS;
+    this.endTime = Date.now();
   }
 
   markFailed(): void {
     this.state = RetryState.FAILED;
+    this.endTime = Date.now();
   }
 
   reset(): void {
     this.attempts = 0;
     this.state = RetryState.IDLE;
     this.errors = [];
+    this.startTime = undefined;
+    this.endTime = undefined;
+  }
+
+  getSummary(): {
+    attempts: number;
+    state: RetryStateType;
+    errors: number;
+    elapsedMs: number | undefined;
+  } {
+    return {
+      attempts: this.attempts,
+      state: this.state,
+      errors: this.errors.length,
+      elapsedMs: this.elapsedMs,
+    };
   }
 }
 
