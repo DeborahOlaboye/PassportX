@@ -8,7 +8,7 @@ export interface AddressValidationResult {
   error?: string;
   isMainnet?: boolean;
   isTestnet?: boolean;
-  addressType?: 'contract' | 'wallet' | 'unknown';
+  addressType?: 'contract' | 'wallet' | 'unknown' | 'smartContract';
   checksumValid?: boolean;
   version?: number;
   networkId?: number;
@@ -848,4 +848,110 @@ export function hashAddress(
   }
   const hash = decoded.reduce((acc, b) => acc * 31 + b, 0);
   return { hash: hash.toString(36), algorithm };
+}
+
+export interface AddressStatistics {
+  total: number;
+  valid: number;
+  invalid: number;
+  mainnetCount: number;
+  testnetCount: number;
+  walletCount: number;
+  contractCount: number;
+  smartContractCount: number;
+}
+
+export function getAddressStatistics(addresses: string[]): AddressStatistics {
+  const stats: AddressStatistics = {
+    total: addresses.length,
+    valid: 0,
+    invalid: 0,
+    mainnetCount: 0,
+    testnetCount: 0,
+    walletCount: 0,
+    contractCount: 0,
+    smartContractCount: 0,
+  };
+
+  for (const address of addresses) {
+    const result = isValidStacksAddressWithChecksum(address);
+    if (!result.valid) {
+      stats.invalid++;
+      continue;
+    }
+
+    stats.valid++;
+    if (result.isMainnet) stats.mainnetCount++;
+    if (result.isTestnet) stats.testnetCount++;
+    if (result.addressType === 'wallet') stats.walletCount++;
+    if (result.addressType === 'contract') stats.contractCount++;
+    if (
+      result.addressType &&
+      result.addressType !== 'wallet' &&
+      result.addressType !== 'contract' &&
+      result.addressType !== 'unknown'
+    )
+      stats.smartContractCount++;
+  }
+
+  return stats;
+}
+
+export function groupAddressesByNetwork(addresses: string[]): {
+  mainnet: string[];
+  testnet: string[];
+  invalid: string[];
+} {
+  const result = {
+    mainnet: [] as string[],
+    testnet: [] as string[],
+    invalid: [] as string[],
+  };
+
+  for (const address of addresses) {
+    const result2 = isValidStacksAddressWithChecksum(address);
+    if (!result2.valid) {
+      result.invalid.push(address);
+    } else if (result2.isMainnet) {
+      result.mainnet.push(address);
+    } else if (result2.isTestnet) {
+      result.testnet.push(address);
+    }
+  }
+
+  return result;
+}
+
+export function groupAddressesByType(addresses: string[]): {
+  wallet: string[];
+  contract: string[];
+  smartContract: string[];
+  unknown: string[];
+} {
+  const result = {
+    wallet: [] as string[],
+    contract: [] as string[],
+    smartContract: [] as string[],
+    unknown: [] as string[],
+  };
+
+  for (const address of addresses) {
+    const formatInfo = getAddressFormatInfo(address);
+    if (!formatInfo) {
+      result.unknown.push(address);
+    } else if (formatInfo.addressType === 'wallet') {
+      result.wallet.push(address);
+    } else if (formatInfo.addressType === 'contract') {
+      result.contract.push(address);
+    } else if (
+      formatInfo.addressType &&
+      formatInfo.addressType !== 'wallet' &&
+      formatInfo.addressType !== 'contract' &&
+      formatInfo.addressType !== 'unknown'
+    ) {
+      result.smartContract.push(address);
+    }
+  }
+
+  return result;
 }
