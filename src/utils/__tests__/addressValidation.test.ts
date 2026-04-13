@@ -4,8 +4,16 @@
 
 import {
   isValidStacksAddress,
+  isValidStacksAddressWithChecksum,
   validateContractAddress,
   validateContractAddresses,
+  getAddressType,
+  isContractAddress,
+  isWalletAddress,
+  compareAddresses,
+  normalizeAddress,
+  validateNetworkCompatibility,
+  validateAddresses,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
@@ -161,5 +169,161 @@ describe('validateContractAddresses', () => {
     const result = validateContractAddresses(addresses);
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
+  });
+});
+
+describe('isValidStacksAddressWithChecksum', () => {
+  it('should return validation result with network info', () => {
+    const result = isValidStacksAddressWithChecksum(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(result.valid).toBe(true);
+    expect(result.isMainnet).toBe(true);
+    expect(result.isTestnet).toBe(false);
+    expect(result.addressType).toBeDefined();
+  });
+
+  it('should detect testnet addresses', () => {
+    const result = isValidStacksAddressWithChecksum(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+    );
+    expect(result.valid).toBe(true);
+    expect(result.isMainnet).toBe(false);
+    expect(result.isTestnet).toBe(true);
+  });
+
+  it('should return error for invalid addresses', () => {
+    const result = isValidStacksAddressWithChecksum('invalid');
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+});
+
+describe('getAddressType', () => {
+  it('should identify contract addresses', () => {
+    const result = getAddressType('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE');
+    expect(result?.type).toBe('contract');
+  });
+
+  it('should identify wallet addresses', () => {
+    const result = getAddressType('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+    expect(result?.type).toBe('wallet');
+  });
+
+  it('should return null for invalid addresses', () => {
+    const result = getAddressType('invalid');
+    expect(result).toBeNull();
+  });
+});
+
+describe('isContractAddress', () => {
+  it('should return true for contract addresses', () => {
+    expect(isContractAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(
+      true
+    );
+  });
+
+  it('should return false for wallet addresses', () => {
+    expect(isContractAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(
+      false
+    );
+  });
+});
+
+describe('isWalletAddress', () => {
+  it('should return true for wallet addresses', () => {
+    expect(isWalletAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(
+      true
+    );
+  });
+
+  it('should return false for contract addresses', () => {
+    expect(isWalletAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(
+      false
+    );
+  });
+});
+
+describe('compareAddresses', () => {
+  it('should compare addresses case-insensitively', () => {
+    expect(
+      compareAddresses(
+        'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+        'sp3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte'
+      )
+    ).toBe(true);
+  });
+
+  it('should return false for different addresses', () => {
+    expect(
+      compareAddresses(
+        'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+        'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7'
+      )
+    ).toBe(false);
+  });
+
+  it('should return false for empty inputs', () => {
+    expect(
+      compareAddresses('', 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')
+    ).toBe(false);
+  });
+});
+
+describe('normalizeAddress', () => {
+  it('should uppercase and trim address', () => {
+    expect(
+      normalizeAddress('  sp3fbr2agk5h9qbdh3een6df8ek8jy7rx8qj5svte  ')
+    ).toBe('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE');
+  });
+
+  it('should return empty string for empty input', () => {
+    expect(normalizeAddress('')).toBe('');
+  });
+});
+
+describe('validateNetworkCompatibility', () => {
+  it('should validate mainnet compatibility', () => {
+    const result = validateNetworkCompatibility(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'mainnet'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('should reject mainnet address for testnet', () => {
+    const result = validateNetworkCompatibility(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'testnet'
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('not a testnet address');
+  });
+
+  it('should reject testnet address for mainnet', () => {
+    const result = validateNetworkCompatibility(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'mainnet'
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('not a mainnet address');
+  });
+});
+
+describe('validateAddresses', () => {
+  it('should batch validate multiple addresses', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'invalid',
+    ];
+    const results = validateAddresses(addresses);
+    expect(
+      results.get('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')?.valid
+    ).toBe(true);
+    expect(
+      results.get('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')?.valid
+    ).toBe(true);
+    expect(results.get('invalid')?.valid).toBe(false);
   });
 });
