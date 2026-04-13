@@ -27,6 +27,24 @@ export class ErrorDeduplicator {
       onErrorSpike: config.onErrorSpike,
       onCacheFull: config.onCacheFull,
     };
+
+    if (this.config.pruneIntervalMs && this.config.pruneIntervalMs > 0) {
+      setInterval(() => {
+        this.pruneOldEntries();
+      }, this.config.pruneIntervalMs);
+    }
+  }
+
+  private checkErrorSpike(entry: DedupeEntry): void {
+    if (this.config.onErrorSpike && entry.count >= 10) {
+      this.config.onErrorSpike(entry.errorHash, entry.count);
+    }
+  }
+
+  private checkCacheFull(): void {
+    if (this.config.onCacheFull && this.cache.size >= 1000) {
+      this.config.onCacheFull(this.cache.size);
+    }
   }
 
   private generateHash(message: string, stack?: string): string {
@@ -45,6 +63,7 @@ export class ErrorDeduplicator {
   }
 
   shouldLogError(message: string, stack?: string): boolean {
+    this.checkCacheFull();
     const hash = this.generateHash(message, stack);
     const now = Date.now();
     const entry = this.cache.get(hash);
@@ -67,11 +86,13 @@ export class ErrorDeduplicator {
     }
 
     if (entry.count >= this.config.maxErrors) {
+      this.checkErrorSpike(entry);
       return false;
     }
 
     entry.count++;
     entry.lastSeen = now;
+    this.checkErrorSpike(entry);
     return true;
   }
 
@@ -111,6 +132,13 @@ export class ErrorDeduplicator {
 
   getConfig(): Readonly<DedupeConfig> {
     return { ...this.config };
+  }
+
+  updateConfig(config: Partial<DedupeConfig>): void {
+    this.config = {
+      ...this.config,
+      ...config,
+    };
   }
 }
 

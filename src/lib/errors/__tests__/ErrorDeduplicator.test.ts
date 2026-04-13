@@ -174,4 +174,52 @@ describe('ErrorDeduplicator', () => {
       expect(currentConfig.windowMs).toBe(1000);
     });
   });
+
+  describe('updateConfig', () => {
+    it('should update configuration values', () => {
+      deduplicator.updateConfig({ windowMs: 5000 });
+      const config = deduplicator.getConfig();
+      expect(config.windowMs).toBe(5000);
+      expect(config.maxErrors).toBe(3);
+    });
+
+    it('should preserve non-updated values', () => {
+      deduplicator.updateConfig({ maxErrors: 10 });
+      const config = deduplicator.getConfig();
+      expect(config.windowMs).toBe(1000);
+      expect(config.maxErrors).toBe(10);
+    });
+  });
+
+  describe('callbacks', () => {
+    it('should call onErrorSpike when error count exceeds threshold', () => {
+      const spikeCallback = jest.fn();
+      const deduplicatorWithCallback = new ErrorDeduplicator({
+        windowMs: 1000,
+        maxErrors: 5,
+        onErrorSpike: spikeCallback,
+      });
+
+      for (let i = 0; i < 12; i++) {
+        deduplicatorWithCallback.shouldLogError('spike error');
+      }
+
+      expect(spikeCallback).toHaveBeenCalled();
+    });
+
+    it('should call onCacheFull when cache size threshold is reached', () => {
+      const cacheFullCallback = jest.fn();
+      const deduplicatorWithCallback = new ErrorDeduplicator({
+        windowMs: 1000,
+        maxErrors: 5,
+        onCacheFull: cacheFullCallback,
+      });
+
+      for (let i = 0; i < 1005; i++) {
+        deduplicatorWithCallback.shouldLogError(`unique error ${i}`);
+      }
+
+      expect(cacheFullCallback).toHaveBeenCalled();
+    });
+  });
 });
