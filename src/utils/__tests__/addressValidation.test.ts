@@ -26,6 +26,11 @@ import {
   ADDRESS_VERSIONS,
   getVersionForType,
   addressUtils,
+  detectNetworkFromAddress,
+  isMainnetAddress,
+  isTestnetAddress,
+  validateAddressStrict,
+  validateMultipleAddresses,
 } from '../addressValidation';
 
 describe('isValidStacksAddress', () => {
@@ -536,5 +541,118 @@ describe('isValidStacksAddressWithChecksum extended fields', () => {
       'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
     );
     expect(testnetResult.networkId).toBe(0);
+  });
+});
+
+describe('detectNetworkFromAddress', () => {
+  it('should detect mainnet from SP prefix', () => {
+    const result = detectNetworkFromAddress(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(result.network).toBe('mainnet');
+    expect(result.isMainnet).toBe(true);
+    expect(result.isTestnet).toBe(false);
+    expect(result.confidence).toBe(1);
+  });
+
+  it('should detect testnet from ST prefix', () => {
+    const result = detectNetworkFromAddress(
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM'
+    );
+    expect(result.network).toBe('testnet');
+    expect(result.isMainnet).toBe(false);
+    expect(result.isTestnet).toBe(true);
+    expect(result.confidence).toBe(1);
+  });
+
+  it('should return unknown for invalid address', () => {
+    const result = detectNetworkFromAddress('invalid');
+    expect(result.network).toBe('unknown');
+    expect(result.confidence).toBe(0);
+  });
+});
+
+describe('isMainnetAddress', () => {
+  it('should return true for mainnet address', () => {
+    expect(isMainnetAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(
+      true
+    );
+  });
+
+  it('should return false for testnet address', () => {
+    expect(isMainnetAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(
+      false
+    );
+  });
+});
+
+describe('isTestnetAddress', () => {
+  it('should return true for testnet address', () => {
+    expect(isTestnetAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(
+      true
+    );
+  });
+
+  it('should return false for mainnet address', () => {
+    expect(isTestnetAddress('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE')).toBe(
+      false
+    );
+  });
+});
+
+describe('validateAddressStrict', () => {
+  it('should pass basic validation with no options', () => {
+    const result = validateAddressStrict(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE'
+    );
+    expect(result.valid).toBe(true);
+  });
+
+  it('should reject invalid prefix when allowedPrefixes specified', () => {
+    const result = validateAddressStrict(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      {
+        allowedPrefixes: ['ST'],
+      }
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Prefix SP not allowed');
+  });
+
+  it('should reject invalid version when allowedVersions specified', () => {
+    const result = validateAddressStrict(
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      {
+        allowedVersions: [30, 31],
+      }
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('not allowed');
+  });
+});
+
+describe('validateMultipleAddresses', () => {
+  it('should separate valid and invalid addresses', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      'invalid',
+    ];
+    const result = validateMultipleAddresses(addresses);
+    expect(result.valid).toHaveLength(2);
+    expect(result.invalid.size).toBe(1);
+    expect(result.invalid.get('invalid')).toBeDefined();
+  });
+
+  it('should respect strict options', () => {
+    const addresses = [
+      'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE',
+      'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    ];
+    const result = validateMultipleAddresses(addresses, {
+      allowedPrefixes: ['SP'],
+    });
+    expect(result.valid).toHaveLength(1);
+    expect(result.valid[0]).toBe('SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE');
   });
 });
