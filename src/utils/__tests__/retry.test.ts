@@ -1,4 +1,12 @@
-import { retry, retryWithFallback, retryUntil, RetryOptions } from '../retry';
+import {
+  retry,
+  retryWithFallback,
+  retryUntil,
+  retryWithTimeout,
+  retryParallel,
+  RetryContext,
+  RetryState,
+} from '../retry';
 
 describe('retry', () => {
   beforeEach(() => {
@@ -151,5 +159,66 @@ describe('retryUntil', () => {
     await expect(
       retryUntil(fn, condition, { retries: 2, delayMs: 100 })
     ).rejects.toThrow();
+  });
+});
+
+describe('retryWithTimeout', () => {
+  it('should return result within timeout', async () => {
+    const fn = jest.fn().mockResolvedValue('success');
+
+    const result = await retryWithTimeout(fn, 1000, {
+      retries: 3,
+      delayMs: 100,
+    });
+    expect(result).toBe('success');
+  });
+
+  it('should throw timeout error if exceeds timeout', async () => {
+    const fn = jest
+      .fn()
+      .mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 500))
+      );
+
+    await expect(
+      retryWithTimeout(fn, 100, { retries: 1, delayMs: 50 })
+    ).rejects.toThrow('timed out');
+  });
+});
+
+describe('retryParallel', () => {
+  it('should return first successful result', async () => {
+    const fn1 = jest.fn().mockRejectedValue(new Error('fail'));
+    const fn2 = jest.fn().mockResolvedValue('success');
+
+    const result = await retryParallel([fn1, fn2], { retries: 1 });
+    expect(result).toBe('success');
+  });
+
+  it('should throw if all fail', async () => {
+    const fn1 = jest.fn().mockRejectedValue(new Error('fail1'));
+    const fn2 = jest.fn().mockRejectedValue(new Error('fail2'));
+
+    await expect(retryParallel([fn1, fn2], { retries: 1 })).rejects.toThrow();
+  });
+});
+
+describe('RetryContext', () => {
+  it('should track retry state', () => {
+    const ctx = new RetryContext();
+    expect(ctx.attemptCount).toBe(0);
+    expect(ctx.currentState).toBe(RetryState.IDLE);
+
+    ctx.recordAttempt(new Error('test error'));
+    expect(ctx.attemptCount).toBe(1);
+    expect(ctx.currentState).toBe(RetryState.RETRYING);
+    expect(ctx.errorHistory).toHaveLength(1);
+
+    ctx.markSuccess();
+    expect(ctx.currentState).toBe(RetryState.SUCCESS);
+
+    ctx.reset();
+    expect(ctx.attemptCount).toBe(0);
+    expect(ctx.currentState).toBe(RetryState.IDLE);
   });
 });

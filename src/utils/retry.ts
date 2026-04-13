@@ -67,11 +67,9 @@ export const retryUntil = async <T>(
   opts?: RetryOptions
 ): Promise<T> => {
   const maxAttempts = (opts?.retries ?? 3) + 1;
-  let lastResult: T | undefined;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const result = await fn();
-    lastResult = result;
 
     if (condition(result)) {
       return result;
@@ -85,5 +83,91 @@ export const retryUntil = async <T>(
 
   throw new Error(`Condition not met after ${maxAttempts} attempts`);
 };
+
+export const retryWithTimeout = async <T>(
+  fn: () => Promise<T>,
+  timeoutMs: number,
+  opts?: RetryOptions
+): Promise<T> => {
+  return Promise.race([
+    retry(fn, opts),
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Retry timed out after ${timeoutMs}ms`)),
+        timeoutMs
+      )
+    ),
+  ]);
+};
+
+export const retryParallel = async <T>(
+  fns: (() => Promise<T>)[],
+  opts?: RetryOptions
+): Promise<T> => {
+  const errors: Error[] = [];
+
+  for (const fn of fns) {
+    try {
+      return await retry(fn, opts);
+    } catch (e) {
+      errors.push(e instanceof Error ? e : new Error(String(e)));
+    }
+  }
+
+  throw new Error(
+    `All ${fns.length} attempts failed: ${errors
+      .map((e) => e.message)
+      .join(', ')}`
+  );
+};
+
+export const RetryState = {
+  IDLE: 'idle',
+  RETRYING: 'retrying',
+  SUCCESS: 'success',
+  FAILED: 'failed',
+} as const;
+
+export type RetryStateType = (typeof RetryState)[keyof typeof RetryState];
+
+export class RetryContext {
+  private attempts: number = 0;
+  private state: RetryStateType = RetryState.IDLE;
+  private errors: Error[] = [];
+
+  get attemptCount(): number {
+    return this.attempts;
+  }
+
+  get currentState(): RetryStateType {
+    return this.state;
+  }
+
+  get errorHistory(): readonly Error[] {
+    return [...this.errors];
+  }
+
+  recordAttempt(error?: Error): void {
+    this.attempts++;
+    this.state = RetryState.RETRYING;
+    if (error) {
+      this.errors.push(error);
+    }
+  }
+
+  markSuccess(): void {
+    this.state = RetryState.SUCCESS;
+  }
+
+  markFailed(): void {
+    this.state = RetryState.FAILED;
+  }
+
+  reset(): void {
+    this.attempts = 0;
+    this.state = RetryState.IDLE;
+    this.errors = [];
+  }
+}
 
 export default retry;
