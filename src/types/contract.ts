@@ -85,3 +85,11 @@ export interface CommunityBackendPayload {
 export interface ContractReadOptions {
   sender?: string;
 }
+
+/**
+ * Contract write function call options
+ */
+export interface ContractWriteOptions {
+  sender: string;
+  network: 'testnet' | 'mainnet';
+}
