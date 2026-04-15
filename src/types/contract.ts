@@ -173,3 +173,11 @@ export interface BatchBadgeIssuanceResponse extends BaseContractResponse {
     error?: string;
   }>;
 }
+
+/**
+ * Badge revocation parameters
+ */
+export interface RevokeBadgeParams {
+  badgeId: string;
+  reason?: string;
+}
