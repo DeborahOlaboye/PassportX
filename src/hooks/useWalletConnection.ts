@@ -21,6 +21,9 @@ export const useWalletConnection = (): WalletConnection => {
 
   useEffect(() => {
     // TODO: Check if wallet is already connected on mount
+    return () => {
+      // Cleanup event listeners
+    };
   }, []);
 
   const connect = async () => {
