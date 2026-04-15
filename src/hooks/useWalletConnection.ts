@@ -68,3 +68,5 @@ export const useWalletConnection = (): WalletConnection => {
 const formatAddress = (addr: string) => {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 };
+
+// TODO: Integrate with actual wallet provider
