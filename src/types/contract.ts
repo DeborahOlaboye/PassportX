@@ -127,3 +127,12 @@ export interface PassportSummary {
   activeBadges: number;
   badgeIds: string[];
 }
+
+/**
+ * Contract error response
+ */
+export interface ContractErrorResponse {
+  code: number;
+  message: string;
+  details?: string;
+}
