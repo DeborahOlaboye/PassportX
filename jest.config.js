@@ -14,6 +14,7 @@ module.exports = {
       branches: 85,
       // Function coverage threshold
       functions: 85,
+      // Line coverage threshold
       lines: 85,
       statements: 85,
     },
