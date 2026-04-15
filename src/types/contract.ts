@@ -78,3 +78,10 @@ export interface CommunityBackendPayload {
   createdAt: string;
   network: 'testnet' | 'mainnet';
 }
+
+/**
+ * Contract read function call options
+ */
+export interface ContractReadOptions {
+  sender?: string;
+}
