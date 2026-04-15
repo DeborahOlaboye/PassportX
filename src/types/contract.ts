@@ -198,3 +198,11 @@ export interface CreateCommunityParams {
   description: string;
   admins: string[];
 }
+
+/**
+ * Create community response
+ */
+export interface CreateCommunityResponse extends BaseContractResponse {
+  communityId: number;
+  name: string;
+}
