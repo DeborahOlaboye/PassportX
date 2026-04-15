@@ -19,3 +19,17 @@ export const useWalletConnection = () => {
       setIsLoading(false);
     }
   };
+
+  const disconnect = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // TODO: Implement wallet disconnection logic
+      setIsConnected(false);
+      setAddress(null);
+    } catch (err) {
+      setError('Failed to disconnect wallet');
+    } finally {
+      setIsLoading(false);
+    }
+  };
