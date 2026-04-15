@@ -50,7 +50,7 @@
 
 (define-public (setup-community-issuer (community-id uint) (issuer principal))
   (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (asserts! (contract-call? .access-control can-manage-community-members community-id tx-sender) err-unauthorized)
     (contract-call? .badge-issuer authorize-issuer issuer)
   )
