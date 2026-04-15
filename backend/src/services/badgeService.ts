@@ -2,12 +2,14 @@ import Badge from '../models/Badge';
 import BadgeTemplate from '../models/BadgeTemplate';
 import Community from '../models/Community';
 import User from '../models/User';
+import mongoose from 'mongoose';
 import { IPopulatedBadgeTemplate } from '../types';
 
 /**
  * Issue a single badge to a recipient.
  * Returns `{ badgeId, recipientAddress }` on success or throws on failure.
  * This helper is shared by both the single-issue and batch-issue routes.
+ * Uses MongoDB transactions to prevent race conditions.
  */
 export async function issueSingleBadge(
   template: IPopulatedBadgeTemplate,
@@ -15,30 +17,47 @@ export async function issueSingleBadge(
   issuerAddress: string,
   transactionId?: string
 ): Promise<{ badgeId: string; recipientAddress: string }> {
-  const existingBadge = await Badge.findOne({
-    templateId: template._id,
-    owner: recipientAddress,
-  });
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  if (existingBadge) {
-    throw new Error('Badge already issued to this recipient');
+  try {
+    // Prevent race conditions by checking for existing badge within transaction
+    console.log('Starting badge issuance transaction');
+    const existingBadge = await Badge.findOne({
+      templateId: template._id,
+      owner: recipientAddress,
+    }).session(session);
+
+    if (existingBadge) {
+      throw new Error('Badge already issued to this recipient');
+    }
+
+    const badge = new Badge({
+      templateId: template._id,
+      owner: recipientAddress,
+      issuer: issuerAddress,
+      community: template.community._id,
+      transactionId,
+      metadata: {
+        level: template.level,
+        category: template.category,
+        timestamp: Math.floor(Date.now() / 1000),
+      },
+    });
+
+    await badge.save({ session });
+    // Commit the transaction to ensure atomicity
+    await session.commitTransaction();
+    console.log('Badge issuance transaction committed');
+    session.endSession();
+    return { badgeId: String(badge._id), recipientAddress };
+  } catch (error) {
+    // Abort transaction on error to prevent partial state
+    console.log('Badge issuance transaction aborted due to error:', error);
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
   }
-
-  const badge = new Badge({
-    templateId: template._id,
-    owner: recipientAddress,
-    issuer: issuerAddress,
-    community: template.community._id,
-    transactionId,
-    metadata: {
-      level: template.level,
-      category: template.category,
-      timestamp: Math.floor(Date.now() / 1000),
-    },
-  });
-
-  await badge.save();
-  return { badgeId: String(badge._id), recipientAddress };
 }
 
 export const validateBadgeIssuance = async (
