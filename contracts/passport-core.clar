@@ -31,6 +31,7 @@
   )
 )
 
+;; Function to get passport summary with error handling
 (define-public (get-passport-summary (user principal))
   (let
     (
