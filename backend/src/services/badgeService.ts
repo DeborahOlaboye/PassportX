@@ -21,7 +21,7 @@ export async function issueSingleBadge(
   const existingBadge = await Badge.findOne({
     templateId: template._id,
     owner: recipientAddress,
-  });
+  }).session(session);
 
   if (existingBadge) {
     throw new Error('Badge already issued to this recipient');
