@@ -181,3 +181,11 @@ export interface RevokeBadgeParams {
   badgeId: string;
   reason?: string;
 }
+
+/**
+ * Badge revocation response
+ */
+export interface RevokeBadgeResponse extends BaseContractResponse {
+  badgeId: string;
+  revokedAt: string;
+}
