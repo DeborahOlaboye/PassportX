@@ -52,6 +52,8 @@
   (begin
     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (asserts! (try! (contract-call? .access-control can-manage-community-members community-id tx-sender)) err-unauthorized)
-    (contract-call? .badge-issuer authorize-issuer issuer)
+    (match (contract-call? .badge-issuer authorize-issuer issuer)
+      success (ok success)
+      error err-issuer-setup-failed)
   )
 )
