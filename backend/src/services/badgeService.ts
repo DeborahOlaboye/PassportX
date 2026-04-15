@@ -40,7 +40,7 @@ export async function issueSingleBadge(
     },
   });
 
-  await badge.save();
+  await badge.save({ session });
   return { badgeId: String(badge._id), recipientAddress };
 }
 
