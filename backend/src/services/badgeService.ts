@@ -21,6 +21,7 @@ export async function issueSingleBadge(
   session.startTransaction();
 
   try {
+    // Prevent race conditions by checking for existing badge within transaction
     console.log('Starting badge issuance transaction');
     const existingBadge = await Badge.findOne({
       templateId: template._id,
