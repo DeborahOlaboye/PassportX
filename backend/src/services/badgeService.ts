@@ -46,6 +46,7 @@ export async function issueSingleBadge(
 
     await badge.save({ session });
     await session.commitTransaction();
+    console.log('Badge issuance transaction committed');
     session.endSession();
     return { badgeId: String(badge._id), recipientAddress };
   } catch (error) {
