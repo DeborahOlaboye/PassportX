@@ -64,3 +64,7 @@ export const useWalletConnection = (): WalletConnection => {
     disconnect,
   };
 };
+
+const formatAddress = (addr: string) => {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+};
