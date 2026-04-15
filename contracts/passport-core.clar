@@ -1,5 +1,6 @@
 ;; PassportX Core Integration Contract
 ;; Main contract that integrates all components
+;; Updated with comprehensive error handling
 
 ;; Import traits
 (use-trait badge-issuer-trait .badge-issuer-trait.badge-issuer)
