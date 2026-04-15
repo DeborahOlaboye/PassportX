@@ -189,3 +189,12 @@ export interface RevokeBadgeResponse extends BaseContractResponse {
   badgeId: string;
   revokedAt: string;
 }
+
+/**
+ * Community creation parameters
+ */
+export interface CreateCommunityParams {
+  name: string;
+  description: string;
+  admins: string[];
+}
