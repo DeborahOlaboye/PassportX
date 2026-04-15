@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 
-export const useWalletConnection = () => {
+interface WalletConnection {
+  isConnected: boolean;
+  address: string | null;
+  isLoading: boolean;
+  error: string | null;
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
+}
+
+export const useWalletConnection = (): WalletConnection => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
