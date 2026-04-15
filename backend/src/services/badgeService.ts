@@ -52,6 +52,7 @@ export async function issueSingleBadge(
     session.endSession();
     return { badgeId: String(badge._id), recipientAddress };
   } catch (error) {
+    // Abort transaction on error to prevent partial state
     console.log('Badge issuance transaction aborted due to error:', error);
     await session.abortTransaction();
     session.endSession();
