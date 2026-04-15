@@ -7,6 +7,8 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
+    global: {
+    },
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 };
