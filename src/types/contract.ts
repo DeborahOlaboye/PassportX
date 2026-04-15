@@ -93,3 +93,12 @@ export interface ContractWriteOptions {
   sender: string;
   network: 'testnet' | 'mainnet';
 }
+
+/**
+ * Parameters for creating a passport badge
+ */
+export interface CreatePassportBadgeParams {
+  recipient: string;
+  templateId: number;
+  communityId: number;
+}
