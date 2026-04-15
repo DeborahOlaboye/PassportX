@@ -9,6 +9,10 @@ interface WalletConnection {
   disconnect: () => Promise<void>;
 }
 
+/**
+ * Hook for managing user wallet connections
+ * @returns Wallet connection state and methods
+ */
 export const useWalletConnection = (): WalletConnection => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
