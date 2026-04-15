@@ -10,6 +10,7 @@ module.exports = {
   coverageThreshold: {
     // Global thresholds for all files
     global: {
+      // Branch coverage threshold
       branches: 85,
       functions: 85,
       lines: 85,
