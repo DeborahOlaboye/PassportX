@@ -18,7 +18,7 @@
 (define-public (create-passport-badge (recipient principal) (template-id uint) (community-id uint))
   (begin
     ;; Check paused state
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+    (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     
     ;; Check permissions
     (asserts! (contract-call? .access-control can-issue-badges-in-community community-id tx-sender) err-unauthorized)
