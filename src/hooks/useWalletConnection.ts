@@ -33,3 +33,13 @@ export const useWalletConnection = () => {
       setIsLoading(false);
     }
   };
+
+  return {
+    isConnected,
+    address,
+    isLoading,
+    error,
+    connect,
+    disconnect,
+  };
+};
