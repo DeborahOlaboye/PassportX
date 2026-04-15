@@ -2,6 +2,7 @@ import Badge from '../models/Badge';
 import BadgeTemplate from '../models/BadgeTemplate';
 import Community from '../models/Community';
 import User from '../models/User';
+import mongoose from 'mongoose';
 import { IPopulatedBadgeTemplate } from '../types';
 
 /**
