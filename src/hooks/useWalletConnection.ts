@@ -28,6 +28,7 @@ export const useWalletConnection = (): WalletConnection => {
     setError(null);
     try {
       // TODO: Implement wallet connection logic
+      // Add event listeners for connection events
       setIsConnected(true);
       setAddress('0x123...');
     } catch (err) {
