@@ -21,7 +21,7 @@
     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     
     ;; Check permissions
-    (asserts! (contract-call? .access-control can-issue-badges-in-community community-id tx-sender) err-unauthorized)
+    (asserts! (try! (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)) err-unauthorized)
     
     ;; Mint badge through issuer
     (contract-call? .badge-issuer mint-badge recipient template-id community-id)
