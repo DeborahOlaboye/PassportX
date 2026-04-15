@@ -9,6 +9,7 @@ import { IPopulatedBadgeTemplate } from '../types';
  * Issue a single badge to a recipient.
  * Returns `{ badgeId, recipientAddress }` on success or throws on failure.
  * This helper is shared by both the single-issue and batch-issue routes.
+ * Uses MongoDB transactions to prevent race conditions.
  */
 export async function issueSingleBadge(
   template: IPopulatedBadgeTemplate,
