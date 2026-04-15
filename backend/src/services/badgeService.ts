@@ -46,6 +46,7 @@ export async function issueSingleBadge(
     });
 
     await badge.save({ session });
+    // Commit the transaction to ensure atomicity
     await session.commitTransaction();
     console.log('Badge issuance transaction committed');
     session.endSession();
