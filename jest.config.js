@@ -16,6 +16,7 @@ module.exports = {
       functions: 85,
       // Line coverage threshold
       lines: 85,
+      // Statement coverage threshold
       statements: 85,
     },
   },
