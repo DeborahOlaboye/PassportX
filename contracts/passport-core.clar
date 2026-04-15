@@ -15,6 +15,7 @@
 (define-constant ERR-PAUSED (err u110))
 
 ;; Main passport functions
+;; Function to create a passport badge with proper error handling
 (define-public (create-passport-badge (recipient principal) (template-id uint) (community-id uint))
   (begin
     ;; Check paused state
