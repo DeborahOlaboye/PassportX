@@ -8,6 +8,7 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   // Coverage thresholds to ensure code quality
   coverageThreshold: {
+    // Global thresholds for all files
     global: {
       branches: 85,
       functions: 85,
