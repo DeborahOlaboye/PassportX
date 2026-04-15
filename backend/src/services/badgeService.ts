@@ -20,32 +20,33 @@ export async function issueSingleBadge(
   session.startTransaction();
 
   try {
-  const existingBadge = await Badge.findOne({
-    templateId: template._id,
-    owner: recipientAddress,
-  }).session(session);
+    const existingBadge = await Badge.findOne({
+      templateId: template._id,
+      owner: recipientAddress,
+    }).session(session);
 
-  if (existingBadge) {
-    throw new Error('Badge already issued to this recipient');
+    if (existingBadge) {
+      throw new Error('Badge already issued to this recipient');
+    }
+
+    const badge = new Badge({
+      templateId: template._id,
+      owner: recipientAddress,
+      issuer: issuerAddress,
+      community: template.community._id,
+      transactionId,
+      metadata: {
+        level: template.level,
+        category: template.category,
+        timestamp: Math.floor(Date.now() / 1000),
+      },
+    });
+
+    await badge.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+    return { badgeId: String(badge._id), recipientAddress };
   }
-
-  const badge = new Badge({
-    templateId: template._id,
-    owner: recipientAddress,
-    issuer: issuerAddress,
-    community: template.community._id,
-    transactionId,
-    metadata: {
-      level: template.level,
-      category: template.category,
-      timestamp: Math.floor(Date.now() / 1000),
-    },
-  });
-
-  await badge.save({ session });
-  await session.commitTransaction();
-  session.endSession();
-  return { badgeId: String(badge._id), recipientAddress };
 }
 
 export const validateBadgeIssuance = async (
