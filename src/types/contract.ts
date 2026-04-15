@@ -110,3 +110,11 @@ export interface CreateBadgeResponse extends BaseContractResponse {
   badgeId?: string;
   recipient?: string;
 }
+
+/**
+ * Parameters for setup community issuer
+ */
+export interface SetupCommunityIssuerParams {
+  communityId: number;
+  issuer: string;
+}
