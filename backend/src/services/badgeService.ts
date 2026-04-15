@@ -18,6 +18,8 @@ export async function issueSingleBadge(
 ): Promise<{ badgeId: string; recipientAddress: string }> {
   const session = await mongoose.startSession();
   session.startTransaction();
+
+  try {
   const existingBadge = await Badge.findOne({
     templateId: template._id,
     owner: recipientAddress,
