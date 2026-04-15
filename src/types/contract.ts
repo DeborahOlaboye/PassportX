@@ -136,3 +136,17 @@ export interface ContractErrorResponse {
   message: string;
   details?: string;
 }
+
+/**
+ * Type for contract read functions
+ */
+export type ContractReadFunction<T = unknown> = (
+  options?: ContractReadOptions
+) => Promise<T | ContractErrorResponse>;
+
+/**
+ * Type for contract write functions
+ */
+export type ContractWriteFunction<T = unknown> = (
+  options: ContractWriteOptions
+) => Promise<T | ContractErrorResponse>;
