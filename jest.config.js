@@ -8,6 +8,7 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
+      branches: 85,
     },
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
