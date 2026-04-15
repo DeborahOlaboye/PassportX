@@ -206,3 +206,13 @@ export interface CreateCommunityResponse extends BaseContractResponse {
   communityId: number;
   name: string;
 }
+
+/**
+ * Contract interaction result wrapper
+ */
+export interface ContractInteractionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: ContractErrorResponse;
+  timestamp: string;
+}
