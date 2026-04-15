@@ -150,3 +150,12 @@ export type ContractReadFunction<T = unknown> = (
 export type ContractWriteFunction<T = unknown> = (
   options: ContractWriteOptions
 ) => Promise<T | ContractErrorResponse>;
+
+/**
+ * Batch badge issuance request
+ */
+export interface BatchBadgeIssuanceRequest {
+  templateId: number;
+  communityId: number;
+  recipients: string[];
+}
