@@ -159,3 +159,17 @@ export interface BatchBadgeIssuanceRequest {
   communityId: number;
   recipients: string[];
 }
+
+/**
+ * Batch badge issuance response
+ */
+export interface BatchBadgeIssuanceResponse extends BaseContractResponse {
+  successCount: number;
+  failureCount: number;
+  results: Array<{
+    recipient: string;
+    success: boolean;
+    badgeId?: string;
+    error?: string;
+  }>;
+}
