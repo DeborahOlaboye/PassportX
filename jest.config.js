@@ -6,13 +6,20 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{js,ts}', '!src/**/*.d.ts', '!src/index.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  // Coverage thresholds to ensure code quality
   coverageThreshold: {
+    // Global thresholds for all files
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      // Branch coverage threshold
+      branches: 85,
+      // Function coverage threshold
+      functions: 85,
+      // Line coverage threshold
+      lines: 85,
+      // Statement coverage threshold
+      statements: 85,
     },
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // End of Jest configuration
 };
