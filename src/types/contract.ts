@@ -118,3 +118,12 @@ export interface SetupCommunityIssuerParams {
   communityId: number;
   issuer: string;
 }
+
+/**
+ * Passport summary response
+ */
+export interface PassportSummary {
+  totalBadges: number;
+  activeBadges: number;
+  badgeIds: string[];
+}
