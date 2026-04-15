@@ -9,6 +9,7 @@
 (define-constant contract-owner tx-sender)
 (define-constant err-unauthorized (err u104))
 (define-constant err-invalid-recipient (err u105))
+(define-constant err-mint-failed (err u106))
 (define-constant ERR-PAUSED (err u110))
 
 ;; Main passport functions
