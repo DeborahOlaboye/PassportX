@@ -21,4 +21,5 @@ module.exports = {
     },
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // End of Jest configuration
 };
