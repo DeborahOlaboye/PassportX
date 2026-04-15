@@ -46,6 +46,10 @@ export async function issueSingleBadge(
     await session.commitTransaction();
     session.endSession();
     return { badgeId: String(badge._id), recipientAddress };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
   }
 }
 
