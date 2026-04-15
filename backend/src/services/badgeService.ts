@@ -41,6 +41,8 @@ export async function issueSingleBadge(
   });
 
   await badge.save({ session });
+  await session.commitTransaction();
+  session.endSession();
   return { badgeId: String(badge._id), recipientAddress };
 }
 
