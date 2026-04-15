@@ -30,17 +30,21 @@
   )
 )
 
-(define-read-only (get-passport-summary (user principal))
+(define-public (get-passport-summary (user principal))
   (let
     (
-      (badges (unwrap-panic (contract-call? .badge-reader get-user-badges user)))
-      (active-count (unwrap-panic (contract-call? .badge-reader get-active-badges-count user)))
+      (badges-result (contract-call? .badge-reader get-user-badges user))
+      (active-count-result (contract-call? .badge-reader get-active-badges-count user))
     )
-    {
-      total-badges: (len badges),
-      active-badges: active-count,
-      badge-ids: badges
-    }
+    (match badges-result
+      badges (match active-count-result
+        active-count (ok {
+          total-badges: (len badges),
+          active-badges: active-count,
+          badge-ids: badges
+        })
+        error err-badge-read-failed)
+      error err-badge-read-failed)
   )
 )
 
