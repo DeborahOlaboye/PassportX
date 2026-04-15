@@ -102,3 +102,11 @@ export interface CreatePassportBadgeParams {
   templateId: number;
   communityId: number;
 }
+
+/**
+ * Response from badge creation
+ */
+export interface CreateBadgeResponse extends BaseContractResponse {
+  badgeId?: string;
+  recipient?: string;
+}
