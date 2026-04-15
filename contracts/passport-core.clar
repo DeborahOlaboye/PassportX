@@ -50,6 +50,7 @@
   )
 )
 
+;; Function to setup community issuer with error handling
 (define-public (setup-community-issuer (community-id uint) (issuer principal))
   (begin
     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
