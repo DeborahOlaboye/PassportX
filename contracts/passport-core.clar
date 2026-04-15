@@ -11,6 +11,7 @@
 (define-constant err-invalid-recipient (err u105))
 (define-constant err-mint-failed (err u106))
 (define-constant err-badge-read-failed (err u107))
+(define-constant err-issuer-setup-failed (err u108))
 (define-constant ERR-PAUSED (err u110))
 
 ;; Main passport functions
