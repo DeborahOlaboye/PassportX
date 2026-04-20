@@ -6,6 +6,10 @@
 ;; Constants
 (define-constant err-not-found (err u102))
 
+(define-event badge-verified (badge-id uint) (verifier principal) (timestamp uint))
+(define-event badge-read (badge-id uint) (reader principal) (timestamp uint))
+(define-event user-badges-queried (user principal) (querier principal) (badge-count uint))
+
 ;; Read badge metadata by ID
 (define-read-only (get-badge-metadata (badge-id uint))
   (match (contract-call? .badge-metadata get-badge-metadata badge-id)
@@ -25,7 +29,10 @@
 
 ;; Get all badges for a user
 (define-read-only (get-user-badges (user principal))
-  (ok (get badge-ids (contract-call? .badge-metadata get-user-badges user)))
+    (let
+    ((badge-ids (get badge-ids (contract-call? .badge-metadata get-user-badges user))))
+   (emit-event (user-badges-queried user tx-sender (len badge-ids)))
+  (ok badge-ids)
 )
 
 ;; Check if badge exists and is active
@@ -54,6 +61,7 @@
       (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-not-found))
       (owner (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
     )
+     (emit-event (badge-read badge-id tx-sender block-height))
     (ok {
       id: badge-id,
       owner: owner,
@@ -134,6 +142,7 @@
       (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
       (owner (unwrap! owner-response err-not-found))
     )
+     (emit-event (badge-verified badge-id tx-sender block-height))
     (ok {
       verified: true,
       active: (get active metadata),
