@@ -1,72 +1,67 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
+import {
+  useWalletConnect,
+  ConnectedWallet,
+} from '@/contexts/WalletConnectContext';
 
-interface WalletConnection {
+export interface WalletConnection {
   isConnected: boolean;
   address: string | null;
+  formattedAddress: string | null;
   isLoading: boolean;
   error: string | null;
-  connect: () => Promise<void>;
+  connect: (wallet: ConnectedWallet) => Promise<void>;
   disconnect: () => Promise<void>;
+  clearError: () => void;
 }
 
 /**
- * Hook for managing user wallet connections
- * @returns Wallet connection state and methods
+ * Hook for managing user wallet connection state from the WalletConnect context.
+ * This wrapper exposes a consistent hook interface for components and utilities.
  */
 export const useWalletConnection = (): WalletConnection => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [address, setAddress] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    isConnected,
+    connectedWallet,
+    isConnecting,
+    error,
+    connectWallet,
+    disconnectWallet,
+    clearError,
+  } = useWalletConnect();
 
-  useEffect(() => {
-    // TODO: Check if wallet is already connected on mount
-    return () => {
-      // Cleanup event listeners
-    };
-  }, []);
+  const address = connectedWallet?.address ?? null;
+  const formattedAddress = address ? formatAddress(address) : null;
 
-  const connect = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // TODO: Implement wallet connection logic
-      // Add event listeners for connection events
-      setIsConnected(true);
-      setAddress('0x123...');
-    } catch (err) {
-      setError('Failed to connect wallet');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const connect = useCallback(
+    async (wallet: ConnectedWallet) => {
+      await connectWallet(wallet);
+    },
+    [connectWallet]
+  );
 
-  const disconnect = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // TODO: Implement wallet disconnection logic
-      setIsConnected(false);
-      setAddress(null);
-    } catch (err) {
-      setError('Failed to disconnect wallet');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const disconnect = useCallback(async () => {
+    await disconnectWallet();
+  }, [disconnectWallet]);
 
   return {
     isConnected,
     address,
-    isLoading,
+    formattedAddress,
+    isLoading: isConnecting,
     error,
     connect,
     disconnect,
+    clearError,
   };
 };
 
-const formatAddress = (addr: string) => {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-};
+export const formatAddress = (addr: string): string => {
+  if (!addr || addr.length <= 10) {
+    return addr;
+  }
 
-// TODO: Integrate with actual wallet provider
+  const prefix = addr.slice(0, 6);
+  const suffix = addr.slice(-4);
+  return `${prefix}...${suffix}`;
+};
