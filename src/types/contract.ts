@@ -78,3 +78,141 @@ export interface CommunityBackendPayload {
   createdAt: string;
   network: 'testnet' | 'mainnet';
 }
+
+/**
+ * Contract read function call options
+ */
+export interface ContractReadOptions {
+  sender?: string;
+}
+
+/**
+ * Contract write function call options
+ */
+export interface ContractWriteOptions {
+  sender: string;
+  network: 'testnet' | 'mainnet';
+}
+
+/**
+ * Parameters for creating a passport badge
+ */
+export interface CreatePassportBadgeParams {
+  recipient: string;
+  templateId: number;
+  communityId: number;
+}
+
+/**
+ * Response from badge creation
+ */
+export interface CreateBadgeResponse extends BaseContractResponse {
+  badgeId?: string;
+  recipient?: string;
+}
+
+/**
+ * Parameters for setup community issuer
+ */
+export interface SetupCommunityIssuerParams {
+  communityId: number;
+  issuer: string;
+}
+
+/**
+ * Passport summary response
+ */
+export interface PassportSummary {
+  totalBadges: number;
+  activeBadges: number;
+  badgeIds: string[];
+}
+
+/**
+ * Contract error response
+ */
+export interface ContractErrorResponse {
+  code: number;
+  message: string;
+  details?: string;
+}
+
+/**
+ * Type for contract read functions
+ */
+export type ContractReadFunction<T = unknown> = (
+  options?: ContractReadOptions
+) => Promise<T | ContractErrorResponse>;
+
+/**
+ * Type for contract write functions
+ */
+export type ContractWriteFunction<T = unknown> = (
+  options: ContractWriteOptions
+) => Promise<T | ContractErrorResponse>;
+
+/**
+ * Batch badge issuance request
+ */
+export interface BatchBadgeIssuanceRequest {
+  templateId: number;
+  communityId: number;
+  recipients: string[];
+}
+
+/**
+ * Batch badge issuance response
+ */
+export interface BatchBadgeIssuanceResponse extends BaseContractResponse {
+  successCount: number;
+  failureCount: number;
+  results: Array<{
+    recipient: string;
+    success: boolean;
+    badgeId?: string;
+    error?: string;
+  }>;
+}
+
+/**
+ * Badge revocation parameters
+ */
+export interface RevokeBadgeParams {
+  badgeId: string;
+  reason?: string;
+}
+
+/**
+ * Badge revocation response
+ */
+export interface RevokeBadgeResponse extends BaseContractResponse {
+  badgeId: string;
+  revokedAt: string;
+}
+
+/**
+ * Community creation parameters
+ */
+export interface CreateCommunityParams {
+  name: string;
+  description: string;
+  admins: string[];
+}
+
+/**
+ * Create community response
+ */
+export interface CreateCommunityResponse extends BaseContractResponse {
+  communityId: number;
+  name: string;
+}
+
+/**
+ * Contract interaction result wrapper
+ */
+export interface ContractInteractionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: ContractErrorResponse;
+  timestamp: string;
+}
