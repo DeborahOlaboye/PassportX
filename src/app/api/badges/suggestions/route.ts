@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
-import { parsePositiveInt } from '@/lib/api-validation';
+import { parsePositiveInt, sanitizeQueryParam } from '@/lib/api-validation';
 
 const MAX_QUERY_LENGTH = 100;
 
@@ -41,8 +41,10 @@ export async function GET(request: NextRequest) {
       limit = parsed;
     }
 
+    const sanitizedQuery = sanitizeQueryParam(query);
+
     const response = await fetch(
-      `${BACKEND_URL}/api/badges/suggestions?q=${encodeURIComponent(query)}&limit=${limit}`,
+      `${BACKEND_URL}/api/badges/suggestions?q=${encodeURIComponent(sanitizedQuery)}&limit=${limit}`,
       {
         method: 'GET',
         headers: {
