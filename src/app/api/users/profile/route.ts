@@ -69,7 +69,16 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return createErrorResponse('Request body must be valid JSON', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
+
     const bodyErrors = validateProfileUpdateBody(body);
     if (bodyErrors.length > 0) {
       return NextResponse.json(
