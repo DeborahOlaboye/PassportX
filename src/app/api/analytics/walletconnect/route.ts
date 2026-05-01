@@ -1,23 +1,31 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { createErrorResponse } from '@/lib/error-response';
+import { isValidTimeRange, VALID_TIME_RANGES } from '@/lib/api-validation';
 
 // Configure route behavior
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const runtime = 'nodejs';
 
-type TimeRange = '24h' | '7d' | '30d' | '90d' | 'all';
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const range = (searchParams.get('range') as TimeRange) || '7d';
+    const rangeRaw = searchParams.get('range');
+
+    if (rangeRaw !== null && !isValidTimeRange(rangeRaw)) {
+      return createErrorResponse(
+        `Invalid range parameter: must be one of ${VALID_TIME_RANGES.join(', ')}`,
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    const range = isValidTimeRange(rangeRaw) ? rangeRaw : '7d';
 
     const { db } = await connectToDatabase();
     const analyticsCollection = db.collection('analytics_events');
 
-    // Calculate date range based on the selected time range
     const now = new Date();
     let startDate = new Date();
 
@@ -36,24 +44,21 @@ export async function GET(request: Request) {
         break;
       case 'all':
       default:
-        startDate = new Date(0); // Unix epoch
+        startDate = new Date(0);
         break;
     }
 
-    // Get total connections
     const totalConnections = await analyticsCollection.countDocuments({
       eventName: 'wallet_connected',
       timestamp: { $gte: startDate.toISOString() },
     });
 
-    // Get unique wallets
     const uniqueWallets = await analyticsCollection.distinct('walletAddress', {
       eventName: 'wallet_connected',
       timestamp: { $gte: startDate.toISOString() },
       walletAddress: { $ne: null },
     });
 
-    // Get connections by day
     const connectionsByDay = await analyticsCollection
       .aggregate([
         {
@@ -77,7 +82,6 @@ export async function GET(request: Request) {
       ])
       .toArray();
 
-    // Get wallet types (simplified example)
     const walletsByType = [
       { name: 'MetaMask', value: Math.floor(Math.random() * 1000) },
       { name: 'WalletConnect', value: Math.floor(Math.random() * 800) },
@@ -86,7 +90,6 @@ export async function GET(request: Request) {
       { name: 'Other', value: Math.floor(Math.random() * 200) },
     ];
 
-    // Get transactions by method
     const transactionsByMethod = await analyticsCollection
       .aggregate([
         {
@@ -107,11 +110,10 @@ export async function GET(request: Request) {
       ])
       .toArray();
 
-    // Calculate average session duration (simplified)
-    const averageSessionDuration = Math.random() * 10 + 1; // 1-11 minutes
-    const completionRate = Math.min(100, Math.max(70, Math.random() * 100)); // 70-100%
+    const averageSessionDuration = Math.random() * 10 + 1;
+    const completionRate = Math.min(100, Math.max(70, Math.random() * 100));
 
-    const response = {
+    const responseData = {
       totalConnections,
       uniqueWallets: uniqueWallets.length,
       averageSessionDuration: parseFloat(averageSessionDuration.toFixed(1)),
@@ -127,7 +129,7 @@ export async function GET(request: Request) {
       })),
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json(responseData);
   } catch (error) {
     return createErrorResponse('Failed to fetch analytics data', error);
   }
