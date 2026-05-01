@@ -177,6 +177,56 @@ export function validateProfileUpdateBody(body: unknown): string[] {
 }
 
 /**
+ * Return true if `value` is a syntactically valid ISO 8601 timestamp string
+ * that can be parsed to a finite date.
+ */
+export function isValidISOTimestamp(value: unknown): value is string {
+  if (typeof value !== 'string' || value.trim() === '') return false;
+  const d = Date.parse(value);
+  return Number.isFinite(d);
+}
+
+/**
+ * Return true if `value` is a valid CSS hex color string (#RGB or #RRGGBB).
+ */
+export function isValidHexColor(value: unknown): value is string {
+  return typeof value === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
+}
+
+/**
+ * Return true if `value` is a plausible http/https URL.
+ * Uses the URL constructor for parsing — does not perform network I/O.
+ */
+export function isValidHttpUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Return true if `value` is an array of non-empty strings within length bounds.
+ *
+ * @param value     The value to check.
+ * @param maxItems  Maximum number of items allowed (default 20).
+ * @param maxLength Maximum character length per tag (default 50).
+ */
+export function isValidTagsList(
+  value: unknown,
+  maxItems = 20,
+  maxLength = 50
+): value is string[] {
+  if (!Array.isArray(value)) return false;
+  if (value.length > maxItems) return false;
+  return value.every(
+    (tag) => typeof tag === 'string' && tag.trim().length > 0 && tag.length <= maxLength
+  );
+}
+
+/**
  * Validate a settings update body.  Returns an array of error messages.
  */
 export function validateSettingsUpdateBody(body: unknown): string[] {
