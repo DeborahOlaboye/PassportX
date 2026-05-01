@@ -5,14 +5,23 @@ import { BACKEND_URL } from '@/lib/config';
 
 export async function GET(request: NextRequest) {
   try {
-    // Forward cookies to backend
     const cookie = request.headers.get('cookie');
+    const authHeader = request.headers.get('authorization');
+
+    if (!cookie && !authHeader) {
+      return createErrorResponse(
+        'Authentication required: provide a session cookie or Authorization header',
+        null,
+        { status: 401, logLevel: 'warn' }
+      );
+    }
 
     const response = await fetch(`${BACKEND_URL}/api/auth/verify`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         ...(cookie && { Cookie: cookie }),
+        ...(authHeader && { Authorization: authHeader }),
       },
     });
 
