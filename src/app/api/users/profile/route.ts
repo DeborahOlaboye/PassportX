@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
-
+import {
+  isValidStacksAddressParam,
+  isValidCustomUrl,
+  validateProfileUpdateBody,
+} from '@/lib/api-validation';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,6 +19,21 @@ export async function GET(request: NextRequest) {
         status: 400,
         logLevel: 'warn',
       });
+    }
+
+    if (address && !isValidStacksAddressParam(address)) {
+      return createErrorResponse('Invalid Stacks address format', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
+
+    if (customUrl && !isValidCustomUrl(customUrl)) {
+      return createErrorResponse(
+        'Invalid customUrl format: must be 3–30 lowercase letters, digits, or hyphens',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
     }
 
     let url: string;
@@ -41,7 +60,6 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
     const token = request.headers.get('Authorization');
 
     if (!token) {
@@ -49,6 +67,24 @@ export async function PUT(request: NextRequest) {
         status: 401,
         logLevel: 'warn',
       });
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return createErrorResponse('Request body must be valid JSON', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
+
+    const bodyErrors = validateProfileUpdateBody(body);
+    if (bodyErrors.length > 0) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: bodyErrors },
+        { status: 400 }
+      );
     }
 
     const response = await fetch(`${BACKEND_URL}/api/users/profile`, {
