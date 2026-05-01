@@ -22,8 +22,7 @@ export const ALLOWED_ANALYTICS_EVENT_NAMES = [
   'session_ended',
   'page_view',
 ] as const;
-export type AnalyticsEventName =
-  (typeof ALLOWED_ANALYTICS_EVENT_NAMES)[number];
+export type AnalyticsEventName = (typeof ALLOWED_ANALYTICS_EVENT_NAMES)[number];
 
 // MongoDB ObjectId: 24 hexadecimal characters
 const OBJECT_ID_REGEX = /^[a-fA-F0-9]{24}$/;
@@ -109,6 +108,26 @@ export function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
+ * Sanitize a query string value for use in backend requests.
+ * Trims whitespace and removes control characters.
+ */
+export function sanitizeQueryParam(value: string): string {
+  return value.trim().replace(/[\x00-\x1f\x7f]/g, '');
+}
+
+/**
+ * Return true if `token` looks like a plausible Bearer token format.
+ * Accepts: "Bearer <base64url-chars>" where the token part is ≥ 10 chars.
+ */
+export function isValidBearerToken(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    /^Bearer [A-Za-z0-9\-._~+/]+=*$/.test(value) &&
+    value.length > 16
+  );
+}
+
+/**
  * Validate a profile update body.  Returns an array of field-level error
  * messages; an empty array means the body is valid.
  *
@@ -171,10 +190,7 @@ export function validateSettingsUpdateBody(body: unknown): string[] {
     errors.push('emailNotifications must be a boolean');
   }
 
-  if (
-    'pushNotifications' in b &&
-    typeof b.pushNotifications !== 'boolean'
-  ) {
+  if ('pushNotifications' in b && typeof b.pushNotifications !== 'boolean') {
     errors.push('pushNotifications must be a boolean');
   }
 
