@@ -60,4 +60,28 @@ router.post('/', async (req: AuthRequest, res) => {
   }
 });
 
+// PUT /api/notifications/:id/read - Mark notification as read
+router.put('/:id/read', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const notification = await notificationService.getNotificationById(req.params.id);
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
+    if (notification.userId !== userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const updated = await notificationService.markAsRead(req.params.id);
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
 export default router;
