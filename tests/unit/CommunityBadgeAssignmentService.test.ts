@@ -275,7 +275,13 @@ it('should handle test case 48', () => {
 it('should handle test case 52', () => {
   expect(service.assignBadge('community52', 'user52', 'badge52')).toBe(true);
 });
-  it('should handle test case 53', () => { expect(service.assignBadge('community53', 'user53', 'badge53')).toBe(true); });
-  it('should handle test case 49', () => {
-    expect(service.assignBadge('community49', 'user49', 'badge49')).toBe(true);
+it('should handle test case 53', () => {
+  expect(service.assignBadge('community53', 'user53', 'badge53')).toBe(true);
+});
+it('should handle test case 49', () => {
+  expect(service.assignBadge('community49', 'user49', 'badge49')).toBe(true);
+});
+  it('should handle test case 50', () => {
+    expect(service.assignBadge('community50', 'user50', 'badge50')).toBe(true);
   });
+  it('should handle test case 54', () => { expect(service.assignBadge('community54', 'user54', 'badge54')).toBe(true); });
