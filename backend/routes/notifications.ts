@@ -1,6 +1,10 @@
 import express from 'express';
 import { NotificationService } from '../services/NotificationService';
-import { NotificationType, NotificationChannel, NotificationStatus } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationChannel,
+  NotificationStatus,
+} from '../../src/types/notification';
 
 interface AuthRequest extends express.Request {
   user?: { id: string };
@@ -20,10 +24,39 @@ router.get('/', async (req: AuthRequest, res) => {
     const status = req.query.status as NotificationStatus | undefined;
     const limit = parseInt(req.query.limit as string) || 50;
 
-    const notifications = await notificationService.getNotificationsByUserId(userId, status, limit);
+    const notifications = await notificationService.getNotificationsByUserId(
+      userId,
+      status,
+      limit
+    );
     res.json(notifications);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// POST /api/notifications - Create a new notification
+router.post('/', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { type, title, message, channels, metadata } = req.body;
+    const notification = await notificationService.createNotification({
+      userId,
+      type,
+      title,
+      message,
+      status: NotificationStatus.UNREAD,
+      channels,
+      metadata,
+    });
+
+    res.status(201).json(notification);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create notification' });
   }
 });
 
