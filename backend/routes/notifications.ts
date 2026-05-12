@@ -94,7 +94,9 @@ router.delete('/:id', async (req: AuthRequest, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const notification = await notificationService.getNotificationById(req.params.id);
+    const notification = await notificationService.getNotificationById(
+      req.params.id
+    );
     if (!notification) {
       return res.status(404).json({ error: 'Notification not found' });
     }
@@ -107,6 +109,21 @@ router.delete('/:id', async (req: AuthRequest, res) => {
     res.json(deleted);
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete notification' });
+  }
+});
+
+// PUT /api/notifications/read-all - Mark all notifications as read
+router.put('/read-all', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const result = await notificationService.markAllAsRead(userId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark all notifications as read' });
   }
 });
 
