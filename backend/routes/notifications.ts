@@ -127,4 +127,19 @@ router.put('/read-all', async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/notifications/unread-count - Get unread notification count
+router.get('/unread-count', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const count = await notificationService.getUnreadCount(userId);
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get unread count' });
+  }
+});
+
 export default router;
