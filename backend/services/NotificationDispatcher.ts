@@ -2,6 +2,7 @@ import { NotificationService } from './NotificationService';
 import { NotificationWebSocketService } from './NotificationWebSocketService';
 import { EmailNotificationService } from './EmailNotificationService';
 import { Notification, NotificationChannel } from '../../src/types/notification';
+import { INotification } from '../models/Notification';
 
 export class NotificationDispatcher {
   private notificationService: NotificationService;
@@ -18,18 +19,24 @@ export class NotificationDispatcher {
     userId: string,
     userEmail: string,
     notificationData: Omit<Notification, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<Notification> {
+  ): Promise<INotification> {
     const notification = await this.notificationService.createNotification({
       ...notificationData,
       userId,
     });
 
-    if (notification.channels.includes(NotificationChannel.WEBSOCKET) && this.webSocketService) {
-      await this.webSocketService.sendNotificationToUser(userId, notification);
+    if (
+      notification.channels.includes(NotificationChannel.WEBSOCKET) &&
+      this.webSocketService
+    ) {
+      await this.webSocketService.sendNotificationToUser(userId, notification as any);
     }
 
-    if (notification.channels.includes(NotificationChannel.EMAIL) && this.emailService) {
-      await this.emailService.sendNotificationEmail(userEmail, notification);
+    if (
+      notification.channels.includes(NotificationChannel.EMAIL) &&
+      this.emailService
+    ) {
+      await this.emailService.sendNotificationEmail(userEmail, notification as any);
     }
 
     return notification;
