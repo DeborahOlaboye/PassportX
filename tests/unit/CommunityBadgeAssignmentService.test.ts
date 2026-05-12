@@ -461,6 +461,9 @@ it('should handle test case 85', () => {
 it('should handle test case 86', () => {
   expect(service.assignBadge('community86', 'user86', 'badge86')).toBe(true);
 });
-  it('should handle test case 87', () => {
-    expect(service.assignBadge('community87', 'user87', 'badge87')).toBe(true);
+it('should handle test case 87', () => {
+  expect(service.assignBadge('community87', 'user87', 'badge87')).toBe(true);
+});
+  it('should handle test case 88', () => {
+    expect(service.assignBadge('community88', 'user88', 'badge88')).toBe(true);
   });
