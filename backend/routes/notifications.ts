@@ -142,4 +142,19 @@ router.get('/unread-count', async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/notifications/preferences - Get user notification preferences
+router.get('/preferences', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const preferences = await notificationService.getUserPreferences(userId);
+    res.json(preferences);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get preferences' });
+  }
+});
+
 export default router;
