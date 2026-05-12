@@ -157,4 +157,26 @@ router.get('/preferences', async (req: AuthRequest, res) => {
   }
 });
 
+// PUT /api/notifications/preferences - Update notification preferences
+router.put('/preferences', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { type, channels, enabled } = req.body;
+    const preference = await notificationService.upsertPreference(
+      userId,
+      type,
+      channels,
+      enabled
+    );
+
+    res.json(preference);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update preferences' });
+  }
+});
+
 export default router;
