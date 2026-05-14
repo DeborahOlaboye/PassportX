@@ -51,9 +51,10 @@
 )
 
 ;; Mint function - only contract owner can mint
+;; Fixed: use try! to properly unwrap is-paused response instead of raw contract-call
 (define-public (mint (recipient principal))
   (begin
-    (asserts! (not (contract-call? .access-control is-paused)) ERR-PAUSED)
+    (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
       (
         (token-id (+ (var-get last-token-id) u1))
