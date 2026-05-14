@@ -58,8 +58,8 @@
 
 ;; Create a new community
 (define-public (create-community (name (string-ascii 64)) (description (string-ascii 256)))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
     (
       (community-id (var-get next-community-id))
@@ -114,8 +114,8 @@
 
 ;; Add member to community
 (define-public (add-community-member (community-id uint) (member principal) (role (string-ascii 32)))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
@@ -152,8 +152,8 @@
 
 ;; Update community settings
 (define-public (update-community-settings (community-id uint) (settings {public-badges: bool, allow-member-requests: bool, require-approval: bool}))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
@@ -178,8 +178,8 @@
 
 ;; Deactivate community
 (define-public (deactivate-community (community-id uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
@@ -204,8 +204,8 @@
 
 ;; Transfer community ownership
 (define-public (transfer-community-ownership (community-id uint) (new-owner principal))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
     (
       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))

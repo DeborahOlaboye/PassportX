@@ -3,7 +3,6 @@ import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
 
-
 export async function GET(_request: NextRequest) {
   try {
     const response = await fetch(`${BACKEND_URL}/api/badges/filters`, {
