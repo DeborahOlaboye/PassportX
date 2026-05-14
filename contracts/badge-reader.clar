@@ -12,7 +12,9 @@
     metadata (ok {
       level: (get level metadata),
       category: (get category metadata),
-      timestamp: (get timestamp metadata)
+      timestamp: (get timestamp metadata),
+      issuer: (get issuer metadata),
+      active: (get active metadata)
     })
     (err err-not-found)
   )
@@ -41,7 +43,11 @@
   (match (contract-call? .badge-metadata get-badge-template template-id)
     template (ok {
       name: (get name template),
-      description: (get description template)
+      description: (get description template),
+      category: (get category template),
+      default-level: (get default-level template),
+      expiration-duration: (get expiration-duration template),
+      creator: (get creator template)
     })
     (err err-not-found)
   )
@@ -51,18 +57,26 @@
 (define-read-only (get-full-badge-info (badge-id uint))
   (let
     (
-      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-not-found))
-      (owner (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
+      (metadata (contract-call? .badge-metadata get-badge-metadata badge-id))
+      (owner (contract-call? .passport-nft get-owner badge-id))
     )
-    (ok {
-      id: badge-id,
-      owner: owner,
-      level: (get level metadata),
-      category: (get category metadata),
-      timestamp: (get timestamp metadata),
-      issuer: (get issuer metadata),
-      active: (get active metadata)
-    })
+    (match metadata
+      meta
+        (match owner
+          owner-val
+            (ok {
+              id: badge-id,
+              owner: (default-to 'ST1000000000000000000000000000000 owner-val),
+              level: (get level meta),
+              category: (get category meta),
+              timestamp: (get timestamp meta),
+              issuer: (get issuer meta),
+              active: (get active meta)
+            })
+          (err err-not-found)
+        )
+      (err err-not-found)
+    )
   )
 )
 
@@ -76,7 +90,7 @@
   )
 )
 
-;; Helper function to check badge category
+;; Helper function to check badge category (fixed: accepts target-category parameter)
 (define-private (check-badge-category (badge-id uint) (target-category uint))
   (match (contract-call? .badge-metadata get-badge-metadata badge-id)
     metadata (is-eq (get category metadata) target-category)
@@ -102,7 +116,7 @@
   )
 )
 
-;; Verify badge ownership and authenticity
+;; Verify badge ownership and authenticity (fixed: removed double unwrap)
 (define-read-only (verify-badge-ownership (badge-id uint) (claimed-owner principal))
   (let
     (
@@ -128,22 +142,29 @@
   )
 )
 
-;; Get complete verification status for a badge
+;; Get complete verification status for a badge (fixed: removed triple unwrap)
 (define-read-only (get-verification-status (badge-id uint))
   (let
     (
-      (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) err-not-found))
-      (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
-      (owner (unwrap! owner-response err-not-found))
+      (metadata (contract-call? .badge-metadata get-badge-metadata badge-id))
+      (owner-response (contract-call? .passport-nft get-owner badge-id))
     )
-    (ok {
-      verified: true,
-      active: (get active metadata),
-      owner: owner,
-      issuer: (get issuer metadata),
-      level: (get level metadata),
-      category: (get category metadata),
-      timestamp: (get timestamp metadata)
-    })
+    (match metadata
+      meta
+        (match owner-response
+          owner
+            (ok {
+              verified: true,
+              active: (get active meta),
+              owner: (default-to 'ST1000000000000000000000000000000 owner),
+              issuer: (get issuer meta),
+              level: (get level meta),
+              category: (get category meta),
+              timestamp: (get timestamp meta)
+            })
+          (err err-not-found)
+        )
+      (err err-not-found)
+    )
   )
 )

@@ -16,6 +16,6 @@
     (badge-exists (uint) (response bool uint))
 
     ;; Get badge template info
-    (get-badge-template (uint) (response (optional {name: (string-ascii 64), description: (string-ascii 256), category: uint, default-level: uint}) uint))
+    (get-badge-template (uint) (response (optional {name: (string-ascii 64), description: (string-ascii 256), category: uint, default-level: uint, expiration-duration: uint, creator: principal}) uint))
   )
 )
