@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
+import { isValidObjectId } from '@/lib/api-validation';
 
 /**
  * PUT /api/notifications/:id/read
@@ -13,6 +14,15 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+
+    if (!isValidObjectId(id)) {
+      return createErrorResponse(
+        'Invalid notification ID: must be a 24-character hexadecimal string',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader) {
@@ -50,6 +60,15 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+
+    if (!isValidObjectId(id)) {
+      return createErrorResponse(
+        'Invalid notification ID: must be a 24-character hexadecimal string',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader) {

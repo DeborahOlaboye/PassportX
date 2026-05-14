@@ -8,6 +8,14 @@ export async function POST(request: NextRequest) {
     const cookie = request.headers.get('cookie');
     const authHeader = request.headers.get('authorization');
 
+    if (!authHeader && !cookie) {
+      return createErrorResponse(
+        'Authentication required: provide Authorization header or session cookie',
+        null,
+        { status: 401, logLevel: 'warn' }
+      );
+    }
+
     const response = await fetch(
       `${BACKEND_URL}/api/users/passport/initialize`,
       {
