@@ -3,7 +3,6 @@ import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
 
-
 /**
  * GET /api/notifications/stats
  * Get notification statistics by type

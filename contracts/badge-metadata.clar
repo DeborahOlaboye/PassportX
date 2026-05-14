@@ -72,27 +72,46 @@
   (default-to { badge-ids: (list) } (map-get? user-badges { owner: user }))
 )
 
+;; Check if badge exists and is not expired
+;; Returns false if metadata doesn't exist (safe default)
 (define-read-only (is-badge-expired (badge-id uint))
   (let
     (
-      (metadata (unwrap! (get-badge-metadata badge-id) true))
-      (expiration-height (get expiration-height metadata))
+      (metadata (get-badge-metadata badge-id))
     )
-    (if (is-eq expiration-height u0)
-      false
-      (>= block-height expiration-height)
+    (if (is-none metadata)
+      true
+      (let
+        (
+          (expiration-height (get expiration-height (unwrap-panic metadata)))
+        )
+        (if (is-eq expiration-height u0)
+          false
+          (>= block-height expiration-height)
+        )
+      )
     )
   )
 )
 
+;; Check if badge is valid (active and not expired)
+;; Returns false if metadata doesn't exist (safe default)
 (define-read-only (is-badge-valid (badge-id uint))
   (let
     (
-      (metadata (unwrap! (get-badge-metadata badge-id) false))
+      (metadata (get-badge-metadata badge-id))
     )
-    (and 
-      (get active metadata)
-      (not (is-badge-expired badge-id))
+    (if (is-none metadata)
+      false
+      (let
+        (
+          (meta (unwrap-panic metadata))
+        )
+        (and
+          (get active meta)
+          (not (is-badge-expired badge-id))
+        )
+      )
     )
   )
 )

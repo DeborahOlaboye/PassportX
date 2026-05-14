@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { useWalletConnection, formatAddress } from '@/hooks/useWalletConnection';
+import {
+  useWalletConnection,
+  formatAddress,
+} from '@/hooks/useWalletConnection';
 import { useWalletConnect } from '@/contexts/WalletConnectContext';
 
 jest.mock('@/contexts/WalletConnectContext', () => ({

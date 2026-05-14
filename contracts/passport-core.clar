@@ -21,14 +21,12 @@
   (begin
     ;; Check paused state
     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
-    
+
     ;; Check permissions
     (asserts! (try! (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)) err-unauthorized)
-    
+
     ;; Mint badge through issuer
-    (match (contract-call? .badge-issuer mint-badge recipient template-id community-id)
-      success (ok success)
-      error err-mint-failed)
+    (contract-call? .badge-issuer mint-badge recipient template-id community-id)
   )
 )
 
