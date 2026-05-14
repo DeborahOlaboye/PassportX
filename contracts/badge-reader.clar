@@ -72,14 +72,14 @@
     (
       (user-badges (get badge-ids (contract-call? .badge-metadata get-user-badges user)))
     )
-    (ok (filter check-badge-category user-badges))
+    (ok (filter (check-badge-category category) user-badges))
   )
 )
 
 ;; Helper function to check badge category
-(define-private (check-badge-category (badge-id uint))
+(define-private (check-badge-category (badge-id uint) (target-category uint))
   (match (contract-call? .badge-metadata get-badge-metadata badge-id)
-    metadata (is-eq (get category metadata) u1) ;; placeholder category check
+    metadata (is-eq (get category metadata) target-category)
     false
   )
 )
@@ -106,10 +106,12 @@
 (define-read-only (verify-badge-ownership (badge-id uint) (claimed-owner principal))
   (let
     (
-      (owner-response (unwrap! (contract-call? .passport-nft get-owner badge-id) err-not-found))
-      (actual-owner (unwrap! owner-response err-not-found))
+      (owner-response (contract-call? .passport-nft get-owner badge-id))
     )
-    (ok (is-eq actual-owner claimed-owner))
+    (match owner-response
+      owner-result (ok (is-eq (default-to 'ST1000000000000000000000000000000 owner-result) claimed-owner))
+      (err err-not-found)
+    )
   )
 )
 

@@ -264,11 +264,11 @@
         block-height: block-height
       })
 
-      (contract-call? .badge-metadata set-badge-metadata
-        badge-id
-        (merge metadata { active: false })
-      )
-    )
+(ok (try! (contract-call? .badge-metadata set-badge-metadata
+         badge-id
+         (merge metadata { active: false })
+       ))
+     )
   )
 )
 
@@ -298,11 +298,11 @@
         block-height: block-height
       })
 
-      (contract-call? .badge-metadata set-badge-metadata
-        badge-id
-        (merge current-metadata (merge new-metadata { issuer: (get issuer current-metadata), active: (get active current-metadata) }))
-      )
-    )
+(try! (contract-call? .badge-metadata set-badge-metadata
+         badge-id
+         (merge current-metadata (merge new-metadata { issuer: (get issuer current-metadata), active: (get active current-metadata) }))
+       )
+     )
   )
 )
 

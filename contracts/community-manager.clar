@@ -116,11 +116,12 @@
 (define-public (add-community-member (community-id uint) (member principal) (role (string-ascii 32)))
    (begin
      (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
-    (let
-    (
-      (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
-    )
-    (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
+     (let
+     (
+       (community (unwrap! (map-get? communities { community-id: community-id }) ERR-COMMUNITY-NOT-FOUND))
+     )
+     (asserts! (is-eq tx-sender (get owner community)) ERR-NOT-COMMUNITY-OWNER)
+     (asserts! (not (is-some (map-get? community-members { community-id: community-id, member: member }))) ERR-MEMBER-ALREADY-EXISTS)
 
     ;; Emit member added event
     (print {
