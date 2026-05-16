@@ -190,7 +190,10 @@ export function isValidISOTimestamp(value: unknown): value is string {
  * Return true if `value` is a valid CSS hex color string (#RGB or #RRGGBB).
  */
 export function isValidHexColor(value: unknown): value is string {
-  return typeof value === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
+  return (
+    typeof value === 'string' &&
+    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+  );
 }
 
 /**
@@ -222,7 +225,10 @@ export function isValidTagsList(
   if (!Array.isArray(value)) return false;
   if (value.length > maxItems) return false;
   return value.every(
-    (tag) => typeof tag === 'string' && tag.trim().length > 0 && tag.length <= maxLength
+    (tag) =>
+      typeof tag === 'string' &&
+      tag.trim().length > 0 &&
+      tag.length <= maxLength
   );
 }
 
@@ -256,6 +262,57 @@ export function validateSettingsUpdateBody(body: unknown): string[] {
     if (!allowed.includes(b.theme as string)) {
       errors.push(`theme must be one of: ${allowed.join(', ')}`);
     }
+  }
+
+  return errors;
+}
+
+/**
+ * Validate the optional fields of a community creation body that can be
+ * validated independently of required-field presence checks.
+ * Returns an array of error messages; empty array means all checked fields pass.
+ */
+export function validateCommunityOptionalFields(
+  body: Record<string, unknown>
+): string[] {
+  const errors: string[] = [];
+  const ALLOWED_NETWORKS = ['testnet', 'mainnet'];
+
+  if (
+    'website' in body &&
+    body.website !== undefined &&
+    !isValidHttpUrl(body.website)
+  ) {
+    errors.push('website must be a valid http or https URL');
+  }
+
+  if (
+    'network' in body &&
+    body.network !== undefined &&
+    !ALLOWED_NETWORKS.includes(body.network as string)
+  ) {
+    errors.push(`network must be one of: ${ALLOWED_NETWORKS.join(', ')}`);
+  }
+
+  const theme = body.theme as Record<string, unknown> | undefined;
+  if (theme?.primaryColor !== undefined && !isValidHexColor(theme.primaryColor)) {
+    errors.push(
+      'theme.primaryColor must be a valid hex color (e.g. #fff or #ffffff)'
+    );
+  }
+  if (
+    theme?.secondaryColor !== undefined &&
+    !isValidHexColor(theme.secondaryColor)
+  ) {
+    errors.push(
+      'theme.secondaryColor must be a valid hex color (e.g. #fff or #ffffff)'
+    );
+  }
+
+  if ('tags' in body && body.tags !== undefined && !isValidTagsList(body.tags)) {
+    errors.push(
+      'tags must be an array of at most 20 non-empty strings (max 50 chars each)'
+    );
   }
 
   return errors;

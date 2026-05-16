@@ -3,6 +3,11 @@ import { createErrorResponse } from '@/lib/error-response';
 import { sendSuccess } from '@/lib/api-responses';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
+import {
+  isValidStacksAddressParam,
+  validateCommunityOptionalFields,
+  sanitizeQueryParam,
+} from '@/lib/api-validation';
 
 interface CommunityCreationRequest {
   txId: string;
@@ -29,7 +34,15 @@ interface CommunityCreationRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CommunityCreationRequest = await request.json();
+    let body: CommunityCreationRequest;
+    try {
+      body = await request.json();
+    } catch {
+      return createErrorResponse('Request body must be valid JSON', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
 
     if (!body.txId || !body.name || !body.description || !body.owner) {
       return createErrorResponse('Missing required fields', null, {
@@ -40,6 +53,24 @@ export async function POST(request: NextRequest) {
 
     if (body.name.length > 100 || body.description.length > 2000) {
       return createErrorResponse('Field length exceeds maximum', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
+
+    if (!isValidStacksAddressParam(body.owner)) {
+      return createErrorResponse(
+        'owner must be a valid Stacks address',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    const optionalErrors = validateCommunityOptionalFields(
+      body as unknown as Record<string, unknown>
+    );
+    if (optionalErrors.length > 0) {
+      return createErrorResponse(optionalErrors[0], null, {
         status: 400,
         logLevel: 'warn',
       });
@@ -102,7 +133,7 @@ export async function GET(request: NextRequest) {
 
     const queryParams = new URLSearchParams();
     if (admin) queryParams.append('admin', admin);
-    if (search) queryParams.append('search', search);
+    if (search) queryParams.append('search', sanitizeQueryParam(search));
     tags.forEach((tag) => queryParams.append('tags', tag));
     queryParams.append('limit', limit.toString());
     queryParams.append('offset', offset.toString());
