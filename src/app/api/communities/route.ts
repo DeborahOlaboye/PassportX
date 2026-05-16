@@ -3,6 +3,15 @@ import { createErrorResponse } from '@/lib/error-response';
 import { sendSuccess } from '@/lib/api-responses';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
+import {
+  isValidStacksAddressParam,
+  isValidHttpUrl,
+  isValidHexColor,
+  isValidTagsList,
+  sanitizeQueryParam,
+} from '@/lib/api-validation';
+
+const ALLOWED_NETWORKS = ['testnet', 'mainnet'] as const;
 
 interface CommunityCreationRequest {
   txId: string;
@@ -29,7 +38,15 @@ interface CommunityCreationRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CommunityCreationRequest = await request.json();
+    let body: CommunityCreationRequest;
+    try {
+      body = await request.json();
+    } catch {
+      return createErrorResponse('Request body must be valid JSON', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
 
     if (!body.txId || !body.name || !body.description || !body.owner) {
       return createErrorResponse('Missing required fields', null, {
@@ -43,6 +60,60 @@ export async function POST(request: NextRequest) {
         status: 400,
         logLevel: 'warn',
       });
+    }
+
+    if (!isValidStacksAddressParam(body.owner)) {
+      return createErrorResponse(
+        'owner must be a valid Stacks address',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    if (body.website !== undefined && !isValidHttpUrl(body.website)) {
+      return createErrorResponse(
+        'website must be a valid http or https URL',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    if (body.network !== undefined && !ALLOWED_NETWORKS.includes(body.network)) {
+      return createErrorResponse(
+        `network must be one of: ${ALLOWED_NETWORKS.join(', ')}`,
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    if (
+      body.theme?.primaryColor !== undefined &&
+      !isValidHexColor(body.theme.primaryColor)
+    ) {
+      return createErrorResponse(
+        'theme.primaryColor must be a valid hex color (e.g. #fff or #ffffff)',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    if (
+      body.theme?.secondaryColor !== undefined &&
+      !isValidHexColor(body.theme.secondaryColor)
+    ) {
+      return createErrorResponse(
+        'theme.secondaryColor must be a valid hex color (e.g. #fff or #ffffff)',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
+    if (body.tags !== undefined && !isValidTagsList(body.tags)) {
+      return createErrorResponse(
+        'tags must be an array of at most 20 non-empty strings (max 50 chars each)',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
     }
 
     const response = await fetch(`${BACKEND_URL}/api/communities`, {
@@ -96,12 +167,13 @@ export async function GET(request: NextRequest) {
     const tags = searchParams.getAll('tags');
     const rawLimit = parseInt(searchParams.get('limit') || '10', 10);
     const rawOffset = parseInt(searchParams.get('offset') || '0', 10);
-    const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? 10 : Math.min(rawLimit, 100);
+    const limit =
+      Number.isNaN(rawLimit) || rawLimit < 1 ? 10 : Math.min(rawLimit, 100);
     const offset = Number.isNaN(rawOffset) || rawOffset < 0 ? 0 : rawOffset;
 
     const queryParams = new URLSearchParams();
     if (admin) queryParams.append('admin', admin);
-    if (search) queryParams.append('search', search);
+    if (search) queryParams.append('search', sanitizeQueryParam(search));
     tags.forEach((tag) => queryParams.append('tags', tag));
     queryParams.append('limit', limit.toString());
     queryParams.append('offset', offset.toString());
