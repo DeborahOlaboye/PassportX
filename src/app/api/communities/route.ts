@@ -5,13 +5,9 @@ import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
 import {
   isValidStacksAddressParam,
-  isValidHttpUrl,
-  isValidHexColor,
-  isValidTagsList,
+  validateCommunityOptionalFields,
   sanitizeQueryParam,
 } from '@/lib/api-validation';
-
-const ALLOWED_NETWORKS = ['testnet', 'mainnet'] as const;
 
 interface CommunityCreationRequest {
   txId: string;
@@ -70,50 +66,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (body.website !== undefined && !isValidHttpUrl(body.website)) {
-      return createErrorResponse(
-        'website must be a valid http or https URL',
-        null,
-        { status: 400, logLevel: 'warn' }
-      );
-    }
-
-    if (body.network !== undefined && !ALLOWED_NETWORKS.includes(body.network)) {
-      return createErrorResponse(
-        `network must be one of: ${ALLOWED_NETWORKS.join(', ')}`,
-        null,
-        { status: 400, logLevel: 'warn' }
-      );
-    }
-
-    if (
-      body.theme?.primaryColor !== undefined &&
-      !isValidHexColor(body.theme.primaryColor)
-    ) {
-      return createErrorResponse(
-        'theme.primaryColor must be a valid hex color (e.g. #fff or #ffffff)',
-        null,
-        { status: 400, logLevel: 'warn' }
-      );
-    }
-
-    if (
-      body.theme?.secondaryColor !== undefined &&
-      !isValidHexColor(body.theme.secondaryColor)
-    ) {
-      return createErrorResponse(
-        'theme.secondaryColor must be a valid hex color (e.g. #fff or #ffffff)',
-        null,
-        { status: 400, logLevel: 'warn' }
-      );
-    }
-
-    if (body.tags !== undefined && !isValidTagsList(body.tags)) {
-      return createErrorResponse(
-        'tags must be an array of at most 20 non-empty strings (max 50 chars each)',
-        null,
-        { status: 400, logLevel: 'warn' }
-      );
+    const optionalErrors = validateCommunityOptionalFields(
+      body as unknown as Record<string, unknown>
+    );
+    if (optionalErrors.length > 0) {
+      return createErrorResponse(optionalErrors[0], null, {
+        status: 400,
+        logLevel: 'warn',
+      });
     }
 
     const response = await fetch(`${BACKEND_URL}/api/communities`, {
