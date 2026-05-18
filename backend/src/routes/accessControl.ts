@@ -6,8 +6,8 @@ import {
 import AccessControlEventHandler from '../services/AccessControlEventHandler';
 import AccessControlAuditService from '../services/AccessControlAuditService';
 import AccessControlSecurityMonitor from '../services/AccessControlSecurityMonitor';
-import logger from '../utils/logger';
 import { createRateLimiter } from '../middleware/rateLimiter';
+import { sendRouteError } from '../utils/routeError';
 import { API_READ_RATE_LIMIT } from '../config/rateLimits';
 
 const router = express.Router();
@@ -44,8 +44,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing global permission webhook:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing global permission webhook', error);
     }
   }
 );
@@ -69,8 +68,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing community permission webhook:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing community permission webhook', error);
     }
   }
 );
@@ -97,8 +95,7 @@ router.post('/webhook/user-suspended', async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+    sendRouteError(req, res, 'Access control route error', error);
   }
 });
 
@@ -121,8 +118,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing user unsuspension webhook:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing user unsuspension webhook', error);
     }
   }
 );
@@ -146,8 +142,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing issuer authorization webhook:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing issuer authorization webhook', error);
     }
   }
 );
@@ -174,8 +169,7 @@ router.post('/webhook/issuer-revoked', async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    logger.error('Access control route error', { error });
-    res.status(500).json({ error: 'Internal server error' });
+    sendRouteError(req, res, 'Access control route error', error);
   }
 });
 
@@ -198,11 +192,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error(
-        'Error processing permission group creation webhook:',
-        error
-      );
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing permission group creation webhook', error);
     }
   }
 );
@@ -227,8 +217,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing member role change webhook:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing member role change webhook', error);
     }
   }
 );
@@ -252,8 +241,7 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error processing ownership transfer webhook:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error processing ownership transfer webhook', error);
     }
   }
 );
@@ -281,8 +269,7 @@ router.get('/audit/logs', async (req: Request, res: Response) => {
     const logs = await AccessControlAuditService.queryLogs(filters);
     res.json(logs);
   } catch (error) {
-    console.error('Error fetching audit logs:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    sendRouteError(req, res, 'Error fetching audit logs', error);
   }
 });
 
@@ -298,8 +285,7 @@ router.get(
       const stats = await AccessControlAuditService.getStatistics();
       res.json(stats);
     } catch (error) {
-      logger.error('Access control route error', { error });
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Access control route error', error);
     }
   }
 );
@@ -319,8 +305,7 @@ router.get(
       const logs = await AccessControlAuditService.getSuspiciousActivity(limit);
       res.json(logs);
     } catch (error) {
-      logger.error('Access control route error', { error });
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Access control route error', error);
     }
   }
 );
@@ -351,8 +336,7 @@ router.get(
       );
       res.json(history);
     } catch (error) {
-      logger.error('Access control route error', { error });
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Access control route error', error);
     }
   }
 );
@@ -382,8 +366,7 @@ router.get(
       );
       res.json(history);
     } catch (error) {
-      console.error('Error fetching community history:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error fetching community history', error);
     }
   }
 );
@@ -409,8 +392,7 @@ router.get('/audit/export', async (req: Request, res: Response) => {
     );
     res.send(exportData);
   } catch (error) {
-    console.error('Error exporting audit logs:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    sendRouteError(req, res, 'Error exporting audit logs', error);
   }
 });
 
@@ -430,8 +412,7 @@ router.get('/security/alerts', (req: Request, res: Response) => {
     const alerts = AccessControlSecurityMonitor.getAlerts(filters);
     res.json(alerts);
   } catch (error) {
-    console.error('Error fetching security alerts:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    sendRouteError(req, res, 'Error fetching security alerts', error);
   }
 });
 
@@ -452,8 +433,7 @@ router.post(
         res.status(404).json({ error: 'Alert not found' });
       }
     } catch (error) {
-      console.error('Error acknowledging alert:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Error acknowledging alert', error);
     }
   }
 );
@@ -470,8 +450,7 @@ router.get(
       const metrics = await AccessControlSecurityMonitor.getMetrics();
       res.json(metrics);
     } catch (error) {
-      logger.error('Access control route error', { error });
-      res.status(500).json({ error: 'Internal server error' });
+      sendRouteError(req, res, 'Access control route error', error);
     }
   }
 );
