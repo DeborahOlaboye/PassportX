@@ -8,6 +8,7 @@ import {
   BADGE_PUBLIC_READ_RATE_LIMIT,
   BADGE_SUGGESTIONS_RATE_LIMIT,
 } from '../config/rateLimits';
+import { sendRouteError } from '../utils/routeError';
 
 const router = express.Router();
 
@@ -39,19 +40,10 @@ type SortOption = (typeof VALID_SORT_OPTIONS)[number];
 router.post('/search', searchLimiter, async (req, res) => {
   try {
     const query: IBadgeSearchQuery = req.body;
-
     const result = await badgeSearchService.searchBadges(query);
-
-    res.json({
-      success: true,
-      data: result,
-    });
+    res.json({ success: true, data: result });
   } catch (error) {
-    console.error('Error searching badges:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search badges',
-    });
+    sendRouteError(req, res, 'Error searching badges', error);
   }
 });
 
@@ -92,21 +84,13 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
       endDate: endDate ? new Date(endDate as string) : undefined,
       page: Number(page),
       limit: Number(limit),
-      sortBy: sortBy as any,
+      sortBy: sortBy as SortOption,
     };
 
     const result = await badgeSearchService.searchBadges(query);
-
-    res.json({
-      success: true,
-      data: result,
-    });
+    res.json({ success: true, data: result });
   } catch (error) {
-    console.error('Error searching badges:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search badges',
-    });
+    sendRouteError(req, res, 'Error searching badges', error);
   }
 });
 
@@ -117,17 +101,9 @@ router.get('/search', searchLimiter, validatePagination, async (req, res) => {
 router.get('/filters', publicReadLimiter, async (req, res) => {
   try {
     const filters = await badgeSearchService.getFilterOptions();
-
-    res.json({
-      success: true,
-      data: filters,
-    });
+    res.json({ success: true, data: filters });
   } catch (error) {
-    console.error('Error getting filter options:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get filter options',
-    });
+    sendRouteError(req, res, 'Error getting filter options', error);
   }
 });
 
@@ -139,19 +115,10 @@ router.get('/trending', publicReadLimiter, async (req, res) => {
   try {
     const days = req.query.days ? Number(req.query.days) : 7;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
-
     const trending = await badgeSearchService.getTrendingBadges(days, limit);
-
-    res.json({
-      success: true,
-      data: trending,
-    });
+    res.json({ success: true, data: trending });
   } catch (error) {
-    console.error('Error getting trending badges:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get trending badges',
-    });
+    sendRouteError(req, res, 'Error getting trending badges', error);
   }
 });
 
@@ -165,27 +132,16 @@ router.get('/suggestions', suggestionsLimiter, async (req, res) => {
     const limit = req.query.limit ? Number(req.query.limit) : 10;
 
     if (!query) {
-      return res.json({
-        success: true,
-        data: [],
-      });
+      return res.json({ success: true, data: [] });
     }
 
     const suggestions = await badgeSearchService.getSearchSuggestions(
       query,
       limit
     );
-
-    res.json({
-      success: true,
-      data: suggestions,
-    });
+    res.json({ success: true, data: suggestions });
   } catch (error) {
-    console.error('Error getting search suggestions:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get search suggestions',
-    });
+    sendRouteError(req, res, 'Error getting search suggestions', error);
   }
 });
 
@@ -198,23 +154,10 @@ router.get('/issuer/:address', validatePagination, async (req, res) => {
     const { address } = req.params;
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-
-    const result = await badgeSearchService.searchByIssuer(
-      address,
-      page,
-      limit
-    );
-
-    res.json({
-      success: true,
-      data: result,
-    });
+    const result = await badgeSearchService.searchByIssuer(address, page, limit);
+    res.json({ success: true, data: result });
   } catch (error) {
-    console.error('Error searching badges by issuer:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search badges by issuer',
-    });
+    sendRouteError(req, res, 'Error searching badges by issuer', error);
   }
 });
 
