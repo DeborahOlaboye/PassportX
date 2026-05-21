@@ -23,6 +23,7 @@ import {
 import { isValidStacksAddress } from '../utils/addressValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { BADGE_ISSUANCE_RATE_LIMIT } from '../config/rateLimits';
+import { isValidObjectId } from '../utils/routeValidation';
 
 const router = Router();
 
@@ -177,6 +178,11 @@ router.get(
   async (req, res, next) => {
     try {
       const { communityId } = req.params;
+
+      if (!isValidObjectId(communityId)) {
+        return res.status(400).json({ error: 'Invalid communityId format' });
+      }
+
       const templates = await BadgeTemplate.find({
         community: communityId,
         isActive: true,
