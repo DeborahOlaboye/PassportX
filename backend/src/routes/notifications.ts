@@ -248,6 +248,10 @@ router.put(
       const userId = req.user!.stacksAddress;
       const { id } = req.params;
 
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid notification ID format' });
+      }
+
       const notification = await markNotificationAsRead(id, userId);
 
       if (!notification) {
@@ -297,6 +301,10 @@ router.delete(
     try {
       const userId = req.user!.stacksAddress;
       const { id } = req.params;
+
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid notification ID format' });
+      }
 
       const deleted = await deleteNotification(id, userId);
 
