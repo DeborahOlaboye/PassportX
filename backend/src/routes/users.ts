@@ -14,6 +14,7 @@ import {
 } from '../config/rateLimits';
 import logger from '../utils/logger';
 import { isValidStacksAddress } from '../utils/addressValidation';
+import { parseQueryInt, isBoundedString, sanitizeQueryString } from '../utils/routeValidation';
 
 const router = Router();
 
@@ -438,14 +439,8 @@ router.get(
       if (!isValidStacksAddress(address)) {
         throw createError('Invalid Stacks address format', 400);
       }
-      const MAX_BADGE_LIMIT = 100;
-      const rawPage = parseInt(req.query.page as string, 10);
-      const rawLimit = parseInt(req.query.limit as string, 10);
-      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-      const limit =
-        isNaN(rawLimit) || rawLimit < 1
-          ? 20
-          : Math.min(rawLimit, MAX_BADGE_LIMIT);
+      const page = parseQueryInt(req.query.page as string, 1, 10000, 1);
+      const limit = parseQueryInt(req.query.limit as string, 1, 100, 20);
       const skip = (page - 1) * limit;
 
       const user = await User.findOne({ stacksAddress: address });
@@ -671,14 +666,8 @@ router.get(
       if (!isValidStacksAddress(address)) {
         throw createError('Invalid Stacks address format', 400);
       }
-      const MAX_COMMUNITY_LIMIT = 100;
-      const rawPage = parseInt(req.query.page as string, 10);
-      const rawLimit = parseInt(req.query.limit as string, 10);
-      const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-      const limit =
-        isNaN(rawLimit) || rawLimit < 1
-          ? 20
-          : Math.min(rawLimit, MAX_COMMUNITY_LIMIT);
+      const page = parseQueryInt(req.query.page as string, 1, 10000, 1);
+      const limit = parseQueryInt(req.query.limit as string, 1, 100, 20);
       const skip = (page - 1) * limit;
 
       const user = await User.findOne({ stacksAddress: address })

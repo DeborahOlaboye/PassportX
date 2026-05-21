@@ -16,6 +16,20 @@ import {
   createSystemAnnouncement,
 } from '../services/notificationService';
 import logger from '../utils/logger';
+import {
+  isValidObjectId,
+  isValidEnumParam,
+  parseQueryInt,
+} from '../utils/routeValidation';
+
+const VALID_SORT_BY = ['newest', 'oldest'] as const;
+const VALID_NOTIFICATION_TYPES = [
+  'badge_issued',
+  'community_joined',
+  'community_created',
+  'system',
+  'announcement',
+] as const;
 
 const router = express.Router();
 
@@ -68,17 +82,39 @@ router.get(
       const userId = req.user!.stacksAddress;
       const { type, read, page, limit, sortBy = 'newest' } = req.query;
 
+      if (sortBy && !isValidEnumParam(sortBy, VALID_SORT_BY)) {
+        return res.status(400).json({
+          error: `sortBy must be one of: ${VALID_SORT_BY.join(', ')}`,
+        });
+      }
+
+      const typeValues = type
+        ? Array.isArray(type)
+          ? (type as string[])
+          : [type as string]
+        : undefined;
+
+      if (typeValues) {
+        const invalid = typeValues.find(
+          (t) => !isValidEnumParam(t, VALID_NOTIFICATION_TYPES)
+        );
+        if (invalid) {
+          return res.status(400).json({
+            error: `Invalid notification type: ${invalid}`,
+          });
+        }
+      }
+
+      const parsedPage = parseQueryInt(page as string, 1, 10000, 1);
+      const parsedLimit = parseQueryInt(limit as string, 1, 100, 20);
+
       const result = await getUserNotifications({
         userId,
-        type: type
-          ? Array.isArray(type)
-            ? (type as string[])
-            : [type as string]
-          : undefined,
+        type: typeValues,
         read: read === 'true' ? true : read === 'false' ? false : undefined,
-        page: Number(page),
-        limit: Number(limit),
-        sortBy: sortBy as 'newest' | 'oldest',
+        page: parsedPage,
+        limit: parsedLimit,
+        sortBy: (sortBy as 'newest' | 'oldest') ?? 'newest',
       });
 
       res.json(result);
@@ -212,6 +248,10 @@ router.put(
       const userId = req.user!.stacksAddress;
       const { id } = req.params;
 
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid notification ID format' });
+      }
+
       const notification = await markNotificationAsRead(id, userId);
 
       if (!notification) {
@@ -261,6 +301,10 @@ router.delete(
     try {
       const userId = req.user!.stacksAddress;
       const { id } = req.params;
+
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid notification ID format' });
+      }
 
       const deleted = await deleteNotification(id, userId);
 
