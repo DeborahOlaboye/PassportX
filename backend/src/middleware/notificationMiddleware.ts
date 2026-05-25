@@ -127,6 +127,19 @@ export function validateNotificationInput(
       return;
     }
 
+    if (message.trim().length > NOTIFICATION_FIELD_LIMITS.MESSAGE_MAX_LENGTH) {
+      logger.warn('Notification validation failed: message too long', {
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+        messageLength: message.trim().length,
+      });
+      res.status(400).json({
+        error: VALIDATION_ERROR_MESSAGES.MESSAGE_TOO_LONG,
+        details: VALIDATION_ERROR_MESSAGES.MESSAGE_TOO_LONG,
+      });
+      return;
+    }
+
     // Sanitize inputs to prevent XSS and injection attacks
     req.body.type = sanitizeString(type);
     req.body.title = sanitizeString(title);
