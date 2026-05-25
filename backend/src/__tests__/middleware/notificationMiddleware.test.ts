@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { validateNotificationInput } from '../middleware/notificationMiddleware';
+import { Request, Response } from 'express';
+import { validateNotificationInput } from '../../middleware/notificationMiddleware';
 
 // Mock the logger
-jest.mock('../utils/logger', () => ({
+jest.mock('../../utils/logger', () => ({
   warn: jest.fn(),
   info: jest.fn(),
   error: jest.fn(),
@@ -11,7 +11,7 @@ jest.mock('../utils/logger', () => ({
 describe('validateNotificationInput Middleware', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let mockNext: NextFunction;
+  let mockNext: jest.Mock;
 
   beforeEach(() => {
     mockRequest = {
