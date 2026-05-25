@@ -72,6 +72,7 @@ export function resetValidationFailureCount(): void {
 
 function sanitizeString(input: string): string {
   let sanitized = input
+    .normalize('NFC')
     .trim()
     .replace(/[<>]/g, '')
     .replace(/javascript:/gi, '')
