@@ -1,5 +1,10 @@
 import { notificationAnalytics } from '../../src/services/NotificationAnalytics';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Analytics', () => {
   let mockNotification: Notification;

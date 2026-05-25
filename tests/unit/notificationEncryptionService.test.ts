@@ -3,7 +3,10 @@ import { notificationEncryptionService } from '../../src/services/NotificationEn
 describe('Notification Encryption Service', () => {
   describe('encrypt', () => {
     it('should encrypt data', () => {
-      const encrypted = notificationEncryptionService.encrypt('test data', 'key');
+      const encrypted = notificationEncryptionService.encrypt(
+        'test data',
+        'key'
+      );
       expect(encrypted).toBeDefined();
       expect(encrypted).not.toBe('test data');
     });
@@ -11,7 +14,10 @@ describe('Notification Encryption Service', () => {
 
   describe('decrypt', () => {
     it('should decrypt data', () => {
-      const encrypted = notificationEncryptionService.encrypt('test data', 'key');
+      const encrypted = notificationEncryptionService.encrypt(
+        'test data',
+        'key'
+      );
       const decrypted = notificationEncryptionService.decrypt(encrypted, 'key');
       expect(decrypted).toBe('test data');
     });

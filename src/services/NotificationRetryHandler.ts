@@ -8,7 +8,13 @@ class NotificationRetryHandler {
   private config: RetryConfig;
   private retryCount: Map<string, number> = new Map();
 
-  constructor(config: RetryConfig = { maxRetries: 3, retryDelayMs: 1000, backoffMultiplier: 2 }) {
+  constructor(
+    config: RetryConfig = {
+      maxRetries: 3,
+      retryDelayMs: 1000,
+      backoffMultiplier: 2,
+    }
+  ) {
     this.config = config;
   }
 
@@ -24,7 +30,10 @@ class NotificationRetryHandler {
 
   getRetryDelay(notificationId: string): number {
     const attempts = this.retryCount.get(notificationId) || 0;
-    return this.config.retryDelayMs * Math.pow(this.config.backoffMultiplier, attempts);
+    return (
+      this.config.retryDelayMs *
+      Math.pow(this.config.backoffMultiplier, attempts)
+    );
   }
 
   reset(notificationId: string): void {

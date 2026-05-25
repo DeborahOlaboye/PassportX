@@ -13,10 +13,15 @@ jest.mock('@/lib/logger', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
 
-let GET: (req: Request, ctx: { params: { address: string } }) => Promise<Response>;
+let GET: (
+  req: Request,
+  ctx: { params: { address: string } }
+) => Promise<Response>;
 
 beforeAll(async () => {
-  const mod = await import('../../../src/app/api/badges/issuer/[address]/route');
+  const mod = await import(
+    '../../../src/app/api/badges/issuer/[address]/route'
+  );
   GET = mod.GET as unknown as typeof GET;
 });
 

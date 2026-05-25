@@ -48,7 +48,12 @@ jest.mock('../../middleware/auth', () => ({
   requireAdmin: (_req: any, _res: any, next: any) => next(),
 }));
 jest.mock('../../utils/logger', () => ({
-  default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
+  default: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 import logger from '../../utils/logger';
@@ -105,7 +110,9 @@ describe('retry route error logging', () => {
     (RetryQueueService.cleanupOldItems as jest.Mock).mockRejectedValue(
       new Error('cleanup failed')
     );
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const app = buildApp();
     await request(app).post('/retry/queue/cleanup').send({ olderThanDays: 7 });
     expect(consoleSpy).not.toHaveBeenCalled();

@@ -5,7 +5,10 @@ interface NotificationBadgeProps {
   max?: number;
 }
 
-export default function NotificationBadge({ count, max = 99 }: NotificationBadgeProps) {
+export default function NotificationBadge({
+  count,
+  max = 99,
+}: NotificationBadgeProps) {
   if (count === 0) return null;
 
   const displayCount = count > max ? `${max}+` : count;

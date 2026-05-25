@@ -13,11 +13,12 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   [NotificationType.ADMIN_NOTIFICATION]: 'Admin Notification',
 };
 
-export const NOTIFICATION_CHANNEL_LABELS: Record<NotificationChannel, string> = {
-  [NotificationChannel.IN_APP]: 'In-App',
-  [NotificationChannel.EMAIL]: 'Email',
-  [NotificationChannel.WEBSOCKET]: 'Push',
-};
+export const NOTIFICATION_CHANNEL_LABELS: Record<NotificationChannel, string> =
+  {
+    [NotificationChannel.IN_APP]: 'In-App',
+    [NotificationChannel.EMAIL]: 'Email',
+    [NotificationChannel.WEBSOCKET]: 'Push',
+  };
 
 export const NOTIFICATION_ICONS: Record<NotificationType, string> = {
   [NotificationType.BADGE_MINTED]: '🏆',

@@ -7,7 +7,9 @@ export interface NotificationStats {
   byChannel: Record<string, number>;
 }
 
-export function aggregateNotificationStats(notifications: Notification[]): NotificationStats {
+export function aggregateNotificationStats(
+  notifications: Notification[]
+): NotificationStats {
   const stats: NotificationStats = {
     total: notifications.length,
     unread: notifications.filter((n) => n.status === 'unread').length,
@@ -16,7 +18,8 @@ export function aggregateNotificationStats(notifications: Notification[]): Notif
   };
 
   notifications.forEach((notification) => {
-    stats.byType[notification.type] = (stats.byType[notification.type] || 0) + 1;
+    stats.byType[notification.type] =
+      (stats.byType[notification.type] || 0) + 1;
     notification.channels.forEach((channel) => {
       stats.byChannel[channel] = (stats.byChannel[channel] || 0) + 1;
     });
@@ -25,16 +28,28 @@ export function aggregateNotificationStats(notifications: Notification[]): Notif
   return stats;
 }
 
-export function getNotificationCountByType(notifications: Notification[], type: NotificationType): number {
+export function getNotificationCountByType(
+  notifications: Notification[],
+  type: NotificationType
+): number {
   return notifications.filter((n) => n.type === type).length;
 }
 
-export function getNotificationCountByChannel(notifications: Notification[], channel: string): number {
-  return notifications.filter((n) => n.channels.some((c) => c === channel)).length;
+export function getNotificationCountByChannel(
+  notifications: Notification[],
+  channel: string
+): number {
+  return notifications.filter((n) => n.channels.some((c) => c === channel))
+    .length;
 }
 
-export function getMostCommonNotificationType(notifications: Notification[]): NotificationType | null {
-  const counts: Record<NotificationType, number> = {} as Record<NotificationType, number>;
+export function getMostCommonNotificationType(
+  notifications: Notification[]
+): NotificationType | null {
+  const counts: Record<NotificationType, number> = {} as Record<
+    NotificationType,
+    number
+  >;
   notifications.forEach((n) => {
     counts[n.type] = (counts[n.type] || 0) + 1;
   });

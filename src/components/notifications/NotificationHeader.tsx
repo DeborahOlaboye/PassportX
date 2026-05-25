@@ -35,7 +35,9 @@ export default function NotificationHeader({
           title="Refresh"
         >
           <RefreshCw
-            className={`w-4 h-4 text-gray-600 ${isRefreshing ? 'animate-spin' : ''}`}
+            className={`w-4 h-4 text-gray-600 ${
+              isRefreshing ? 'animate-spin' : ''
+            }`}
           />
         </button>
 

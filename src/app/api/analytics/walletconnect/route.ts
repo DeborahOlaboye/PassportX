@@ -15,7 +15,9 @@ export async function GET(request: Request) {
 
     if (rangeRaw !== null && !isValidTimeRange(rangeRaw)) {
       return createErrorResponse(
-        `Invalid range parameter: must be one of ${VALID_TIME_RANGES.join(', ')}`,
+        `Invalid range parameter: must be one of ${VALID_TIME_RANGES.join(
+          ', '
+        )}`,
         null,
         { status: 400, logLevel: 'warn' }
       );

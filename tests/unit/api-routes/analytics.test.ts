@@ -8,7 +8,9 @@ const mockDb = {
   collection: jest.fn().mockReturnValue({
     countDocuments: jest.fn().mockResolvedValue(0),
     distinct: jest.fn().mockResolvedValue([]),
-    aggregate: jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) }),
+    aggregate: jest
+      .fn()
+      .mockReturnValue({ toArray: jest.fn().mockResolvedValue([]) }),
     insertOne: jest.fn().mockResolvedValue({ insertedId: 'mock-id' }),
   }),
 };
@@ -25,7 +27,9 @@ let walletconnectGET: (req: Request) => Promise<Response>;
 let analyticsPOST: (req: Request) => Promise<Response>;
 
 beforeAll(async () => {
-  const wcMod = await import('../../../src/app/api/analytics/walletconnect/route');
+  const wcMod = await import(
+    '../../../src/app/api/analytics/walletconnect/route'
+  );
   walletconnectGET = wcMod.GET as unknown as typeof walletconnectGET;
 
   const aMod = await import('../../../src/app/api/analytics/route');

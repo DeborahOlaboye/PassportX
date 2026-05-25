@@ -120,7 +120,9 @@ describe('POST /api/communities', () => {
 
   it('returns 400 for tags exceeding item limit', async () => {
     const tooManyTags = Array.from({ length: 21 }, (_, i) => `tag${i}`);
-    const res = await POST(makePostRequest({ ...validBody, tags: tooManyTags }));
+    const res = await POST(
+      makePostRequest({ ...validBody, tags: tooManyTags })
+    );
     expect(res.status).toBe(400);
   });
 

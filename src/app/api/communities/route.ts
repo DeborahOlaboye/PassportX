@@ -59,11 +59,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isValidStacksAddressParam(body.owner)) {
-      return createErrorResponse(
-        'owner must be a valid Stacks address',
-        null,
-        { status: 400, logLevel: 'warn' }
-      );
+      return createErrorResponse('owner must be a valid Stacks address', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
     }
 
     const optionalErrors = validateCommunityOptionalFields(

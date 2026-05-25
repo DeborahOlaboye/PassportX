@@ -4,7 +4,12 @@ import {
   getNotificationCountByChannel,
   getMostCommonNotificationType,
 } from '../../src/utils/notificationAggregator';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Aggregator', () => {
   let mockNotifications: Notification[];
@@ -61,7 +66,10 @@ describe('Notification Aggregator', () => {
 
   describe('getNotificationCountByType', () => {
     it('should return count for specific type', () => {
-      const count = getNotificationCountByType(mockNotifications, NotificationType.BADGE_MINTED);
+      const count = getNotificationCountByType(
+        mockNotifications,
+        NotificationType.BADGE_MINTED
+      );
       expect(count).toBe(2);
     });
   });

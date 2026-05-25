@@ -15,7 +15,10 @@ class NotificationValidationService {
     this.rules = this.rules.filter((r) => r.name !== ruleName);
   }
 
-  validate(data: Record<string, unknown>): { valid: boolean; errors: string[] } {
+  validate(data: Record<string, unknown>): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     for (const rule of this.rules) {
@@ -39,4 +42,5 @@ class NotificationValidationService {
   }
 }
 
-export const notificationValidationService = new NotificationValidationService();
+export const notificationValidationService =
+  new NotificationValidationService();

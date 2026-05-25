@@ -15,8 +15,14 @@ jest.mock('@/lib/logger', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
 
-let GET: (req: Request, ctx: { params: { communityId: string } }) => Promise<Response>;
-let POST: (req: Request, ctx: { params: { communityId: string } }) => Promise<Response>;
+let GET: (
+  req: Request,
+  ctx: { params: { communityId: string } }
+) => Promise<Response>;
+let POST: (
+  req: Request,
+  ctx: { params: { communityId: string } }
+) => Promise<Response>;
 
 beforeAll(async () => {
   const mod = await import(
@@ -56,7 +62,9 @@ function makePostRequest(body: unknown): Request {
 describe('GET /api/communities/[communityId]/approval', () => {
   it('returns 400 for invalid communityId', async () => {
     const req = makeGetRequest();
-    const res = await GET(req, { params: { communityId: INVALID_COMMUNITY_ID } });
+    const res = await GET(req, {
+      params: { communityId: INVALID_COMMUNITY_ID },
+    });
     expect(res.status).toBe(400);
   });
 
@@ -88,13 +96,17 @@ describe('POST /api/communities/[communityId]/approval', () => {
       approved: true,
       approverAddress: VALID_ADDRESS,
     });
-    const res = await POST(req, { params: { communityId: INVALID_COMMUNITY_ID } });
+    const res = await POST(req, {
+      params: { communityId: INVALID_COMMUNITY_ID },
+    });
     expect(res.status).toBe(400);
   });
 
   it('returns 400 when approverAddress is missing', async () => {
     const req = makePostRequest({ approved: true });
-    const res = await POST(req, { params: { communityId: VALID_COMMUNITY_ID } });
+    const res = await POST(req, {
+      params: { communityId: VALID_COMMUNITY_ID },
+    });
     expect(res.status).toBe(400);
   });
 
@@ -103,7 +115,9 @@ describe('POST /api/communities/[communityId]/approval', () => {
       approved: true,
       approverAddress: INVALID_ADDRESS,
     });
-    const res = await POST(req, { params: { communityId: VALID_COMMUNITY_ID } });
+    const res = await POST(req, {
+      params: { communityId: VALID_COMMUNITY_ID },
+    });
     expect(res.status).toBe(400);
   });
 
@@ -112,7 +126,9 @@ describe('POST /api/communities/[communityId]/approval', () => {
       approved: false,
       approverAddress: VALID_ADDRESS,
     });
-    const res = await POST(req, { params: { communityId: VALID_COMMUNITY_ID } });
+    const res = await POST(req, {
+      params: { communityId: VALID_COMMUNITY_ID },
+    });
     expect(res.status).toBe(400);
   });
 
@@ -155,7 +171,9 @@ describe('POST /api/communities/[communityId]/approval', () => {
       approved: true,
       approverAddress: VALID_ADDRESS,
     });
-    const res = await POST(req, { params: { communityId: VALID_COMMUNITY_ID } });
+    const res = await POST(req, {
+      params: { communityId: VALID_COMMUNITY_ID },
+    });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);

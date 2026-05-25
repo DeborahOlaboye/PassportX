@@ -15,7 +15,11 @@ declare global {
  * generates a fresh UUID v4. The ID is echoed back in the response header
  * so clients can correlate logs.
  */
-export function requestId(req: Request, res: Response, next: NextFunction): void {
+export function requestId(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
   const id =
     (req.headers['x-request-id'] as string | undefined) || randomUUID();
   req.requestId = id;

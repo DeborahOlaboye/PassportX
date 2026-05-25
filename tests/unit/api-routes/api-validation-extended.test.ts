@@ -86,15 +86,21 @@ describe('isValidBearerToken', () => {
 
 describe('isValidStacksAddressParam — additional edge cases', () => {
   it('rejects an address with whitespace', () => {
-    expect(isValidStacksAddressParam(' SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(false);
+    expect(
+      isValidStacksAddressParam(' SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(false);
   });
 
   it('rejects an address with trailing whitespace', () => {
-    expect(isValidStacksAddressParam('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ')).toBe(false);
+    expect(
+      isValidStacksAddressParam('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ')
+    ).toBe(false);
   });
 
   it('rejects a purely numeric string', () => {
-    expect(isValidStacksAddressParam('123456789012345678901234567890123456789012')).toBe(false);
+    expect(
+      isValidStacksAddressParam('123456789012345678901234567890123456789012')
+    ).toBe(false);
   });
 });
 
@@ -105,7 +111,9 @@ describe('isValidObjectId — additional edge cases', () => {
   });
 
   it('rejects object with toString method', () => {
-    expect(isValidObjectId({ toString: () => '507f1f77bcf86cd799439011' })).toBe(false);
+    expect(
+      isValidObjectId({ toString: () => '507f1f77bcf86cd799439011' })
+    ).toBe(false);
   });
 
   it('rejects array input', () => {

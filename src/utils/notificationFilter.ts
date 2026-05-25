@@ -1,4 +1,9 @@
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '@/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '@/types/notification';
 
 export interface NotificationFilterOptions {
   type?: NotificationType;
@@ -9,7 +14,10 @@ export interface NotificationFilterOptions {
   searchQuery?: string;
 }
 
-export function filterNotifications(notifications: Notification[], options: NotificationFilterOptions): Notification[] {
+export function filterNotifications(
+  notifications: Notification[],
+  options: NotificationFilterOptions
+): Notification[] {
   let filtered = [...notifications];
 
   if (options.type) {
@@ -21,7 +29,9 @@ export function filterNotifications(notifications: Notification[], options: Noti
   }
 
   if (options.channel) {
-    filtered = filtered.filter((n) => n.channels.some((c) => c === options.channel));
+    filtered = filtered.filter((n) =>
+      n.channels.some((c) => c === options.channel)
+    );
   }
 
   if (options.startDate) {
@@ -46,12 +56,16 @@ export function filterNotifications(notifications: Notification[], options: Noti
   return filtered;
 }
 
-export function getUniqueNotificationTypes(notifications: Notification[]): NotificationType[] {
+export function getUniqueNotificationTypes(
+  notifications: Notification[]
+): NotificationType[] {
   const types = new Set(notifications.map((n) => n.type));
   return Array.from(types);
 }
 
-export function getUniqueNotificationStatuses(notifications: Notification[]): NotificationStatus[] {
+export function getUniqueNotificationStatuses(
+  notifications: Notification[]
+): NotificationStatus[] {
   const statuses = new Set(notifications.map((n) => n.status));
   return Array.from(statuses);
 }

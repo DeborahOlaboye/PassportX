@@ -1,7 +1,11 @@
 import { NotificationService } from '../../backend/services/NotificationService';
 import { Notification } from '../../backend/models/Notification';
 import { NotificationPreference } from '../../backend/models/NotificationPreference';
-import { NotificationType, NotificationChannel, NotificationStatus } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationChannel,
+  NotificationStatus,
+} from '../../src/types/notification';
 
 jest.mock('../../backend/models/Notification');
 jest.mock('../../backend/models/NotificationPreference');
@@ -56,7 +60,9 @@ describe('NotificationService', () => {
         readAt: new Date(),
       };
 
-      (Notification as any).findByIdAndUpdate = jest.fn().mockResolvedValue(mockNotification);
+      (Notification as any).findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue(mockNotification);
 
       const result = await service.markAsRead('1');
       expect(result).toEqual(mockNotification);

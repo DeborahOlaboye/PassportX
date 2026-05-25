@@ -3,17 +3,22 @@ import { notificationLocalizationService } from '../../src/services/Notification
 describe('Notification Localization Service', () => {
   describe('translate', () => {
     it('should translate key to English by default', () => {
-      const translated = notificationLocalizationService.translate('badge_earned');
+      const translated =
+        notificationLocalizationService.translate('badge_earned');
       expect(translated).toBe('Badge Earned');
     });
 
     it('should translate key to Spanish', () => {
-      const translated = notificationLocalizationService.translate('badge_earned', 'es');
+      const translated = notificationLocalizationService.translate(
+        'badge_earned',
+        'es'
+      );
       expect(translated).toBe('Insignia Obtenida');
     });
 
     it('should return key if translation not found', () => {
-      const translated = notificationLocalizationService.translate('unknown_key');
+      const translated =
+        notificationLocalizationService.translate('unknown_key');
       expect(translated).toBe('unknown_key');
     });
   });
@@ -39,7 +44,10 @@ describe('Notification Localization Service', () => {
       notificationLocalizationService.addTranslations('it', {
         badge_earned: 'Badge Guadagnato',
       });
-      const translated = notificationLocalizationService.translate('badge_earned', 'it');
+      const translated = notificationLocalizationService.translate(
+        'badge_earned',
+        'it'
+      );
       expect(translated).toBe('Badge Guadagnato');
     });
   });

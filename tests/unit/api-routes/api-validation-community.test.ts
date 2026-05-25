@@ -68,9 +68,9 @@ describe('validateCommunityOptionalFields', () => {
   });
 
   it('returns empty array for a valid tags list', () => {
-    expect(
-      validateCommunityOptionalFields({ tags: ['web3', 'defi'] })
-    ).toEqual([]);
+    expect(validateCommunityOptionalFields({ tags: ['web3', 'defi'] })).toEqual(
+      []
+    );
   });
 
   it('returns error when tags exceed item limit', () => {

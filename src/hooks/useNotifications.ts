@@ -14,7 +14,10 @@ export function useNotifications(userId: string) {
       if (!response.ok) throw new Error('Failed to fetch notifications');
       const data = await response.json();
       setNotifications(data);
-      setUnreadCount(data.filter((n: Notification) => n.status === NotificationStatus.UNREAD).length);
+      setUnreadCount(
+        data.filter((n: Notification) => n.status === NotificationStatus.UNREAD)
+          .length
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -28,9 +31,12 @@ export function useNotifications(userId: string) {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: 'PUT',
-      });
+      const response = await fetch(
+        `/api/notifications/${notificationId}/read`,
+        {
+          method: 'PUT',
+        }
+      );
       if (!response.ok) throw new Error('Failed to mark as read');
       await fetchNotifications();
     } catch (err) {

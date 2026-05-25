@@ -6,7 +6,12 @@ import { getErrorMessage, getErrorStatusCode } from '../errors';
 import logger from '../utils/logger';
 
 // Helper function to handle errors with type-safe error narrowing
-const handleError = (req: Request, res: Response, error: unknown, message: string) => {
+const handleError = (
+  req: Request,
+  res: Response,
+  error: unknown,
+  message: string
+) => {
   logger.error(message, {
     requestId: req.requestId,
     error: error instanceof Error ? error.message : String(error),

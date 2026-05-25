@@ -1,4 +1,8 @@
-import { Notification, NotificationType, NotificationChannel } from '@/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationChannel,
+} from '@/types/notification';
 
 export interface NotificationAnalyticsData {
   totalSent: number;
@@ -21,9 +25,11 @@ class NotificationAnalytics {
 
   recordSent(notification: Notification): void {
     this.analytics.totalSent++;
-    this.analytics.byType[notification.type] = (this.analytics.byType[notification.type] || 0) + 1;
+    this.analytics.byType[notification.type] =
+      (this.analytics.byType[notification.type] || 0) + 1;
     notification.channels.forEach((channel) => {
-      this.analytics.byChannel[channel] = (this.analytics.byChannel[channel] || 0) + 1;
+      this.analytics.byChannel[channel] =
+        (this.analytics.byChannel[channel] || 0) + 1;
     });
   }
 

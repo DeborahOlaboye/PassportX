@@ -1,7 +1,10 @@
 import { NotificationService } from './NotificationService';
 import { NotificationWebSocketService } from './NotificationWebSocketService';
 import { EmailNotificationService } from './EmailNotificationService';
-import { Notification, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationChannel,
+} from '../../src/types/notification';
 import { INotification } from '../models/Notification';
 
 export class NotificationDispatcher {
@@ -29,14 +32,20 @@ export class NotificationDispatcher {
       notification.channels.includes(NotificationChannel.WEBSOCKET) &&
       this.webSocketService
     ) {
-      await this.webSocketService.sendNotificationToUser(userId, notification as any);
+      await this.webSocketService.sendNotificationToUser(
+        userId,
+        notification as any
+      );
     }
 
     if (
       notification.channels.includes(NotificationChannel.EMAIL) &&
       this.emailService
     ) {
-      await this.emailService.sendNotificationEmail(userEmail, notification as any);
+      await this.emailService.sendNotificationEmail(
+        userEmail,
+        notification as any
+      );
     }
 
     return notification;

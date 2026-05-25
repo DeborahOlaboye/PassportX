@@ -33,6 +33,7 @@ MONGODB_URI=mongodb://localhost:27017/passportx
 ```
 
 The following collections will be created automatically:
+
 - `notifications` - Stores notification records
 - `notificationpreferences` - Stores user notification preferences
 
@@ -87,7 +88,7 @@ Connect to the WebSocket server:
 ```javascript
 const io = require('socket.io-client');
 const socket = io('http://localhost:3011', {
-  query: { userId: 'test-user-id' }
+  query: { userId: 'test-user-id' },
 });
 
 socket.on('notification:new', (notification) => {
@@ -100,6 +101,7 @@ socket.on('notification:new', (notification) => {
 ### Notification Metrics
 
 Monitor the following metrics:
+
 - Notification delivery rate
 - Email delivery success rate
 - WebSocket connection count
@@ -108,6 +110,7 @@ Monitor the following metrics:
 ### Logs
 
 Check logs for:
+
 - Failed email deliveries
 - WebSocket connection errors
 - Database query performance

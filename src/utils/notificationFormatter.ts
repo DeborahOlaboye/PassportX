@@ -1,4 +1,8 @@
-import { Notification, NotificationType, NotificationStatus } from '@/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+} from '@/types/notification';
 
 export function formatNotificationTitle(notification: Notification): string {
   const prefixes: Record<NotificationType, string> = {
@@ -35,7 +39,10 @@ export function formatNotificationStatus(status: NotificationStatus): string {
   return statusMap[status] || status;
 }
 
-export function truncateNotificationMessage(message: string, maxLength: number = 100): string {
+export function truncateNotificationMessage(
+  message: string,
+  maxLength: number = 100
+): string {
   if (message.length <= maxLength) return message;
   return message.substring(0, maxLength - 3) + '...';
 }

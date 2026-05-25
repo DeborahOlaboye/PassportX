@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
-import { Notification, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 export class EmailNotificationService {
   private transporter: nodemailer.Transporter;
@@ -55,7 +58,9 @@ export class EmailNotificationService {
           <div class="content">
             <h2>${notification.title}</h2>
             <p>${notification.message}</p>
-            <p><small>${new Date(notification.createdAt).toLocaleString()}</small></p>
+            <p><small>${new Date(
+              notification.createdAt
+            ).toLocaleString()}</small></p>
           </div>
           <div class="footer">
             <p>You received this notification because you have enabled email notifications for this type.</p>

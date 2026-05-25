@@ -295,7 +295,10 @@ export function validateCommunityOptionalFields(
   }
 
   const theme = body.theme as Record<string, unknown> | undefined;
-  if (theme?.primaryColor !== undefined && !isValidHexColor(theme.primaryColor)) {
+  if (
+    theme?.primaryColor !== undefined &&
+    !isValidHexColor(theme.primaryColor)
+  ) {
     errors.push(
       'theme.primaryColor must be a valid hex color (e.g. #fff or #ffffff)'
     );
@@ -309,7 +312,11 @@ export function validateCommunityOptionalFields(
     );
   }
 
-  if ('tags' in body && body.tags !== undefined && !isValidTagsList(body.tags)) {
+  if (
+    'tags' in body &&
+    body.tags !== undefined &&
+    !isValidTagsList(body.tags)
+  ) {
     errors.push(
       'tags must be an array of at most 20 non-empty strings (max 50 chars each)'
     );

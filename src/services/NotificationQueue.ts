@@ -41,7 +41,9 @@ class NotificationQueue {
     this.queue = [];
   }
 
-  async process(handler: (notification: Notification) => Promise<void>): Promise<void> {
+  async process(
+    handler: (notification: Notification) => Promise<void>
+  ): Promise<void> {
     if (this.processing) return;
     this.processing = true;
 

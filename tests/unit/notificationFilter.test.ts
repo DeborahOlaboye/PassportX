@@ -3,7 +3,12 @@ import {
   getUniqueNotificationTypes,
   getUniqueNotificationStatuses,
 } from '../../src/utils/notificationFilter';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Filter', () => {
   let mockNotifications: Notification[];
@@ -37,25 +42,33 @@ describe('Notification Filter', () => {
 
   describe('filterNotifications', () => {
     it('should filter by type', () => {
-      const filtered = filterNotifications(mockNotifications, { type: NotificationType.BADGE_MINTED });
+      const filtered = filterNotifications(mockNotifications, {
+        type: NotificationType.BADGE_MINTED,
+      });
       expect(filtered).toHaveLength(1);
       expect(filtered[0].type).toBe(NotificationType.BADGE_MINTED);
     });
 
     it('should filter by status', () => {
-      const filtered = filterNotifications(mockNotifications, { status: NotificationStatus.UNREAD });
+      const filtered = filterNotifications(mockNotifications, {
+        status: NotificationStatus.UNREAD,
+      });
       expect(filtered).toHaveLength(1);
       expect(filtered[0].status).toBe(NotificationStatus.UNREAD);
     });
 
     it('should filter by channel', () => {
-      const filtered = filterNotifications(mockNotifications, { channel: NotificationChannel.IN_APP });
+      const filtered = filterNotifications(mockNotifications, {
+        channel: NotificationChannel.IN_APP,
+      });
       expect(filtered).toHaveLength(1);
       expect(filtered[0].channels).toContain(NotificationChannel.IN_APP);
     });
 
     it('should filter by search query', () => {
-      const filtered = filterNotifications(mockNotifications, { searchQuery: 'badge' });
+      const filtered = filterNotifications(mockNotifications, {
+        searchQuery: 'badge',
+      });
       expect(filtered).toHaveLength(1);
       expect(filtered[0].title.toLowerCase()).toContain('badge');
     });

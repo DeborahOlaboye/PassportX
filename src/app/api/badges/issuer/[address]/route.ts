@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
-import { isValidStacksAddressParam, parsePositiveInt } from '@/lib/api-validation';
+import {
+  isValidStacksAddressParam,
+  parsePositiveInt,
+} from '@/lib/api-validation';
 
 export async function GET(
   request: NextRequest,

@@ -1,4 +1,7 @@
-import { slidingWindowStrategy, tokenBucketStrategy } from '../../src/services/NotificationRateLimitStrategy';
+import {
+  slidingWindowStrategy,
+  tokenBucketStrategy,
+} from '../../src/services/NotificationRateLimitStrategy';
 
 describe('Notification Rate Limit Strategy', () => {
   describe('SlidingWindowStrategy', () => {

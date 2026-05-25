@@ -3,7 +3,12 @@ import {
   NotificationEventType,
   NotificationEventUnion,
 } from '../../src/types/notificationEvents';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Events', () => {
   let mockNotification: Notification;
@@ -24,7 +29,11 @@ describe('Notification Events', () => {
 
   describe('createNotificationEvent', () => {
     it('should create notification new event', () => {
-      const event = createNotificationEvent('notification:new', mockNotification, 'user-1');
+      const event = createNotificationEvent(
+        'notification:new',
+        mockNotification,
+        'user-1'
+      );
       expect(event.type).toBe('notification:new');
       expect(event.notification).toEqual(mockNotification);
       expect(event.userId).toBe('user-1');
@@ -32,13 +41,21 @@ describe('Notification Events', () => {
     });
 
     it('should create notification read event', () => {
-      const event = createNotificationEvent('notification:read', mockNotification, 'user-1');
+      const event = createNotificationEvent(
+        'notification:read',
+        mockNotification,
+        'user-1'
+      );
       expect(event.type).toBe('notification:read');
       expect(event.notification).toEqual(mockNotification);
     });
 
     it('should create notification deleted event', () => {
-      const event = createNotificationEvent('notification:deleted', mockNotification, 'user-1');
+      const event = createNotificationEvent(
+        'notification:deleted',
+        mockNotification,
+        'user-1'
+      );
       expect(event.type).toBe('notification:deleted');
       expect(event.notification).toEqual(mockNotification);
     });

@@ -1,5 +1,10 @@
 import { notificationDigestService } from '../../src/services/NotificationDigestService';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Digest Service', () => {
   let mockNotification: Notification;
@@ -29,7 +34,10 @@ describe('Notification Digest Service', () => {
     it('should auto-send when max reached', () => {
       notificationDigestService.setConfig({ maxNotificationsPerDigest: 2 });
       notificationDigestService.addToDigest('user-1', mockNotification);
-      notificationDigestService.addToDigest('user-1', { ...mockNotification, id: '2' });
+      notificationDigestService.addToDigest('user-1', {
+        ...mockNotification,
+        id: '2',
+      });
       const count = notificationDigestService.getDigestCount('user-1');
       expect(count).toBe(0);
     });
@@ -61,7 +69,10 @@ describe('Notification Digest Service', () => {
   describe('getDigestCount', () => {
     it('should return count of pending notifications', () => {
       notificationDigestService.addToDigest('user-1', mockNotification);
-      notificationDigestService.addToDigest('user-1', { ...mockNotification, id: '2' });
+      notificationDigestService.addToDigest('user-1', {
+        ...mockNotification,
+        id: '2',
+      });
       const count = notificationDigestService.getDigestCount('user-1');
       expect(count).toBe(2);
     });

@@ -20,12 +20,18 @@ describe('Notification Cleanup Service', () => {
 
   describe('shouldCleanup', () => {
     it('should return true when age exceeds max', () => {
-      const shouldCleanup = notificationCleanupService.shouldCleanup(100000000000, 100);
+      const shouldCleanup = notificationCleanupService.shouldCleanup(
+        100000000000,
+        100
+      );
       expect(shouldCleanup).toBe(true);
     });
 
     it('should return true when count exceeds max', () => {
-      const shouldCleanup = notificationCleanupService.shouldCleanup(1000, 20000);
+      const shouldCleanup = notificationCleanupService.shouldCleanup(
+        1000,
+        20000
+      );
       expect(shouldCleanup).toBe(true);
     });
 
@@ -52,17 +58,23 @@ describe('Notification Cleanup Service', () => {
 
   describe('getStatusForCleanup', () => {
     it('should return true for archived status', () => {
-      const shouldCleanup = notificationCleanupService.getStatusForCleanup(NotificationStatus.ARCHIVED);
+      const shouldCleanup = notificationCleanupService.getStatusForCleanup(
+        NotificationStatus.ARCHIVED
+      );
       expect(shouldCleanup).toBe(true);
     });
 
     it('should return true for read status', () => {
-      const shouldCleanup = notificationCleanupService.getStatusForCleanup(NotificationStatus.READ);
+      const shouldCleanup = notificationCleanupService.getStatusForCleanup(
+        NotificationStatus.READ
+      );
       expect(shouldCleanup).toBe(true);
     });
 
     it('should return false for unread status', () => {
-      const shouldCleanup = notificationCleanupService.getStatusForCleanup(NotificationStatus.UNREAD);
+      const shouldCleanup = notificationCleanupService.getStatusForCleanup(
+        NotificationStatus.UNREAD
+      );
       expect(shouldCleanup).toBe(false);
     });
   });

@@ -121,13 +121,19 @@ describe('GET /api/notifications', () => {
 
 describe('PUT /api/notifications/[id]', () => {
   it('returns 400 when id is too short', async () => {
-    const req = makeAuthRequest('http://localhost/api/notifications/id/read', 'PUT');
+    const req = makeAuthRequest(
+      'http://localhost/api/notifications/id/read',
+      'PUT'
+    );
     const res = await notificationIdPUT(req, makeIdContext(SHORT_ID));
     expect(res.status).toBe(400);
   });
 
   it('returns 400 when id contains non-hex chars', async () => {
-    const req = makeAuthRequest('http://localhost/api/notifications/id/read', 'PUT');
+    const req = makeAuthRequest(
+      'http://localhost/api/notifications/id/read',
+      'PUT'
+    );
     const res = await notificationIdPUT(req, makeIdContext(NON_HEX_ID));
     expect(res.status).toBe(400);
   });
@@ -141,13 +147,19 @@ describe('PUT /api/notifications/[id]', () => {
   });
 
   it('does not call backend for invalid id', async () => {
-    const req = makeAuthRequest('http://localhost/api/notifications/id/read', 'PUT');
+    const req = makeAuthRequest(
+      'http://localhost/api/notifications/id/read',
+      'PUT'
+    );
     await notificationIdPUT(req, makeIdContext(SHORT_ID));
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('forwards valid id to backend', async () => {
-    const req = makeAuthRequest('http://localhost/api/notifications/id/read', 'PUT');
+    const req = makeAuthRequest(
+      'http://localhost/api/notifications/id/read',
+      'PUT'
+    );
     await notificationIdPUT(req, makeIdContext(VALID_OBJECT_ID));
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining(VALID_OBJECT_ID),

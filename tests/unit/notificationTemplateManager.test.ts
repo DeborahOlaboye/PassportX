@@ -50,12 +50,18 @@ describe('Notification Template Manager', () => {
         variables: ['name'],
       };
       notificationTemplateManager.registerTemplate(template);
-      const rendered = notificationTemplateManager.renderTemplate('template-1', { name: 'John' });
+      const rendered = notificationTemplateManager.renderTemplate(
+        'template-1',
+        { name: 'John' }
+      );
       expect(rendered).toBe('Hello John');
     });
 
     it('should return empty string for non-existent template', () => {
-      const rendered = notificationTemplateManager.renderTemplate('non-existent', {});
+      const rendered = notificationTemplateManager.renderTemplate(
+        'non-existent',
+        {}
+      );
       expect(rendered).toBe('');
     });
   });

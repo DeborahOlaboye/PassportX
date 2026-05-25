@@ -6,13 +6,20 @@ import {
   validateNotificationMessage,
   sanitizeNotificationText,
 } from '../../src/validators/notificationValidator';
-import { NotificationType, NotificationChannel } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Validators', () => {
   describe('validateNotificationType', () => {
     it('should return true for valid notification types', () => {
-      expect(validateNotificationType(NotificationType.BADGE_MINTED)).toBe(true);
-      expect(validateNotificationType(NotificationType.COMMUNITY_INVITATION)).toBe(true);
+      expect(validateNotificationType(NotificationType.BADGE_MINTED)).toBe(
+        true
+      );
+      expect(
+        validateNotificationType(NotificationType.COMMUNITY_INVITATION)
+      ).toBe(true);
     });
 
     it('should return false for invalid notification types', () => {
@@ -23,7 +30,9 @@ describe('Notification Validators', () => {
 
   describe('validateNotificationChannel', () => {
     it('should return true for valid notification channels', () => {
-      expect(validateNotificationChannel(NotificationChannel.IN_APP)).toBe(true);
+      expect(validateNotificationChannel(NotificationChannel.IN_APP)).toBe(
+        true
+      );
       expect(validateNotificationChannel(NotificationChannel.EMAIL)).toBe(true);
     });
 
@@ -35,7 +44,12 @@ describe('Notification Validators', () => {
 
   describe('validateNotificationChannels', () => {
     it('should return true for valid channel array', () => {
-      expect(validateNotificationChannels([NotificationChannel.IN_APP, NotificationChannel.EMAIL])).toBe(true);
+      expect(
+        validateNotificationChannels([
+          NotificationChannel.IN_APP,
+          NotificationChannel.EMAIL,
+        ])
+      ).toBe(true);
     });
 
     it('should return false for invalid channel array', () => {
@@ -79,7 +93,9 @@ describe('Notification Validators', () => {
 
   describe('sanitizeNotificationText', () => {
     it('should remove HTML tags', () => {
-      expect(sanitizeNotificationText('<script>alert("xss")</script>')).toBe('alert("xss")');
+      expect(sanitizeNotificationText('<script>alert("xss")</script>')).toBe(
+        'alert("xss")'
+      );
     });
 
     it('should trim whitespace', () => {

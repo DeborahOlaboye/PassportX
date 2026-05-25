@@ -3,7 +3,12 @@ import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function POST(request: NextRequest) {
@@ -21,10 +26,14 @@ export async function POST(request: NextRequest) {
     try {
       formData = await request.formData();
     } catch {
-      return createErrorResponse('Request body must be multipart/form-data', null, {
-        status: 400,
-        logLevel: 'warn',
-      });
+      return createErrorResponse(
+        'Request body must be multipart/form-data',
+        null,
+        {
+          status: 400,
+          logLevel: 'warn',
+        }
+      );
     }
 
     const file = formData.get('avatar');
@@ -39,7 +48,9 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return createErrorResponse(
-        `Unsupported file type: must be one of ${ALLOWED_MIME_TYPES.join(', ')}`,
+        `Unsupported file type: must be one of ${ALLOWED_MIME_TYPES.join(
+          ', '
+        )}`,
         null,
         { status: 400, logLevel: 'warn' }
       );
@@ -47,7 +58,9 @@ export async function POST(request: NextRequest) {
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       return createErrorResponse(
-        `File too large: maximum allowed size is ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB`,
+        `File too large: maximum allowed size is ${
+          MAX_FILE_SIZE_BYTES / 1024 / 1024
+        } MB`,
         null,
         { status: 400, logLevel: 'warn' }
       );

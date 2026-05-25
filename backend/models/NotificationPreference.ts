@@ -1,5 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { NotificationType, NotificationChannel } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 export interface INotificationPreference extends Document {
   userId: string;
@@ -11,8 +14,18 @@ export interface INotificationPreference extends Document {
 const NotificationPreferenceSchema = new Schema<INotificationPreference>(
   {
     userId: { type: String, required: true, index: true },
-    type: { type: String, enum: Object.values(NotificationType), required: true },
-    channels: [{ type: String, enum: Object.values(NotificationChannel), required: true }],
+    type: {
+      type: String,
+      enum: Object.values(NotificationType),
+      required: true,
+    },
+    channels: [
+      {
+        type: String,
+        enum: Object.values(NotificationChannel),
+        required: true,
+      },
+    ],
     enabled: { type: Boolean, default: true },
   },
   {

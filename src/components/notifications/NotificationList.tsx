@@ -28,15 +28,23 @@ export default function NotificationList({
         <div
           key={notification.id}
           className={`p-4 hover:bg-gray-50 transition-colors ${
-            notification.status === NotificationStatus.UNREAD ? 'bg-blue-50' : ''
+            notification.status === NotificationStatus.UNREAD
+              ? 'bg-blue-50'
+              : ''
           }`}
         >
           <div className="flex gap-3">
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900 text-sm">{notification.title}</h4>
-              <p className="text-gray-600 text-sm mt-1">{notification.message}</p>
+              <h4 className="font-semibold text-gray-900 text-sm">
+                {notification.title}
+              </h4>
+              <p className="text-gray-600 text-sm mt-1">
+                {notification.message}
+              </p>
               <p className="text-gray-400 text-xs mt-2">
-                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(notification.createdAt), {
+                  addSuffix: true,
+                })}
               </p>
             </div>
             <div className="flex items-center gap-2">

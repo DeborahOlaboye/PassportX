@@ -6,7 +6,12 @@ import {
   filterNotificationsByStatus,
   filterNotificationsByType,
 } from '../../src/utils/notificationSorter';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Sorter', () => {
   let mockNotifications: Notification[];
@@ -72,7 +77,10 @@ describe('Notification Sorter', () => {
 
   describe('filterNotificationsByStatus', () => {
     it('should filter by status', () => {
-      const filtered = filterNotificationsByStatus(mockNotifications, NotificationStatus.UNREAD);
+      const filtered = filterNotificationsByStatus(
+        mockNotifications,
+        NotificationStatus.UNREAD
+      );
       expect(filtered).toHaveLength(1);
       expect(filtered[0].status).toBe(NotificationStatus.UNREAD);
     });
@@ -80,7 +88,10 @@ describe('Notification Sorter', () => {
 
   describe('filterNotificationsByType', () => {
     it('should filter by type', () => {
-      const filtered = filterNotificationsByType(mockNotifications, NotificationType.BADGE_MINTED);
+      const filtered = filterNotificationsByType(
+        mockNotifications,
+        NotificationType.BADGE_MINTED
+      );
       expect(filtered).toHaveLength(1);
       expect(filtered[0].type).toBe(NotificationType.BADGE_MINTED);
     });

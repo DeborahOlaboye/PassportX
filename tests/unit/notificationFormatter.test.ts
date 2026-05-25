@@ -4,7 +4,12 @@ import {
   formatNotificationStatus,
   truncateNotificationMessage,
 } from '../../src/utils/notificationFormatter';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Formatter', () => {
   let mockNotification: Notification;
@@ -67,9 +72,13 @@ describe('Notification Formatter', () => {
 
   describe('formatNotificationStatus', () => {
     it('should format status correctly', () => {
-      expect(formatNotificationStatus(NotificationStatus.UNREAD)).toBe('Unread');
+      expect(formatNotificationStatus(NotificationStatus.UNREAD)).toBe(
+        'Unread'
+      );
       expect(formatNotificationStatus(NotificationStatus.READ)).toBe('Read');
-      expect(formatNotificationStatus(NotificationStatus.ARCHIVED)).toBe('Archived');
+      expect(formatNotificationStatus(NotificationStatus.ARCHIVED)).toBe(
+        'Archived'
+      );
     });
   });
 

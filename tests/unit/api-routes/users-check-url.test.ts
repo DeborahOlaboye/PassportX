@@ -10,7 +10,10 @@ jest.mock('@/lib/logger', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
 
-let GET: (req: Request, ctx: { params: { customUrl: string } }) => Promise<Response>;
+let GET: (
+  req: Request,
+  ctx: { params: { customUrl: string } }
+) => Promise<Response>;
 
 beforeAll(async () => {
   const mod = await import(
@@ -29,14 +32,19 @@ beforeEach(() => {
 });
 
 function makeRequest(customUrl: string): Request {
-  return new Request(`http://localhost/api/users/profile/check-url/${customUrl}`, {
-    method: 'GET',
-  });
+  return new Request(
+    `http://localhost/api/users/profile/check-url/${customUrl}`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
 describe('GET /api/users/profile/check-url/[customUrl]', () => {
   it('returns 400 for uppercase slug', async () => {
-    const res = await GET(makeRequest('Alice'), { params: { customUrl: 'Alice' } });
+    const res = await GET(makeRequest('Alice'), {
+      params: { customUrl: 'Alice' },
+    });
     expect(res.status).toBe(400);
   });
 
@@ -52,12 +60,16 @@ describe('GET /api/users/profile/check-url/[customUrl]', () => {
   });
 
   it('returns 400 for slug with leading hyphen', async () => {
-    const res = await GET(makeRequest('-alice'), { params: { customUrl: '-alice' } });
+    const res = await GET(makeRequest('-alice'), {
+      params: { customUrl: '-alice' },
+    });
     expect(res.status).toBe(400);
   });
 
   it('returns 400 for slug with trailing hyphen', async () => {
-    const res = await GET(makeRequest('alice-'), { params: { customUrl: 'alice-' } });
+    const res = await GET(makeRequest('alice-'), {
+      params: { customUrl: 'alice-' },
+    });
     expect(res.status).toBe(400);
   });
 

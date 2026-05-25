@@ -59,7 +59,9 @@ export async function GET(request: NextRequest) {
       const allowedTypes: readonly string[] = ALLOWED_NOTIFICATION_TYPES;
       if (!allowedTypes.includes(type)) {
         return createErrorResponse(
-          `Invalid type parameter: must be one of ${ALLOWED_NOTIFICATION_TYPES.join(', ')}`,
+          `Invalid type parameter: must be one of ${ALLOWED_NOTIFICATION_TYPES.join(
+            ', '
+          )}`,
           null,
           { status: 400, logLevel: 'warn' }
         );

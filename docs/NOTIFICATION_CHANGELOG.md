@@ -3,6 +3,7 @@
 ## Version 1.0.0 - Initial Release
 
 ### Added
+
 - Complete notification system architecture
 - Database models for notifications and preferences
 - RESTful API endpoints for notification management
@@ -15,6 +16,7 @@
 - Comprehensive documentation
 
 ### Features
+
 - Multi-channel notification delivery (in-app, email, WebSocket)
 - User notification preferences
 - Notification filtering and search
@@ -26,6 +28,7 @@
 - Bulk actions (mark all as read)
 
 ### API Endpoints
+
 - GET /api/notifications - Fetch user notifications
 - POST /api/notifications - Create new notification
 - PUT /api/notifications/:id/read - Mark as read
@@ -36,6 +39,7 @@
 - PUT /api/notifications/preferences - Update preferences
 
 ### Components
+
 - NotificationBell - Main notification trigger
 - NotificationCenter - Full notification center UI
 - NotificationItem - Individual notification display
@@ -47,18 +51,21 @@
 - NotificationSettings - User preferences UI
 
 ### Security
+
 - Input validation on all endpoints
 - User-scoped notifications
 - XSS protection in email templates
 - Sanitization of notification content
 
 ### Performance
+
 - Database indexing for fast queries
 - WebSocket connection pooling
 - Email service connection reuse
 - Frontend caching strategies
 
 ### Documentation
+
 - Architecture documentation
 - API documentation
 - User guide

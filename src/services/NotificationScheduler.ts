@@ -6,7 +6,8 @@ export interface ScheduledNotification {
 }
 
 class NotificationScheduler {
-  private scheduledNotifications: Map<string, ScheduledNotification> = new Map();
+  private scheduledNotifications: Map<string, ScheduledNotification> =
+    new Map();
   private timers: Map<string, NodeJS.Timeout> = new Map();
 
   schedule(notification: Notification, delayMs: number): string {

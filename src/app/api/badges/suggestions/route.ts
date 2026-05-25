@@ -44,7 +44,9 @@ export async function GET(request: NextRequest) {
     const sanitizedQuery = sanitizeQueryParam(query);
 
     const response = await fetch(
-      `${BACKEND_URL}/api/badges/suggestions?q=${encodeURIComponent(sanitizedQuery)}&limit=${limit}`,
+      `${BACKEND_URL}/api/badges/suggestions?q=${encodeURIComponent(
+        sanitizedQuery
+      )}&limit=${limit}`,
       {
         method: 'GET',
         headers: {

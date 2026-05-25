@@ -61,7 +61,9 @@ describe('POST /api/auth/login', () => {
   });
 
   it('returns 400 when address is empty string', async () => {
-    const res = await POST(makeRequest({ address: '', signature: 'valid-sig' }));
+    const res = await POST(
+      makeRequest({ address: '', signature: 'valid-sig' })
+    );
     expect(res.status).toBe(400);
   });
 

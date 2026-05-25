@@ -11,7 +11,12 @@ class NotificationAuditLogger {
   private logs: AuditLogEntry[] = [];
   private maxLogs: number = 10000;
 
-  log(action: string, userId: string, notificationId: string, metadata: Record<string, unknown> = {}): void {
+  log(
+    action: string,
+    userId: string,
+    notificationId: string,
+    metadata: Record<string, unknown> = {}
+  ): void {
     const entry: AuditLogEntry = {
       id: this.generateId(),
       timestamp: new Date(),
@@ -43,7 +48,9 @@ class NotificationAuditLogger {
     }
 
     if (notificationId) {
-      filtered = filtered.filter((log) => log.notificationId === notificationId);
+      filtered = filtered.filter(
+        (log) => log.notificationId === notificationId
+      );
     }
 
     return filtered;
@@ -54,7 +61,9 @@ class NotificationAuditLogger {
   }
 
   getLogsByDateRange(startDate: Date, endDate: Date): AuditLogEntry[] {
-    return this.logs.filter((log) => log.timestamp >= startDate && log.timestamp <= endDate);
+    return this.logs.filter(
+      (log) => log.timestamp >= startDate && log.timestamp <= endDate
+    );
   }
 
   clear(): void {

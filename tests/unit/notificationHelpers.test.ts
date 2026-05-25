@@ -4,7 +4,10 @@ import {
   getChannelLabel,
   formatNotificationType,
 } from '../../src/utils/notificationHelpers';
-import { NotificationType, NotificationChannel } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('notificationHelpers', () => {
   describe('getNotificationIcon', () => {
@@ -23,15 +26,21 @@ describe('notificationHelpers', () => {
 
   describe('getNotificationColor', () => {
     it('should return correct color for badge minted', () => {
-      expect(getNotificationColor(NotificationType.BADGE_MINTED)).toBe('text-yellow-600');
+      expect(getNotificationColor(NotificationType.BADGE_MINTED)).toBe(
+        'text-yellow-600'
+      );
     });
 
     it('should return correct color for badge revoked', () => {
-      expect(getNotificationColor(NotificationType.BADGE_REVOKED)).toBe('text-red-600');
+      expect(getNotificationColor(NotificationType.BADGE_REVOKED)).toBe(
+        'text-red-600'
+      );
     });
 
     it('should return default color for unknown type', () => {
-      expect(getNotificationColor('unknown' as NotificationType)).toBe('text-gray-600');
+      expect(getNotificationColor('unknown' as NotificationType)).toBe(
+        'text-gray-600'
+      );
     });
   });
 
@@ -51,19 +60,21 @@ describe('notificationHelpers', () => {
 
   describe('formatNotificationType', () => {
     it('should format badge_minted correctly', () => {
-      expect(formatNotificationType(NotificationType.BADGE_MINTED)).toBe('Badge Minted');
+      expect(formatNotificationType(NotificationType.BADGE_MINTED)).toBe(
+        'Badge Minted'
+      );
     });
 
     it('should format community_invitation correctly', () => {
-      expect(formatNotificationType(NotificationType.COMMUNITY_INVITATION)).toBe(
-        'Community Invitation'
-      );
+      expect(
+        formatNotificationType(NotificationType.COMMUNITY_INVITATION)
+      ).toBe('Community Invitation');
     });
 
     it('should format achievement_milestone correctly', () => {
-      expect(formatNotificationType(NotificationType.ACHIEVEMENT_MILESTONE)).toBe(
-        'Achievement Milestone'
-      );
+      expect(
+        formatNotificationType(NotificationType.ACHIEVEMENT_MILESTONE)
+      ).toBe('Achievement Milestone');
     });
   });
 });

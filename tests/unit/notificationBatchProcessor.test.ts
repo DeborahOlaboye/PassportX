@@ -1,5 +1,10 @@
 import { notificationBatchProcessor } from '../../src/services/NotificationBatchProcessor';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Batch Processor', () => {
   let mockNotification: Notification;
@@ -26,7 +31,10 @@ describe('Notification Batch Processor', () => {
     });
 
     it('should auto-flush when batch size reached', async () => {
-      const processor = new (require('../../src/services/NotificationBatchProcessor').NotificationBatchProcessor)({ batchSize: 2, delayMs: 10 });
+      const processor =
+        new (require('../../src/services/NotificationBatchProcessor').NotificationBatchProcessor)(
+          { batchSize: 2, delayMs: 10 }
+        );
       processor.add(mockNotification);
       processor.add({ ...mockNotification, id: '2' });
       await new Promise((resolve) => setTimeout(resolve, 50));

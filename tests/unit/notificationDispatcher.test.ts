@@ -2,7 +2,11 @@ import { NotificationDispatcher } from '../../backend/services/NotificationDispa
 import { NotificationService } from '../../backend/services/NotificationService';
 import { NotificationWebSocketService } from '../../backend/services/NotificationWebSocketService';
 import { EmailNotificationService } from '../../backend/services/EmailNotificationService';
-import { NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 jest.mock('../../backend/services/NotificationService');
 jest.mock('../../backend/services/NotificationWebSocketService');
@@ -40,9 +44,9 @@ describe('NotificationDispatcher', () => {
         updatedAt: new Date(),
       };
 
-      (NotificationService.prototype.createNotification as jest.Mock).mockResolvedValue(
-        mockNotification
-      );
+      (
+        NotificationService.prototype.createNotification as jest.Mock
+      ).mockResolvedValue(mockNotification);
 
       const result = await dispatcher.dispatch('user-1', 'test@email.com', {
         userId: 'user-1',
@@ -69,9 +73,9 @@ describe('NotificationDispatcher', () => {
         updatedAt: new Date(),
       };
 
-      (NotificationService.prototype.createNotification as jest.Mock).mockResolvedValue(
-        mockNotification
-      );
+      (
+        NotificationService.prototype.createNotification as jest.Mock
+      ).mockResolvedValue(mockNotification);
 
       await dispatcher.dispatch('user-1', 'test@email.com', {
         userId: 'user-1',
@@ -101,9 +105,9 @@ describe('NotificationDispatcher', () => {
         updatedAt: new Date(),
       };
 
-      (NotificationService.prototype.createNotification as jest.Mock).mockResolvedValue(
-        mockNotification
-      );
+      (
+        NotificationService.prototype.createNotification as jest.Mock
+      ).mockResolvedValue(mockNotification);
 
       await dispatcher.dispatch('user-1', 'test@email.com', {
         userId: 'user-1',

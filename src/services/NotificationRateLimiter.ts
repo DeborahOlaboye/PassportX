@@ -7,14 +7,16 @@ class NotificationRateLimiter {
   private notifications: Map<string, number[]> = new Map();
   private config: RateLimitConfig;
 
-  constructor(config: RateLimitConfig = { maxNotifications: 10, windowMs: 60000 }) {
+  constructor(
+    config: RateLimitConfig = { maxNotifications: 10, windowMs: 60000 }
+  ) {
     this.config = config;
   }
 
   canSend(userId: string): boolean {
     const now = Date.now();
     const userNotifications = this.notifications.get(userId) || [];
-    
+
     const recentNotifications = userNotifications.filter(
       (timestamp) => now - timestamp < this.config.windowMs
     );
@@ -34,7 +36,10 @@ class NotificationRateLimiter {
     const recentNotifications = userNotifications.filter(
       (timestamp) => now - timestamp < this.config.windowMs
     );
-    return Math.max(0, this.config.maxNotifications - recentNotifications.length);
+    return Math.max(
+      0,
+      this.config.maxNotifications - recentNotifications.length
+    );
   }
 
   reset(userId: string): void {

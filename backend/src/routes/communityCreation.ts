@@ -80,7 +80,9 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!communityCreationService || !notificationService || !cacheService) {
-        logger.warn('Community creation services not initialized', { requestId: req.requestId });
+        logger.warn('Community creation services not initialized', {
+          requestId: req.requestId,
+        });
         return res.status(503).json({
           success: false,
           error: 'Community creation services not initialized',
@@ -137,7 +139,13 @@ router.post(
           code: 'COMMUNITY_CREATED',
         });
       } catch (notificationError) {
-        logger.error('Error sending notifications', { requestId: req.requestId, error: notificationError instanceof Error ? notificationError.message : String(notificationError) });
+        logger.error('Error sending notifications', {
+          requestId: req.requestId,
+          error:
+            notificationError instanceof Error
+              ? notificationError.message
+              : String(notificationError),
+        });
         res.status(201).json({
           success: true,
           communityId: result.communityId,
@@ -148,7 +156,12 @@ router.post(
         });
       }
     } catch (error) {
-      sendRouteError(req, res, 'Error processing community creation webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing community creation webhook',
+        error
+      );
     }
   }
 );
@@ -210,7 +223,12 @@ router.post(
         message: result.message,
       });
     } catch (error) {
-      sendRouteError(req, res, 'Error syncing community from blockchain', error);
+      sendRouteError(
+        req,
+        res,
+        'Error syncing community from blockchain',
+        error
+      );
     }
   }
 );

@@ -1,6 +1,9 @@
 import { Notification } from './notification';
 
-export type NotificationEventType = 'notification:new' | 'notification:read' | 'notification:deleted';
+export type NotificationEventType =
+  | 'notification:new'
+  | 'notification:read'
+  | 'notification:deleted';
 
 export interface NotificationEvent {
   type: NotificationEventType;
@@ -21,7 +24,10 @@ export interface NotificationDeletedEvent extends NotificationEvent {
   type: 'notification:deleted';
 }
 
-export type NotificationEventUnion = NotificationNewEvent | NotificationReadEvent | NotificationDeletedEvent;
+export type NotificationEventUnion =
+  | NotificationNewEvent
+  | NotificationReadEvent
+  | NotificationDeletedEvent;
 
 export function createNotificationEvent(
   type: NotificationEventType,

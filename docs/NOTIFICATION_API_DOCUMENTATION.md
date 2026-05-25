@@ -1,21 +1,26 @@
 # Notification API Documentation
 
 ## Overview
+
 The notification system provides a comprehensive API for managing user notifications across multiple channels.
 
 ## Base URL
+
 `/api/notifications`
 
 ## Endpoints
 
 ### GET /api/notifications
+
 Get all notifications for the authenticated user.
 
 **Query Parameters:**
+
 - `status` (optional): Filter by status (unread, read, archived)
 - `limit` (optional): Maximum number of notifications to return (default: 50)
 
 **Response:**
+
 ```json
 [
   {
@@ -35,9 +40,11 @@ Get all notifications for the authenticated user.
 ```
 
 ### POST /api/notifications
+
 Create a new notification.
 
 **Request Body:**
+
 ```json
 {
   "type": "badge_minted",
@@ -51,19 +58,23 @@ Create a new notification.
 **Response:** Returns the created notification object.
 
 ### PUT /api/notifications/:id/read
+
 Mark a notification as read.
 
 **Response:** Returns the updated notification object.
 
 ### DELETE /api/notifications/:id
+
 Delete a notification.
 
 **Response:** Returns the deleted notification object.
 
 ### PUT /api/notifications/read-all
+
 Mark all notifications as read for the authenticated user.
 
 **Response:**
+
 ```json
 {
   "modifiedCount": 5
@@ -71,9 +82,11 @@ Mark all notifications as read for the authenticated user.
 ```
 
 ### GET /api/notifications/unread-count
+
 Get the count of unread notifications.
 
 **Response:**
+
 ```json
 {
   "count": 10
@@ -81,9 +94,11 @@ Get the count of unread notifications.
 ```
 
 ### GET /api/notifications/preferences
+
 Get user notification preferences.
 
 **Response:**
+
 ```json
 [
   {
@@ -96,9 +111,11 @@ Get user notification preferences.
 ```
 
 ### PUT /api/notifications/preferences
+
 Update notification preferences.
 
 **Request Body:**
+
 ```json
 {
   "type": "badge_minted",
@@ -125,4 +142,5 @@ Update notification preferences.
 - `websocket`: Real-time push notification
 
 ## Authentication
+
 All endpoints require authentication. Include the user's authentication token in the request headers.

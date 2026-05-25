@@ -42,7 +42,9 @@ describe('Notification Middleware', () => {
       validateNotificationInput(mockReq, mockRes, mockNext);
 
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid notification type' });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Invalid notification type',
+      });
       expect(mockNext).not.toHaveBeenCalled();
     });
 
@@ -85,7 +87,9 @@ describe('Notification Middleware', () => {
       validateNotificationInput(mockReq, mockRes, mockNext);
 
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'At least one channel is required' });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'At least one channel is required',
+      });
       expect(mockNext).not.toHaveBeenCalled();
     });
 
@@ -100,7 +104,9 @@ describe('Notification Middleware', () => {
       validateNotificationInput(mockReq, mockRes, mockNext);
 
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid channels: invalid_channel' });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        error: 'Invalid channels: invalid_channel',
+      });
       expect(mockNext).not.toHaveBeenCalled();
     });
   });

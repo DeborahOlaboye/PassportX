@@ -18,8 +18,14 @@ jest.mock('@/lib/logger', () => ({
 }));
 
 // Lazily import the route handlers after mocks are set up
-let GET: (req: Request, ctx: { params: { address: string } }) => Promise<Response>;
-let PUT: (req: Request, ctx: { params: { address: string } }) => Promise<Response>;
+let GET: (
+  req: Request,
+  ctx: { params: { address: string } }
+) => Promise<Response>;
+let PUT: (
+  req: Request,
+  ctx: { params: { address: string } }
+) => Promise<Response>;
 
 beforeAll(async () => {
   const mod = await import('../../../src/app/api/users/[address]/route');

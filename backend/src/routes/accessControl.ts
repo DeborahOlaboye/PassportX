@@ -44,7 +44,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing global permission webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing global permission webhook',
+        error
+      );
     }
   }
 );
@@ -68,7 +73,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing community permission webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing community permission webhook',
+        error
+      );
     }
   }
 );
@@ -118,7 +128,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing user unsuspension webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing user unsuspension webhook',
+        error
+      );
     }
   }
 );
@@ -142,7 +157,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing issuer authorization webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing issuer authorization webhook',
+        error
+      );
     }
   }
 );
@@ -192,7 +212,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing permission group creation webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing permission group creation webhook',
+        error
+      );
     }
   }
 );
@@ -217,7 +242,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing member role change webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing member role change webhook',
+        error
+      );
     }
   }
 );
@@ -241,7 +271,12 @@ router.post(
 
       res.status(200).json({ success: true });
     } catch (error) {
-      sendRouteError(req, res, 'Error processing ownership transfer webhook', error);
+      sendRouteError(
+        req,
+        res,
+        'Error processing ownership transfer webhook',
+        error
+      );
     }
   }
 );

@@ -26,9 +26,9 @@ class NotificationEncryptionService {
   }
 
   generateKey(): string {
-    return Array.from({ length: 32 }, () =>
-      Math.random().toString(36)[2]
-    ).join('');
+    return Array.from({ length: 32 }, () => Math.random().toString(36)[2]).join(
+      ''
+    );
   }
 
   hash(data: string): string {
@@ -42,4 +42,5 @@ class NotificationEncryptionService {
   }
 }
 
-export const notificationEncryptionService = new NotificationEncryptionService();
+export const notificationEncryptionService =
+  new NotificationEncryptionService();

@@ -71,9 +71,7 @@ describe('POST /api/auth/logout', () => {
       status: 200,
       headers: {
         get: (name: string) =>
-          name === 'set-cookie'
-            ? 'session=; Max-Age=0; HttpOnly'
-            : null,
+          name === 'set-cookie' ? 'session=; Max-Age=0; HttpOnly' : null,
       },
       json: async () => ({ message: 'Logged out' }),
     });

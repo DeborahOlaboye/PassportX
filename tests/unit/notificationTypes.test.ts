@@ -1,12 +1,20 @@
-import { NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Types', () => {
   describe('NotificationType', () => {
     it('should have all expected notification types', () => {
       expect(NotificationType.BADGE_MINTED).toBe('badge_minted');
       expect(NotificationType.BADGE_REVOKED).toBe('badge_revoked');
-      expect(NotificationType.COMMUNITY_INVITATION).toBe('community_invitation');
-      expect(NotificationType.ACHIEVEMENT_MILESTONE).toBe('achievement_milestone');
+      expect(NotificationType.COMMUNITY_INVITATION).toBe(
+        'community_invitation'
+      );
+      expect(NotificationType.ACHIEVEMENT_MILESTONE).toBe(
+        'achievement_milestone'
+      );
       expect(NotificationType.SYSTEM_ANNOUNCEMENT).toBe('system_announcement');
       expect(NotificationType.ADMIN_NOTIFICATION).toBe('admin_notification');
     });

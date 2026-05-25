@@ -1,9 +1,18 @@
 import { Notification, INotification } from '../models/Notification';
-import { NotificationPreference, INotificationPreference } from '../models/NotificationPreference';
-import { NotificationType, NotificationChannel, NotificationStatus } from '../../src/types/notification';
+import {
+  NotificationPreference,
+  INotificationPreference,
+} from '../models/NotificationPreference';
+import {
+  NotificationType,
+  NotificationChannel,
+  NotificationStatus,
+} from '../../src/types/notification';
 
 export class NotificationService {
-  async createNotification(data: Partial<INotification>): Promise<INotification> {
+  async createNotification(
+    data: Partial<INotification>
+  ): Promise<INotification> {
     const notification = new Notification(data);
     return await notification.save();
   }

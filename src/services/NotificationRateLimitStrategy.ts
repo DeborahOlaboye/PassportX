@@ -66,7 +66,10 @@ class TokenBucketStrategy implements RateLimitStrategy {
     const elapsed = now - lastRefill;
     const tokensToAdd = Math.floor(elapsed / 1000) * this.refillRate;
     const currentTokens = this.tokens.get(userId) || this.capacity;
-    this.tokens.set(userId, Math.min(this.capacity, currentTokens + tokensToAdd));
+    this.tokens.set(
+      userId,
+      Math.min(this.capacity, currentTokens + tokensToAdd)
+    );
     this.lastRefill.set(userId, now);
   }
 }

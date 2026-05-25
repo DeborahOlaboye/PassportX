@@ -11,11 +11,18 @@ jest.mock('../../middleware/rateLimiter', () => ({
   createRateLimiter: () => (_req: any, _res: any, next: any) => next(),
 }));
 jest.mock('../../utils/logger', () => ({
-  default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
+  default: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 import logger from '../../utils/logger';
-import analyticsRouter, { setAnalyticsAggregator } from '../../routes/analytics';
+import analyticsRouter, {
+  setAnalyticsAggregator,
+} from '../../routes/analytics';
 
 function buildApp() {
   const app = express();
@@ -80,7 +87,9 @@ describe('analytics route error logging', () => {
   });
 
   it('does not call console.error — logger.error is used instead', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const mockAggregator = {
       getAggregatedAnalytics: jest.fn().mockRejectedValue(new Error('err')),
     } as any;

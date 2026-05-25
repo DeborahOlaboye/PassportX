@@ -22,7 +22,10 @@ class NotificationCleanupService {
   }
 
   shouldCleanup(notificationAge: number, notificationCount: number): boolean {
-    return notificationAge > this.config.maxAge || notificationCount > this.config.maxCount;
+    return (
+      notificationAge > this.config.maxAge ||
+      notificationCount > this.config.maxCount
+    );
   }
 
   getCleanupBatchSize(): number {
@@ -37,7 +40,10 @@ class NotificationCleanupService {
   }
 
   getStatusForCleanup(status: NotificationStatus): boolean {
-    return status === NotificationStatus.ARCHIVED || status === NotificationStatus.READ;
+    return (
+      status === NotificationStatus.ARCHIVED ||
+      status === NotificationStatus.READ
+    );
   }
 }
 

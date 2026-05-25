@@ -23,7 +23,10 @@ beforeEach(() => {
   mockFetch.mockResolvedValue({
     status: 200,
     headers: { get: () => 'application/json' },
-    json: async () => ({ categories: ['skill', 'participation'], levels: [1, 2, 3] }),
+    json: async () => ({
+      categories: ['skill', 'participation'],
+      levels: [1, 2, 3],
+    }),
   });
 });
 

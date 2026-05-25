@@ -31,7 +31,8 @@ class NotificationLocalizationService {
   };
 
   translate(key: string, locale: string = this.config.defaultLocale): string {
-    const localeTranslations = this.translations[locale] || this.translations[this.config.defaultLocale];
+    const localeTranslations =
+      this.translations[locale] || this.translations[this.config.defaultLocale];
     return localeTranslations[key] || key;
   }
 
@@ -47,7 +48,10 @@ class NotificationLocalizationService {
     if (!this.translations[locale]) {
       this.translations[locale] = {};
     }
-    this.translations[locale] = { ...this.translations[locale], ...translations };
+    this.translations[locale] = {
+      ...this.translations[locale],
+      ...translations,
+    };
   }
 
   getSupportedLocales(): string[] {
@@ -59,4 +63,5 @@ class NotificationLocalizationService {
   }
 }
 
-export const notificationLocalizationService = new NotificationLocalizationService();
+export const notificationLocalizationService =
+  new NotificationLocalizationService();

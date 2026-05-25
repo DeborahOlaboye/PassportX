@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { NotificationType, NotificationChannel, NotificationPreference } from '@/types/notification';
+import {
+  NotificationType,
+  NotificationChannel,
+  NotificationPreference,
+} from '@/types/notification';
 
 export function useNotificationPreferences(_userId: string) {
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);

@@ -154,7 +154,11 @@ router.get('/issuer/:address', validatePagination, async (req, res) => {
     const { address } = req.params;
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const result = await badgeSearchService.searchByIssuer(address, page, limit);
+    const result = await badgeSearchService.searchByIssuer(
+      address,
+      page,
+      limit
+    );
     res.json({ success: true, data: result });
   } catch (error) {
     sendRouteError(req, res, 'Error searching badges by issuer', error);

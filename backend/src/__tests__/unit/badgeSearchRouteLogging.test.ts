@@ -22,7 +22,12 @@ jest.mock('../../middleware/validation', () => ({
   validatePagination: (_req: any, _res: any, next: any) => next(),
 }));
 jest.mock('../../utils/logger', () => ({
-  default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
+  default: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 import logger from '../../utils/logger';
@@ -106,7 +111,9 @@ describe('badge search route error logging', () => {
     (badgeSearchService.searchBadges as jest.Mock).mockRejectedValue(
       new Error('err')
     );
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const app = buildApp();
     await request(app).post('/api/badges/search').send({});
     expect(consoleSpy).not.toHaveBeenCalled();

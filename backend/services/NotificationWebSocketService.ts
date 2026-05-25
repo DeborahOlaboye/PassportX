@@ -30,15 +30,26 @@ export class NotificationWebSocketService {
     });
   }
 
-  async sendNotificationToUser(userId: string, notification: Notification): Promise<void> {
+  async sendNotificationToUser(
+    userId: string,
+    notification: Notification
+  ): Promise<void> {
     this.io.to(`user:${userId}`).emit('notification:new', notification);
   }
 
-  async notifyNotificationRead(userId: string, notificationId: string): Promise<void> {
+  async notifyNotificationRead(
+    userId: string,
+    notificationId: string
+  ): Promise<void> {
     this.io.to(`user:${userId}`).emit('notification:read', { notificationId });
   }
 
-  async notifyNotificationDeleted(userId: string, notificationId: string): Promise<void> {
-    this.io.to(`user:${userId}`).emit('notification:deleted', { notificationId });
+  async notifyNotificationDeleted(
+    userId: string,
+    notificationId: string
+  ): Promise<void> {
+    this.io
+      .to(`user:${userId}`)
+      .emit('notification:deleted', { notificationId });
   }
 }

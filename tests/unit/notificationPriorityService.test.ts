@@ -1,5 +1,10 @@
 import { notificationPriorityService } from '../../src/services/NotificationPriorityService';
-import { Notification, NotificationType, NotificationStatus, NotificationChannel } from '../../src/types/notification';
+import {
+  Notification,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from '../../src/types/notification';
 
 describe('Notification Priority Service', () => {
   let mockNotification: Notification;
@@ -20,21 +25,27 @@ describe('Notification Priority Service', () => {
 
   describe('getPriority', () => {
     it('should return priority for notification type', () => {
-      const priority = notificationPriorityService.getPriority(mockNotification);
+      const priority =
+        notificationPriorityService.getPriority(mockNotification);
       expect(priority).toBe(8);
     });
 
     it('should return default priority for unknown type', () => {
       mockNotification.type = 'unknown' as NotificationType;
-      const priority = notificationPriorityService.getPriority(mockNotification);
+      const priority =
+        notificationPriorityService.getPriority(mockNotification);
       expect(priority).toBe(5);
     });
   });
 
   describe('setPriority', () => {
     it('should set priority for type', () => {
-      notificationPriorityService.setPriority(NotificationType.BADGE_MINTED, 10);
-      const priority = notificationPriorityService.getPriority(mockNotification);
+      notificationPriorityService.setPriority(
+        NotificationType.BADGE_MINTED,
+        10
+      );
+      const priority =
+        notificationPriorityService.getPriority(mockNotification);
       expect(priority).toBe(10);
     });
   });
@@ -46,7 +57,8 @@ describe('Notification Priority Service', () => {
         { type: NotificationType.COMMUNITY_INVITATION, priority: 5 },
       ];
       notificationPriorityService.setPriorityRules(rules);
-      const priority = notificationPriorityService.getPriority(mockNotification);
+      const priority =
+        notificationPriorityService.getPriority(mockNotification);
       expect(priority).toBe(10);
     });
   });
@@ -75,9 +87,13 @@ describe('Notification Priority Service', () => {
 
   describe('reset', () => {
     it('should reset to default priorities', () => {
-      notificationPriorityService.setPriority(NotificationType.BADGE_MINTED, 10);
+      notificationPriorityService.setPriority(
+        NotificationType.BADGE_MINTED,
+        10
+      );
       notificationPriorityService.reset();
-      const priority = notificationPriorityService.getPriority(mockNotification);
+      const priority =
+        notificationPriorityService.getPriority(mockNotification);
       expect(priority).toBe(8);
     });
   });

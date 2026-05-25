@@ -14,19 +14,27 @@ import {
 
 describe('isValidStacksAddressParam', () => {
   it('accepts a valid mainnet SP address', () => {
-    expect(isValidStacksAddressParam('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(true);
+    expect(
+      isValidStacksAddressParam('SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(true);
   });
 
   it('accepts a valid testnet ST address', () => {
-    expect(isValidStacksAddressParam('ST2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(true);
+    expect(
+      isValidStacksAddressParam('ST2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(true);
   });
 
   it('accepts a valid SM address', () => {
-    expect(isValidStacksAddressParam('SM2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(true);
+    expect(
+      isValidStacksAddressParam('SM2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(true);
   });
 
   it('accepts a valid SN address', () => {
-    expect(isValidStacksAddressParam('SN2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(true);
+    expect(
+      isValidStacksAddressParam('SN2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(true);
   });
 
   it('rejects a plain string', () => {
@@ -38,7 +46,9 @@ describe('isValidStacksAddressParam', () => {
   });
 
   it('rejects an address with invalid prefix', () => {
-    expect(isValidStacksAddressParam('AB2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(false);
+    expect(
+      isValidStacksAddressParam('AB2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(false);
   });
 
   it('rejects a non-string value', () => {
@@ -248,7 +258,9 @@ describe('isNonEmptyString', () => {
 
 describe('validateProfileUpdateBody', () => {
   it('accepts a valid partial body', () => {
-    expect(validateProfileUpdateBody({ name: 'Alice', bio: 'Hello' })).toEqual([]);
+    expect(validateProfileUpdateBody({ name: 'Alice', bio: 'Hello' })).toEqual(
+      []
+    );
   });
 
   it('accepts an empty object', () => {
@@ -282,7 +294,9 @@ describe('validateProfileUpdateBody', () => {
   });
 
   it('accepts a valid email', () => {
-    expect(validateProfileUpdateBody({ email: 'user@example.com' })).toEqual([]);
+    expect(validateProfileUpdateBody({ email: 'user@example.com' })).toEqual(
+      []
+    );
   });
 
   it('rejects invalid customUrl', () => {

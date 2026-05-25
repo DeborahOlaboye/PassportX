@@ -3,7 +3,12 @@ import { sendRouteError } from '../../utils/routeError';
 import logger from '../../utils/logger';
 
 jest.mock('../../utils/logger', () => ({
-  default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
+  default: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
 }));
 
 function makeMocks(requestId = 'test-req-id') {

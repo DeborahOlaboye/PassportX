@@ -1,25 +1,13 @@
 // Middleware for validating notification input
 // This requires express to be installed
 
-interface Request {
-  body: {
-    type?: string;
-    title?: string;
-    message?: string;
-    channels?: string[];
-  };
-}
+import { Request, Response, NextFunction } from 'express';
 
-interface Response {
-  status: (code: number) => Response;
-  json: (data: unknown) => void;
-}
-
-interface NextFunction {
-  (): void;
-}
-
-export function validateNotificationInput(req: Request, res: Response, next: NextFunction): void {
+export function validateNotificationInput(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
   const { type, title, message, channels } = req.body;
 
   if (!type || typeof type !== 'string') {
@@ -43,10 +31,14 @@ export function validateNotificationInput(req: Request, res: Response, next: Nex
   }
 
   const validChannels = ['in_app', 'email', 'websocket'];
-  const invalidChannels = channels.filter((channel: string) => !validChannels.includes(channel));
+  const invalidChannels = channels.filter(
+    (channel: string) => !validChannels.includes(channel)
+  );
 
   if (invalidChannels.length > 0) {
-    res.status(400).json({ error: `Invalid channels: ${invalidChannels.join(', ')}` });
+    res
+      .status(400)
+      .json({ error: `Invalid channels: ${invalidChannels.join(', ')}` });
     return;
   }
 
