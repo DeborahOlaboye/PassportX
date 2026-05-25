@@ -3,6 +3,11 @@
 
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
+import {
+  isValidNotificationType,
+  VALID_NOTIFICATION_TYPES,
+  VALIDATION_ERROR_MESSAGES,
+} from '../config/notificationValidation';
 
 /**
  * Validates notification input data before processing
@@ -59,8 +64,21 @@ export function validateNotificationInput(
         userAgent: req.get('user-agent'),
       });
       res.status(400).json({
-        error: 'Invalid notification type',
+        error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
         details: 'Type must be a non-empty string',
+      });
+      return;
+    }
+
+    if (!isValidNotificationType(type)) {
+      logger.warn('Notification validation failed: unknown notification type', {
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+        type,
+      });
+      res.status(400).json({
+        error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
+        details: `Type must be one of: ${VALID_NOTIFICATION_TYPES.join(', ')}`,
       });
       return;
     }
@@ -71,7 +89,7 @@ export function validateNotificationInput(
         userAgent: req.get('user-agent'),
       });
       res.status(400).json({
-        error: 'Title is required',
+        error: VALIDATION_ERROR_MESSAGES.TITLE_REQUIRED,
         details: 'Title must be a non-empty string',
       });
       return;
@@ -87,7 +105,7 @@ export function validateNotificationInput(
         userAgent: req.get('user-agent'),
       });
       res.status(400).json({
-        error: 'Message is required',
+        error: VALIDATION_ERROR_MESSAGES.MESSAGE_REQUIRED,
         details: 'Message must be a non-empty string',
       });
       return;
@@ -104,7 +122,7 @@ export function validateNotificationInput(
         userAgent: req.get('user-agent'),
       });
       res.status(400).json({
-        error: 'At least one channel is required',
+        error: VALIDATION_ERROR_MESSAGES.CHANNELS_REQUIRED,
         details: 'Channels must be a non-empty array',
       });
       return;
