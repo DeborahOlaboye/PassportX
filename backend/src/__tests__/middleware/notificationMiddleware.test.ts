@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
-import { validateNotificationInput } from '../../middleware/notificationMiddleware';
+import {
+  validateNotificationInput,
+  getValidationFailureCount,
+  resetValidationFailureCount,
+} from '../../middleware/notificationMiddleware';
 
 // Mock the logger
 jest.mock('../../utils/logger', () => ({
@@ -610,6 +614,58 @@ describe('validateNotificationInput Middleware', () => {
       expect(mockRequest.body.title).toBe('Test Title');
       expect(mockRequest.body.message).toBe('Test Message');
       expect(mockNext).toHaveBeenCalled();
+    });
+  });
+
+  describe('Metrics Counter', () => {
+    beforeEach(() => {
+      resetValidationFailureCount();
+    });
+
+    it('should increment counter on each validation failure', () => {
+      mockRequest.body = {
+        title: 'Test Title',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(getValidationFailureCount()).toBe(1);
+    });
+
+    it('should not increment counter on successful validation', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'Test Title',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(getValidationFailureCount()).toBe(0);
+    });
+
+    it('should reset counter to zero', () => {
+      mockRequest.body = {};
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+      expect(getValidationFailureCount()).toBe(1);
+
+      resetValidationFailureCount();
+      expect(getValidationFailureCount()).toBe(0);
     });
   });
 });
