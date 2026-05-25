@@ -422,8 +422,45 @@ router.post(
 );
 
 /**
- * POST /api/notifications/system-announcement
- * Create system-wide announcement (admin only)
+ * @swagger
+ * /api/notifications/system-announcement:
+ *   post:
+ *     summary: Create a system-wide announcement (admin only)
+ *     description: Sends a notification to all users. Requires admin role.
+ *     tags: [Notifications]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [type, title, message, channels]
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 example: announcement
+ *               title:
+ *                 type: string
+ *                 example: System Maintenance
+ *               message:
+ *                 type: string
+ *                 example: Scheduled maintenance on Sunday at 2 AM UTC.
+ *               channels:
+ *                 type: array
+ *                 items: { type: string }
+ *                 example: [in_app, email]
+ *               expiresAt:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       200:
+ *         description: Announcement sent
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Admin access required
  */
 router.post(
   '/system-announcement',
