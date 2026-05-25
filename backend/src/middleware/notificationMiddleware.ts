@@ -114,7 +114,9 @@ function validateTitleField(title: unknown): ValidationErrorResponse | null {
   return null;
 }
 
-function validateMessageField(message: unknown): ValidationErrorResponse | null {
+function validateMessageField(
+  message: unknown
+): ValidationErrorResponse | null {
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return {
       error: VALIDATION_ERROR_MESSAGES.MESSAGE_REQUIRED,
@@ -130,7 +132,9 @@ function validateMessageField(message: unknown): ValidationErrorResponse | null 
   return null;
 }
 
-function validateChannelsField(channels: unknown): ValidationErrorResponse | null {
+function validateChannelsField(
+  channels: unknown
+): ValidationErrorResponse | null {
   if (!channels || !Array.isArray(channels) || channels.length === 0) {
     return {
       error: VALIDATION_ERROR_MESSAGES.CHANNELS_REQUIRED,
@@ -143,7 +147,9 @@ function validateChannelsField(channels: unknown): ValidationErrorResponse | nul
   if (invalidChannels.length > 0) {
     return {
       error: VALIDATION_ERROR_MESSAGES.INVALID_CHANNEL,
-      details: `Invalid channels: ${invalidChannels.join(', ')}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
+      details: `Invalid channels: ${invalidChannels.join(
+        ', '
+      )}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
     };
   }
   return null;
@@ -156,7 +162,8 @@ export function validateNotificationInput(
 ): void {
   try {
     const { type, title, message, channels } = req.body;
-    const logContext = { ip: req.ip, userAgent: req.get('user-agent') };
+    const requestId = req.headers['x-request-id'] as string | undefined;
+    const logContext = { ip: req.ip, userAgent: req.get('user-agent'), requestId };
 
     const typeError = validateTypeField(type);
     if (typeError) {
@@ -174,7 +181,10 @@ export function validateNotificationInput(
 
     const messageError = validateMessageField(message);
     if (messageError) {
-      logger.warn('Notification validation failed: invalid message', logContext);
+      logger.warn(
+        'Notification validation failed: invalid message',
+        logContext
+      );
       res.status(400).json(messageError);
       return;
     }
@@ -185,7 +195,10 @@ export function validateNotificationInput(
 
     const channelsError = validateChannelsField(channels);
     if (channelsError) {
-      logger.warn('Notification validation failed: invalid channels', logContext);
+      logger.warn(
+        'Notification validation failed: invalid channels',
+        logContext
+      );
       res.status(400).json(channelsError);
       return;
     }
@@ -194,6 +207,7 @@ export function validateNotificationInput(
       type: req.body.type,
       channels: req.body.channels,
       ip: req.ip,
+      requestId,
     });
 
     next();
@@ -203,6 +217,7 @@ export function validateNotificationInput(
       stack: error instanceof Error ? error.stack : undefined,
       ip: req.ip,
       userAgent: req.get('user-agent'),
+      requestId: req.headers['x-request-id'],
     });
     res.status(500).json({
       error: 'Internal server error during validation',
