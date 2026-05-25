@@ -5,7 +5,9 @@ import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
 import {
   isValidNotificationType,
+  isValidNotificationChannel,
   VALID_NOTIFICATION_TYPES,
+  VALID_NOTIFICATION_CHANNELS,
   VALIDATION_ERROR_MESSAGES,
 } from '../config/notificationValidation';
 
@@ -128,9 +130,8 @@ export function validateNotificationInput(
       return;
     }
 
-    const validChannels = ['in_app', 'email', 'websocket'];
-    const invalidChannels = channels.filter(
-      (channel: string) => !validChannels.includes(channel)
+    const invalidChannels = (channels as string[]).filter(
+      (channel: string) => !isValidNotificationChannel(channel)
     );
 
     if (invalidChannels.length > 0) {
@@ -140,8 +141,8 @@ export function validateNotificationInput(
         userAgent: req.get('user-agent'),
       });
       res.status(400).json({
-        error: `Invalid channels: ${invalidChannels.join(', ')}`,
-        details: `Valid channels are: ${validChannels.join(', ')}`,
+        error: VALIDATION_ERROR_MESSAGES.INVALID_CHANNEL,
+        details: `Invalid channels: ${invalidChannels.join(', ')}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
       });
       return;
     }
