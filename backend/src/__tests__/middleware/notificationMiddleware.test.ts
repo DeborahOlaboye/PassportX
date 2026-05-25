@@ -278,7 +278,7 @@ describe('validateNotificationInput Middleware', () => {
 
     it('should accept all valid channel types', () => {
       const validChannels = ['in_app', 'email', 'websocket'];
-      
+
       validChannels.forEach((channel) => {
         mockRequest.body = {
           type: 'badge_issued',
@@ -374,7 +374,8 @@ describe('validateNotificationInput Middleware', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith({
         error: 'Internal server error during validation',
-        details: 'An unexpected error occurred while validating the notification',
+        details:
+          'An unexpected error occurred while validating the notification',
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
