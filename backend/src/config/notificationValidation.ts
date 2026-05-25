@@ -1,6 +1,6 @@
 /**
  * Notification Validation Constants
- * 
+ *
  * This file contains constants for validating notification types and channels
  * to ensure consistency across the application.
  */
@@ -24,7 +24,7 @@ export const VALID_NOTIFICATION_TYPES = [
  */
 export function isValidNotificationType(
   type: string
-): type is typeof VALID_NOTIFICATION_TYPES[number] {
+): type is (typeof VALID_NOTIFICATION_TYPES)[number] {
   return VALID_NOTIFICATION_TYPES.includes(type as any);
 }
 
@@ -43,7 +43,7 @@ export const VALID_NOTIFICATION_CHANNELS = [
  */
 export function isValidNotificationChannel(
   channel: string
-): channel is typeof VALID_NOTIFICATION_CHANNELS[number] {
+): channel is (typeof VALID_NOTIFICATION_CHANNELS)[number] {
   return VALID_NOTIFICATION_CHANNELS.includes(channel as any);
 }
 
@@ -56,6 +56,14 @@ export const NOTIFICATION_FIELD_LIMITS = {
   TYPE_MAX_LENGTH: 50,
   MAX_CHANNELS: 3,
 } as const;
+
+/**
+ * Shape of a validation error response body returned by the notification middleware.
+ */
+export type NotificationValidationError = {
+  error: string;
+  details: string;
+};
 
 /**
  * Validation error messages
