@@ -347,8 +347,42 @@ router.delete(
 );
 
 /**
- * POST /api/notifications/test
- * Create test notification (development only)
+ * @swagger
+ * /api/notifications/test:
+ *   post:
+ *     summary: Create a test notification (development only)
+ *     description: Creates a test notification for the authenticated user. Blocked in production.
+ *     tags: [Notifications]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [type, title, message, channels]
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 example: badge_issued
+ *               title:
+ *                 type: string
+ *                 example: New Badge Earned
+ *               message:
+ *                 type: string
+ *                 example: You earned a badge!
+ *               channels:
+ *                 type: array
+ *                 items: { type: string }
+ *                 example: [in_app]
+ *     responses:
+ *       200:
+ *         description: Test notification created
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Not available in production
  */
 router.post(
   '/test',
