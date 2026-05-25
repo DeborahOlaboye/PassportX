@@ -60,6 +60,16 @@ type ValidationErrorResponse = {
   details: string;
 };
 
+let validationFailureCount = 0;
+
+export function getValidationFailureCount(): number {
+  return validationFailureCount;
+}
+
+export function resetValidationFailureCount(): void {
+  validationFailureCount = 0;
+}
+
 function sanitizeString(input: string): string {
   let sanitized = input
     .trim()
@@ -172,6 +182,7 @@ export function validateNotificationInput(
 
     const typeError = validateTypeField(type);
     if (typeError) {
+      validationFailureCount++;
       logger.warn('Notification validation failed: invalid type', logContext);
       res.status(400).json(typeError);
       return;
@@ -179,6 +190,7 @@ export function validateNotificationInput(
 
     const titleError = validateTitleField(title);
     if (titleError) {
+      validationFailureCount++;
       logger.warn('Notification validation failed: invalid title', logContext);
       res.status(400).json(titleError);
       return;
@@ -186,6 +198,7 @@ export function validateNotificationInput(
 
     const messageError = validateMessageField(message);
     if (messageError) {
+      validationFailureCount++;
       logger.warn(
         'Notification validation failed: invalid message',
         logContext
@@ -200,6 +213,7 @@ export function validateNotificationInput(
 
     const channelsError = validateChannelsField(channels);
     if (channelsError) {
+      validationFailureCount++;
       logger.warn(
         'Notification validation failed: invalid channels',
         logContext
