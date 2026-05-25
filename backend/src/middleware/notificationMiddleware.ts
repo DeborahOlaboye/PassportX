@@ -48,9 +48,11 @@ import {
 function sanitizeString(input: string): string {
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove angle brackets to prevent HTML injection
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, ''); // Remove inline event handlers
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .replace(/data:/gi, '')
+    .replace(/vbscript:/gi, '');
 }
 
 export function validateNotificationInput(
