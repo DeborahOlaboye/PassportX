@@ -8,6 +8,7 @@ import {
   isValidNotificationChannel,
   VALID_NOTIFICATION_TYPES,
   VALID_NOTIFICATION_CHANNELS,
+  NOTIFICATION_FIELD_LIMITS,
   VALIDATION_ERROR_MESSAGES,
 } from '../config/notificationValidation';
 
@@ -97,6 +98,19 @@ export function validateNotificationInput(
       return;
     }
 
+    if (title.trim().length > NOTIFICATION_FIELD_LIMITS.TITLE_MAX_LENGTH) {
+      logger.warn('Notification validation failed: title too long', {
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+        titleLength: title.trim().length,
+      });
+      res.status(400).json({
+        error: VALIDATION_ERROR_MESSAGES.TITLE_TOO_LONG,
+        details: VALIDATION_ERROR_MESSAGES.TITLE_TOO_LONG,
+      });
+      return;
+    }
+
     if (
       !message ||
       typeof message !== 'string' ||
@@ -142,7 +156,9 @@ export function validateNotificationInput(
       });
       res.status(400).json({
         error: VALIDATION_ERROR_MESSAGES.INVALID_CHANNEL,
-        details: `Invalid channels: ${invalidChannels.join(', ')}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
+        details: `Invalid channels: ${invalidChannels.join(
+          ', '
+        )}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
       });
       return;
     }
