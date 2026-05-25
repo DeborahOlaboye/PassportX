@@ -58,9 +58,9 @@ export function validateNotificationInput(
         ip: req.ip,
         userAgent: req.get('user-agent'),
       });
-      res.status(400).json({ 
+      res.status(400).json({
         error: 'Invalid notification type',
-        details: 'Type must be a non-empty string'
+        details: 'Type must be a non-empty string',
       });
       return;
     }
@@ -70,21 +70,25 @@ export function validateNotificationInput(
         ip: req.ip,
         userAgent: req.get('user-agent'),
       });
-      res.status(400).json({ 
+      res.status(400).json({
         error: 'Title is required',
-        details: 'Title must be a non-empty string'
+        details: 'Title must be a non-empty string',
       });
       return;
     }
 
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    if (
+      !message ||
+      typeof message !== 'string' ||
+      message.trim().length === 0
+    ) {
       logger.warn('Notification validation failed: missing or empty message', {
         ip: req.ip,
         userAgent: req.get('user-agent'),
       });
-      res.status(400).json({ 
+      res.status(400).json({
         error: 'Message is required',
-        details: 'Message must be a non-empty string'
+        details: 'Message must be a non-empty string',
       });
       return;
     }
@@ -99,9 +103,9 @@ export function validateNotificationInput(
         ip: req.ip,
         userAgent: req.get('user-agent'),
       });
-      res.status(400).json({ 
+      res.status(400).json({
         error: 'At least one channel is required',
-        details: 'Channels must be a non-empty array'
+        details: 'Channels must be a non-empty array',
       });
       return;
     }
@@ -117,12 +121,10 @@ export function validateNotificationInput(
         ip: req.ip,
         userAgent: req.get('user-agent'),
       });
-      res
-        .status(400)
-        .json({ 
-          error: `Invalid channels: ${invalidChannels.join(', ')}`,
-          details: `Valid channels are: ${validChannels.join(', ')}`
-        });
+      res.status(400).json({
+        error: `Invalid channels: ${invalidChannels.join(', ')}`,
+        details: `Valid channels are: ${validChannels.join(', ')}`,
+      });
       return;
     }
 
@@ -140,9 +142,9 @@ export function validateNotificationInput(
       ip: req.ip,
       userAgent: req.get('user-agent'),
     });
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error during validation',
-      details: 'An unexpected error occurred while validating the notification'
+      details: 'An unexpected error occurred while validating the notification',
     });
   }
 }
