@@ -203,24 +203,40 @@ describe('Notification Middleware Integration Tests', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle very long titles', async () => {
+    it('should accept title at the maximum length boundary', async () => {
       app.post('/notifications', validateNotificationInput, (req, res) => {
         res.status(200).json({ success: true, data: req.body });
       });
 
-      const longTitle = 'A'.repeat(1000);
+      const maxTitle = 'A'.repeat(200);
 
       const response = await request(app)
         .post('/notifications')
         .send({
           type: 'badge_issued',
-          title: longTitle,
+          title: maxTitle,
           message: 'Test Message',
           channels: ['in_app'],
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.data.title).toBe(longTitle);
+    });
+
+    it('should reject title exceeding maximum length', async () => {
+      app.post('/notifications', validateNotificationInput, (req, res) => {
+        res.status(200).json({ success: true, data: req.body });
+      });
+
+      const response = await request(app)
+        .post('/notifications')
+        .send({
+          type: 'badge_issued',
+          title: 'A'.repeat(201),
+          message: 'Test Message',
+          channels: ['in_app'],
+        });
+
+      expect(response.status).toBe(400);
     });
 
     it('should handle very long messages', async () => {
