@@ -45,6 +45,16 @@ const SQL_INJECTION_PATTERNS = [
   /(--|;|\/\*|\*\/)/g,
 ];
 
+const NOSQL_INJECTION_PATTERNS = [
+  /\$where/gi,
+  /\$ne\b/gi,
+  /\$gt\b/gi,
+  /\$lt\b/gi,
+  /\$regex/gi,
+  /\$or\b/gi,
+  /\$and\b/gi,
+];
+
 /**
  * Sanitizes string input by removing potentially dangerous characters
  * @param input - The string to sanitize
@@ -60,6 +70,11 @@ function sanitizeString(input: string): string {
     .replace(/vbscript:/gi, '');
 
   for (const pattern of SQL_INJECTION_PATTERNS) {
+    pattern.lastIndex = 0;
+    sanitized = sanitized.replace(pattern, '');
+  }
+
+  for (const pattern of NOSQL_INJECTION_PATTERNS) {
     pattern.lastIndex = 0;
     sanitized = sanitized.replace(pattern, '');
   }
