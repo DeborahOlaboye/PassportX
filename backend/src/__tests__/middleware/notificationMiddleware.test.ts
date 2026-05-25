@@ -510,6 +510,42 @@ describe('validateNotificationInput Middleware', () => {
       expect(mockRequest.body.message).not.toContain('vbscript:');
       expect(mockNext).toHaveBeenCalled();
     });
+
+    it('should strip SQL injection keywords from message', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'Test Title',
+        message: "Test'; DROP TABLE notifications; --",
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockRequest.body.message).not.toContain('DROP');
+      expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should strip NoSQL injection operators from title', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'Test $where: function() { return true; }',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockRequest.body.title).not.toContain('$where');
+      expect(mockNext).toHaveBeenCalled();
+    });
   });
 
   describe('Error Handling', () => {
