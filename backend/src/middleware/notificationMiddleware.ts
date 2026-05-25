@@ -151,6 +151,12 @@ function validateChannelsField(
       details: 'Channels must be a non-empty array',
     };
   }
+  if (channels.length > NOTIFICATION_FIELD_LIMITS.MAX_CHANNELS) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.TOO_MANY_CHANNELS,
+      details: VALIDATION_ERROR_MESSAGES.TOO_MANY_CHANNELS,
+    };
+  }
   const invalidChannels = (channels as string[]).filter(
     (channel: string) => !isValidNotificationChannel(channel)
   );
