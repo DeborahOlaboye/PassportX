@@ -1,5 +1,4 @@
 // Middleware for validating notification input
-// This requires express to be installed
 
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
@@ -40,6 +39,7 @@ import {
  *
  * @returns {void} Calls next() if validation passes, or sends 400 error response
  */
+
 const SQL_INJECTION_PATTERNS = [
   /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|TRUNCATE)\b)/gi,
   /(--|;|\/\*|\*\/)/g,
@@ -55,11 +55,11 @@ const NOSQL_INJECTION_PATTERNS = [
   /\$and\b/gi,
 ];
 
-/**
- * Sanitizes string input by removing potentially dangerous characters
- * @param input - The string to sanitize
- * @returns Sanitized string
- */
+type ValidationErrorResponse = {
+  error: string;
+  details: string;
+};
+
 function sanitizeString(input: string): string {
   let sanitized = input
     .trim()
@@ -82,6 +82,73 @@ function sanitizeString(input: string): string {
   return sanitized;
 }
 
+function validateTypeField(type: unknown): ValidationErrorResponse | null {
+  if (!type || typeof type !== 'string') {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
+      details: 'Type must be a non-empty string',
+    };
+  }
+  if (!isValidNotificationType(type)) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
+      details: `Type must be one of: ${VALID_NOTIFICATION_TYPES.join(', ')}`,
+    };
+  }
+  return null;
+}
+
+function validateTitleField(title: unknown): ValidationErrorResponse | null {
+  if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.TITLE_REQUIRED,
+      details: 'Title must be a non-empty string',
+    };
+  }
+  if (title.trim().length > NOTIFICATION_FIELD_LIMITS.TITLE_MAX_LENGTH) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.TITLE_TOO_LONG,
+      details: VALIDATION_ERROR_MESSAGES.TITLE_TOO_LONG,
+    };
+  }
+  return null;
+}
+
+function validateMessageField(message: unknown): ValidationErrorResponse | null {
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.MESSAGE_REQUIRED,
+      details: 'Message must be a non-empty string',
+    };
+  }
+  if (message.trim().length > NOTIFICATION_FIELD_LIMITS.MESSAGE_MAX_LENGTH) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.MESSAGE_TOO_LONG,
+      details: VALIDATION_ERROR_MESSAGES.MESSAGE_TOO_LONG,
+    };
+  }
+  return null;
+}
+
+function validateChannelsField(channels: unknown): ValidationErrorResponse | null {
+  if (!channels || !Array.isArray(channels) || channels.length === 0) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.CHANNELS_REQUIRED,
+      details: 'Channels must be a non-empty array',
+    };
+  }
+  const invalidChannels = (channels as string[]).filter(
+    (channel: string) => !isValidNotificationChannel(channel)
+  );
+  if (invalidChannels.length > 0) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.INVALID_CHANNEL,
+      details: `Invalid channels: ${invalidChannels.join(', ')}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
+    };
+  }
+  return null;
+}
+
 export function validateNotificationInput(
   req: Request,
   res: Response,
@@ -89,119 +156,37 @@ export function validateNotificationInput(
 ): void {
   try {
     const { type, title, message, channels } = req.body;
+    const logContext = { ip: req.ip, userAgent: req.get('user-agent') };
 
-    if (!type || typeof type !== 'string') {
-      logger.warn('Notification validation failed: invalid type', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
-        details: 'Type must be a non-empty string',
-      });
+    const typeError = validateTypeField(type);
+    if (typeError) {
+      logger.warn('Notification validation failed: invalid type', logContext);
+      res.status(400).json(typeError);
       return;
     }
 
-    if (!isValidNotificationType(type)) {
-      logger.warn('Notification validation failed: unknown notification type', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-        type,
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
-        details: `Type must be one of: ${VALID_NOTIFICATION_TYPES.join(', ')}`,
-      });
+    const titleError = validateTitleField(title);
+    if (titleError) {
+      logger.warn('Notification validation failed: invalid title', logContext);
+      res.status(400).json(titleError);
       return;
     }
 
-    if (!title || typeof title !== 'string' || title.trim().length === 0) {
-      logger.warn('Notification validation failed: missing or empty title', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.TITLE_REQUIRED,
-        details: 'Title must be a non-empty string',
-      });
+    const messageError = validateMessageField(message);
+    if (messageError) {
+      logger.warn('Notification validation failed: invalid message', logContext);
+      res.status(400).json(messageError);
       return;
     }
 
-    if (title.trim().length > NOTIFICATION_FIELD_LIMITS.TITLE_MAX_LENGTH) {
-      logger.warn('Notification validation failed: title too long', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-        titleLength: title.trim().length,
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.TITLE_TOO_LONG,
-        details: VALIDATION_ERROR_MESSAGES.TITLE_TOO_LONG,
-      });
-      return;
-    }
-
-    if (
-      !message ||
-      typeof message !== 'string' ||
-      message.trim().length === 0
-    ) {
-      logger.warn('Notification validation failed: missing or empty message', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.MESSAGE_REQUIRED,
-        details: 'Message must be a non-empty string',
-      });
-      return;
-    }
-
-    if (message.trim().length > NOTIFICATION_FIELD_LIMITS.MESSAGE_MAX_LENGTH) {
-      logger.warn('Notification validation failed: message too long', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-        messageLength: message.trim().length,
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.MESSAGE_TOO_LONG,
-        details: VALIDATION_ERROR_MESSAGES.MESSAGE_TOO_LONG,
-      });
-      return;
-    }
-
-    // Sanitize inputs to prevent XSS and injection attacks
     req.body.type = sanitizeString(type);
     req.body.title = sanitizeString(title);
     req.body.message = sanitizeString(message);
 
-    if (!channels || !Array.isArray(channels) || channels.length === 0) {
-      logger.warn('Notification validation failed: missing or empty channels', {
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.CHANNELS_REQUIRED,
-        details: 'Channels must be a non-empty array',
-      });
-      return;
-    }
-
-    const invalidChannels = (channels as string[]).filter(
-      (channel: string) => !isValidNotificationChannel(channel)
-    );
-
-    if (invalidChannels.length > 0) {
-      logger.warn('Notification validation failed: invalid channels', {
-        invalidChannels,
-        ip: req.ip,
-        userAgent: req.get('user-agent'),
-      });
-      res.status(400).json({
-        error: VALIDATION_ERROR_MESSAGES.INVALID_CHANNEL,
-        details: `Invalid channels: ${invalidChannels.join(
-          ', '
-        )}. Valid channels are: ${VALID_NOTIFICATION_CHANNELS.join(', ')}`,
-      });
+    const channelsError = validateChannelsField(channels);
+    if (channelsError) {
+      logger.warn('Notification validation failed: invalid channels', logContext);
+      res.status(400).json(channelsError);
       return;
     }
 
