@@ -3,6 +3,34 @@
 
 import { Request, Response, NextFunction } from 'express';
 
+/**
+ * Validates notification input data before processing
+ *
+ * This middleware ensures that notification requests contain valid data:
+ * - type: A string identifying the notification type
+ * - title: A non-empty string for the notification title
+ * - message: A non-empty string for the notification message
+ * - channels: An array of valid channel types (in_app, email, websocket)
+ *
+ * @param req - Express Request object containing notification data in req.body
+ * @param res - Express Response object for sending validation errors
+ * @param next - Express NextFunction to proceed to next middleware if validation passes
+ *
+ * @example
+ * // Usage in Express route
+ * router.post('/notifications', validateNotificationInput, createNotificationHandler);
+ *
+ * @example
+ * // Valid request body
+ * {
+ *   "type": "badge_issued",
+ *   "title": "New Badge Earned",
+ *   "message": "You have earned a new badge!",
+ *   "channels": ["in_app", "email"]
+ * }
+ *
+ * @returns {void} Calls next() if validation passes, or sends 400 error response
+ */
 export function validateNotificationInput(
   req: Request,
   res: Response,
