@@ -249,7 +249,9 @@ router.put(
       const { id } = req.params;
 
       if (!isValidObjectId(id)) {
-        return res.status(400).json({ error: 'Invalid notification ID format' });
+        return res
+          .status(400)
+          .json({ error: 'Invalid notification ID format' });
       }
 
       const notification = await markNotificationAsRead(id, userId);
@@ -303,7 +305,9 @@ router.delete(
       const { id } = req.params;
 
       if (!isValidObjectId(id)) {
-        return res.status(400).json({ error: 'Invalid notification ID format' });
+        return res
+          .status(400)
+          .json({ error: 'Invalid notification ID format' });
       }
 
       const deleted = await deleteNotification(id, userId);

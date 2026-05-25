@@ -133,7 +133,9 @@ describe('isValidStacksAddressParam', () => {
   });
 
   it('rejects an address with wrong prefix', () => {
-    expect(isValidStacksAddressParam('XP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')).toBe(false);
+    expect(
+      isValidStacksAddressParam('XP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7')
+    ).toBe(false);
   });
 
   it('rejects empty string', () => {
@@ -207,13 +209,17 @@ describe('sanitizeQueryString', () => {
   });
 
   it('preserves normal alphanumeric input', () => {
-    expect(sanitizeQueryString('badge-search-query')).toBe('badge-search-query');
+    expect(sanitizeQueryString('badge-search-query')).toBe(
+      'badge-search-query'
+    );
   });
 });
 
 describe('getMissingFields', () => {
   it('returns empty array when all required fields are present', () => {
-    expect(getMissingFields({ name: 'Alice', age: '30' }, ['name'])).toEqual([]);
+    expect(getMissingFields({ name: 'Alice', age: '30' }, ['name'])).toEqual(
+      []
+    );
   });
 
   it('returns missing field names', () => {
