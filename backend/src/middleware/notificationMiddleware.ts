@@ -160,10 +160,15 @@ export function validateNotificationInput(
   res: Response,
   next: NextFunction
 ): void {
+  const startTime = Date.now();
   try {
     const { type, title, message, channels } = req.body;
     const requestId = req.headers['x-request-id'] as string | undefined;
-    const logContext = { ip: req.ip, userAgent: req.get('user-agent'), requestId };
+    const logContext = {
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+      requestId,
+    };
 
     const typeError = validateTypeField(type);
     if (typeError) {
@@ -203,11 +208,13 @@ export function validateNotificationInput(
       return;
     }
 
+    const durationMs = Date.now() - startTime;
     logger.info('Notification validation passed', {
       type: req.body.type,
       channels: req.body.channels,
       ip: req.ip,
       requestId,
+      durationMs,
     });
 
     next();
