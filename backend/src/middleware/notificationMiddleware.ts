@@ -93,6 +93,7 @@ function sanitizeString(input: string): string {
   return sanitized;
 }
 
+/** Validates that the notification type is present and a recognized enum value. */
 function validateTypeField(type: unknown): ValidationErrorResponse | null {
   if (!type || typeof type !== 'string') {
     return {
@@ -109,6 +110,7 @@ function validateTypeField(type: unknown): ValidationErrorResponse | null {
   return null;
 }
 
+/** Validates that the title is present and within the allowed length. */
 function validateTitleField(title: unknown): ValidationErrorResponse | null {
   if (!title || typeof title !== 'string' || title.trim().length === 0) {
     return {
@@ -125,6 +127,7 @@ function validateTitleField(title: unknown): ValidationErrorResponse | null {
   return null;
 }
 
+/** Validates that the message is present and within the allowed length. */
 function validateMessageField(
   message: unknown
 ): ValidationErrorResponse | null {
@@ -143,6 +146,7 @@ function validateMessageField(
   return null;
 }
 
+/** Validates that channels is a non-empty array of known channel values within the count limit. */
 function validateChannelsField(
   channels: unknown
 ): ValidationErrorResponse | null {
