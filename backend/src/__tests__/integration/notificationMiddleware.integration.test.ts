@@ -276,5 +276,101 @@ describe('Notification Middleware Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.data.channels).toHaveLength(3);
     });
+
+    it('should reject channels exceeding maximum count', async () => {
+      app.post('/notifications', validateNotificationInput, (req, res) => {
+        res.status(200).json({ success: true, data: req.body });
+      });
+
+      const response = await request(app)
+        .post('/notifications')
+        .send({
+          type: 'badge_issued',
+          title: 'Test Title',
+          message: 'Test Message',
+          channels: ['in_app', 'email', 'websocket', 'in_app'],
+        });
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('Type Enum Validation', () => {
+    it('should reject an unknown notification type', async () => {
+      app.post('/notifications', validateNotificationInput, (req, res) => {
+        res.status(200).json({ success: true });
+      });
+
+      const response = await request(app)
+        .post('/notifications')
+        .send({
+          type: 'unknown_type',
+          title: 'Test Title',
+          message: 'Test Message',
+          channels: ['in_app'],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Invalid notification type');
+    });
+
+    it('should accept all valid notification types', async () => {
+      const validTypes = ['badge_issued', 'badge_revoked', 'system', 'announcement'];
+
+      for (const type of validTypes) {
+        app.post(`/notifications-${type}`, validateNotificationInput, (_req, res) => {
+          res.status(200).json({ success: true });
+        });
+
+        const response = await request(app)
+          .post(`/notifications-${type}`)
+          .send({
+            type,
+            title: 'Test Title',
+            message: 'Test Message',
+            channels: ['in_app'],
+          });
+
+        expect(response.status).toBe(200);
+      }
+    });
+  });
+
+  describe('Injection Sanitization', () => {
+    it('should strip SQL keywords from sanitized inputs', async () => {
+      app.post('/notifications', validateNotificationInput, (req, res) => {
+        res.status(200).json({ success: true, data: req.body });
+      });
+
+      const response = await request(app)
+        .post('/notifications')
+        .send({
+          type: 'badge_issued',
+          title: 'Test Title',
+          message: "Hello'; DROP TABLE users; --",
+          channels: ['in_app'],
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.message).not.toContain('DROP');
+    });
+
+    it('should strip NoSQL operators from sanitized inputs', async () => {
+      app.post('/notifications', validateNotificationInput, (req, res) => {
+        res.status(200).json({ success: true, data: req.body });
+      });
+
+      const response = await request(app)
+        .post('/notifications')
+        .send({
+          type: 'badge_issued',
+          title: 'Query $where: true',
+          message: 'Test Message',
+          channels: ['in_app'],
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.title).not.toContain('$where');
+    });
   });
 });
