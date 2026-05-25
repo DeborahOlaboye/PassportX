@@ -45,7 +45,10 @@ export function isValidEnumParam<T extends string>(
   value: unknown,
   allowlist: readonly T[]
 ): value is T {
-  return typeof value === 'string' && (allowlist as readonly string[]).includes(value);
+  return (
+    typeof value === 'string' &&
+    (allowlist as readonly string[]).includes(value)
+  );
 }
 
 /**

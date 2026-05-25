@@ -14,7 +14,11 @@ import {
 } from '../config/rateLimits';
 import logger from '../utils/logger';
 import { isValidStacksAddress } from '../utils/addressValidation';
-import { parseQueryInt, isBoundedString, sanitizeQueryString } from '../utils/routeValidation';
+import {
+  parseQueryInt,
+  isBoundedString,
+  sanitizeQueryString,
+} from '../utils/routeValidation';
 
 const router = Router();
 

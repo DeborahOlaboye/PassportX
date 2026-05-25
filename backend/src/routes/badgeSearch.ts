@@ -8,6 +8,20 @@ import {
   BADGE_PUBLIC_READ_RATE_LIMIT,
   BADGE_SUGGESTIONS_RATE_LIMIT,
 } from '../config/rateLimits';
+import {
+  parseQueryInt,
+  isValidEnumParam,
+  sanitizeQueryString,
+} from '../utils/routeValidation';
+
+const VALID_SORT_OPTIONS = [
+  'newest',
+  'oldest',
+  'level-high',
+  'level-low',
+  'name-asc',
+  'name-desc',
+] as const;
 
 const router = express.Router();
 
