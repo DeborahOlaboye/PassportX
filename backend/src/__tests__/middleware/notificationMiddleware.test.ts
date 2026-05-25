@@ -474,6 +474,42 @@ describe('validateNotificationInput Middleware', () => {
       expect(mockRequest.body.title).not.toContain('onclick=');
       expect(mockNext).toHaveBeenCalled();
     });
+
+    it('should sanitize data: URI protocol', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'data:text/html,<h1>XSS</h1>',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockRequest.body.title).not.toContain('data:');
+      expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should sanitize vbscript: URI protocol', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'Test Title',
+        message: 'vbscript:MsgBox("XSS") Test',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockRequest.body.message).not.toContain('vbscript:');
+      expect(mockNext).toHaveBeenCalled();
+    });
   });
 
   describe('Error Handling', () => {
