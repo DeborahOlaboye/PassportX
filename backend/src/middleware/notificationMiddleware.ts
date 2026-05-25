@@ -38,6 +38,12 @@ import {
  * }
  *
  * @returns {void} Calls next() if validation passes, or sends 400 error response
+ *
+ * @security
+ * - Strips HTML angle brackets, javascript:, data:, and vbscript: URI schemes (XSS)
+ * - Removes SQL keywords and comment tokens (SQL injection)
+ * - Removes MongoDB operator prefixes such as $where and $ne (NoSQL injection)
+ * - Normalizes Unicode to NFC before any pattern matching
  */
 
 const SQL_INJECTION_PATTERNS = [
