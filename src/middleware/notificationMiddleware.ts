@@ -1,6 +1,5 @@
 // Middleware for validating notification input
 // This requires express to be installed
-// TODO: Install express dependency
 
 interface Request {
   body: {
