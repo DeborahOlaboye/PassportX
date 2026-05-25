@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express, { Express } from 'express';
-import { validateNotificationInput } from '../middleware/notificationMiddleware';
+import { validateNotificationInput } from '../../middleware/notificationMiddleware';
 
 describe('Notification Middleware Integration Tests', () => {
   let app: Express;
