@@ -273,6 +273,29 @@ describe('validateNotificationInput Middleware', () => {
 
       expect(mockNext).toHaveBeenCalled();
     });
+
+    it('should reject when message exceeds maximum length', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'Test Title',
+        message: 'B'.repeat(5001),
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.stringContaining('Message must not exceed'),
+        })
+      );
+      expect(mockNext).not.toHaveBeenCalled();
+    });
   });
 
   describe('Channels Validation', () => {
