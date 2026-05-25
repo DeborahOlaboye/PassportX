@@ -394,6 +394,29 @@ describe('validateNotificationInput Middleware', () => {
         mockNext.mockClear();
       });
     });
+
+    it('should reject when channels count exceeds maximum', () => {
+      mockRequest.body = {
+        type: 'badge_issued',
+        title: 'Test Title',
+        message: 'Test Message',
+        channels: ['in_app', 'email', 'websocket', 'in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.stringContaining('Cannot specify more than'),
+        })
+      );
+      expect(mockNext).not.toHaveBeenCalled();
+    });
   });
 
   describe('Input Sanitization', () => {
