@@ -61,7 +61,9 @@ describe('Notification Middleware Integration Tests', () => {
         authMiddleware,
         validateNotificationInput,
         (req: any, res) => {
-          res.status(200).json({ success: true, user: req.user, data: req.body });
+          res
+            .status(200)
+            .json({ success: true, user: req.user, data: req.body });
         }
       );
 
@@ -90,7 +92,8 @@ describe('Notification Middleware Integration Tests', () => {
         .send({
           type: 'badge_issued',
           title: 'New Badge Earned',
-          message: 'Congratulations! You have earned the Python Beginner badge.',
+          message:
+            'Congratulations! You have earned the Python Beginner badge.',
           channels: ['in_app', 'email'],
         });
 
@@ -109,7 +112,8 @@ describe('Notification Middleware Integration Tests', () => {
         .send({
           type: 'community_invite',
           title: 'Community Invitation',
-          message: 'You have been invited to join the Open Code Guild community.',
+          message:
+            'You have been invited to join the Open Code Guild community.',
           channels: ['in_app', 'websocket'],
         });
 
@@ -132,7 +136,11 @@ describe('Notification Middleware Integration Tests', () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.data.channels).toEqual(['in_app', 'email', 'websocket']);
+      expect(response.body.data.channels).toEqual([
+        'in_app',
+        'email',
+        'websocket',
+      ]);
     });
   });
 

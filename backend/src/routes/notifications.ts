@@ -2,6 +2,7 @@ import express, { Response } from 'express';
 import { AuthRequest } from '../types';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { validatePagination } from '../middleware/validation';
+import { validateNotificationInput } from '../middleware/notificationMiddleware';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { NOTIFICATION_WRITE_RATE_LIMIT } from '../config/rateLimits';
 import {
@@ -353,6 +354,7 @@ router.post(
   '/test',
   notificationWriteLimiter,
   authenticateToken,
+  validateNotificationInput,
   async (req: AuthRequest, res: Response) => {
     try {
       if (process.env.NODE_ENV === 'production') {
@@ -394,6 +396,7 @@ router.post(
   notificationWriteLimiter,
   authenticateToken,
   requireAdmin,
+  validateNotificationInput,
   async (req: AuthRequest, res: Response) => {
     try {
       const { title, message, data, expiresAt } = req.body;
