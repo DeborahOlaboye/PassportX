@@ -315,12 +315,21 @@ describe('Notification Middleware Integration Tests', () => {
     });
 
     it('should accept all valid notification types', async () => {
-      const validTypes = ['badge_issued', 'badge_revoked', 'system', 'announcement'];
+      const validTypes = [
+        'badge_issued',
+        'badge_revoked',
+        'system',
+        'announcement',
+      ];
 
       for (const type of validTypes) {
-        app.post(`/notifications-${type}`, validateNotificationInput, (_req, res) => {
-          res.status(200).json({ success: true });
-        });
+        app.post(
+          `/notifications-${type}`,
+          validateNotificationInput,
+          (_req, res) => {
+            res.status(200).json({ success: true });
+          }
+        );
 
         const response = await request(app)
           .post(`/notifications-${type}`)
