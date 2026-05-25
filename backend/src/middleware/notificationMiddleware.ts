@@ -31,6 +31,19 @@ import { Request, Response, NextFunction } from 'express';
  *
  * @returns {void} Calls next() if validation passes, or sends 400 error response
  */
+/**
+ * Sanitizes string input by removing potentially dangerous characters
+ * @param input - The string to sanitize
+ * @returns Sanitized string
+ */
+function sanitizeString(input: string): string {
+  return input
+    .trim()
+    .replace(/[<>]/g, '') // Remove angle brackets to prevent HTML injection
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, ''); // Remove inline event handlers
+}
+
 export function validateNotificationInput(
   req: Request,
   res: Response,
@@ -52,6 +65,11 @@ export function validateNotificationInput(
     res.status(400).json({ error: 'Message is required' });
     return;
   }
+
+  // Sanitize inputs to prevent XSS and injection attacks
+  req.body.type = sanitizeString(type);
+  req.body.title = sanitizeString(title);
+  req.body.message = sanitizeString(message);
 
   if (!channels || !Array.isArray(channels) || channels.length === 0) {
     res.status(400).json({ error: 'At least one channel is required' });
