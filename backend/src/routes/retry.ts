@@ -5,44 +5,36 @@ import RetryMetricsService from '../services/RetryMetricsService';
 import ErrorMonitoringService from '../services/ErrorMonitoringService';
 import CircuitBreakerRegistry from '../services/CircuitBreakerService';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
-import logger from '../utils/logger';
+import { sendRouteError } from '../utils/routeError';
 
 const router = express.Router();
 
 /**
  * GET /retry/queue/stats
- * Get retry queue statistics
  */
 router.get('/queue/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await RetryQueueService.getStatistics();
     res.json(stats);
   } catch (error) {
-    logger.error('Error fetching retry queue stats:', error);
-    res.status(500).json({ error: 'Failed to fetch retry queue statistics' });
+    sendRouteError(req, res, 'Error fetching retry queue stats', error);
   }
 });
 
 /**
  * POST /retry/queue/process
- * Manually trigger retry queue processing
  */
 router.post('/queue/process', async (req, res) => {
   try {
     const result = await RetryQueueService.processQueue();
-    res.json({
-      message: 'Retry queue processing completed',
-      ...result,
-    });
+    res.json({ message: 'Retry queue processing completed', ...result });
   } catch (error) {
-    console.error('Error processing retry queue:', error);
-    res.status(500).json({ error: 'Failed to process retry queue' });
+    sendRouteError(req, res, 'Error processing retry queue', error);
   }
 });
 
 /**
  * POST /retry/queue/:itemId/retry
- * Retry a specific item immediately
  */
 router.post(
   '/queue/:itemId/retry',
@@ -54,15 +46,13 @@ router.post(
       await RetryQueueService.retryNow(itemId);
       res.json({ message: 'Item scheduled for immediate retry' });
     } catch (error) {
-      logger.error('Error scheduling retry:', error);
-      res.status(500).json({ error: 'Failed to schedule retry' });
+      sendRouteError(req, res, 'Error scheduling retry', error);
     }
   }
 );
 
 /**
  * DELETE /retry/queue/:itemId
- * Cancel retry for a specific item
  */
 router.delete(
   '/queue/:itemId',
@@ -74,67 +64,51 @@ router.delete(
       await RetryQueueService.cancelRetry(itemId);
       res.json({ message: 'Retry cancelled and moved to dead letter queue' });
     } catch (error) {
-      logger.error('Error cancelling retry:', error);
-      res.status(500).json({ error: 'Failed to cancel retry' });
+      sendRouteError(req, res, 'Error cancelling retry', error);
     }
   }
 );
 
 /**
  * POST /retry/queue/cleanup
- * Clean up old completed items
  */
 router.post('/queue/cleanup', async (req, res) => {
   try {
     const { olderThanDays = 7 } = req.body;
     const deletedCount = await RetryQueueService.cleanupOldItems(olderThanDays);
-    res.json({
-      message: 'Cleanup completed',
-      deletedCount,
-    });
+    res.json({ message: 'Cleanup completed', deletedCount });
   } catch (error) {
-    console.error('Error cleaning up retry queue:', error);
-    res.status(500).json({ error: 'Failed to clean up retry queue' });
+    sendRouteError(req, res, 'Error cleaning up retry queue', error);
   }
 });
 
 /**
  * GET /retry/dead-letter/stats
- * Get dead letter queue statistics
  */
 router.get('/dead-letter/stats', authenticateToken, async (req, res) => {
   try {
     const stats = await DeadLetterQueueService.getStatistics();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching dead letter queue stats:', error);
-    res
-      .status(500)
-      .json({ error: 'Failed to fetch dead letter queue statistics' });
+    sendRouteError(req, res, 'Error fetching dead letter queue stats', error);
   }
 });
 
 /**
  * POST /retry/dead-letter/recover
- * Attempt to recover items from dead letter queue
  */
 router.post('/dead-letter/recover', async (req, res) => {
   try {
     const filter = req.body;
     const result = await DeadLetterQueueService.recoverItems(filter);
-    res.json({
-      message: 'Recovery attempt completed',
-      ...result,
-    });
+    res.json({ message: 'Recovery attempt completed', ...result });
   } catch (error) {
-    console.error('Error recovering items:', error);
-    res.status(500).json({ error: 'Failed to recover items' });
+    sendRouteError(req, res, 'Error recovering items', error);
   }
 });
 
 /**
  * POST /retry/dead-letter/archive
- * Archive old dead letter items
  */
 router.post('/dead-letter/archive', async (req, res) => {
   try {
@@ -142,33 +116,26 @@ router.post('/dead-letter/archive', async (req, res) => {
     const archivedCount = await DeadLetterQueueService.archiveOldItems(
       olderThanDays
     );
-    res.json({
-      message: 'Archival completed',
-      archivedCount,
-    });
+    res.json({ message: 'Archival completed', archivedCount });
   } catch (error) {
-    console.error('Error archiving items:', error);
-    res.status(500).json({ error: 'Failed to archive items' });
+    sendRouteError(req, res, 'Error archiving items', error);
   }
 });
 
 /**
  * GET /retry/dead-letter/analysis
- * Get error analysis from dead letter queue
  */
 router.get('/dead-letter/analysis', authenticateToken, async (req, res) => {
   try {
     const analysis = await DeadLetterQueueService.getErrorAnalysis();
     res.json(analysis);
   } catch (error) {
-    logger.error('Error getting error analysis:', error);
-    res.status(500).json({ error: 'Failed to get error analysis' });
+    sendRouteError(req, res, 'Error getting error analysis', error);
   }
 });
 
 /**
  * GET /retry/dead-letter/manual-review
- * Get items requiring manual review
  */
 router.get(
   '/dead-letter/manual-review',
@@ -182,29 +149,25 @@ router.get(
       const items = await DeadLetterQueueService.getItemsForManualReview(limit);
       res.json(items);
     } catch (error) {
-      logger.error('Error getting items for manual review:', error);
-      res.status(500).json({ error: 'Failed to get items for manual review' });
+      sendRouteError(req, res, 'Error getting items for manual review', error);
     }
   }
 );
 
 /**
  * GET /retry/metrics
- * Get comprehensive retry metrics
  */
 router.get('/metrics', authenticateToken, async (req, res) => {
   try {
     const metrics = await RetryMetricsService.getMetrics();
     res.json(metrics);
   } catch (error) {
-    logger.error('Error fetching metrics:', error);
-    res.status(500).json({ error: 'Failed to fetch metrics' });
+    sendRouteError(req, res, 'Error fetching metrics', error);
   }
 });
 
 /**
  * GET /retry/metrics/success-rate
- * Get success rate time series
  */
 router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
   try {
@@ -216,14 +179,12 @@ router.get('/metrics/success-rate', authenticateToken, async (req, res) => {
     );
     res.json(timeSeries);
   } catch (error) {
-    logger.error('Error fetching success rate:', error);
-    res.status(500).json({ error: 'Failed to fetch success rate time series' });
+    sendRouteError(req, res, 'Error fetching success rate', error);
   }
 });
 
 /**
  * GET /retry/metrics/error-distribution
- * Get error distribution time series
  */
 router.get('/metrics/error-distribution', async (req, res) => {
   try {
@@ -234,14 +195,12 @@ router.get('/metrics/error-distribution', async (req, res) => {
       await RetryMetricsService.getErrorDistributionTimeSeries(hoursBack);
     res.json(distribution);
   } catch (error) {
-    console.error('Error fetching error distribution:', error);
-    res.status(500).json({ error: 'Failed to fetch error distribution' });
+    sendRouteError(req, res, 'Error fetching error distribution', error);
   }
 });
 
 /**
  * GET /retry/metrics/top-failing
- * Get top failing items
  */
 router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
   try {
@@ -251,14 +210,12 @@ router.get('/metrics/top-failing', authenticateToken, async (req, res) => {
     const items = await RetryMetricsService.getTopFailingItems(limit);
     res.json(items);
   } catch (error) {
-    logger.error('Error fetching top failing items:', error);
-    res.status(500).json({ error: 'Failed to fetch top failing items' });
+    sendRouteError(req, res, 'Error fetching top failing items', error);
   }
 });
 
 /**
  * GET /retry/metrics/export
- * Export metrics as JSON
  */
 router.get(
   '/metrics/export',
@@ -274,29 +231,25 @@ router.get(
       );
       res.send(exportData);
     } catch (error) {
-      logger.error('Error exporting metrics:', error);
-      res.status(500).json({ error: 'Failed to export metrics' });
+      sendRouteError(req, res, 'Error exporting metrics', error);
     }
   }
 );
 
 /**
  * GET /retry/monitoring/health
- * Get system health status
  */
 router.get('/monitoring/health', authenticateToken, async (req, res) => {
   try {
     const health = await ErrorMonitoringService.getHealthStatus();
     res.json(health);
   } catch (error) {
-    logger.error('Error fetching health status:', error);
-    res.status(500).json({ error: 'Failed to fetch health status' });
+    sendRouteError(req, res, 'Error fetching health status', error);
   }
 });
 
 /**
  * GET /retry/monitoring/alerts
- * Get recent alerts
  */
 router.get('/monitoring/alerts', authenticateToken, async (req, res) => {
   try {
@@ -310,44 +263,36 @@ router.get('/monitoring/alerts', authenticateToken, async (req, res) => {
     const alerts = ErrorMonitoringService.getAlerts(limit, severity);
     res.json(alerts);
   } catch (error) {
-    logger.error('Error fetching alerts:', error);
-    res.status(500).json({ error: 'Failed to fetch alerts' });
+    sendRouteError(req, res, 'Error fetching alerts', error);
   }
 });
 
 /**
  * GET /retry/monitoring/statistics
- * Get comprehensive monitoring statistics
  */
 router.get('/monitoring/statistics', authenticateToken, async (req, res) => {
   try {
     const stats = await ErrorMonitoringService.getStatistics();
     res.json(stats);
   } catch (error) {
-    logger.error('Error fetching monitoring statistics:', error);
-    res.status(500).json({ error: 'Failed to fetch monitoring statistics' });
+    sendRouteError(req, res, 'Error fetching monitoring statistics', error);
   }
 });
 
 /**
  * GET /retry/circuit-breakers
- * Get all circuit breaker statistics
  */
 router.get('/circuit-breakers', authenticateToken, (req, res) => {
   try {
     const stats = CircuitBreakerRegistry.getAllStats();
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching circuit breaker stats:', error);
-    res
-      .status(500)
-      .json({ error: 'Failed to fetch circuit breaker statistics' });
+    sendRouteError(req, res, 'Error fetching circuit breaker stats', error);
   }
 });
 
 /**
  * POST /retry/circuit-breakers/:name/reset
- * Reset a specific circuit breaker
  */
 router.post(
   '/circuit-breakers/:name/reset',
@@ -360,8 +305,7 @@ router.post(
       breaker.forceClose();
       res.json({ message: `Circuit breaker '${name}' has been reset` });
     } catch (error) {
-      logger.error('Error resetting circuit breaker:', error);
-      res.status(500).json({ error: 'Failed to reset circuit breaker' });
+      sendRouteError(req, res, 'Error resetting circuit breaker', error);
     }
   }
 );

@@ -10,6 +10,7 @@ import { EnvValidator } from './utils/envValidation';
 import { connectDB } from './utils/database';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/monitoring';
+import { requestId } from './middleware/requestId';
 import { initializeSocket, setSocketInstance } from './config/socket';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
@@ -78,6 +79,9 @@ app.use(globalLimiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Attach a unique ID to every request for log correlation
+app.use(requestId);
 
 // Request monitoring
 app.use(requestLogger);

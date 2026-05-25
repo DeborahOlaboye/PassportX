@@ -10,6 +10,8 @@ import {
 } from '../middleware/webhookValidation';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { COMMUNITY_WRITE_RATE_LIMIT } from '../config/rateLimits';
+import { sendRouteError } from '../utils/routeError';
+import logger from '../utils/logger';
 
 const router = Router();
 
@@ -78,7 +80,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       if (!communityCreationService || !notificationService || !cacheService) {
-        console.error('Community creation services not initialized');
+        logger.warn('Community creation services not initialized', { requestId: req.requestId });
         return res.status(503).json({
           success: false,
           error: 'Community creation services not initialized',
@@ -135,7 +137,7 @@ router.post(
           code: 'COMMUNITY_CREATED',
         });
       } catch (notificationError) {
-        console.error('Error sending notifications:', notificationError);
+        logger.error('Error sending notifications', { requestId: req.requestId, error: notificationError instanceof Error ? notificationError.message : String(notificationError) });
         res.status(201).json({
           success: true,
           communityId: result.communityId,
@@ -146,13 +148,7 @@ router.post(
         });
       }
     } catch (error) {
-      console.error('Error processing community creation webhook:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to process community creation event',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        code: 'INTERNAL_SERVER_ERROR',
-      });
+      sendRouteError(req, res, 'Error processing community creation webhook', error);
     }
   }
 );
@@ -214,11 +210,7 @@ router.post(
         message: result.message,
       });
     } catch (error) {
-      console.error('Error syncing community from blockchain:', error);
-      res.status(500).json({
-        error: 'Failed to sync community from blockchain',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      sendRouteError(req, res, 'Error syncing community from blockchain', error);
     }
   }
 );
@@ -263,11 +255,7 @@ router.get('/status/:blockchainId', async (req: Request, res: Response) => {
       createdAt: community.createdAt,
     });
   } catch (error) {
-    console.error('Error checking community sync status:', error);
-    res.status(500).json({
-      error: 'Failed to check community sync status',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    sendRouteError(req, res, 'Error checking community sync status', error);
   }
 });
 
@@ -324,11 +312,7 @@ router.post(
         notification,
       });
     } catch (error) {
-      console.error('Error generating test notification:', error);
-      res.status(500).json({
-        error: 'Failed to generate test notification',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      sendRouteError(req, res, 'Error generating test notification', error);
     }
   }
 );
@@ -348,11 +332,7 @@ router.get('/cache/stats', authenticateToken, (req: Request, res: Response) => {
       cache: stats,
     });
   } catch (error) {
-    console.error('Error getting cache stats:', error);
-    res.status(500).json({
-      error: 'Failed to get cache stats',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    sendRouteError(req, res, 'Error getting cache stats', error);
   }
 });
 
@@ -374,11 +354,7 @@ router.post(
         message: 'Cache cleared successfully',
       });
     } catch (error) {
-      console.error('Error clearing cache:', error);
-      res.status(500).json({
-        error: 'Failed to clear cache',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      sendRouteError(req, res, 'Error clearing cache', error);
     }
   }
 );

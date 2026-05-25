@@ -77,8 +77,8 @@
 
 ;; Badge template creation
 (define-public (create-badge-template (name (string-ascii 64)) (description (string-ascii 256)) (category uint) (default-level uint) (community-id uint) (expiration-duration uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (asserts! (or 
       (is-authorized-issuer tx-sender)
       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
@@ -108,12 +108,12 @@
 
 ;; Badge minting function
 (define-public (mint-badge (recipient principal) (template-id uint) (community-id uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
-    (asserts! (or 
-      (is-authorized-issuer tx-sender)
-      (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
-    ) ERR-UNAUTHORIZED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
+     (asserts! (or
+       (is-authorized-issuer tx-sender)
+       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
+     ) ERR-UNAUTHORIZED)
 
     (let
       (
@@ -161,8 +161,8 @@
 
 ;; Batch mint badges to multiple recipients with corresponding template IDs
 (define-public (batch-mint-badges (recipients (list 50 principal)) (template-ids (list 50 uint)) (community-id uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (asserts! (or 
       (is-authorized-issuer tx-sender)
       (contract-call? .access-control can-issue-badges-in-community community-id tx-sender)
@@ -243,8 +243,8 @@
 
 ;; Revoke badge
 (define-public (revoke-badge (badge-id uint) (community-id uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
       (
         (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
@@ -264,18 +264,18 @@
         block-height: block-height
       })
 
-      (contract-call? .badge-metadata set-badge-metadata
-        badge-id
-        (merge metadata { active: false })
-      )
-    )
+(ok (try! (contract-call? .badge-metadata set-badge-metadata
+         badge-id
+         (merge metadata { active: false })
+       ))
+     )
   )
 )
 
 ;; Update badge metadata
 (define-public (update-badge-metadata (badge-id uint) (new-metadata {level: uint, category: uint, timestamp: uint, expiration-height: uint}) (community-id uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
       (
         (current-metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))
@@ -298,18 +298,18 @@
         block-height: block-height
       })
 
-      (contract-call? .badge-metadata set-badge-metadata
-        badge-id
-        (merge current-metadata (merge new-metadata { issuer: (get issuer current-metadata), active: (get active current-metadata) }))
-      )
-    )
+(try! (contract-call? .badge-metadata set-badge-metadata
+         badge-id
+         (merge current-metadata (merge new-metadata { issuer: (get issuer current-metadata), active: (get active current-metadata) }))
+       )
+     )
   )
 )
 
 ;; Renew badge
 (define-public (renew-badge (badge-id uint) (community-id uint))
-  (begin
-    (asserts! (not (unwrap-panic (unwrap-panic (contract-call? .access-control is-paused)))) ERR-PAUSED)
+   (begin
+     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
     (let
       (
         (metadata (unwrap! (contract-call? .badge-metadata get-badge-metadata badge-id) ERR-INVALID-TEMPLATE))

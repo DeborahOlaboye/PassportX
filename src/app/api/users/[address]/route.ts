@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
+import {
+  isValidStacksAddressParam,
+  validateProfileUpdateBody,
+} from '@/lib/api-validation';
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +13,14 @@ export async function GET(
 ) {
   try {
     const { address } = params;
+
+    if (!isValidStacksAddressParam(address)) {
+      return createErrorResponse('Invalid Stacks address format', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
+
     const cookie = request.headers.get('cookie');
 
     const response = await fetch(
@@ -31,10 +43,27 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params: _params }: { params: { address: string } }
+  { params }: { params: { address: string } }
 ) {
   try {
+    const { address } = params;
+
+    if (!isValidStacksAddressParam(address)) {
+      return createErrorResponse('Invalid Stacks address format', null, {
+        status: 400,
+        logLevel: 'warn',
+      });
+    }
+
     const body = await request.json();
+    const bodyErrors = validateProfileUpdateBody(body);
+    if (bodyErrors.length > 0) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: bodyErrors },
+        { status: 400 }
+      );
+    }
+
     const cookie = request.headers.get('cookie');
     const authHeader = request.headers.get('authorization');
 

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse } from '@/lib/error-response';
 import { BACKEND_URL } from '@/lib/config';
 import { parseBackendJson } from '@/lib/backend-proxy';
+import {
+  isValidObjectId,
+  isValidStacksAddressParam,
+} from '@/lib/api-validation';
 
 interface ApprovalRequest {
   approved: boolean;
@@ -15,6 +19,15 @@ export async function POST(
 ) {
   try {
     const { communityId } = params;
+
+    if (!isValidObjectId(communityId)) {
+      return createErrorResponse(
+        'Invalid communityId: must be a 24-character hexadecimal string',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
+
     const body: ApprovalRequest = await request.json();
 
     if (!body.approverAddress) {
@@ -22,6 +35,14 @@ export async function POST(
         status: 400,
         logLevel: 'warn',
       });
+    }
+
+    if (!isValidStacksAddressParam(body.approverAddress)) {
+      return createErrorResponse(
+        'approverAddress must be a valid Stacks address',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
     }
 
     if (!body.approved && !body.reason) {
@@ -74,6 +95,14 @@ export async function GET(
 ) {
   try {
     const { communityId } = params;
+
+    if (!isValidObjectId(communityId)) {
+      return createErrorResponse(
+        'Invalid communityId: must be a 24-character hexadecimal string',
+        null,
+        { status: 400, logLevel: 'warn' }
+      );
+    }
 
     const response = await fetch(
       `${BACKEND_URL}/api/communities/${communityId}/approval`,

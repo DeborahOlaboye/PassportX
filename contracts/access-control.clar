@@ -36,7 +36,7 @@
 ;; Global permissions
 (define-map global-permissions
   { user: principal }
-  { 
+  {
     can-create-communities: bool,
     can-issue-badges: bool,
     is-platform-admin: bool,
@@ -79,6 +79,11 @@
     is-platform-admin: true,
     suspended: false
   }
+)
+
+;; Helper: safely get bool from optional map, defaulting to false
+(define-private (get-bool-from-perms (perms (optional { suspended: bool, can-issue-badges: bool, can-create-communities: bool, is-platform-admin: bool })) (key (string-ascii 32)))
+  (default-to false (get key perms))
 )
 
 ;; Global permission management
@@ -129,7 +134,8 @@
 (define-public (grant-community-issuer-role (community-id uint) (user principal))
   (begin
     (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
-    
+
+    ;; Emit issuer granted event
     (print {
       event: "community-issuer-granted",
       community-id: community-id,
@@ -154,7 +160,8 @@
 (define-public (revoke-community-issuer-role (community-id uint) (user principal))
   (begin
     (asserts! (can-manage-community-members community-id tx-sender) ERR-INSUFFICIENT-PERMISSIONS)
-    
+
+    ;; Emit issuer revoked event
     (print {
       event: "community-issuer-revoked",
       community-id: community-id,
@@ -168,8 +175,18 @@
 )
 
 ;; Permission check functions
+;; Fixed: properly handle optional map values for safety
 (define-read-only (is-platform-admin (user principal))
-  (default-to false (get is-platform-admin (map-get? global-permissions { user: user })))
+  (let
+    (
+      (perms (map-get? global-permissions { user: user }))
+    )
+    (and
+      (is-some perms)
+      (get is-platform-admin (unwrap-panic perms))
+      (not (get suspended (unwrap-panic perms)))
+    )
+  )
 )
 
 (define-read-only (is-community-issuer (community-id uint) (user principal))
@@ -190,7 +207,7 @@
     (
       (perms (map-get? global-permissions { user: user }))
     )
-    (and 
+    (and
       (is-some perms)
       (get can-create-communities (unwrap-panic perms))
       (not (get suspended (unwrap-panic perms)))
@@ -203,7 +220,7 @@
     (
       (perms (map-get? global-permissions { user: user }))
     )
-    (and 
+    (and
       (is-some perms)
       (get can-issue-badges (unwrap-panic perms))
       (not (get suspended (unwrap-panic perms)))
@@ -219,7 +236,7 @@
     )
     (or
       ;; Has community-specific permission
-      (and 
+      (and
         (is-some community-perms)
         (get can-issue-badges (unwrap-panic community-perms))
       )
@@ -233,14 +250,17 @@
   )
 )
 
+;; Fixed: check suspended status for community member management
 (define-read-only (can-manage-community-members (community-id uint) (user principal))
-  (let
-    (
-      (community-perms (map-get? community-permissions { community-id: community-id, user: user }))
-    )
-    (or
+  (or
+    (and
       (is-platform-admin user)
-      (and 
+      (not (default-to false (get suspended (map-get? global-permissions { user: user })))))
+    (let
+      (
+        (community-perms (map-get? community-permissions { community-id: community-id, user: user }))
+      )
+      (and
         (is-some community-perms)
         (get can-manage-members (unwrap-panic community-perms))
       )
@@ -248,14 +268,17 @@
   )
 )
 
+;; Fixed: check suspended status for badge revocation
 (define-read-only (can-revoke-badges-in-community (community-id uint) (user principal))
-  (let
-    (
-      (community-perms (map-get? community-permissions { community-id: community-id, user: user }))
-    )
-    (or
+  (or
+    (and
       (is-platform-admin user)
-      (and 
+      (not (default-to false (get suspended (map-get? global-permissions { user: user })))))
+    (let
+      (
+        (community-perms (map-get? community-permissions { community-id: community-id, user: user }))
+      )
+      (and
         (is-some community-perms)
         (get can-revoke-badges (unwrap-panic community-perms))
       )
@@ -318,7 +341,8 @@
 (define-public (set-paused (paused bool))
   (begin
     (asserts! (is-platform-admin tx-sender) ERR-NOT-PLATFORM-ADMIN)
-    
+
+    ;; Emit contract pause status changed event
     (print {
       event: "contract-pause-status-changed",
       paused: paused,

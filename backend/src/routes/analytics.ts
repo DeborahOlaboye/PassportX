@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import AnalyticsAggregator from '../services/analyticsAggregator';
 import { createRateLimiter } from '../middleware/rateLimiter';
 import { API_READ_RATE_LIMIT } from '../config/rateLimits';
+import { sendRouteError } from '../utils/routeError';
 
 const router = express.Router();
 
@@ -13,15 +14,6 @@ let analyticsAggregator: AnalyticsAggregator | null = null;
 export function setAnalyticsAggregator(aggregator: AnalyticsAggregator) {
   analyticsAggregator = aggregator;
 }
-
-const handleError = (res: Response, error: any, message: string) => {
-  console.error(message, error);
-  res.status(500).json({
-    success: false,
-    error: message,
-    details: error instanceof Error ? error.message : String(error),
-  });
-};
 
 router.get(
   '/aggregated',
@@ -42,7 +34,7 @@ router.get(
         data: analytics,
       });
     } catch (error) {
-      handleError(res, error, 'Error fetching aggregated analytics');
+      sendRouteError(req, res, 'Error fetching aggregated analytics', error);
     }
   }
 );
@@ -63,7 +55,7 @@ router.get('/issuance', async (req: Request, res: Response) => {
       data: analytics.issuance,
     });
   } catch (error) {
-    handleError(res, error, 'Error fetching issuance analytics');
+    sendRouteError(req, res, 'Error fetching issuance analytics', error);
   }
 });
 
@@ -83,7 +75,7 @@ router.get('/community', async (req: Request, res: Response) => {
       data: analytics.community,
     });
   } catch (error) {
-    handleError(res, error, 'Error fetching community analytics');
+    sendRouteError(req, res, 'Error fetching community analytics', error);
   }
 });
 
@@ -103,7 +95,7 @@ router.get('/users', async (req: Request, res: Response) => {
       data: analytics.users,
     });
   } catch (error) {
-    handleError(res, error, 'Error fetching user analytics');
+    sendRouteError(req, res, 'Error fetching user analytics', error);
   }
 });
 
@@ -123,7 +115,7 @@ router.get('/distribution', async (req: Request, res: Response) => {
       data: analytics.distribution,
     });
   } catch (error) {
-    handleError(res, error, 'Error fetching distribution analytics');
+    sendRouteError(req, res, 'Error fetching distribution analytics', error);
   }
 });
 
@@ -149,7 +141,7 @@ router.get('/snapshots', async (req: Request, res: Response) => {
       data: snapshots,
     });
   } catch (error) {
-    handleError(res, error, 'Error fetching analytics snapshots');
+    sendRouteError(req, res, 'Error fetching analytics snapshots', error);
   }
 });
 
@@ -192,7 +184,7 @@ router.get('/trends/:metric', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    handleError(res, error, 'Error fetching metrics trend');
+    sendRouteError(req, res, 'Error fetching metrics trend', error);
   }
 });
 
@@ -221,7 +213,7 @@ router.post('/snapshot', async (req: Request, res: Response) => {
       message: `Analytics snapshot recorded for period: ${period}`,
     });
   } catch (error) {
-    handleError(res, error, 'Error recording analytics snapshot');
+    sendRouteError(req, res, 'Error recording analytics snapshot', error);
   }
 });
 
@@ -233,7 +225,7 @@ router.get('/health', async (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    handleError(res, error, 'Error checking analytics health');
+    sendRouteError(req, res, 'Error checking analytics health', error);
   }
 });
 
