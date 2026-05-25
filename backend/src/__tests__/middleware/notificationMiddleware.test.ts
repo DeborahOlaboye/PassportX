@@ -83,6 +83,57 @@ describe('validateNotificationInput Middleware', () => {
 
       expect(mockNext).toHaveBeenCalled();
     });
+
+    it('should reject when type is not a valid enum value', () => {
+      mockRequest.body = {
+        type: 'unknown_type',
+        title: 'Test Title',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({ error: 'Invalid notification type' })
+      );
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('should accept all valid notification type enum values', () => {
+      const validTypes = [
+        'badge_issued',
+        'badge_revoked',
+        'community_joined',
+        'community_created',
+        'community_invite',
+        'system',
+        'announcement',
+      ];
+
+      validTypes.forEach((type) => {
+        mockRequest.body = {
+          type,
+          title: 'Test Title',
+          message: 'Test Message',
+          channels: ['in_app'],
+        };
+
+        validateNotificationInput(
+          mockRequest as Request,
+          mockResponse as Response,
+          mockNext
+        );
+
+        expect(mockNext).toHaveBeenCalled();
+        mockNext.mockClear();
+      });
+    });
   });
 
   describe('Title Validation', () => {
