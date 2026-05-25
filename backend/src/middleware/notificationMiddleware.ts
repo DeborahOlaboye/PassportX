@@ -40,19 +40,31 @@ import {
  *
  * @returns {void} Calls next() if validation passes, or sends 400 error response
  */
+const SQL_INJECTION_PATTERNS = [
+  /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|TRUNCATE)\b)/gi,
+  /(--|;|\/\*|\*\/)/g,
+];
+
 /**
  * Sanitizes string input by removing potentially dangerous characters
  * @param input - The string to sanitize
  * @returns Sanitized string
  */
 function sanitizeString(input: string): string {
-  return input
+  let sanitized = input
     .trim()
     .replace(/[<>]/g, '')
     .replace(/javascript:/gi, '')
     .replace(/on\w+=/gi, '')
     .replace(/data:/gi, '')
     .replace(/vbscript:/gi, '');
+
+  for (const pattern of SQL_INJECTION_PATTERNS) {
+    pattern.lastIndex = 0;
+    sanitized = sanitized.replace(pattern, '');
+  }
+
+  return sanitized;
 }
 
 export function validateNotificationInput(
