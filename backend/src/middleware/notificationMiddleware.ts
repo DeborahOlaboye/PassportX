@@ -44,6 +44,11 @@ import {
  * - Removes SQL keywords and comment tokens (SQL injection)
  * - Removes MongoDB operator prefixes such as $where and $ne (NoSQL injection)
  * - Normalizes Unicode to NFC before any pattern matching
+ *
+ * @performance
+ * - Validation short-circuits on first failure to minimize work
+ * - Regex patterns reset lastIndex on each call to prevent stateful bugs
+ * - Duration is logged in milliseconds for monitoring via durationMs field
  */
 
 const SQL_INJECTION_PATTERNS = [
