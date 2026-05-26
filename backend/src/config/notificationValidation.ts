@@ -3,6 +3,9 @@
  *
  * This file contains constants for validating notification types and channels
  * to ensure consistency across the application.
+ *
+ * Rate limiting for write endpoints (POST) is applied separately via
+ * NOTIFICATION_WRITE_RATE_LIMIT in config/rateLimits.ts (50 req / 15 min).
  */
 
 /**
