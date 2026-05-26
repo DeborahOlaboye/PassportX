@@ -26,8 +26,10 @@ import {
 const VALID_SORT_BY = ['newest', 'oldest'] as const;
 const VALID_NOTIFICATION_TYPES = [
   'badge_issued',
+  'badge_revoked',
   'community_joined',
   'community_created',
+  'community_invite',
   'system',
   'announcement',
 ] as const;
