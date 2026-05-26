@@ -295,6 +295,26 @@ describe('Notification Middleware Integration Tests', () => {
     });
   });
 
+  describe('Request ID Propagation', () => {
+    it('should accept requests with x-request-id header', async () => {
+      app.post('/notifications', validateNotificationInput, (req, res) => {
+        res.status(200).json({ success: true });
+      });
+
+      const response = await request(app)
+        .post('/notifications')
+        .set('x-request-id', 'test-request-123')
+        .send({
+          type: 'badge_issued',
+          title: 'Test Title',
+          message: 'Test Message',
+          channels: ['in_app'],
+        });
+
+      expect(response.status).toBe(200);
+    });
+  });
+
   describe('Type Enum Validation', () => {
     it('should reject an unknown notification type', async () => {
       app.post('/notifications', validateNotificationInput, (req, res) => {
