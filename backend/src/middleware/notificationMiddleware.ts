@@ -101,10 +101,16 @@ function sanitizeString(input: string): string {
 
 /** Validates that the notification type is present and a recognized enum value. */
 function validateTypeField(type: unknown): ValidationErrorResponse | null {
-  if (!type || typeof type !== 'string') {
+  if (!type || typeof type !== 'string' || type.trim().length === 0) {
     return {
       error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
       details: 'Type must be a non-empty string',
+    };
+  }
+  if (type.length > NOTIFICATION_FIELD_LIMITS.TYPE_MAX_LENGTH) {
+    return {
+      error: VALIDATION_ERROR_MESSAGES.INVALID_TYPE,
+      details: `Type must not exceed ${NOTIFICATION_FIELD_LIMITS.TYPE_MAX_LENGTH} characters`,
     };
   }
   if (!isValidNotificationType(type)) {
