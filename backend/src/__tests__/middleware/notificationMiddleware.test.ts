@@ -106,6 +106,27 @@ describe('validateNotificationInput Middleware', () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
 
+    it('should reject when type exceeds TYPE_MAX_LENGTH characters', () => {
+      mockRequest.body = {
+        type: 'a'.repeat(51),
+        title: 'Test Title',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({ error: 'Invalid notification type' })
+      );
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
     it('should reject when type is not a valid enum value', () => {
       mockRequest.body = {
         type: 'unknown_type',
