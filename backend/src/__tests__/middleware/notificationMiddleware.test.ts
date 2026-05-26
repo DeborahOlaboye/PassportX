@@ -88,6 +88,24 @@ describe('validateNotificationInput Middleware', () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
+    it('should reject when type is whitespace only', () => {
+      mockRequest.body = {
+        type: '   ',
+        title: 'Test Title',
+        message: 'Test Message',
+        channels: ['in_app'],
+      };
+
+      validateNotificationInput(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
     it('should reject when type is not a valid enum value', () => {
       mockRequest.body = {
         type: 'unknown_type',
