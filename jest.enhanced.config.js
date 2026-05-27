@@ -55,8 +55,8 @@ module.exports = {
     '^@/types/(.*)$': '<rootDir>/src/types/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: { allowJs: true } }],
+    '^.+\\.js$': ['ts-jest', { tsconfig: { allowJs: true } }],
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(until-async|rettime|.*\\.mjs$|@stacks|@walletconnect)/)',
