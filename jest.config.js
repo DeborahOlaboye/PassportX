@@ -7,6 +7,9 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   transformIgnorePatterns: ['/node_modules/(?!(until-async|rettime)/)'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
   // Coverage thresholds to ensure code quality
   coverageThreshold: {
     // Global thresholds for all files
