@@ -4,7 +4,8 @@ module.exports = {
   roots: ['<rootDir>/tests', '<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/index.ts'],
-  coverageThresholds: {
+  transformIgnorePatterns: ['/node_modules/(?!(until-async|rettime)/)'],
+  coverageThreshold: {
     global: {
       statements: 80,
       branches: 75,
