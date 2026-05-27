@@ -16,6 +16,8 @@ class NotificationEncryptionService {
   };
 
   encrypt(data: string, key: string): string {
+    if (!data) throw new Error('Data cannot be empty');
+    if (!key || key.length < 8) throw new Error('Key must be at least 8 characters');
     const keyBuffer = crypto.scryptSync(key, 'passportx-salt', this.config.keySize);
     const iv = crypto.randomBytes(this.config.ivLength);
     const cipher = crypto.createCipheriv(this.config.algorithm, keyBuffer, iv, {
