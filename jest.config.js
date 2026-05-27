@@ -6,7 +6,7 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{js,ts}', '!src/**/*.d.ts', '!src/index.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  transformIgnorePatterns: ['/node_modules/(?!(until-async)/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(until-async|rettime)/)'],
   // Coverage thresholds to ensure code quality
   coverageThreshold: {
     // Global thresholds for all files
