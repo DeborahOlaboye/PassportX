@@ -59,7 +59,7 @@ module.exports = {
     '^.+\\.(js|jsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$|@stacks|@walletconnect))',
+    '/node_modules/(?!(until-async|rettime|.*\\.mjs$|@stacks|@walletconnect)/)',
   ],
   testTimeout: 10000,
   maxWorkers: '50%',
