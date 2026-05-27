@@ -10,6 +10,8 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  testTimeout: 10000,
   // Coverage thresholds to ensure code quality
   coverageThreshold: {
     // Global thresholds for all files
