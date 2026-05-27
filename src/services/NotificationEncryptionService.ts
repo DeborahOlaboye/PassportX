@@ -1,20 +1,48 @@
+import crypto from 'crypto';
+
 export interface EncryptionConfig {
   algorithm: string;
   keySize: number;
+  ivLength: number;
+  authTagLength: number;
 }
 
 class NotificationEncryptionService {
   private config: EncryptionConfig = {
-    algorithm: 'AES-256-GCM',
+    algorithm: 'aes-256-gcm',
     keySize: 32,
+    ivLength: 16,
+    authTagLength: 16,
   };
 
-  encrypt(data: string, _key: string): string {
-    return Buffer.from(data).toString('base64');
+  encrypt(data: string, key: string): string {
+    const keyBuffer = crypto.scryptSync(key, 'passportx-salt', this.config.keySize);
+    const iv = crypto.randomBytes(this.config.ivLength);
+    const cipher = crypto.createCipheriv(this.config.algorithm, keyBuffer, iv, {
+      authTagLength: this.config.authTagLength,
+    });
+    let encrypted = cipher.update(data, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag().toString('hex');
+    return `${iv.toString('hex')}:${authTag}:${encrypted}`;
   }
 
-  decrypt(encryptedData: string, _key: string): string {
-    return Buffer.from(encryptedData, 'base64').toString('utf-8');
+  decrypt(encryptedData: string, key: string): string {
+    const parts = encryptedData.split(':');
+    if (parts.length !== 3) {
+      throw new Error('Invalid encrypted data format');
+    }
+    const iv = Buffer.from(parts[0], 'hex');
+    const authTag = Buffer.from(parts[1], 'hex');
+    const encrypted = parts[2];
+    const keyBuffer = crypto.scryptSync(key, 'passportx-salt', this.config.keySize);
+    const decipher = crypto.createDecipheriv(this.config.algorithm, keyBuffer, iv, {
+      authTagLength: this.config.authTagLength,
+    });
+    decipher.setAuthTag(authTag);
+    let decrypted = decipher.update(encrypted, 'hex', 'utf-8');
+    decrypted += decipher.final('utf-8');
+    return decrypted;
   }
 
   setConfig(config: Partial<EncryptionConfig>): void {
@@ -26,19 +54,11 @@ class NotificationEncryptionService {
   }
 
   generateKey(): string {
-    return Array.from({ length: 32 }, () => Math.random().toString(36)[2]).join(
-      ''
-    );
+    return crypto.randomBytes(this.config.keySize).toString('hex');
   }
 
   hash(data: string): string {
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return hash.toString(16);
+    return crypto.createHash('sha256').update(data).digest('hex');
   }
 }
 
