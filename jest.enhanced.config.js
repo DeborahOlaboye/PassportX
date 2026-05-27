@@ -67,29 +67,7 @@ module.exports = {
   collectCoverage: true,
   bail: false,
   errorOnDeprecated: true,
-  testResultsProcessor: 'jest-sonar-reporter',
-  reporters: [
-    'default',
-    [
-      'jest-junit',
-      {
-        outputDirectory: 'coverage',
-        outputName: 'junit.xml',
-        classNameTemplate: '{classname}',
-        titleTemplate: '{title}',
-        ancestorSeparator: ' › ',
-        usePathForSuiteName: true,
-      },
-    ],
-    [
-      'jest-html-reporters',
-      {
-        publicPath: 'coverage/html-report',
-        filename: 'report.html',
-        expand: true,
-      },
-    ],
-  ],
+  reporters: ['default'],
   globals: {
     'ts-jest': {
       useESM: true,
