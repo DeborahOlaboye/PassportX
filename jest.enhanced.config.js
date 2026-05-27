@@ -46,7 +46,7 @@ module.exports = {
     '<rootDir>/tests/setup.ts',
     '<rootDir>/tests/setup-enhanced.ts',
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
     '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
@@ -55,11 +55,11 @@ module.exports = {
     '^@/types/(.*)$': '<rootDir>/src/types/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: { allowJs: true } }],
+    '^.+\\.js$': ['ts-jest', { tsconfig: { allowJs: true } }],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(.*\\.mjs$|@stacks|@walletconnect))',
+    '/node_modules/(?!(until-async|rettime|.*\\.mjs$|@stacks|@walletconnect)/)',
   ],
   testTimeout: 10000,
   maxWorkers: '50%',
@@ -67,29 +67,7 @@ module.exports = {
   collectCoverage: true,
   bail: false,
   errorOnDeprecated: true,
-  testResultsProcessor: 'jest-sonar-reporter',
-  reporters: [
-    'default',
-    [
-      'jest-junit',
-      {
-        outputDirectory: 'coverage',
-        outputName: 'junit.xml',
-        classNameTemplate: '{classname}',
-        titleTemplate: '{title}',
-        ancestorSeparator: ' › ',
-        usePathForSuiteName: true,
-      },
-    ],
-    [
-      'jest-html-reporters',
-      {
-        publicPath: 'coverage/html-report',
-        filename: 'report.html',
-        expand: true,
-      },
-    ],
-  ],
+  reporters: ['default'],
   globals: {
     'ts-jest': {
       useESM: true,

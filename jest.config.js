@@ -6,6 +6,16 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{js,ts}', '!src/**/*.d.ts', '!src/index.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: { allowJs: true } }],
+    '^.+\\.js$': ['ts-jest', { tsconfig: { allowJs: true } }],
+  },
+  transformIgnorePatterns: ['/node_modules/(?!(until-async|rettime)/)'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  testTimeout: 10000,
   // Coverage thresholds to ensure code quality
   coverageThreshold: {
     // Global thresholds for all files
