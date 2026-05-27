@@ -43,11 +43,21 @@ function addSecurityHeaders(headers: Headers): void {
   );
 }
 
+function logRequest(pathname: string, status: number, durationMs: number): void {
+  const timestamp = new Date().toISOString();
+  const message = `[${timestamp}] ${pathname} -> ${status} (${durationMs}ms)`;
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+    console.warn(message);
+  }
+}
+
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
+  const startTime = Date.now();
 
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   if (!checkRateLimit(ip)) {
+    logRequest(pathname, 429, Date.now() - startTime);
     return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
       status: 429,
       headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
@@ -57,6 +67,7 @@ export function middleware(request: NextRequest): NextResponse {
   if (isPublicPath(pathname)) {
     const response = NextResponse.next();
     addSecurityHeaders(response.headers);
+    logRequest(pathname, response.status, Date.now() - startTime);
     return response;
   }
 
@@ -64,18 +75,20 @@ export function middleware(request: NextRequest): NextResponse {
   if (!token) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
+    logRequest(pathname, 307, Date.now() - startTime);
     return NextResponse.redirect(loginUrl);
   }
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-request-id', crypto.randomUUID());
-  requestHeaders.set('x-request-start', Date.now().toString());
+  requestHeaders.set('x-request-start', startTime.toString());
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
 
   addSecurityHeaders(response.headers);
+  logRequest(pathname, response.status, Date.now() - startTime);
 
   return response;
 }
