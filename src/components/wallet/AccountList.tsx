@@ -32,8 +32,12 @@ export default function AccountList({
   const accounts = filterAccounts({ sortBy });
 
   const handleAccountClick = async (account: Account) => {
-    await switchAccount(account.address, 'user');
-    onAccountSelect?.(account);
+    try {
+      await switchAccount(account.address, 'user');
+      onAccountSelect?.(account);
+    } catch (error) {
+      console.error('Failed to switch account:', error);
+    }
   };
 
   const handleRemove = async (e: React.MouseEvent, address: string) => {
