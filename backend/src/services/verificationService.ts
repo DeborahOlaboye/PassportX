@@ -1,7 +1,7 @@
 import Badge from '../models/Badge';
 import BadgeTemplate from '../models/BadgeTemplate';
 import Community from '../models/Community';
-import { IBadgeVerification } from '../types';
+import { IBadgeVerification, IBadgeTemplate, ICommunity } from '../types';
 import logger from '../utils/logger';
 
 export class VerificationService {
@@ -14,16 +14,16 @@ export class VerificationService {
   ): Promise<IBadgeVerification | null> {
     try {
       const badge = await Badge.findById(badgeId)
-        .populate('templateId')
-        .populate('community')
+        .populate<{ templateId: IBadgeTemplate }>('templateId')
+        .populate<{ community: ICommunity }>('community')
         .lean();
 
       if (!badge) {
         return null;
       }
 
-      const template = badge.templateId as any;
-      const community = badge.community as any;
+      const template = badge.templateId;
+      const community = badge.community;
 
       // Check ownership if claimed owner is provided
       const ownershipVerified = claimedOwner
@@ -71,15 +71,13 @@ export class VerificationService {
   async verifyUserBadges(ownerAddress: string): Promise<IBadgeVerification[]> {
     try {
       const badges = await Badge.find({ owner: ownerAddress })
-        .populate('templateId')
-        .populate('community')
+        .populate<{ templateId: IBadgeTemplate }>('templateId')
+        .populate<{ community: ICommunity }>('community')
         .lean();
 
-      // Build verifications from already-populated documents instead of
-      // calling verifyBadge() per badge, which would re-query the DB each time.
       return badges.map((badge) => {
-        const template = badge.templateId as any;
-        const community = badge.community as any;
+        const template = badge.templateId;
+        const community = badge.community;
 
         return {
           badgeId: badge._id.toString(),
