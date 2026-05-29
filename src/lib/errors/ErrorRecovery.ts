@@ -1,4 +1,4 @@
-import { RetryManager } from './RetryManager';
+import { RetryManager, retryManager as globalRetryManager } from './RetryManager';
 import { ErrorHandler } from './ErrorHandler';
 
 export interface RecoveryStrategy {
@@ -14,7 +14,7 @@ export class ErrorRecovery {
   private errorHandler: ErrorHandler;
 
   private constructor() {
-    this.retryManager = RetryManager.getInstance();
+    this.retryManager = globalRetryManager;
     this.errorHandler = ErrorHandler.getInstance();
     this.initializeDefaultStrategies();
   }
@@ -99,6 +99,10 @@ export class ErrorRecovery {
     maxRetries: number = 3,
     context?: Record<string, unknown>
   ): Promise<T> {
+    const options: Partial<import('./RetryManager').RetryOptions> = {
+      maxAttempts: maxRetries + 1,
+      baseDelay: 1000,
+    };
     return this.retryManager.executeWithRetry(
       async () => {
         try {
@@ -108,12 +112,11 @@ export class ErrorRecovery {
           if (!recovered) {
             throw error;
           }
-          // Retry the operation after recovery
           return await operation();
         }
       },
-      maxRetries,
-      1000
+      options,
+      'error-recovery'
     );
   }
 
