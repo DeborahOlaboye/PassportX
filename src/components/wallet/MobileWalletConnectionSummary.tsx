@@ -36,7 +36,6 @@ export default function MobileWalletConnectionSummary() {
   }, []);
 
   const loadConnectionSummary = () => {
-    // Load from localStorage or API
     const stored = localStorage.getItem('passportx_mobile_wallet_summary');
     if (stored) {
       try {
@@ -47,19 +46,20 @@ export default function MobileWalletConnectionSummary() {
             ? new Date(parsed.lastConnectionDate)
             : null,
         });
+        return;
       } catch (error) {
-        // Use default values
+        // Fall through to defaults
       }
     }
 
-    // Mock data for demonstration
+    // Default empty summary when no data exists
     setSummary({
-      totalConnections: 47,
-      successfulConnections: 45,
-      averageConnectionTime: 8.3,
-      mostUsedWallet: 'Xverse',
-      lastConnectionDate: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      connectionHealth: 'excellent',
+      totalConnections: 0,
+      successfulConnections: 0,
+      averageConnectionTime: 0,
+      mostUsedWallet: 'None',
+      lastConnectionDate: null,
+      connectionHealth: 'good',
     });
   };
 
