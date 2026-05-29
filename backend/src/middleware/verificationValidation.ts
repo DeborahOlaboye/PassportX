@@ -179,7 +179,7 @@ setInterval(() => {
 /**
  * Sanitize verification response
  */
-export function sanitizeVerificationResponse(verification: any) {
+export function sanitizeVerificationResponse(verification: Record<string, unknown>) {
   // Remove sensitive internal fields
   const sanitized = { ...verification };
   delete sanitized.__v;
