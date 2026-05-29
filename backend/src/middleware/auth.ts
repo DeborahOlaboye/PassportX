@@ -6,13 +6,20 @@ import logger from '../utils/logger';
 import { requireJwtSecret } from '../utils/jwtSecret';
 
 const isValidJWTPayload = (decoded: unknown): decoded is JWTPayload => {
+  if (
+    typeof decoded !== 'object' ||
+    decoded === null
+  ) {
+    return false;
+  }
+  const payload = decoded as Record<string, unknown>;
   return (
-    typeof decoded === 'object' &&
-    decoded !== null &&
-    typeof (decoded as Record<string, unknown>).userId === 'string' &&
-    typeof (decoded as Record<string, unknown>).stacksAddress === 'string' &&
-    typeof (decoded as Record<string, unknown>).iat === 'number' &&
-    typeof (decoded as Record<string, unknown>).exp === 'number'
+    typeof payload.userId === 'string' &&
+    payload.userId.length > 0 &&
+    typeof payload.stacksAddress === 'string' &&
+    payload.stacksAddress.length > 0 &&
+    typeof payload.iat === 'number' &&
+    typeof payload.exp === 'number'
   );
 };
 
