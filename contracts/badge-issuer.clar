@@ -294,6 +294,11 @@
         new-level: (get level new-metadata),
         old-category: (get category current-metadata),
         new-category: (get category new-metadata),
+        old-timestamp: (get timestamp current-metadata),
+        new-timestamp: (get timestamp new-metadata),
+        old-expiration-height: (get expiration-height current-metadata),
+        new-expiration-height: (get expiration-height new-metadata),
+        active: (get active current-metadata),
         updated-by: tx-sender,
         block-height: block-height
       })

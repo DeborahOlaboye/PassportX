@@ -58,10 +58,14 @@
   }
 )
 
+;; Community name uniqueness map
+(define-map community-names { name: (string-ascii 64) } { exists: bool })
+
 ;; Create a new community
 (define-public (create-community (name (string-ascii 64)) (description (string-ascii 256)))
   (begin
     (asserts! (not (try! (contract-call? .access-control is-paused))) ERR-PAUSED)
+    (asserts! (is-none (map-get? community-names { name: name })) ERR-COMMUNITY-ALREADY-EXISTS)
     (let
     (
       (community-id (var-get next-community-id))
@@ -76,6 +80,8 @@
         created-at: block-height
       }
     )
+
+    (map-set community-names { name: name } { exists: true })
 
     ;; Set default community settings
     (map-set community-settings
