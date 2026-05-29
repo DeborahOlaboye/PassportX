@@ -190,7 +190,10 @@ export const listCommunities = async (filters: {
     const query: any = { isActive: true };
 
     if (search) {
-      query.$text = { $search: search };
+      const sanitized = search.replace(/[{}()\[\]$.*?^\\]/g, ' ').trim();
+      if (sanitized.length > 0) {
+        query.$text = { $search: sanitized };
+      }
     }
 
     if (tags && tags.length > 0) {

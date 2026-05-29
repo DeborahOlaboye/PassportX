@@ -159,12 +159,9 @@ export class EnvironmentAwareErrorHandler {
       });
     }
 
-    // Production-specific optimizations
     if (this.config.environment === 'production') {
-      // Minimize console output in production
       if (!this.config.enableVerboseLogging) {
-        console.debug = () => {};
-        console.info = () => {};
+        logger.debug('Console output minimized in production mode');
       }
     }
   }

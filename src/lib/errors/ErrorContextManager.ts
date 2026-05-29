@@ -153,9 +153,15 @@ export function withErrorContext(
         operation,
         component
       );
-      return errorContextManager.runWithContext(context, () => {
+      const result = errorContextManager.runWithContext(context, () => {
         return originalMethod.apply(this, args);
       });
+      if (result instanceof Promise) {
+        return errorContextManager.runWithContextAsync(context, () =>
+          originalMethod.apply(this, args)
+        );
+      }
+      return result;
     } as T;
 
     return descriptor;

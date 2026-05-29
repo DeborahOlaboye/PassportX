@@ -7,7 +7,9 @@
 ;; - u102: ERR-NOT-FOUND - Token not found
 ;; - u103: ERR-TRANSFER-DISABLED - Transfers are disabled
 
-(impl-trait 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait)
+(define-constant NFT-TRAIT 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait)
+
+(impl-trait NFT-TRAIT)
 
 ;; Import error codes from centralized error-codes contract
 (define-constant ERR-OWNER-ONLY (err u100))

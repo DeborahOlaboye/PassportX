@@ -30,7 +30,7 @@ class NotificationEventBus {
         try {
           handler(data);
         } catch (error) {
-          // Handle error silently
+          console.error(`[NotificationEventBus] Error in handler for event "${event}":`, error);
         }
       });
     }
@@ -38,8 +38,8 @@ class NotificationEventBus {
 
   once<T>(event: string, handler: EventHandler<T>): void {
     const onceHandler: EventHandler<T> = (data) => {
-      handler(data);
       this.off(event, onceHandler);
+      handler(data);
     };
     this.on(event, onceHandler);
   }

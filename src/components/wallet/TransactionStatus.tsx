@@ -110,7 +110,7 @@ export default function TransactionStatus({
   showDetails = true,
   statusLabels = {},
 }: TransactionStatusProps) {
-  const config = STATUS_CONFIG[status];
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.idle;
   const Icon = config.icon;
   const displayLabel = statusLabels[status] || DEFAULT_STATUS_LABELS[status];
 

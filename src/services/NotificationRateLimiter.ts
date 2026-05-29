@@ -13,20 +13,28 @@ class NotificationRateLimiter {
     this.config = config;
   }
 
-  canSend(userId: string): boolean {
+  check(userId: string): boolean {
     const now = Date.now();
     const userNotifications = this.notifications.get(userId) || [];
-
     const recentNotifications = userNotifications.filter(
       (timestamp) => now - timestamp < this.config.windowMs
     );
+    return recentNotifications.length < this.config.maxNotifications;
+  }
 
-    if (recentNotifications.length >= this.config.maxNotifications) {
-      return false;
-    }
-
+  record(userId: string): void {
+    const now = Date.now();
+    const userNotifications = this.notifications.get(userId) || [];
+    const recentNotifications = userNotifications.filter(
+      (timestamp) => now - timestamp < this.config.windowMs
+    );
     recentNotifications.push(now);
     this.notifications.set(userId, recentNotifications);
+  }
+
+  canSend(userId: string): boolean {
+    if (!this.check(userId)) return false;
+    this.record(userId);
     return true;
   }
 

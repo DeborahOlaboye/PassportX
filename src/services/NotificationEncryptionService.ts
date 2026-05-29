@@ -15,10 +15,20 @@ class NotificationEncryptionService {
     authTagLength: 16,
   };
 
+  private getKeyDerivationSalt(): string {
+    const stored = process.env.NOTIFICATION_ENCRYPTION_SALT;
+    if (stored) return stored;
+    const generated = crypto.randomBytes(16).toString('hex');
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NOTIFICATION_ENCRYPTION_SALT = generated;
+    }
+    return generated;
+  }
+
   encrypt(data: string, key: string): string {
     if (!data) throw new Error('Data cannot be empty');
     if (!key || key.length < 8) throw new Error('Key must be at least 8 characters');
-    const keyBuffer = crypto.scryptSync(key, 'passportx-salt', this.config.keySize);
+    const keyBuffer = crypto.scryptSync(key, this.getKeyDerivationSalt(), this.config.keySize);
     const iv = crypto.randomBytes(this.config.ivLength);
     const cipher = crypto.createCipheriv(this.config.algorithm, keyBuffer, iv, {
       authTagLength: this.config.authTagLength,
@@ -37,7 +47,7 @@ class NotificationEncryptionService {
     const iv = Buffer.from(parts[0], 'hex');
     const authTag = Buffer.from(parts[1], 'hex');
     const encrypted = parts[2];
-    const keyBuffer = crypto.scryptSync(key, 'passportx-salt', this.config.keySize);
+    const keyBuffer = crypto.scryptSync(key, this.getKeyDerivationSalt(), this.config.keySize);
     const decipher = crypto.createDecipheriv(this.config.algorithm, keyBuffer, iv, {
       authTagLength: this.config.authTagLength,
     });

@@ -4,6 +4,7 @@ import Community from '../models/Community';
 import User from '../models/User';
 import mongoose from 'mongoose';
 import { IPopulatedBadgeTemplate } from '../types';
+import logger from '../utils/logger';
 
 /**
  * Issue a single badge to a recipient.
@@ -21,8 +22,7 @@ export async function issueSingleBadge(
   session.startTransaction();
 
   try {
-    // Prevent race conditions by checking for existing badge within transaction
-    console.log('Starting badge issuance transaction');
+    logger.info('Starting badge issuance transaction');
     const existingBadge = await Badge.findOne({
       templateId: template._id,
       owner: recipientAddress,
@@ -46,17 +46,23 @@ export async function issueSingleBadge(
     });
 
     await badge.save({ session });
-    // Commit the transaction to ensure atomicity
     await session.commitTransaction();
-    console.log('Badge issuance transaction committed');
-    session.endSession();
+    logger.info('Badge issuance transaction committed');
     return { badgeId: String(badge._id), recipientAddress };
   } catch (error) {
-    // Abort transaction on error to prevent partial state
-    console.log('Badge issuance transaction aborted due to error:', error);
-    await session.abortTransaction();
-    session.endSession();
+    logger.error('Badge issuance transaction aborted due to error:', error as Error);
+    try {
+      await session.abortTransaction();
+    } catch (abortError) {
+      logger.error('Failed to abort transaction:', abortError as Error);
+    }
     throw error;
+  } finally {
+    try {
+      await session.endSession();
+    } catch (endError) {
+      logger.error('Failed to end session:', endError as Error);
+    }
   }
 }
 

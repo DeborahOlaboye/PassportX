@@ -17,12 +17,19 @@ export interface RevocationResult {
   error?: string;
 }
 
+export interface LoggerInterface {
+  debug: (msg: string, ...args: unknown[]) => void;
+  info: (msg: string, ...args: unknown[]) => void;
+  warn: (msg: string, ...args: unknown[]) => void;
+  error: (msg: string, ...args: unknown[]) => void;
+}
+
 export class BadgeRevocationCoordinator {
   private auditLog: BadgeRevocationAuditLog;
   private cacheInvalidator: BadgeRevocationCacheInvalidator;
   private notificationService: BadgeRevocationNotificationService;
   private countUpdateService: BadgeCountUpdateService;
-  private logger: any;
+  private logger: LoggerInterface;
   private processedCount = 0;
   private errorCount = 0;
 
@@ -31,7 +38,7 @@ export class BadgeRevocationCoordinator {
     cacheInvalidator: BadgeRevocationCacheInvalidator,
     notificationService: BadgeRevocationNotificationService,
     countUpdateService: BadgeCountUpdateService,
-    logger?: any
+    logger?: LoggerInterface
   ) {
     this.auditLog = auditLog;
     this.cacheInvalidator = cacheInvalidator;
@@ -40,15 +47,15 @@ export class BadgeRevocationCoordinator {
     this.logger = logger || this.getDefaultLogger();
   }
 
-  private getDefaultLogger() {
+  private getDefaultLogger(): LoggerInterface {
     return {
-      debug: (msg: string, ...args: any[]) =>
+      debug: (msg: string, ...args: unknown[]) =>
         console.debug(`[RevocationCoordinator] ${msg}`, ...args),
-      info: (msg: string, ...args: any[]) =>
+      info: (msg: string, ...args: unknown[]) =>
         console.info(`[RevocationCoordinator] ${msg}`, ...args),
-      warn: (msg: string, ...args: any[]) =>
+      warn: (msg: string, ...args: unknown[]) =>
         console.warn(`[RevocationCoordinator] ${msg}`, ...args),
-      error: (msg: string, ...args: any[]) =>
+      error: (msg: string, ...args: unknown[]) =>
         console.error(`[RevocationCoordinator] ${msg}`, ...args),
     };
   }
@@ -177,7 +184,7 @@ export class BadgeRevocationCoordinator {
     return results;
   }
 
-  getStatistics(): any {
+  getStatistics(): Record<string, unknown> {
     return {
       processedCount: this.processedCount,
       errorCount: this.errorCount,
@@ -195,7 +202,7 @@ export class BadgeRevocationCoordinator {
     };
   }
 
-  getDetailedStatistics(): any {
+  getDetailedStatistics(): Record<string, unknown> {
     return {
       processedCount: this.processedCount,
       errorCount: this.errorCount,

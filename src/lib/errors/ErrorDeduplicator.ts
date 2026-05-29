@@ -17,6 +17,7 @@ export interface DedupeEntry {
 export class ErrorDeduplicator {
   private cache = new Map<string, DedupeEntry>();
   private config: DedupeConfig;
+  private pruneTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(config: Partial<DedupeConfig> = {}) {
     this.config = {
@@ -29,7 +30,7 @@ export class ErrorDeduplicator {
     };
 
     if (this.config.pruneIntervalMs && this.config.pruneIntervalMs > 0) {
-      setInterval(() => {
+      this.pruneTimer = setInterval(() => {
         this.pruneOldEntries();
       }, this.config.pruneIntervalMs);
     }
@@ -139,6 +140,14 @@ export class ErrorDeduplicator {
       ...this.config,
       ...config,
     };
+  }
+
+  destroy(): void {
+    if (this.pruneTimer !== null) {
+      clearInterval(this.pruneTimer);
+      this.pruneTimer = null;
+    }
+    this.cache.clear();
   }
 }
 

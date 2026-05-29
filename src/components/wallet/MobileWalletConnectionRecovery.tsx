@@ -159,21 +159,33 @@ export default function MobileWalletConnectionRecovery() {
       return ISSUES.network;
     }
 
-    // Check for common issues
-    const lastError = localStorage.getItem(
+    // Check for recent errors only (within last hour)
+    const lastErrorRaw = localStorage.getItem(
       'passportx_mobile_wallet_last_error'
     );
-    if (lastError) {
-      if (lastError.includes('timeout')) return ISSUES.timeout;
-      if (lastError.includes('permission')) return ISSUES.permissions;
-      if (lastError.includes('wallet')) return ISSUES.wallet;
+    const lastErrorTimestamp = localStorage.getItem(
+      'passportx_mobile_wallet_last_error_timestamp'
+    );
+    const isRecentError =
+      lastErrorTimestamp &&
+      Date.now() - parseInt(lastErrorTimestamp) < 3600000;
+    if (lastErrorRaw && isRecentError) {
+      if (lastErrorRaw.includes('timeout')) return ISSUES.timeout;
+      if (lastErrorRaw.includes('permission')) return ISSUES.permissions;
+      if (lastErrorRaw.includes('wallet')) return ISSUES.wallet;
     }
 
-    // Check connection attempts
+    // Check recent connection attempts only
     const attempts = parseInt(
       localStorage.getItem('passportx_mobile_wallet_attempts') || '0'
     );
-    if (attempts > 3) {
+    const attemptsTimestamp = localStorage.getItem(
+      'passportx_mobile_wallet_attempts_timestamp'
+    );
+    const isRecentAttempts =
+      attemptsTimestamp &&
+      Date.now() - parseInt(attemptsTimestamp) < 3600000;
+    if (attempts > 3 && isRecentAttempts) {
       return ISSUES.unknown;
     }
 

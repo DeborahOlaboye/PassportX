@@ -133,6 +133,11 @@ export function handleVerificationError(
   });
 }
 
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 50;
+
 /**
  * Rate limiter for verification endpoints.
  * Allows 50 requests per 15-minute window per IP.
@@ -142,15 +147,39 @@ export function verificationRateLimit(
   res: Response,
   next: NextFunction
 ) {
-  // This is a placeholder - you should use a proper rate limiting library
-  // like express-rate-limit with Redis for production
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+
+  if (!record || now > record.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return next();
+  }
+
+  record.count++;
+  if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+    return res.status(429).json({
+      error: 'Too many verification requests. Please try again later.',
+      retryAfter: Math.ceil((record.resetTime - now) / 1000),
+    });
+  }
+
   next();
 }
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitStore) {
+    if (now > record.resetTime) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}, 60000).unref();
 
 /**
  * Sanitize verification response
  */
-export function sanitizeVerificationResponse(verification: any) {
+export function sanitizeVerificationResponse(verification: Record<string, unknown>) {
   // Remove sensitive internal fields
   const sanitized = { ...verification };
   delete sanitized.__v;
