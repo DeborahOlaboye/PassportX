@@ -365,9 +365,6 @@ export class GracefulDegradationManager {
 
   private updateSystemHealth(): void {
     const features = Object.values(this.systemHealth.features);
-    const _activeFeatures = features.filter(
-      (f) => f.status === 'active'
-    ).length;
     const degradedFeatures = features.filter(
       (f) => f.status === 'degraded'
     ).length;

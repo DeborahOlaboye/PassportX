@@ -75,8 +75,6 @@ export function useNetworkApi() {
 
 // Hook for contract addresses
 export function useContractAddresses() {
-  const _network = useCurrentNetwork();
-
   return {
     passportCore: networkManager.getContractAddress('passportCore'),
     badgeIssuer: networkManager.getContractAddress('badgeIssuer'),

@@ -36,6 +36,9 @@ export const validateUserProfile = (
   res: Response,
   next: NextFunction
 ) => {
+  if (!req.body || typeof req.body !== 'object') {
+    return next(createError('Request body is required', 400));
+  }
   const { name, bio, email } = req.body;
 
   if (name && (typeof name !== 'string' || name.length > 100)) {
@@ -62,6 +65,9 @@ export const validateBadgeTemplate = (
   res: Response,
   next: NextFunction
 ) => {
+  if (!req.body || typeof req.body !== 'object') {
+    return next(createError('Request body is required', 400));
+  }
   const { name, description, category, level, communityId } = req.body;
 
   if (!name || typeof name !== 'string' || name.length > 100) {

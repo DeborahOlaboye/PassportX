@@ -7,6 +7,12 @@ export interface ErrorOptions {
   logLevel?: 'info' | 'warn' | 'error';
 }
 
+const LOG_METHODS: Record<Required<ErrorOptions['logLevel']>, (msg: string, ctx?: Record<string, unknown>) => void> = {
+  info: (msg, ctx) => logger.info(msg, ctx),
+  warn: (msg, ctx) => logger.warn(msg, ctx),
+  error: (msg, ctx) => logger.error(msg, ctx as any),
+};
+
 export function createErrorResponse(
   message: string,
   error?: unknown,
@@ -14,13 +20,15 @@ export function createErrorResponse(
 ): NextResponse {
   const { status = 500, context = {}, logLevel = 'error' } = options;
 
-  const logContext = {
+  const logContext: Record<string, unknown> = {
     ...context,
     status,
   };
 
+  const logFn = LOG_METHODS[logLevel];
+
   if (error) {
-    logger[logLevel](message, {
+    logFn(message, {
       ...logContext,
       error:
         error instanceof Error
@@ -32,7 +40,7 @@ export function createErrorResponse(
           : error,
     });
   } else {
-    logger[logLevel](message, logContext);
+    logFn(message, logContext);
   }
 
   return NextResponse.json({ error: message }, { status });

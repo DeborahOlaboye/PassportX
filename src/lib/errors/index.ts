@@ -71,7 +71,7 @@ export const withAsyncErrorHandling = <
 
 // Singleton instances
 export const errorHandler = ErrorHandler.getInstance();
-export const retryManager = new RetryManager();
+export { retryManager } from './RetryManager';
 export const errorRecovery = ErrorRecovery.getInstance();
 export const errorContextManager = ErrorContextManager.getInstance();
 export const errorMiddleware = new ErrorMiddleware();
