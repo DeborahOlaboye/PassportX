@@ -38,7 +38,12 @@ class NotificationEventBus {
 
   once<T>(event: string, handler: EventHandler<T>): void {
     const onceHandler: EventHandler<T> = (data) => {
-      handler(data);
+      try {
+        handler(data);
+      } catch (error) {
+        this.off(event, onceHandler);
+        throw error;
+      }
       this.off(event, onceHandler);
     };
     this.on(event, onceHandler);
