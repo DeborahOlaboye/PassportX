@@ -120,7 +120,7 @@ export const deleteReadNotifications = async (
  * Create and send notification to a user
  */
 export const createNotification = async (
-  userId: string,
+  stacksAddressOrId: string,
   type: NotificationType,
   title: string,
   message: string,
@@ -128,7 +128,7 @@ export const createNotification = async (
   expiresAt?: Date
 ): Promise<INotification> => {
   // Check if user has this notification type enabled
-  const user = await User.findOne({ stacksAddress: userId });
+  const user = await User.findOne({ stacksAddress: stacksAddressOrId });
 
   if (!user) {
     throw new Error('User not found');

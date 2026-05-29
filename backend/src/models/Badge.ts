@@ -50,6 +50,16 @@ const badgeSchema = new Schema<IBadge>(
         type: Number,
         required: true,
       },
+      active: {
+        type: Boolean,
+        default: true,
+      },
+      revokedAt: {
+        type: Number,
+      },
+      revocationReason: {
+        type: String,
+      },
     },
   },
   {

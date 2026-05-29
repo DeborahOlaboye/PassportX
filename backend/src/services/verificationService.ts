@@ -33,7 +33,7 @@ export class VerificationService {
       const verification: IBadgeVerification = {
         badgeId: badge._id.toString(),
         verified: ownershipVerified && !!badge.tokenId && !!badge.transactionId,
-        active: badge.metadata?.timestamp ? true : false,
+        active: badge.metadata?.active !== false,
         owner: badge.owner,
         issuer: badge.issuer,
         level: badge.metadata.level,
@@ -87,7 +87,7 @@ export class VerificationService {
             badge.owner.toLowerCase() === ownerAddress.toLowerCase() &&
             !!badge.tokenId &&
             !!badge.transactionId,
-          active: badge.metadata?.timestamp ? true : false,
+          active: badge.metadata?.active !== false,
           owner: badge.owner,
           issuer: badge.issuer,
           level: badge.metadata.level,
@@ -136,7 +136,7 @@ export class VerificationService {
       }
 
       // Check if badge metadata indicates it's still active
-      return badge.metadata?.timestamp > 0;
+      return badge.metadata?.active !== false;
     } catch (error) {
       logger.error('Error checking badge revocation:', error);
       return false;
