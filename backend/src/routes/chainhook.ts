@@ -3,6 +3,7 @@ import ChainhookManager from '../services/chainhookManager';
 import { authMiddleware } from '../middleware/auth';
 import EventReplayService from '../services/EventReplayService';
 import ChainhookEventProcessor from '../services/chainhookEventProcessor';
+import logger from '../utils/logger';
 
 const router = Router();
 let chainhookManager: ChainhookManager | null = null;
@@ -300,14 +301,14 @@ router.get('/logs', authMiddleware, (req: Request, res: Response) => {
         .json({ error: 'Chainhook manager not initialized' });
     }
 
-    const logger = chainhookManager.getLogger();
+    const chainhookLogger = chainhookManager.getLogger();
     const limit = parseInt(req.query.limit as string) || 100;
-    const logs = logger.getLogs(undefined, limit);
+    const logs = chainhookLogger.getLogs(undefined, limit);
 
     res.json({
       logs,
-      total: logger.getLogCount(),
-      statistics: logger.getLogStatistics(),
+      total: chainhookLogger.getLogCount(),
+      statistics: chainhookLogger.getLogStatistics(),
     });
   } catch (error) {
     logger.error('Failed to get logs', { error });
