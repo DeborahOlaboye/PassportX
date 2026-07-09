@@ -29,6 +29,11 @@
       "id": 2,
       "name": "Design Guild",
       "owner": "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
+    },
+    {
+      "id": 3,
+      "name": "Management DAO",
+      "owner": "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG"
     }
   ]
 }
