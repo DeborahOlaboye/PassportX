@@ -1,5 +1,5 @@
 // Integration tests for Chainhook with test network
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   PredicateEvaluator,
   PredicateBuilder,
