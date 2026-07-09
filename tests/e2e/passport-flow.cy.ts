@@ -1,3 +1,6 @@
+// PassportX E2E Integration Tests
+import { describe, it, expect, beforeEach, cy } from 'local-cypress';
+
 describe('PassportX E2E Tests', () => {
   beforeEach(() => {
     cy.visit('/');
@@ -10,7 +13,7 @@ describe('PassportX E2E Tests', () => {
       cy.get('[data-testid="wallet-option-hiro"]').click();
 
       // Create passport
-      cy.get('[data-testid="create-passport"]').click();
+      cy.get('[data-testid="create-passport"]').should('be.visible').click();
       cy.get('[data-testid="passport-name"]').type('Test User');
       cy.get('[data-testid="submit-passport"]').click();
 
@@ -22,15 +25,16 @@ describe('PassportX E2E Tests', () => {
 
     it('should display badges in passport', () => {
       // Mock user with badges
-      cy.intercept('GET', '/api/user/badges', {
+      cy.intercept('GET', '/api/user/badges*', {
         fixture: 'user-badges.json',
-      });
+      }).as('getBadges');
 
       cy.visit('/passport/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
+      cy.wait('@getBadges');
 
       // Verify badges displayed
       cy.get('[data-testid="badge-grid"]').should('be.visible');
-      cy.get('[data-testid="badge-card"]').should('have.length.greaterThan', 0);
+      cy.get('[data-testid="badge-card"]').should('have.length.at.least', 1);
       cy.get('[data-testid="badge-card"]')
         .first()
         .should('contain', 'Python Beginner');
@@ -59,7 +63,7 @@ describe('PassportX E2E Tests', () => {
       );
 
       // Create badge template
-      cy.get('[data-testid="community-card"]').click();
+      cy.get('[data-testid="community-card"]').first().click();
       cy.get('[data-testid="create-template"]').click();
       cy.get('[data-testid="template-name"]').type('Test Badge');
       cy.get('[data-testid="template-description"]').type('A test badge');
@@ -76,6 +80,8 @@ describe('PassportX E2E Tests', () => {
 
       // Verify success message
       cy.get('[data-testid="success-message"]').should(
+        'be.visible'
+      ).and(
         'contain',
         'Badge issued successfully'
       );
@@ -98,7 +104,7 @@ describe('PassportX E2E Tests', () => {
       // View badge details
       cy.get('[data-testid="badge-card"]').first().click();
       cy.get('[data-testid="badge-modal"]').should('be.visible');
-      cy.get('[data-testid="badge-description"]').should('be.visible');
+      cy.get('[data-testid="badge-description"]').should('not.be.empty');
     });
   });
 
@@ -108,25 +114,27 @@ describe('PassportX E2E Tests', () => {
       cy.visit('/');
 
       // Check mobile navigation
-      cy.get('[data-testid="mobile-menu"]').click();
+      cy.get('[data-testid="mobile-menu"]').should('be.visible').click();
       cy.get('[data-testid="nav-menu"]').should('be.visible');
 
       // Check passport view on mobile
       cy.visit('/passport/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
       cy.get('[data-testid="badge-grid"]').should('be.visible');
-      cy.get('[data-testid="badge-card"]').should('have.css', 'width');
+      cy.get('[data-testid="badge-card"]').should('be.visible');
     });
   });
 
   describe('Error Handling', () => {
     it('should handle network errors gracefully', () => {
       // Mock network error
-      cy.intercept('GET', '/api/user/badges', { forceNetworkError: true });
+      cy.intercept('GET', '/api/user/badges*', { forceNetworkError: true }).as('getBadgesError');
 
       cy.visit('/passport/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM');
 
       // Verify error message
       cy.get('[data-testid="error-message"]').should(
+        'be.visible'
+      ).and(
         'contain',
         'Failed to load badges'
       );
@@ -137,6 +145,8 @@ describe('PassportX E2E Tests', () => {
       cy.visit('/passport/invalid-address');
 
       cy.get('[data-testid="error-message"]').should(
+        'be.visible'
+      ).and(
         'contain',
         'Invalid address'
       );
