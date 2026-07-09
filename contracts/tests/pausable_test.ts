@@ -12,23 +12,23 @@ Clarinet.test({
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get('deployer')!;
 
-    const block = chain.mineBlock([
+    let block = chain.mineBlock([
       // Check initial state
       Tx.contractCall('access-control', 'is-paused', [], deployer.address),
-      // Pause
+      // Pause (using trait-compliant function name)
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(true)],
+        'pause',
+        [],
         deployer.address
       ),
       // Check state
       Tx.contractCall('access-control', 'is-paused', [], deployer.address),
-      // Unpause
+      // Unpause (using trait-compliant function name)
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(false)],
+        'resume',
+        [],
         deployer.address
       ),
       // Check state
@@ -36,7 +36,7 @@ Clarinet.test({
     ]);
 
     assertEquals(block.receipts.length, 5);
-    // Expect result wrapped in ok because of trait implementation
+    // is-paused returns (ok bool)
     block.receipts[0].result.expectOk().expectBool(false);
     block.receipts[1].result.expectOk();
     block.receipts[2].result.expectOk().expectBool(true);
@@ -53,8 +53,8 @@ Clarinet.test({
     const block = chain.mineBlock([
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(true)],
+        'pause',
+        [],
         wallet1.address
       ),
     ]);
@@ -76,8 +76,8 @@ Clarinet.test({
       // Pause the contract
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(true)],
+        'pause',
+        [],
         deployer.address
       ),
       // Try to mint badge
@@ -109,8 +109,8 @@ Clarinet.test({
       // Pause
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(true)],
+        'pause',
+        [],
         deployer.address
       ),
       // Try to create template
@@ -123,7 +123,7 @@ Clarinet.test({
           types.uint(1),
           types.uint(1),
           types.uint(communityId),
-          types.uint(100), // expiration-duration
+          types.uint(100),
         ],
         deployer.address
       ),
@@ -146,8 +146,8 @@ Clarinet.test({
       // Pause
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(true)],
+        'pause',
+        [],
         deployer.address
       ),
       // Try to revoke badge
@@ -174,8 +174,8 @@ Clarinet.test({
       // Pause
       Tx.contractCall(
         'access-control',
-        'set-paused',
-        [types.bool(true)],
+        'pause',
+        [],
         deployer.address
       ),
       // Try to create community
