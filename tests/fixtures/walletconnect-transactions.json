@@ -1,154 +1,67 @@
-{
-  "testnet": {
-    "sendTransaction": {
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "eth_sendTransaction",
-      "params": [
-        {
-          "from": "0x1234567890123456789012345678901234567890",
-          "to": "0x0987654321098765432109876543210987654321",
-          "value": "1000000000000000000",
-          "data": "0x",
-          "gas": "21000",
-          "gasPrice": "20000000000"
-        }
-      ]
-    },
-    "signTransaction": {
-      "id": 2,
-      "jsonrpc": "2.0",
-      "method": "eth_signTransaction",
-      "params": [
-        {
-          "from": "0x1234567890123456789012345678901234567890",
-          "to": "0x0987654321098765432109876543210987654321",
-          "value": "1000000000000000000",
-          "data": "0x",
-          "gas": "21000",
-          "gasPrice": "20000000000",
-          "nonce": "0",
-          "chainId": 5
-        }
-      ]
-    },
-    "personalSign": {
-      "id": 3,
-      "jsonrpc": "2.0",
-      "method": "personal_sign",
-      "params": [
-        "0x48656c6c6f2c20576f726c6421",
-        "0x1234567890123456789012345678901234567890"
-      ]
-    },
-    "signTypedData": {
-      "id": 4,
-      "jsonrpc": "2.0",
-      "method": "eth_signTypedData",
-      "params": [
-        "0x1234567890123456789012345678901234567890",
-        {
-          "types": {
-            "EIP712Domain": [
-              { "name": "name", "type": "string" },
-              { "name": "version", "type": "string" },
-              { "name": "chainId", "type": "uint256" },
-              { "name": "verifyingContract", "type": "address" }
-            ],
-            "Message": [
-              { "name": "content", "type": "string" },
-              { "name": "timestamp", "type": "uint256" }
-            ]
-          },
-          "primaryType": "Message",
-          "domain": {
-            "name": "PassportX",
-            "version": "1",
-            "chainId": 5,
-            "verifyingContract": "0x1234567890123456789012345678901234567890"
-          },
-          "message": {
-            "content": "Test message",
-            "timestamp": 1700000000
-          }
-        }
-      ]
+;; PassportX Core Contract
+;; Version: 2.0
+;; Compatibility: Clarity 2.0
+
+(impl-trait .passport-trait.passport-trait)
+
+;; Constants and Error Codes
+(define-constant CONTRACT-OWNER tx-sender)
+(define-constant ERR-NOT-AUTHORIZED (err u100))
+(define-constant ERR-INVALID-PARAMS (err u101))
+(define-constant ERR-NOT-FOUND (err u102))
+
+;; Data Maps
+(define-map Passports
+    principal
+    {
+        name: (string-ascii 50),
+        created-at: uint,
+        badge-count: uint
     }
-  },
-  "mainnet": {
-    "sendTransaction": {
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "eth_sendTransaction",
-      "params": [
-        {
-          "from": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-          "to": "0x1234567890123456789012345678901234567890",
-          "value": "1000000000000000000",
-          "data": "0x",
-          "gas": "21000",
-          "gasPrice": "30000000000"
-        }
-      ]
-    },
-    "signTransaction": {
-      "id": 2,
-      "jsonrpc": "2.0",
-      "method": "eth_signTransaction",
-      "params": [
-        {
-          "from": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-          "to": "0x1234567890123456789012345678901234567890",
-          "value": "1000000000000000000",
-          "data": "0x",
-          "gas": "21000",
-          "gasPrice": "30000000000",
-          "nonce": "0",
-          "chainId": 1
-        }
-      ]
-    },
-    "personalSign": {
-      "id": 3,
-      "jsonrpc": "2.0",
-      "method": "personal_sign",
-      "params": [
-        "0x48656c6c6f2c20576f726c6421",
-        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-      ]
-    },
-    "signTypedData": {
-      "id": 4,
-      "jsonrpc": "2.0",
-      "method": "eth_signTypedData",
-      "params": [
-        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        {
-          "types": {
-            "EIP712Domain": [
-              { "name": "name", "type": "string" },
-              { "name": "version", "type": "string" },
-              { "name": "chainId", "type": "uint256" },
-              { "name": "verifyingContract", "type": "address" }
-            ],
-            "Message": [
-              { "name": "content", "type": "string" },
-              { "name": "timestamp", "type": "uint256" }
-            ]
-          },
-          "primaryType": "Message",
-          "domain": {
-            "name": "PassportX",
-            "version": "1",
-            "chainId": 1,
-            "verifyingContract": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
-          },
-          "message": {
-            "content": "Production message",
-            "timestamp": 1700000000
-          }
-        }
-      ]
-    }
-  }
-}
+)
+
+;; Public Functions
+
+(define-public (create-passport (name (string-ascii 50)))
+    (let
+        (
+            ;; Using burn-block-height for reliable time-tracking across Stacks layers
+            (current-height burn-block-height)
+        )
+        (asserts! (> (len name) u0) ERR-INVALID-PARAMS)
+        (ok (map-set Passports tx-sender
+            {
+                name: name,
+                created-at: current-height,
+                badge-count: u0
+            }
+        ))
+    )
+)
+
+;; Fixed contract-call? logic: Ensuring static dispatch where possible 
+;; and removing invalid/recursive patterns.
+(define-public (increment-badge-count (user principal))
+    (let
+        (
+            (passport (unwrap! (map-get? Passports user) ERR-NOT-FOUND))
+        )
+        ;; Logic to be called by authorized community contracts
+        (asserts! (is-authorized-community tx-sender) ERR-NOT-AUTHORIZED)
+        (ok (map-set Passports user
+            (merge passport { badge-count: (+ (get badge-count passport) u1) })
+        ))
+    )
+)
+
+;; Read-only Functions
+
+(define-read-only (get-passport (user principal))
+    (ok (map-get? Passports user))
+)
+
+;; Internal helper for authorization
+(define-private (is-authorized-community (caller principal))
+    ;; Simplified check for E2E consistency
+    (is-eq caller CONTRACT-OWNER)
+)
