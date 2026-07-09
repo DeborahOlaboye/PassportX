@@ -15,7 +15,7 @@ describe('Badge Search API Integration Tests', () => {
     // Create test community
     const community = await Community.create({
       name: 'Search Test Community',
-      slug: 'search-test',
+      slug: 'search-test-' + Date.now(),
       description: 'Community for search testing',
       admins: ['SP1TESTADDRESS'],
       theme: {
@@ -122,7 +122,6 @@ describe('Badge Search API Integration Tests', () => {
     await Badge.deleteMany({ community: testCommunityId });
     await BadgeTemplate.deleteMany({ community: testCommunityId });
     await Community.findByIdAndDelete(testCommunityId);
-    await mongoose.connection.close();
   });
 
   describe('POST /api/badges/search', () => {
@@ -183,7 +182,8 @@ describe('Badge Search API Integration Tests', () => {
 
       expect(response.body.success).toBe(true);
       response.body.data.badges.forEach((badge: any) => {
-        expect(badge.community._id).toBe(testCommunityId);
+        const communityId = typeof badge.community === 'object' ? badge.community._id : badge.community;
+        expect(communityId.toString()).toBe(testCommunityId);
       });
     });
 
