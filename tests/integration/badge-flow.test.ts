@@ -1,4 +1,5 @@
 import { loadFixture, mockStacksApi } from '../setup';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 
 describe('Badge Flow Integration Tests', () => {
   const testUsers = loadFixture('test-users.json');
@@ -137,16 +138,16 @@ describe('Badge Flow Integration Tests', () => {
 
   describe('Access Control Integration', () => {
     test('should enforce permissions across all operations', async () => {
-      // Check permission before operation
+      // Check permission before operation (expect false)
       mockStacksApi.callReadOnlyFunction.mockResolvedValueOnce({
-        result: false, // No permission
+        result: false, 
       });
 
       const checkPermission = async () => mockStacksApi.callReadOnlyFunction();
-      const hasPermission = await checkPermission();
+      const hasPermissionInitial = await checkPermission();
 
-      if (!hasPermission.result) {
-        // Should not proceed with operation
+      // Should not proceed with operation if result is false
+      if (!hasPermissionInitial.result) {
         expect(mockStacksApi.broadcastTransaction).not.toHaveBeenCalled();
       }
 
@@ -156,9 +157,9 @@ describe('Badge Flow Integration Tests', () => {
         success: true,
       });
 
-      // Check permission again
+      // Check permission again (expect true)
       mockStacksApi.callReadOnlyFunction.mockResolvedValueOnce({
-        result: true, // Has permission
+        result: true, 
       });
 
       const grantPermission = async () => mockStacksApi.broadcastTransaction();
@@ -166,6 +167,7 @@ describe('Badge Flow Integration Tests', () => {
 
       const hasPermissionNow = await checkPermission();
       expect(hasPermissionNow.result).toBe(true);
+      expect(mockStacksApi.broadcastTransaction).toHaveBeenCalled();
     });
   });
 });
